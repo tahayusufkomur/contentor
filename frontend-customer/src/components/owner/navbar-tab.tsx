@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -17,12 +18,12 @@ interface NavbarTabProps {
 
 type PickerTarget = number | "cta" | "new" | null;
 
-const LAYOUTS: { id: NavbarLayout; label: string }[] = [
-  { id: "classic", label: "Classic" },
-  { id: "centered", label: "Centered" },
-  { id: "split", label: "Split" },
-  { id: "minimal", label: "Minimal" },
-  { id: "pill", label: "Pill" },
+const LAYOUTS: NavbarLayout[] = [
+  "classic",
+  "centered",
+  "split",
+  "minimal",
+  "pill",
 ];
 
 /** Tiny CSS wireframe of each layout for the picker buttons. */
@@ -90,15 +91,16 @@ function DestinationButton({
   href: string;
   onClick: () => void;
 }) {
+  const tr = useTranslations("admin.owner.navbar");
   return (
     <button
       type="button"
       onClick={onClick}
-      title="Choose a page or content"
+      title={tr("chooseTitle")}
       className="flex flex-1 items-center gap-1.5 overflow-hidden rounded-md border px-2.5 py-2 text-left text-sm text-muted-foreground transition-colors hover:border-primary hover:bg-primary/5 hover:text-foreground"
     >
       <Link2 className="h-3.5 w-3.5 shrink-0" />
-      <span className="truncate">{href || "Choose destination…"}</span>
+      <span className="truncate">{href || tr("chooseDestination")}</span>
     </button>
   );
 }
@@ -106,6 +108,10 @@ function DestinationButton({
 const isoDate = (d: Date) => d.toISOString().split("T")[0];
 
 export function NavbarTab({ config, onChange }: NavbarTabProps) {
+  const tr = useTranslations("admin.owner.navbar");
+  // The site's own words: what is written onto the site is in the site's
+  // language (the `site` messages), whatever the creator reads here.
+  const ts = useTranslations("site");
   const navbar = config.navbar_config ?? {
     links: [],
     cta: null,
@@ -114,7 +120,7 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
   const links = navbar.links ?? [];
   const layout: NavbarLayout = navbar.layout ?? "classic";
   const ctaEnabled = !!navbar.cta;
-  const ctaText = navbar.cta?.text ?? "Get Started";
+  const ctaText = navbar.cta?.text ?? ts("nav.getStarted");
   const ctaHref = navbar.cta?.href ?? "/courses";
   const showLogin = navbar.show_login !== false;
   const showInstall = navbar.show_install !== false;
@@ -123,14 +129,14 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
   const [picker, setPicker] = useState<PickerTarget>(null);
   // Which capability suggestions apply (fetched once): hrefs the tenant has
   // content for. Filtered against current links at render time.
-  const [available, setAvailable] = useState<{ label: string; href: string }[]>(
-    [],
-  );
+  const [available, setAvailable] = useState<
+    { id: "events" | "store"; href: string }[]
+  >([]);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const found: { label: string; href: string }[] = [];
+      const found: { id: "events" | "store"; href: string }[] = [];
       try {
         const from = new Date();
         const to = new Date();
@@ -139,7 +145,7 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
           `/api/v1/calendar/?from=${isoDate(from)}&to=${isoDate(to)}`,
         );
         if (Array.isArray(events) && events.length > 0) {
-          found.push({ label: "Live Sessions", href: "/events" });
+          found.push({ id: "events", href: "/events" });
         }
       } catch {}
       try {
@@ -147,7 +153,7 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
           "/api/v1/billing/store/",
         );
         const items = Array.isArray(store) ? store : (store?.results ?? []);
-        if (items.length > 0) found.push({ label: "Store", href: "/store" });
+        if (items.length > 0) found.push({ id: "store", href: "/store" });
       } catch {}
       if (!cancelled) setAvailable(found);
     })();
@@ -206,24 +212,24 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
     <div className="space-y-5">
       {/* Layout preset */}
       <div className="space-y-2">
-        <Label>Layout</Label>
+        <Label>{tr("layout")}</Label>
         <div className="grid grid-cols-5 gap-1.5">
-          {LAYOUTS.map((l) => (
+          {LAYOUTS.map((id) => (
             <button
-              key={l.id}
+              key={id}
               type="button"
-              title={l.label}
-              aria-label={`Layout: ${l.label}`}
-              onClick={() => emit({ layout: l.id })}
+              title={tr(`layouts.${id}`)}
+              aria-label={tr("layoutAria", { name: tr(`layouts.${id}`) })}
+              onClick={() => emit({ layout: id })}
               className={cn(
                 "flex h-14 flex-col items-center justify-center gap-1 rounded-md border text-[10px] transition-colors",
-                layout === l.id
+                layout === id
                   ? "border-primary bg-primary/5 text-foreground"
                   : "text-muted-foreground hover:border-foreground hover:text-foreground",
               )}
             >
-              <LayoutThumb id={l.id} />
-              {l.label}
+              <LayoutThumb id={id} />
+              {tr(`layouts.${id}`)}
             </button>
           ))}
         </div>
@@ -231,7 +237,7 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
 
       {/* Logo size — only meaningful once a logo exists, but harmless before. */}
       <div className="space-y-1.5">
-        <Label>Logo size</Label>
+        <Label>{tr("logoSize")}</Label>
         <div className="flex gap-1.5">
           {(["sm", "md", "lg", "xl"] as const).map((size) => (
             <button
@@ -254,7 +260,7 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
 
       {config.logo_url && (
         <div className="flex items-center justify-between">
-          <Label htmlFor="show-brand-name">Show brand name next to logo</Label>
+          <Label htmlFor="show-brand-name">{tr("showBrandName")}</Label>
           <Switch
             id="show-brand-name"
             checked={navbar.show_brand_name === true}
@@ -268,28 +274,22 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
        * wizard's logo step; this is where they change their mind later. */}
       {config.logo_url && navbar.show_brand_name === true && (
         <div className="space-y-1.5">
-          <Label>Logo and name</Label>
+          <Label>{tr("logoAndName")}</Label>
           <div className="flex gap-1.5">
-            {(
-              [
-                { id: "horizontal", label: "Side by side" },
-                { id: "stacked", label: "Stacked" },
-                { id: "name_only", label: "Name only" },
-              ] as const
-            ).map((opt) => (
+            {(["horizontal", "stacked", "name_only"] as const).map((id) => (
               <button
-                key={opt.id}
+                key={id}
                 type="button"
-                aria-pressed={(navbar.logo_layout ?? "horizontal") === opt.id}
-                onClick={() => emit({ logo_layout: opt.id })}
+                aria-pressed={(navbar.logo_layout ?? "horizontal") === id}
+                onClick={() => emit({ logo_layout: id })}
                 className={cn(
                   "rounded-md border px-3 py-1.5 text-sm",
-                  (navbar.logo_layout ?? "horizontal") === opt.id
+                  (navbar.logo_layout ?? "horizontal") === id
                     ? "border-primary bg-primary/10 text-foreground"
                     : "text-muted-foreground hover:border-foreground",
                 )}
               >
-                {opt.label}
+                {tr(`logoLayouts.${id}`)}
               </button>
             ))}
           </div>
@@ -300,9 +300,9 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
       {layout !== "pill" && (
         <div className="flex items-center justify-between rounded-lg border p-4">
           <div>
-            <Label>Transparent over hero</Label>
+            <Label>{tr("transparent")}</Label>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              See-through on the homepage hero, solid after scrolling
+              {tr("transparentHint")}
             </p>
           </div>
           <Switch
@@ -314,11 +314,9 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
 
       {/* Nav links */}
       <div className="space-y-2">
-        <Label>Navigation links</Label>
+        <Label>{tr("links")}</Label>
         {links.length === 0 && (
-          <p className="text-xs text-muted-foreground">
-            No links yet. Add one below.
-          </p>
+          <p className="text-xs text-muted-foreground">{tr("noLinks")}</p>
         )}
         <div className="space-y-2">
           {links.map((link, i) => (
@@ -328,8 +326,10 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
                   onClick={() => moveLink(i, -1)}
                   disabled={i === 0}
                   className="text-muted-foreground transition-colors hover:text-foreground disabled:opacity-30"
-                  title="Move up"
-                  aria-label={`Move ${link.label || "link"} up`}
+                  title={tr("moveUp")}
+                  aria-label={tr("moveUpAria", {
+                    name: link.label || tr("linkFallback"),
+                  })}
                 >
                   <ArrowUp className="h-3.5 w-3.5" />
                 </button>
@@ -337,14 +337,16 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
                   onClick={() => moveLink(i, 1)}
                   disabled={i === links.length - 1}
                   className="text-muted-foreground transition-colors hover:text-foreground disabled:opacity-30"
-                  title="Move down"
-                  aria-label={`Move ${link.label || "link"} down`}
+                  title={tr("moveDown")}
+                  aria-label={tr("moveDownAria", {
+                    name: link.label || tr("linkFallback"),
+                  })}
                 >
                   <ArrowDown className="h-3.5 w-3.5" />
                 </button>
               </div>
               <Input
-                placeholder="Label"
+                placeholder={tr("labelPlaceholder")}
                 value={link.label}
                 onChange={(e) => updateLink(i, "label", e.target.value)}
                 className="flex-1"
@@ -356,7 +358,7 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
               <button
                 onClick={() => removeLink(i)}
                 className="text-muted-foreground transition-colors hover:text-destructive"
-                title="Remove link"
+                title={tr("removeLink")}
               >
                 <Trash2 className="h-4 w-4" />
               </button>
@@ -371,10 +373,24 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
               <button
                 key={s.href}
                 type="button"
-                onClick={() => emit({ links: [...links, s] })}
+                onClick={() =>
+                  emit({
+                    links: [
+                      ...links,
+                      {
+                        label:
+                          s.id === "events"
+                            ? ts("store.filter.liveSessions")
+                            : ts("store.title"),
+                        href: s.href,
+                      },
+                    ],
+                  })
+                }
                 className="inline-flex items-center gap-1 rounded-full border border-dashed px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
               >
-                <Plus className="h-3 w-3" /> Add {s.label}
+                <Plus className="h-3 w-3" />{" "}
+                {tr("addSuggestion", { name: tr(`suggest.${s.id}`) })}
               </button>
             ))}
           </div>
@@ -384,14 +400,14 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
           onClick={() => setPicker("new")}
           className="flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed py-2 text-xs text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
         >
-          <Plus className="h-3.5 w-3.5" /> Add link
+          <Plus className="h-3.5 w-3.5" /> {tr("addLink")}
         </button>
       </div>
 
       {/* CTA button */}
       <div className="space-y-3 rounded-lg border p-4">
         <div className="flex items-center justify-between">
-          <Label>CTA button</Label>
+          <Label>{tr("cta")}</Label>
           <Switch
             checked={ctaEnabled}
             onCheckedChange={(v) =>
@@ -402,7 +418,7 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
         {ctaEnabled && (
           <div className="space-y-2">
             <Input
-              placeholder="Button text"
+              placeholder={tr("ctaPlaceholder")}
               value={ctaText}
               onChange={(e) =>
                 emit({ cta: { text: e.target.value, href: ctaHref } })
@@ -419,9 +435,9 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
       {/* Show login */}
       <div className="flex items-center justify-between rounded-lg border p-4">
         <div>
-          <Label>Show login button</Label>
+          <Label>{tr("showLogin")}</Label>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            Display &quot;Sign In&quot; link in nav
+            {tr("showLoginHint")}
           </p>
         </div>
         <Switch
@@ -433,9 +449,9 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
       {/* Show Install app */}
       <div className="flex items-center justify-between rounded-lg border p-4">
         <div>
-          <Label>Show &quot;Install app&quot;</Label>
+          <Label>{tr("showInstall")}</Label>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            Link visitors to installing your site as an app
+            {tr("showInstallHint")}
           </p>
         </div>
         <Switch

@@ -1747,6 +1747,10 @@
     "src": "2a4aefc3",
     "reviewed": false
   },
+  "site.page.pricingOrPlans": {
+    "src": "48d4384b",
+    "reviewed": false
+  },
   "site.duration.hoursMinutes": {
     "src": "a7ea8308",
     "reviewed": false
@@ -1929,6 +1933,10 @@
   },
   "site.nav.loginToContinue": {
     "src": "0d75824d",
+    "reviewed": false
+  },
+  "site.nav.getStarted": {
+    "src": "bd2cb051",
     "reviewed": false
   },
   "site.blockEmpty.video.title": {

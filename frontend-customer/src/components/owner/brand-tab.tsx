@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Wand2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -28,21 +29,22 @@ export function BrandTab({
   onStudioOpenChange,
   onApplyLook,
 }: BrandTabProps) {
+  const tr = useTranslations("admin.owner.brand");
   return (
     <div className="space-y-5">
       <div className="space-y-1.5">
-        <Label htmlFor="brand-name">Brand name</Label>
+        <Label htmlFor="brand-name">{tr("name")}</Label>
         <Input
           id="brand-name"
           value={config.brand_name}
           onChange={(e) => onChange({ brand_name: e.target.value })}
-          placeholder="My Platform"
+          placeholder={tr("namePlaceholder")}
         />
       </div>
 
       <div className="space-y-1.5">
         <div className="flex items-center gap-2">
-          <Label>Logo</Label>
+          <Label>{tr("logo")}</Label>
           <AiBadge />
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -54,8 +56,8 @@ export function BrandTab({
           >
             <Wand2 className="h-3.5 w-3.5" />
             {config.logo_recipe && Object.keys(config.logo_recipe).length
-              ? "Edit logo"
-              : "Create a logo"}
+              ? tr("editLogo")
+              : tr("createLogo")}
           </Button>
         </div>
         <LogoUploader
@@ -74,11 +76,8 @@ export function BrandTab({
 
       <div className="flex items-start justify-between gap-4 rounded-xl border bg-card/70 p-4">
         <div className="space-y-1">
-          <Label className="text-sm">Allow dark mode for visitors</Label>
-          <p className="text-xs text-muted-foreground">
-            Shows a light/dark toggle in the public header and keeps the dark
-            palette available.
-          </p>
+          <Label className="text-sm">{tr("darkMode")}</Label>
+          <p className="text-xs text-muted-foreground">{tr("darkModeHint")}</p>
         </div>
         <Switch
           checked={config.dark_mode_enabled}

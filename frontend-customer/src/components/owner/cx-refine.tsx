@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
@@ -17,11 +18,12 @@ export function CxRefine({
   block: Block;
   onChange: (patch: Partial<Block>) => void;
 }) {
+  const tr = useTranslations("admin.owner.cx");
   const [instruction, setInstruction] = useState("");
   const { run: apply, loading } = useAsyncAction(async () => {
     const res = await refineSection(block, instruction.trim());
     if (!res.block) {
-      toast.error(failureMessage(res.source));
+      toast.error(failureMessage(res.source, (code) => tr(`failure.${code}`)));
       return;
     }
     onChange(withoutId(res.block));
@@ -31,7 +33,7 @@ export function CxRefine({
   return (
     <div className="space-y-2 rounded-md border border-dashed p-2.5">
       <label htmlFor={id} className="text-xs font-medium">
-        Change with AI
+        {tr("change")}
       </label>
       <Textarea
         id={id}
@@ -39,7 +41,7 @@ export function CxRefine({
         onChange={(e) => setInstruction(e.target.value)}
         rows={2}
         maxLength={600}
-        placeholder="Make it two columns and add a short intro"
+        placeholder={tr("changePlaceholder")}
         className="text-xs"
       />
       <Button
@@ -48,11 +50,11 @@ export function CxRefine({
         variant="outline"
         className="w-full"
         loading={loading}
-        loadingText="Changing…"
+        loadingText={tr("changing")}
         disabled={instruction.trim().length < 3}
         onClick={() => apply()}
       >
-        Apply change
+        {tr("apply")}
       </Button>
     </div>
   );

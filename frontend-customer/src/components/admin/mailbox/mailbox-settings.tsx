@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Mail, Save } from "lucide-react";
 import { toast } from "sonner";
 
@@ -24,14 +25,14 @@ import { ApiError } from "@/types/api";
 
 const LOCAL_PART_RE = /^[a-zA-Z0-9._-]+$/;
 
-const CLAIM_ERRORS: Record<string, string> = {
-  taken: "That address is already taken. Try another.",
-  reserved_local_part: "That address is reserved. Try another.",
-  invalid_local_part:
-    "Only letters, numbers, dots, hyphens, and underscores are allowed.",
-  upgrade_required: "Upgrade your plan to claim an address.",
-  feature_unavailable: "Custom addresses aren't available right now.",
-};
+/** The backend's reason codes for a refused claim: each has its own message. */
+const CLAIM_ERRORS = [
+  "taken",
+  "reserved_local_part",
+  "invalid_local_part",
+  "upgrade_required",
+  "feature_unavailable",
+] as const;
 
 export function MailboxSettingsSection() {
   const [settings, setSettings] = useState<MailboxSettings | null>(null);
@@ -83,6 +84,7 @@ function MailboxSettingsBody({
   settings: MailboxSettings;
   onSettingsChange: (settings: MailboxSettings) => void;
 }) {
+  const tr = useTranslations("admin.mailbox");
   const [localPart, setLocalPart] = useState(settings.local_part || "info");
   const [enabled, setEnabled] = useState(settings.enabled);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -94,9 +96,7 @@ function MailboxSettingsBody({
   function handlePlatformPartChange(value: string) {
     setPlatformPart(value);
     if (value && !LOCAL_PART_RE.test(value)) {
-      setPlatformError(
-        "Only letters, numbers, dots, hyphens, and underscores are allowed.",
-      );
+      setPlatformError(tr("onlyChars"));
     } else {
       setPlatformError(null);
     }
@@ -108,14 +108,16 @@ function MailboxSettingsBody({
         const updated = await savePlatformAddress(platformPart);
         onSettingsChange(updated);
         setPlatformPart(updated.platform_local_part);
-        toast.success("Email address saved.");
+        toast.success(tr("emailSaved"));
       },
       {
         onError: (err) => {
           const detail =
             err instanceof ApiError ? String(err.data.detail ?? "") : "";
           setPlatformError(
-            CLAIM_ERRORS[detail] ?? "Could not save. Please try again.",
+            (CLAIM_ERRORS as readonly string[]).includes(detail)
+              ? tr(`errors.${detail as (typeof CLAIM_ERRORS)[number]}`)
+              : tr("saveFailed"),
           );
         },
       },
@@ -124,11 +126,9 @@ function MailboxSettingsBody({
   function handleLocalPartChange(value: string) {
     setLocalPart(value);
     if (!value) {
-      setValidationError("Email prefix cannot be empty.");
+      setValidationError(tr("prefixEmpty"));
     } else if (!LOCAL_PART_RE.test(value)) {
-      setValidationError(
-        "Only letters, numbers, dots, hyphens, and underscores are allowed.",
-      );
+      setValidationError(tr("onlyChars"));
     } else {
       setValidationError(null);
     }
@@ -143,9 +143,9 @@ function MailboxSettingsBody({
       onSettingsChange(updated);
       setLocalPart(updated.local_part);
       setEnabled(updated.enabled);
-      toast.success("Mailbox settings saved.");
+      toast.success(tr("settingsSaved"));
     },
-    { errorToast: "Failed to save mailbox settings. Please try again." },
+    { errorToast: tr("settingsError") },
   );
 
   const canSave = !validationError && localPart.length > 0 && !isUnchanged;
@@ -164,16 +164,15 @@ function MailboxSettingsBody({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Mail className="h-5 w-5" />
-              Your email address
+              {tr("yourAddress")}
             </CardTitle>
             <CardDescription>
-              Pick an address on {settings.platform_domain}. Students can write
-              to you there and their messages land in your inbox.
+              {tr("claimText", { domain: settings.platform_domain })}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="platform-part">Choose your address</Label>
+              <Label htmlFor="platform-part">{tr("chooseAddress")}</Label>
               <div className="flex items-center gap-0">
                 <Input
                   id="platform-part"
@@ -193,8 +192,12 @@ function MailboxSettingsBody({
                 </p>
               ) : (
                 <p className="text-xs text-muted-foreground">
-                  Your students will see:{" "}
-                  <span className="font-mono font-medium">{preview}</span>
+                  {tr.rich("willSee", {
+                    address: preview,
+                    m: (chunks) => (
+                      <span className="font-mono font-medium">{chunks}</span>
+                    ),
+                  })}
                 </p>
               )}
             </div>
@@ -202,10 +205,12 @@ function MailboxSettingsBody({
             {claimed && (
               <div className="rounded-lg bg-muted/50 px-4 py-3">
                 <p className="text-xs text-muted-foreground">
-                  Active address:{" "}
-                  <span className="font-mono font-medium">
-                    {settings.from_email}
-                  </span>
+                  {tr.rich("active", {
+                    email: settings.from_email,
+                    m: (chunks) => (
+                      <span className="font-mono font-medium">{chunks}</span>
+                    ),
+                  })}
                 </p>
               </div>
             )}
@@ -214,17 +219,17 @@ function MailboxSettingsBody({
               onClick={handleClaimPlatformAddress}
               disabled={!!platformError || !platformPart || platformUnchanged}
               loading={platformSaving}
-              loadingText="Saving…"
+              loadingText={tr("saving")}
               className="gap-2"
             >
               <Save className="h-4 w-4" />
-              Save address
+              {tr("saveAddress")}
             </Button>
 
             <p className="text-xs text-muted-foreground">
-              Want a branded address on your own domain (like{" "}
-              <span className="font-mono">info@yourdomain.com</span>)? Contact
-              support to add a custom domain.
+              {tr.rich("customDomain", {
+                m: (chunks) => <span className="font-mono">{chunks}</span>,
+              })}
             </p>
           </CardContent>
         </Card>
@@ -239,25 +244,18 @@ function MailboxSettingsBody({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Mail className="h-5 w-5" />
-            Mailbox
+            {tr("title")}
           </CardTitle>
-          <CardDescription>
-            Set a custom email address for your coaching space.
-          </CardDescription>
+          <CardDescription>{tr("freeText")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="rounded-lg border border-dashed p-4 space-y-2">
-            <p className="text-sm font-medium">
-              You&apos;re currently sending from:
-            </p>
+            <p className="text-sm font-medium">{tr("sendingFrom")}</p>
             <p className="text-sm font-mono text-muted-foreground">
               {settings.from_email}
             </p>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Upgrade to a paid plan to get your own email address — students can
-            write to you and their messages land straight in your inbox.
-          </p>
+          <p className="text-sm text-muted-foreground">{tr("upgradeText")}</p>
         </CardContent>
       </Card>
     );
@@ -274,17 +272,14 @@ function MailboxSettingsBody({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Mail className="h-5 w-5" />
-          Mailbox
+          {tr("title")}
         </CardTitle>
-        <CardDescription>
-          Choose your email address and enable your inbox to receive messages
-          from students.
-        </CardDescription>
+        <CardDescription>{tr("domainText")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Address picker */}
         <div className="space-y-2">
-          <Label htmlFor="local-part">Your email address</Label>
+          <Label htmlFor="local-part">{tr("yourAddress")}</Label>
           <div className="flex items-center gap-0">
             <Input
               id="local-part"
@@ -314,8 +309,12 @@ function MailboxSettingsBody({
               id="local-part-preview"
               className="text-xs text-muted-foreground"
             >
-              Your students will see:{" "}
-              <span className="font-mono font-medium">{previewAddress}</span>
+              {tr.rich("willSee", {
+                address: previewAddress,
+                m: (chunks) => (
+                  <span className="font-mono font-medium">{chunks}</span>
+                ),
+              })}
             </p>
           )}
         </div>
@@ -324,11 +323,9 @@ function MailboxSettingsBody({
         <div className="flex items-center justify-between rounded-lg border p-4">
           <div className="space-y-0.5">
             <Label htmlFor="mailbox-enabled" className="text-sm font-medium">
-              Enable inbox
+              {tr("enable")}
             </Label>
-            <p className="text-xs text-muted-foreground">
-              When enabled, students can send messages to your address.
-            </p>
+            <p className="text-xs text-muted-foreground">{tr("enableText")}</p>
           </div>
           <Switch
             id="mailbox-enabled"
@@ -341,10 +338,12 @@ function MailboxSettingsBody({
         {settings.can_receive && (
           <div className="rounded-lg bg-muted/50 px-4 py-3">
             <p className="text-xs text-muted-foreground">
-              Active address:{" "}
-              <span className="font-mono font-medium">
-                {settings.from_email}
-              </span>
+              {tr.rich("active", {
+                email: settings.from_email,
+                m: (chunks) => (
+                  <span className="font-mono font-medium">{chunks}</span>
+                ),
+              })}
             </p>
           </div>
         )}
@@ -354,11 +353,11 @@ function MailboxSettingsBody({
           onClick={handleSave}
           disabled={!canSave}
           loading={saving}
-          loadingText="Saving…"
+          loadingText={tr("saving")}
           className="gap-2"
         >
           <Save className="h-4 w-4" />
-          Save Changes
+          {tr("saveChanges")}
         </Button>
       </CardContent>
     </Card>

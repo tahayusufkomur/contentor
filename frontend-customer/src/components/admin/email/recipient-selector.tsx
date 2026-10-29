@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { clientFetch } from "@/lib/api-client";
 import type { RecipientFilter } from "@/lib/email-api";
@@ -31,6 +32,7 @@ export function RecipientSelector({
   recipientCount,
   onCountChange,
 }: RecipientSelectorProps) {
+  const tr = useTranslations("admin.email.recipients");
   const [courses, setCourses] = useState<Course[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [studentSearch, setStudentSearch] = useState("");
@@ -107,7 +109,7 @@ export function RecipientSelector({
 
   return (
     <div className="space-y-4">
-      <label className="text-sm font-medium">Recipients</label>
+      <label className="text-sm font-medium">{tr("title")}</label>
 
       <div className="flex flex-wrap gap-4">
         {(["all", "course", "individual"] as const).map((type) => (
@@ -125,13 +127,7 @@ export function RecipientSelector({
               }}
               className="accent-primary"
             />
-            <span className="text-sm">
-              {type === "all"
-                ? "All students"
-                : type === "course"
-                  ? "By course"
-                  : "Individual students"}
-            </span>
+            <span className="text-sm">{tr(type)}</span>
           </label>
         ))}
       </div>
@@ -139,7 +135,7 @@ export function RecipientSelector({
       {filterType === "course" && (
         <div className="space-y-2">
           <label className="text-xs text-muted-foreground">
-            Select courses
+            {tr("selectCourses")}
           </label>
           <div className="max-h-48 space-y-1 overflow-y-auto rounded-md border p-2">
             {loadingOptions ? (
@@ -177,7 +173,7 @@ export function RecipientSelector({
                 })}
                 {courses.length === 0 && (
                   <p className="p-2 text-xs text-muted-foreground">
-                    No courses found.
+                    {tr("noCourses")}
                   </p>
                 )}
               </>
@@ -190,7 +186,7 @@ export function RecipientSelector({
         <div className="space-y-2">
           <input
             type="text"
-            placeholder="Search students..."
+            placeholder={tr("searchStudents")}
             value={studentSearch}
             onChange={(event) => setStudentSearch(event.target.value)}
             className="w-full rounded-md border px-3 py-2 text-sm"
@@ -238,7 +234,7 @@ export function RecipientSelector({
                 })}
                 {filteredStudents.length === 0 && (
                   <p className="p-2 text-xs text-muted-foreground">
-                    No students found.
+                    {tr("noStudents")}
                   </p>
                 )}
               </>
@@ -249,12 +245,12 @@ export function RecipientSelector({
 
       <div className="text-sm text-muted-foreground">
         {loadingCount
-          ? "Counting recipients..."
+          ? tr("counting")
           : recipientCount !== null
-            ? `${recipientCount} recipient${recipientCount === 1 ? "" : "s"}`
+            ? tr("count", { count: recipientCount })
             : filterType === "all"
-              ? "All active students"
-              : "Select recipients above"}
+              ? tr("allActive")
+              : tr("selectAbove")}
       </div>
     </div>
   );

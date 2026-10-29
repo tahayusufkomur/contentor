@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { X, LayoutTemplate, Save, Trash2, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEditorStore } from "./canvas/editor-store";
@@ -25,6 +26,7 @@ export function TemplateGallery({
   onDeleteTemplate,
   onClose,
 }: TemplateGalleryProps) {
+  const tr = useTranslations("admin.owner.templates");
   const store = useEditorStore();
   const builtIns = templatesForPage(pageKey);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
@@ -59,7 +61,7 @@ export function TemplateGallery({
               type="button"
               onClick={() => onDeleteTemplate(template.id)}
               className="text-muted-foreground transition-colors hover:text-destructive"
-              title="Delete template"
+              title={tr("delete")}
             >
               <Trash2 className="h-3.5 w-3.5" />
             </button>
@@ -71,7 +73,7 @@ export function TemplateGallery({
           </p>
         )}
         <p className="mb-3 text-xs text-muted-foreground">
-          {template.blocks.length} blocks
+          {tr("blocks", { count: template.blocks.length })}
         </p>
         {confirming ? (
           <div className="mt-auto flex items-center gap-2">
@@ -80,14 +82,14 @@ export function TemplateGallery({
               onClick={() => apply(template)}
               className="flex flex-1 items-center justify-center gap-1 rounded-md bg-primary px-2 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
             >
-              <Check className="h-3.5 w-3.5" /> Replace page
+              <Check className="h-3.5 w-3.5" /> {tr("replace")}
             </button>
             <button
               type="button"
               onClick={() => setConfirmingId(null)}
               className="rounded-md border px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"
             >
-              Cancel
+              {tr("cancel")}
             </button>
           </div>
         ) : (
@@ -96,7 +98,7 @@ export function TemplateGallery({
             onClick={() => setConfirmingId(template.id)}
             className="mt-auto rounded-md border px-2 py-1.5 text-xs font-medium transition-colors hover:border-primary hover:bg-primary/5"
           >
-            Use this template
+            {tr("use")}
           </button>
         )}
       </div>
@@ -115,7 +117,7 @@ export function TemplateGallery({
         <div className="flex items-center justify-between border-b px-5 py-3.5">
           <div className="flex items-center gap-2">
             <LayoutTemplate className="h-4 w-4 text-muted-foreground" />
-            <h2 className="text-sm font-semibold">Templates</h2>
+            <h2 className="text-sm font-semibold">{tr("title")}</h2>
           </div>
           <button
             type="button"
@@ -129,13 +131,11 @@ export function TemplateGallery({
         <div className="flex-1 space-y-5 overflow-y-auto p-5">
           <section>
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Start from a template
+              {tr("startFrom")}
             </p>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {builtIns.length === 0 ? (
-                <p className="text-xs text-muted-foreground">
-                  No templates for this page yet.
-                </p>
+                <p className="text-xs text-muted-foreground">{tr("none")}</p>
               ) : (
                 builtIns.map((t) => <TemplateCard key={t.id} template={t} />)
               )}
@@ -145,7 +145,7 @@ export function TemplateGallery({
           {savedTemplates.length > 0 && (
             <section>
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Your templates
+                {tr("yours")}
               </p>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {savedTemplates.map((t) => (
@@ -158,14 +158,14 @@ export function TemplateGallery({
 
         <div className="border-t p-4">
           <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Save this page as a template
+            {tr("saveThisPage")}
           </p>
           <div className="flex items-center gap-2">
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && saveCurrent()}
-              placeholder="Template name"
+              placeholder={tr("name")}
               className="h-9 flex-1 rounded-md border border-input bg-background px-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             />
             <button
@@ -177,7 +177,7 @@ export function TemplateGallery({
                 !name.trim() && "cursor-not-allowed opacity-50",
               )}
             >
-              <Save className="h-4 w-4" /> Save
+              <Save className="h-4 w-4" /> {tr("save")}
             </button>
           </div>
         </div>

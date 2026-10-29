@@ -21,16 +21,6 @@ export const PAGE_ROUTES: Record<PageKey, string> = {
   events: "/events",
 };
 
-export const PAGE_LABELS: Record<PageKey, string> = {
-  home: "Home",
-  about: "About",
-  courses: "Courses",
-  pricing: "Pricing",
-  faq: "FAQ",
-  contact: "Contact",
-  events: "Events",
-};
-
 const ROUTE_TO_PAGE_KEY: Record<string, PageKey> = Object.entries(
   PAGE_ROUTES,
 ).reduce(

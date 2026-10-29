@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -32,20 +33,19 @@ export function LookPicker({
   /** Wears ``look`` ("journal" or "journal:sage"): every page restyles. */
   onApply: (look: string) => Promise<void>;
 }) {
+  const tr = useTranslations("admin.owner.look");
   const [open, setOpen] = useState(false);
   const look = siteLook(config.style);
   const colourway =
     look.palettes?.find((p) => p.id === config.palette)?.label ??
     look.paletteLabel ??
-    "Original";
+    tr("original");
 
   return (
     <div className="space-y-2">
       <div>
-        <Label>Look</Label>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Layouts, colours and fonts for every page.
-        </p>
+        <Label>{tr("title")}</Label>
+        <p className="mt-1 text-xs text-muted-foreground">{tr("hint")}</p>
       </div>
       <div className="flex items-center justify-between gap-3 rounded-xl border bg-card/70 p-3">
         <div className="min-w-0">
@@ -53,7 +53,7 @@ export function LookPicker({
           <p className="truncate text-xs text-muted-foreground">{colourway}</p>
         </div>
         <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
-          Change look
+          {tr("change")}
         </Button>
       </div>
       {open && (
@@ -79,6 +79,7 @@ function LookDialog({
   onApply: (look: string) => Promise<void>;
   onClose: () => void;
 }) {
+  const tr = useTranslations("admin.owner.look");
   const [cards, setCards] = useState<SiteLookCards | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [reload, setReload] = useState(0);
@@ -100,7 +101,7 @@ function LookDialog({
       if (look !== current) await onApply(look);
       onClose();
     },
-    { errorToast: "Couldn’t change the look. Try again." },
+    { errorToast: tr("error") },
   );
 
   useEffect(() => {
@@ -115,29 +116,28 @@ function LookDialog({
       <div
         role="dialog"
         aria-modal
-        aria-label="Change your look"
+        aria-label={tr("dialog")}
         style={SHELL_TOKENS}
         className="sf-shell fixed inset-0 z-[60] flex flex-col bg-[var(--sf-paper)] text-[var(--sf-ink)]"
       >
         <header className="flex flex-col gap-3 border-b border-[var(--sf-line)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <div className="min-w-0">
-            <h2 className="text-lg font-semibold">Change your look</h2>
+            <h2 className="text-lg font-semibold">{tr("dialog")}</h2>
             <p className="text-[13px] text-[var(--sf-graphite)]">
-              Every page takes the look you pick and keeps its words and photos.
-              Tap a look to see it as a page.
+              {tr("dialogHint")}
             </p>
           </div>
           <div className="flex shrink-0 gap-2">
             <Button variant="ghost" onClick={onClose} disabled={loading}>
-              Cancel
+              {tr("cancel")}
             </Button>
             <Button
               onClick={() => wear(chosen)}
               loading={loading}
-              loadingText="Changing…"
+              loadingText={tr("changing")}
               disabled={chosen === current}
             >
-              Use this look
+              {tr("use")}
             </Button>
           </div>
         </header>

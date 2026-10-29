@@ -731,7 +731,14 @@
     "archiveError": "Arşivlenemedi. Lütfen tekrar dene.",
     "spamError": "Spam olarak işaretlenemedi. Lütfen tekrar dene.",
     "deleteError": "Silinemedi. Lütfen tekrar dene.",
-    "fillFields": "Lütfen tüm alanları doldur."
+    "fillFields": "Lütfen tüm alanları doldur.",
+    "banner": {
+      "pick": "Öğrencilerin sana yazabilmesi ve mesajlarının doğrudan gelen kutuna gelmesi için e-posta adresini seç.",
+      "upgrade": "Mesajların, öğrencilerin yanıtlayamayacağı <b>{email}</b> adresinden gönderiliyor. Kendi adresine sahip olmak ve e-postalarını doğrudan buradan almak için planını yükselt.",
+      "choose": "Adresimi seç",
+      "plans": "Planları gör",
+      "dismiss": "Kapat"
+    }
   },
   "setup": {
     "title": "Siteni yayına al",
@@ -1568,6 +1575,65 @@
         "title": "Başlığın",
         "body": "Mesajın",
         "now": "şimdi"
+      },
+      "templateNamePrompt": "Bu şablonu adlandır:",
+      "templateSaved": "Şablon kaydedildi",
+      "templateError": "Şablon kaydedilemedi",
+      "pickStart": "Bir başlangıç tarihi seç",
+      "pickWeekday": "Haftanın bir gününü seç",
+      "recurringCreated": "Tekrarlanan mesaj oluşturuldu",
+      "scheduledToast": "Mesaj zamanlandı",
+      "sentToast": "Mesaj gönderildi",
+      "draftCleanup": "Gönderildi, ancak incelendiği taslak silinemedi.",
+      "sendError": "Duyuru gönderilemedi",
+      "send": {
+        "recurring": "Tekrarlanan oluştur",
+        "schedule": "Zamanla",
+        "now": "Şimdi gönder"
+      },
+      "sending": {
+        "recurring": "Oluşturuluyor…",
+        "schedule": "Zamanlanıyor…",
+        "now": "Gönderiliyor…"
+      },
+      "reviewing": "Taslak inceleniyor — aşağıda onaylayana kadar hiçbir şey gönderilmez.",
+      "startFromTemplate": "Bir şablondan başla",
+      "saveAsTemplate": "Şablon olarak kaydet",
+      "saving": "Kaydediliyor…",
+      "titlePlaceholder": "Başlık",
+      "bodyTitle": "Duyuru metni",
+      "bodyPlaceholder": "Duyuru metnini yaz…",
+      "change": "Değiştir",
+      "removeLink": "Bağlantıyı kaldır",
+      "addLink": "Bir bağlantı ekle (isteğe bağlı) — duyuruya dokunulduğunda gidilecek yer",
+      "reach": {
+        "counting": "Bunu kimlerin alacağı hesaplanıyor…",
+        "nobody": "Bu filtrelerle eşleşen öğrenci yok — bu mesajı kimse almayacak.",
+        "withPush": "<b>{audience}</b> {audience, plural, other {öğrencinin}} akışına gider · <b>{push}</b> ayrıca telefon bildirimi alır",
+        "noPush": "<b>{audience}</b> {audience, plural, one {öğrencinin} other {öğrencilerin}} akışına gider · henüz hiçbirinin telefon bildirimleri açık değil"
+      },
+      "mode": {
+        "once": "Tek seferlik",
+        "repeating": "Tekrarlanan"
+      },
+      "freq": {
+        "daily": "Günlük",
+        "weekly": "Haftalık",
+        "monthly": "Aylık"
+      },
+      "scheduleOptional": "Zamanlama (isteğe bağlı)",
+      "dayOfMonth": "Ayın günü",
+      "time": "Saat",
+      "starts": "Başlangıç",
+      "ends": "Bitiş:",
+      "endsNever": "Hiçbir zaman",
+      "endsOnDate": "Şu tarihte",
+      "timezoneNote": "Saatler, hesabının saat dilimine göredir.",
+      "templates": {
+        "title": "Bir şablon seç",
+        "search": "Şablonlarda ara…",
+        "builtin": "yerleşik",
+        "empty": "Henüz şablon yok."
       }
     },
     "receipt": {
@@ -1682,6 +1748,28 @@
       "duplicate": "Çoğalt",
       "duplicateNamed": "{name} çoğalt",
       "deleteNamed": "{name} sil"
+    },
+    "recurring": {
+      "daily": "Her gün saat {time}",
+      "weekly": "Her {day} saat {time}",
+      "monthly": "Her ayın {day}. günü saat {time}",
+      "loadError": "Yinelenen duyurular yüklenemedi.",
+      "empty": "Henüz yinelenen duyuru yok.",
+      "updateError": "Güncellenemedi",
+      "confirmDelete": "Bu yinelenen duyuruyu silmek istiyor musun?",
+      "deleted": "Silindi",
+      "deleteError": "Silinemedi",
+      "nextRun": "sonraki: {when}",
+      "paused": "duraklatıldı",
+      "pause": "Duraklat",
+      "resume": "Devam ettir"
+    },
+    "templateList": {
+      "loadError": "Şablonlar yüklenemedi.",
+      "empty": "Henüz kayıtlı şablon yok. Oluştururken “Şablon olarak kaydet” seçeneğini kullan.",
+      "confirmDelete": "Bu şablonu silmek istiyor musun?",
+      "deleted": "Silindi",
+      "deleteError": "Silinemedi"
     }
   },
   "events": {
@@ -2219,6 +2307,45 @@
       "cancel": "İptal",
       "refunding": "İade ediliyor…",
       "confirmRefund": "İadeyi onayla"
+    },
+    "drawer": {
+      "grantOk": "Kurs erişimi başarıyla verildi!",
+      "grantError": "Kurs erişimi verilemedi",
+      "coursesError": "Kurslar yüklenemedi. Lütfen tekrar dene.",
+      "na": "Yok",
+      "unnamed": "Adsız Öğrenci",
+      "joined": "{date} tarihinde katıldı",
+      "tabOverview": "Genel Bakış",
+      "tabActions": "Hızlı İşlemler",
+      "membership": "Üyelik",
+      "free": "Ücretsiz",
+      "noMembership": "Aktif üyelik yok.",
+      "enrolled": "Kayıtlı Kurslar ({count})",
+      "notEnrolled": "Henüz hiçbir kursa kayıtlı değil.",
+      "lessonsDone": "{total, plural, one {# dersten {done} tanesi tamamlandı} other {# dersten {done} tanesi tamamlandı}}",
+      "done": "Tamamlandı",
+      "grantTitle": "Kurs Erişimi Ver",
+      "grantText": "Bu öğrenciyi ücret almadan bir kursa manuel olarak kaydet.",
+      "grantButton": "Kurs Kaydı Ver",
+      "dmTitle": "Doğrudan Mesaj Gönder",
+      "dmText": "Kişisel bir e-posta veya uygulama içi mesaj yaz.",
+      "dmButton": "E-posta Mesajı Yaz",
+      "payTitle": "Ödeme & İade Geçmişi",
+      "payText": "İşlemleri görüntüle, faturaları yönet veya para iadesi yap.",
+      "payButton": "İşlemleri Görüntüle",
+      "studentId": "Öğrenci Kimliği: #{id}",
+      "modalTitle": "Ücretsiz Kurs Erişimi Ver",
+      "selectCourse": "Kurs Seç:",
+      "loadingCourses": "Kurslar yükleniyor...",
+      "duration": "Ne kadar süreyle:",
+      "forever": "Süresiz",
+      "month1": "1 ay",
+      "month3": "3 ay",
+      "year1": "1 yıl",
+      "untilDate": "Belirli bir tarihe kadar",
+      "lastDay": "Erişimin son günü",
+      "granting": "Erişim veriliyor…",
+      "confirmGrant": "Erişimi Onayla"
     }
   },
   "courseForm": {
@@ -2450,5 +2577,362 @@
     "statusLabel": "Durum:",
     "close": "Kapat",
     "manage": "{category} yönet"
+  },
+  "email": {
+    "workspace": {
+      "readingBrief": "Tasarımcı · brief'ini okuyor",
+      "saveRetry": "Son değişikliğin kaydedilemedi. Yeniden deneniyor…",
+      "designerFailed": "Tasarımcı bunu tamamlayamadı.",
+      "designerDone": "Tasarımcı tamamladı",
+      "designerDoneUndo": "Tasarımcı tamamladı. Geri Al işlemi geri alır.",
+      "testSent": "Test {email} adresine gönderildi",
+      "savedAsTemplate": "Şablonlarına “{name}” olarak kaydedildi",
+      "templates": "Şablonlar",
+      "messages": "Mesajlar",
+      "templateName": "Şablon adı",
+      "subject": "Konu",
+      "subjectPlaceholder": "Konu satırı",
+      "previewText": "Önizleme metni",
+      "previewPlaceholder": "Önizleme metni: gelen kutularının konudan sonra gösterdiği satır",
+      "opening": "Açılıyor…",
+      "writeWithIt": "Bununla bir e-posta yaz",
+      "saveAsTemplate": "Şablon olarak kaydet",
+      "saving": "Kaydediliyor…",
+      "sendTest": "Bana bir test gönder",
+      "sending": "Gönderiliyor…",
+      "nextSend": "Sonraki: gönder",
+      "designerWorking": "Tasarımcı çalışıyor",
+      "designerWorkingText": "Tasarımcı çalışıyor…",
+      "onlyThisBlock": "Tasarımcı yalnızca bu bloğu değiştirir",
+      "askWhole": "Tüm e-posta hakkında sor",
+      "askDesigner": "Tasarımcıya sor",
+      "askBlockPlaceholder": "Tasarımcıya bu blok hakkında sor: “daha samimi”, “daha kısa”, “bir fotoğraf ekle”…",
+      "askPlaceholder": "Tasarımcıya sor: “daha samimi yap”, “bir sonraki canlı oturumumu ekle”, “daha kısa, tek butonla”…",
+      "asking": "Soruluyor…",
+      "ask": "Sor",
+      "choosePhoto": "Bir fotoğraf seç",
+      "photoError": "O fotoğraf eklenemedi. Başka bir tane dene.",
+      "saveState": {
+        "saved": "Kaydedildi",
+        "saving": "Kaydediliyor…",
+        "error": "Kaydedilmedi"
+      }
+    },
+    "itemPicker": {
+      "title": "Kendine ait bir şeyi öne çıkar",
+      "search": "Kurslarında, oturumlarında ve sayfalarında ara…",
+      "alwaysUpToDate": "Her zaman güncel",
+      "today": "Bugün: {title}",
+      "offers": "Tekliflerin ve sayfaların",
+      "noMatch": "Hiçbir şey eşleşmedi.",
+      "none": "Henüz hiçbir şey yayımlanmadı. Kursların, oturumların ve makalelerin yayına girdiğinde burada görünür.",
+      "close": "Kapat"
+    },
+    "recipients": {
+      "title": "Alıcılar",
+      "all": "Tüm öğrenciler",
+      "course": "Kursa göre",
+      "individual": "Bireysel öğrenciler",
+      "selectCourses": "Kursları seç",
+      "noCourses": "Kurs bulunamadı.",
+      "searchStudents": "Öğrencileri ara...",
+      "noStudents": "Öğrenci bulunamadı.",
+      "counting": "Alıcılar sayılıyor...",
+      "count": "{count, plural, one {# alıcı} other {# alıcı}}",
+      "allActive": "Tüm aktif öğrenciler",
+      "selectAbove": "Yukarıdan alıcıları seç"
+    }
+  },
+  "mailbox": {
+    "errors": {
+      "taken": "Bu adres zaten alınmış. Başka birini dene.",
+      "reserved_local_part": "Bu adres rezerve edilmiş. Başka birini dene.",
+      "invalid_local_part": "Yalnızca harfler, sayılar, noktalar, tireler ve alt çizgiler kullanılabilir.",
+      "upgrade_required": "Bir adres almak için planını yükselt.",
+      "feature_unavailable": "Özel adresler şu anda kullanılamıyor."
+    },
+    "onlyChars": "Yalnızca harfler, sayılar, noktalar, tireler ve alt çizgiler kullanılabilir.",
+    "saveFailed": "Kaydedilemedi. Lütfen tekrar dene.",
+    "emailSaved": "E-posta adresi kaydedildi.",
+    "prefixEmpty": "E-posta ön eki boş olamaz.",
+    "settingsSaved": "Posta kutusu ayarları kaydedildi.",
+    "settingsError": "Posta kutusu ayarları kaydedilemedi. Lütfen tekrar dene.",
+    "yourAddress": "E-posta adresin",
+    "claimText": "{domain} üzerinde bir adres seç. Öğrenciler sana oradan yazabilir ve mesajları gelen kutuna düşer.",
+    "chooseAddress": "Adresini seç",
+    "willSee": "Öğrencilerin şunu görecek: <m>{address}</m>",
+    "active": "Aktif adres: <m>{email}</m>",
+    "saving": "Kaydediliyor…",
+    "saveAddress": "Adresi kaydet",
+    "customDomain": "Kendi alan adında markalı bir adres (<m>info@yourdomain.com</m> gibi) mi istiyorsun? Özel bir alan adı eklemek için destekle iletişime geç.",
+    "title": "Posta Kutusu",
+    "freeText": "Platformun için özel bir e-posta adresi ayarla.",
+    "sendingFrom": "Şu anda şuradan gönderiyorsun:",
+    "upgradeText": "Kendi e-posta adresini almak için ücretli bir plana yükselt — öğrenciler sana yazabilir ve mesajları doğrudan gelen kutuna düşer.",
+    "domainText": "E-posta adresini seç ve öğrencilerden mesaj almak için gelen kutunu etkinleştir.",
+    "enable": "Gelen kutusunu etkinleştir",
+    "enableText": "Etkinleştirildiğinde öğrenciler adresine mesaj gönderebilir.",
+    "saveChanges": "Değişiklikleri Kaydet"
+  },
+  "owner": {
+    "blockForm": {
+      "notEditable": "Bu blok türü burada düzenlenemez."
+    },
+    "brand": {
+      "name": "Marka adı",
+      "namePlaceholder": "Platformum",
+      "logo": "Logo",
+      "editLogo": "Logoyu düzenle",
+      "createLogo": "Bir logo oluştur",
+      "darkMode": "Ziyaretçiler için karanlık moda izin ver",
+      "darkModeHint": "Herkese açık üst bilgide açık/karanlık geçişi gösterir ve karanlık paleti kullanılabilir tutar."
+    },
+    "toolbar": {
+      "drag": "Yeniden sıralamak için sürükle",
+      "reorder": "{label} bloğunu yeniden sırala",
+      "confirmDelete": "Silmeyi onayla",
+      "delete": "Bloğu sil",
+      "cancel": "İptal"
+    },
+    "canvas": {
+      "empty": "Bu sayfada henüz hiç blok yok.",
+      "emptyHint": "Editör panelinden bir tane ekle veya buraya bir blok sürükle.",
+      "editText": "Metni düzenle",
+      "hidden": "Gizli"
+    },
+    "undo": "Geri al (⌘Z)",
+    "redo": "Yinele (⌘⇧Z)",
+    "cx": {
+      "failure": {
+        "disabled": "Yapay zeka tasarımı şu anda kullanılamıyor. Lütfen daha sonra tekrar dene.",
+        "upgrade_required": "Özel bölümler ücretli planlarla birlikte gelir.",
+        "quota_exhausted": "Bu ayın yapay zeka değişikliklerini kullandın. Gelecek ay yenilenir.",
+        "error": "Bunu oluşturamadım. Biraz daha farklı tarif etmeyi dene."
+      },
+      "missing": "Henüz mümkün değil: {missing}. En yakın olanı oluşturdum.",
+      "describe": "Bir bölüm tarif et",
+      "placeholder": "5 günlük inzivamın gün gün planı, her gün için bir fotoğrafla",
+      "designing": "Tasarlanıyor…",
+      "create": "Yapay zeka ile oluştur",
+      "yours": "Bölümlerin",
+      "change": "Yapay zeka ile değiştir",
+      "changePlaceholder": "İki sütun yap ve kısa bir giriş ekle",
+      "changing": "Değiştiriliyor…",
+      "apply": "Değişikliği uygula"
+    },
+    "logo": {
+      "alt": "Logo",
+      "uploadFailed": "Yükleme başarısız oldu",
+      "uploading": "Yükleniyor…",
+      "replace": "Logoyu değiştir",
+      "upload": "Logo yükle",
+      "uploaded": "{pct}% yüklendi"
+    },
+    "look": {
+      "original": "Orijinal",
+      "title": "Görünüm",
+      "hint": "Her sayfa için düzenler, renkler ve yazı tipleri.",
+      "change": "Görünümü değiştir",
+      "error": "Görünüm değiştirilemedi. Tekrar dene.",
+      "dialog": "Görünümünü değiştir",
+      "dialogHint": "Her sayfa seçtiğin görünümü alır, metinlerini ve fotoğraflarını korur. Sayfa olarak görmek için bir görünüme dokun.",
+      "changing": "Değiştiriliyor…",
+      "use": "Bu görünümü kullan",
+      "cancel": "İptal"
+    },
+    "style": {
+      "title": "Stil",
+      "control": {
+        "background": "Arka plan",
+        "spacing": "Boşluk",
+        "align": "Metin hizalama",
+        "textColor": "Metin rengi"
+      },
+      "option": {
+        "background": {
+          "default": "Varsayılan",
+          "muted": "Soluk",
+          "card": "Kart",
+          "accent": "Vurgu",
+          "primary": "Marka"
+        },
+        "spacing": {
+          "none": "Yok",
+          "compact": "Kompakt",
+          "normal": "Normal",
+          "spacious": "Geniş"
+        },
+        "align": {
+          "auto": "Otomatik",
+          "left": "Sol",
+          "center": "Orta",
+          "right": "Sağ"
+        },
+        "textColor": {
+          "default": "Varsayılan",
+          "muted": "Soluk",
+          "brand": "Marka"
+        }
+      }
+    },
+    "blocks": {
+      "templates": "Şablonlar",
+      "empty": "Henüz blok yok. Aşağıdan bir tane ekle.",
+      "moveUp": "Yukarı taşı",
+      "moveDown": "Aşağı taşı",
+      "hiddenTag": "(gizli)",
+      "confirmDelete": "Bu blok silinsin mi?",
+      "addTitle": "Bir blok ekle",
+      "add": "Blok ekle",
+      "group": {
+        "content": "İçerik",
+        "dynamic": "Dinamik",
+        "section": "Bölümler"
+      },
+      "deleteBlock": "Bloğu sil",
+      "cancel": "İptal",
+      "delete": "Sil"
+    },
+    "sidebar": {
+      "saveError": "Değişikliklerin kaydedilemedi. Lütfen tekrar dene.",
+      "editSite": "Siteyi düzenle",
+      "saving": "Kaydediliyor",
+      "exit": "Düzenleme modundan çık — siteni önizle",
+      "done": "Bitti",
+      "collapse": "Paneli daralt",
+      "tabSite": "Site",
+      "tabPages": "Sayfalar",
+      "siteHint": "Marka ve gezinme her sayfada geçerlidir.",
+      "section": {
+        "brand": "Marka",
+        "navbar": "Gezinme çubuğu"
+      },
+      "editingPage": "Düzenlenen sayfa",
+      "page": {
+        "home": "Ana sayfa",
+        "about": "Hakkında",
+        "courses": "Kurslar",
+        "pricing": "Fiyatlandırma",
+        "faq": "SSS",
+        "contact": "İletişim",
+        "events": "Etkinlikler"
+      },
+      "notEditable": "Bu sayfa oluşturucudan düzenlenemez. İçeriğini düzenlemek için yukarıdan bir sayfa seç.",
+      "open": "Siteni düzenle"
+    },
+    "navbar": {
+      "layout": "Düzen",
+      "layoutAria": "Düzen: {name}",
+      "layouts": {
+        "classic": "Klasik",
+        "centered": "Ortalanmış",
+        "split": "Bölünmüş",
+        "minimal": "Minimal",
+        "pill": "Hap"
+      },
+      "chooseTitle": "Bir sayfa veya içerik seç",
+      "chooseDestination": "Hedef seç…",
+      "logoSize": "Logo boyutu",
+      "showBrandName": "Logonun yanında marka adını göster",
+      "logoAndName": "Logo ve ad",
+      "logoLayouts": {
+        "horizontal": "Yan yana",
+        "stacked": "Alt alta",
+        "name_only": "Yalnızca ad"
+      },
+      "transparent": "Hero üzerinde şeffaf",
+      "transparentHint": "Ana sayfa hero bölümünde şeffaf, kaydırdıktan sonra opak",
+      "links": "Gezinme bağlantıları",
+      "noLinks": "Henüz bağlantı yok. Aşağıdan bir tane ekle.",
+      "moveUp": "Yukarı taşı",
+      "moveDown": "Aşağı taşı",
+      "moveUpAria": "{name} öğesini yukarı taşı",
+      "moveDownAria": "{name} öğesini aşağı taşı",
+      "linkFallback": "bağlantı",
+      "labelPlaceholder": "Etiket",
+      "removeLink": "Bağlantıyı kaldır",
+      "suggest": {
+        "events": "Canlı Oturumlar",
+        "store": "Mağaza"
+      },
+      "addSuggestion": "{name} Ekle",
+      "addLink": "Bağlantı ekle",
+      "cta": "CTA butonu",
+      "ctaPlaceholder": "Buton metni",
+      "showLogin": "Giriş butonunu göster",
+      "showLoginHint": "Gezinmede \"Giriş Yap\" bağlantısını göster",
+      "showInstall": "\"Uygulamayı yükle\"yi göster",
+      "showInstallHint": "Ziyaretçileri siteni bir uygulama olarak yüklemeye yönlendir"
+    },
+    "link": {
+      "title": "Bir bağlantı seç",
+      "tab": {
+        "pages": "Sayfalar",
+        "courses": "Kurslar",
+        "events": "Etkinlikler",
+        "custom": "Özel URL"
+      },
+      "page": {
+        "home": "Ana Sayfa",
+        "about": "Hakkında",
+        "courses": "Kurslar",
+        "pricing": "Fiyatlandırma / Planlar",
+        "faq": "SSS",
+        "contact": "İletişim",
+        "calendar": "Takvim",
+        "events": "Etkinlikler",
+        "store": "Mağaza"
+      },
+      "search": {
+        "pages": "Sayfalarda ara…",
+        "courses": "Kurslarda ara…",
+        "events": "Etkinliklerde ara…"
+      },
+      "coursesError": "Kurslar yüklenemedi. Lütfen tekrar dene.",
+      "eventsError": "Etkinlikler yüklenemedi. Lütfen tekrar dene.",
+      "enterUrl": "Bir URL veya yol gir",
+      "urlPlaceholder": "/yol veya https://…",
+      "useLink": "Bu bağlantıyı kullan",
+      "noMatches": "“{query}” için eşleşme bulunamadı.",
+      "noCourses": "Henüz kurs yok.",
+      "noEvents": "Henüz etkinlik yok."
+    },
+    "templates": {
+      "delete": "Şablonu sil",
+      "blocks": "{count, plural, one {# blok} other {# blok}}",
+      "replace": "Sayfayı değiştir",
+      "cancel": "İptal",
+      "use": "Bu şablonu kullan",
+      "title": "Şablonlar",
+      "startFrom": "Bir şablonla başla",
+      "none": "Bu sayfa için henüz şablon yok.",
+      "yours": "Şablonların",
+      "saveThisPage": "Bu sayfayı şablon olarak kaydet",
+      "name": "Şablon adı",
+      "save": "Kaydet"
+    },
+    "rich": {
+      "editText": "Metni düzenle",
+      "bold": "Kalın",
+      "italic": "İtalik",
+      "bullets": "Madde işaretli liste",
+      "numbers": "Numaralı liste",
+      "addLink": "Bağlantı ekle",
+      "cancel": "İptal",
+      "save": "Kaydet"
+    },
+    "field": {
+      "chooseImage": "Görsel seç",
+      "noText": "Henüz metin yok.",
+      "editText": "Metni düzenle",
+      "pathPlaceholder": "/yol veya https://…",
+      "chooseLink": "Bir sayfa veya içerik seç",
+      "browse": "Göz at",
+      "noFilters": "Henüz filtre yok. Burada göstermek için Creator stüdyosunda filtreler oluştur.",
+      "item": "Öğe",
+      "itemNumber": "{name} {number}",
+      "addItem": "{name} ekle",
+      "addDefault": "öğe"
+    }
   }
 }

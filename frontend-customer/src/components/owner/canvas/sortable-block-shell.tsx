@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,7 @@ export function SortableBlockShell({
   pageKey,
   dynamicData,
 }: SortableBlockShellProps) {
+  const tr = useTranslations("admin.owner.canvas");
   const store = useEditorStore();
   const {
     setNodeRef,
@@ -72,7 +74,7 @@ export function SortableBlockShell({
       ? (field: string, value: string) =>
           richEditor.openRichEditor({
             value,
-            title: "Edit text",
+            title: tr("editText"),
             onSave: (html) =>
               store.updateBlock(pageKey, block.id, { [field]: html }),
           })
@@ -125,7 +127,7 @@ export function SortableBlockShell({
       {disabled && (
         <div className="pointer-events-none absolute inset-0 z-10 flex items-start justify-center bg-background/60">
           <span className="mt-3 rounded-full border bg-background px-2.5 py-0.5 text-xs font-medium text-muted-foreground shadow-sm">
-            Hidden
+            {tr("hidden")}
           </span>
         </div>
       )}

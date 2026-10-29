@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { clientFetch } from "@/lib/api-client";
 import { Label } from "@/components/ui/label";
@@ -92,6 +93,7 @@ function FieldLabel({ field }: { field: FieldSchema }) {
 }
 
 export function FieldRenderer({ field, value, onChange }: FieldRendererProps) {
+  const tr = useTranslations("admin.owner.field");
   switch (field.type) {
     case "text":
       return (
@@ -203,7 +205,7 @@ export function FieldRenderer({ field, value, onChange }: FieldRendererProps) {
               onChange({ url: photo.signed_url, photo_id: photo.id })
             }
             onClear={() => onChange({ url: null, photo_id: null })}
-            label="Choose image"
+            label={tr("chooseImage")}
           />
         </div>
       );
@@ -280,6 +282,7 @@ function IconSelectField({ field, value, onChange }: FieldRendererProps) {
 }
 
 function RichTextField({ field, value, onChange }: FieldRendererProps) {
+  const tr = useTranslations("admin.owner.field");
   const richEditor = useRichEditor();
 
   // Fallback to a plain textarea if the rich-editor provider isn't mounted.
@@ -308,7 +311,7 @@ function RichTextField({ field, value, onChange }: FieldRendererProps) {
             className="max-h-24 overflow-hidden text-sm text-muted-foreground"
           />
         ) : (
-          <p className="text-sm text-muted-foreground">No text yet.</p>
+          <p className="text-sm text-muted-foreground">{tr("noText")}</p>
         )}
         <button
           type="button"
@@ -321,7 +324,7 @@ function RichTextField({ field, value, onChange }: FieldRendererProps) {
           }
           className="mt-2 flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors hover:border-primary hover:bg-primary/5"
         >
-          <Pencil className="h-3.5 w-3.5" /> Edit text
+          <Pencil className="h-3.5 w-3.5" /> {tr("editText")}
         </button>
       </div>
     </div>
@@ -329,6 +332,7 @@ function RichTextField({ field, value, onChange }: FieldRendererProps) {
 }
 
 function LinkField({ field, value, onChange }: FieldRendererProps) {
+  const tr = useTranslations("admin.owner.field");
   const [pickerOpen, setPickerOpen] = useState(false);
   return (
     <div className="space-y-1">
@@ -337,15 +341,15 @@ function LinkField({ field, value, onChange }: FieldRendererProps) {
         <Input
           value={value ?? ""}
           onChange={(e) => onChange(e.target.value)}
-          placeholder={field.placeholder ?? "/path or https://…"}
+          placeholder={field.placeholder ?? tr("pathPlaceholder")}
         />
         <button
           type="button"
           onClick={() => setPickerOpen(true)}
-          title="Choose a page or content"
+          title={tr("chooseLink")}
           className="flex shrink-0 items-center gap-1 rounded-md border px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:border-primary hover:bg-primary/5 hover:text-foreground"
         >
-          <Link2 className="h-3.5 w-3.5" /> Browse
+          <Link2 className="h-3.5 w-3.5" /> {tr("browse")}
         </button>
       </div>
       {field.helpText && (
@@ -369,6 +373,7 @@ function LinkField({ field, value, onChange }: FieldRendererProps) {
  *  public facets. Value is an array of FilterGroup ids; the block then shows a
  *  facet per chosen filter. */
 function FilterGroupsField({ field, value, onChange }: FieldRendererProps) {
+  const tr = useTranslations("admin.owner.field");
   const [groups, setGroups] = useState<FilterGroup[]>([]);
   const selected: number[] = Array.isArray(value) ? value : [];
   const scope = field.filterScope ?? "course";
@@ -400,9 +405,7 @@ function FilterGroupsField({ field, value, onChange }: FieldRendererProps) {
     <div className="space-y-1">
       <FieldLabel field={field} />
       {groups.length === 0 ? (
-        <p className="text-xs text-muted-foreground">
-          No filters yet. Create filters in the studio admin to show them here.
-        </p>
+        <p className="text-xs text-muted-foreground">{tr("noFilters")}</p>
       ) : (
         <div className="space-y-1">
           {groups.map((g) => (
@@ -442,6 +445,7 @@ function emptyItem(itemFields: FieldSchema[]): Record<string, any> {
 }
 
 function RepeaterField({ field, value, onChange }: FieldRendererProps) {
+  const tr = useTranslations("admin.owner.field");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const items: Record<string, any>[] = Array.isArray(value) ? value : [];
   const itemFields = field.itemFields ?? [];
@@ -473,7 +477,10 @@ function RepeaterField({ field, value, onChange }: FieldRendererProps) {
         <div key={i} className="space-y-2 rounded border bg-background p-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground">
-              {field.itemLabel ?? "Item"} {i + 1}
+              {tr("itemNumber", {
+                name: field.itemLabel ?? tr("item"),
+                number: i + 1,
+              })}
             </span>
             <div className="flex items-center gap-1 text-muted-foreground">
               <button
@@ -517,8 +524,10 @@ function RepeaterField({ field, value, onChange }: FieldRendererProps) {
         disabled={atMax}
         className="flex w-full items-center justify-center gap-1.5 rounded border border-dashed py-2 text-xs text-muted-foreground transition-colors hover:border-foreground hover:text-foreground disabled:opacity-40"
       >
-        <Plus className="h-3.5 w-3.5" /> Add{" "}
-        {field.itemLabel?.toLowerCase() ?? "item"}
+        <Plus className="h-3.5 w-3.5" />{" "}
+        {tr("addItem", {
+          name: field.itemLabel?.toLowerCase() ?? tr("addDefault"),
+        })}
       </button>
     </div>
   );

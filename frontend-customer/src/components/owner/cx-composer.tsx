@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ export function CxComposer({
   pageKey: PageKey;
   onInserted: () => void;
 }) {
+  const tr = useTranslations("admin.owner.cx");
   const store = useEditorStore();
   const [prompt, setPrompt] = useState("");
   const [saved, setSaved] = useState<CxSaved[]>([]);
@@ -51,22 +53,20 @@ export function CxComposer({
   const { run: create, loading } = useAsyncAction(async () => {
     const res = await composeSection(prompt.trim(), pageKey);
     if (!res.block) {
-      toast.error(failureMessage(res.source));
+      toast.error(failureMessage(res.source, (code) => tr(`failure.${code}`)));
       return;
     }
     insert({ ...res.block, id: mintBlockId() });
     setPrompt("");
     if (res.missing.length) {
-      toast.info(
-        `Not possible yet: ${res.missing.join(", ")}. I built the closest thing.`,
-      );
+      toast.info(tr("missing", { missing: res.missing.join(", ") }));
     }
   });
 
   return (
     <div className="space-y-2 rounded-md border border-dashed p-2.5">
       <label htmlFor="cx-prompt" className="text-xs font-medium">
-        Describe a section
+        {tr("describe")}
       </label>
       <Textarea
         id="cx-prompt"
@@ -74,7 +74,7 @@ export function CxComposer({
         onChange={(e) => setPrompt(e.target.value)}
         rows={3}
         maxLength={600}
-        placeholder="A day-by-day plan of my 5-day retreat, with a photo for each day"
+        placeholder={tr("placeholder")}
         className="text-xs"
       />
       <Button
@@ -82,16 +82,16 @@ export function CxComposer({
         size="sm"
         className="w-full"
         loading={loading}
-        loadingText="Designing…"
+        loadingText={tr("designing")}
         disabled={prompt.trim().length < 8}
         onClick={() => create()}
       >
-        Create with AI
+        {tr("create")}
       </Button>
       {saved.length > 0 && (
         <div className="space-y-1 pt-1">
           <p className="text-xs font-medium text-muted-foreground">
-            Your sections
+            {tr("yours")}
           </p>
           {saved.map((section) => (
             <button

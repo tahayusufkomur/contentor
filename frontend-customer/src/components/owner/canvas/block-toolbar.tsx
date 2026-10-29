@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { GripVertical, Trash2, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEditorStore } from "./editor-store";
@@ -26,6 +27,7 @@ export function BlockToolbar({
   dragHandleRef,
   dragHandleProps,
 }: BlockToolbarProps) {
+  const tr = useTranslations("admin.owner.toolbar");
   const store = useEditorStore();
   const [confirming, setConfirming] = useState(false);
   const label = getBlockDef(block.type)?.label ?? block.type;
@@ -49,8 +51,8 @@ export function BlockToolbar({
         {...dragHandleProps}
         type="button"
         className={cn(btn, "cursor-grab active:cursor-grabbing")}
-        title="Drag to reorder"
-        aria-label={`Reorder ${label} block`}
+        title={tr("drag")}
+        aria-label={tr("reorder", { label })}
       >
         <GripVertical className="h-4 w-4" />
       </button>
@@ -65,7 +67,7 @@ export function BlockToolbar({
               btn,
               "text-destructive hover:bg-destructive/10 hover:text-destructive",
             )}
-            title="Confirm delete"
+            title={tr("confirmDelete")}
           >
             <Check className="h-4 w-4" />
           </button>
@@ -73,7 +75,7 @@ export function BlockToolbar({
             type="button"
             onClick={() => setConfirming(false)}
             className={btn}
-            title="Cancel"
+            title={tr("cancel")}
           >
             <X className="h-4 w-4" />
           </button>
@@ -83,7 +85,7 @@ export function BlockToolbar({
           type="button"
           onClick={() => setConfirming(true)}
           className={cn(btn, "hover:bg-destructive/10 hover:text-destructive")}
-          title="Delete block"
+          title={tr("delete")}
         >
           <Trash2 className="h-4 w-4" />
         </button>

@@ -538,7 +538,8 @@
     "blog": "Blog",
     "community": "Community",
     "calendar": "Kalender",
-    "blogWithBrand": "Blog — {brand}"
+    "blogWithBrand": "Blog — {brand}",
+    "pricingOrPlans": "Preise / Tarife"
   },
   "duration": {
     "hoursMinutes": "{hours} Std. {minutes} Min.",
@@ -598,7 +599,8 @@
     "footer": "Fußzeile",
     "pages": "Seiten",
     "follow": "Folgen",
-    "loginToContinue": "Bitte melde dich an, um fortzufahren"
+    "loginToContinue": "Bitte melde dich an, um fortzufahren",
+    "getStarted": "Loslegen"
   },
   "blockEmpty": {
     "video": {

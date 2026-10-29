@@ -538,7 +538,8 @@
     "blog": "Blog",
     "community": "Topluluk",
     "calendar": "Takvim",
-    "blogWithBrand": "Blog — {brand}"
+    "blogWithBrand": "Blog — {brand}",
+    "pricingOrPlans": "Fiyatlandırma / Planlar"
   },
   "duration": {
     "hoursMinutes": "{hours} sa {minutes} dk",
@@ -598,7 +599,8 @@
     "footer": "Alt bilgi",
     "pages": "Sayfalar",
     "follow": "Takip et",
-    "loginToContinue": "Devam etmek için lütfen giriş yap"
+    "loginToContinue": "Devam etmek için lütfen giriş yap",
+    "getStarted": "Başla"
   },
   "blockEmpty": {
     "video": {

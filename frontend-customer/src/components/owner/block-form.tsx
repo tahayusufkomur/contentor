@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { FieldRenderer } from "./field-renderer";
 import { CxRefine } from "./cx-refine";
 import { StyleControls } from "./style-controls";
@@ -14,13 +15,10 @@ interface BlockFormProps {
 }
 
 export function BlockForm({ block, onChange }: BlockFormProps) {
+  const tr = useTranslations("admin.owner.blockForm");
   const def = getBlockDef(block.type);
   if (!def) {
-    return (
-      <p className="text-xs text-muted-foreground">
-        This block type isn&apos;t editable here.
-      </p>
-    );
+    return <p className="text-xs text-muted-foreground">{tr("notEditable")}</p>;
   }
   const fields = block.type === CX_BLOCK_TYPE ? cxFields(block) : def.fields;
   return (

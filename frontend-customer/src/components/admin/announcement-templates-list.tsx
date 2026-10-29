@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { toast } from "sonner";
 
@@ -17,6 +18,7 @@ export default function AnnouncementTemplatesList({
 }: {
   refreshKey: number;
 }) {
+  const tr = useTranslations("admin.messages.templateList");
   const [items, setItems] = useState<AnnouncementTemplate[]>([]);
 
   const load = () =>
@@ -24,18 +26,14 @@ export default function AnnouncementTemplatesList({
       .then((all) => setItems(all.filter((t) => !t.builtin)))
       .catch(() => {
         setItems([]);
-        toast.error("Couldn't load templates.");
+        toast.error(tr("loadError"));
       });
   useEffect(() => {
     load();
   }, [refreshKey]);
 
   if (items.length === 0)
-    return (
-      <p className="p-4 text-sm text-muted-foreground">
-        No saved templates yet. Use “Save as template” when composing.
-      </p>
-    );
+    return <p className="p-4 text-sm text-muted-foreground">{tr("empty")}</p>;
 
   return (
     <div className="divide-y divide-border rounded-xl border border-border">
@@ -53,14 +51,16 @@ function TemplateRow({
   item: AnnouncementTemplate;
   onRemoved: () => void;
 }) {
+  const tr = useTranslations("admin.messages.templateList");
+  const tc = useTranslations("common.actions");
   const { run: remove, loading: removing } = useAsyncAction(
     async () => {
-      if (!confirm("Delete this template?")) return;
+      if (!confirm(tr("confirmDelete"))) return;
       await deleteTemplate(Number(item.id));
-      toast.success("Deleted");
+      toast.success(tr("deleted"));
       onRemoved();
     },
-    { errorToast: "Failed to delete" },
+    { errorToast: tr("deleteError") },
   );
 
   return (
@@ -76,7 +76,7 @@ function TemplateRow({
         disabled={removing}
         className="rounded-md px-2 py-1 text-muted-foreground hover:text-destructive disabled:opacity-50"
       >
-        {removing ? <Spinner size="sm" /> : "Delete"}
+        {removing ? <Spinner size="sm" /> : tc("delete")}
       </button>
     </div>
   );

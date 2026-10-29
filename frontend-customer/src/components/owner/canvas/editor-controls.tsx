@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { Undo2, Redo2 } from "lucide-react";
 import { useEditorStore } from "./editor-store";
 
@@ -12,6 +13,7 @@ const btn =
  *  ignored while typing in an input/textarea/contentEditable so native text undo
  *  keeps working there. */
 export function UndoRedoControls() {
+  const tr = useTranslations("admin.owner");
   const store = useEditorStore();
   const storeRef = useRef(store);
   storeRef.current = store;
@@ -48,7 +50,7 @@ export function UndoRedoControls() {
         onClick={store.undo}
         disabled={!store.canUndo}
         className={btn}
-        title="Undo (⌘Z)"
+        title={tr("undo")}
       >
         <Undo2 className="h-4 w-4" />
       </button>
@@ -57,7 +59,7 @@ export function UndoRedoControls() {
         onClick={store.redo}
         disabled={!store.canRedo}
         className={btn}
-        title="Redo (⌘⇧Z)"
+        title={tr("redo")}
       >
         <Redo2 className="h-4 w-4" />
       </button>

@@ -1,10 +1,12 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Image as ImageIcon, Upload, X } from "lucide-react";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import { clientFetch } from "@/lib/api-client";
+import { ApiError } from "@/types/api";
 
 interface LogoUploaderProps {
   logoUrl?: string | null;
@@ -71,6 +73,7 @@ export async function uploadImage(
  * shows the new logo without a manual refresh.
  */
 export function LogoUploader({ logoUrl, onChange }: LogoUploaderProps) {
+  const tr = useTranslations("admin.owner.logo");
   const fileRef = useRef<HTMLInputElement>(null);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -87,8 +90,10 @@ export function LogoUploader({ logoUrl, onChange }: LogoUploaderProps) {
       }
     },
     {
+      // The server's reason (it speaks the creator's language) when it gave
+      // one; the upload's own errors are English technical text.
       onError: (err) =>
-        setError(err instanceof Error ? err.message : "Upload failed"),
+        setError(err instanceof ApiError ? err.message : tr("uploadFailed")),
     },
   );
 
@@ -100,7 +105,7 @@ export function LogoUploader({ logoUrl, onChange }: LogoUploaderProps) {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={logoUrl}
-              alt="Logo"
+              alt={tr("alt")}
               className="h-full w-full object-contain"
             />
           </div>
@@ -127,10 +132,10 @@ export function LogoUploader({ logoUrl, onChange }: LogoUploaderProps) {
             className="gap-1.5"
             onClick={() => fileRef.current?.click()}
             loading={uploading}
-            loadingText="Uploading…"
+            loadingText={tr("uploading")}
           >
             <Upload className="h-3.5 w-3.5" />
-            {logoUrl ? "Replace logo" : "Upload logo"}
+            {logoUrl ? tr("replace") : tr("upload")}
           </Button>
           {logoUrl && (
             <Button
@@ -154,7 +159,9 @@ export function LogoUploader({ logoUrl, onChange }: LogoUploaderProps) {
               style={{ width: `${progress}%` }}
             />
           </div>
-          <p className="text-xs text-muted-foreground">{progress}% uploaded</p>
+          <p className="text-xs text-muted-foreground">
+            {tr("uploaded", { pct: progress })}
+          </p>
         </div>
       )}
       {error && <p className="text-xs text-destructive">{error}</p>}

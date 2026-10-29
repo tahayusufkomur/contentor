@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, Check, Sparkles, X } from "lucide-react";
 import { toast } from "sonner";
@@ -62,10 +63,10 @@ const POLL_MS = 1500;
 const RUNNING = new Set(["queued", "working"]);
 
 /** A run started elsewhere (the start screen, the assistant), until its first poll. */
-const queuedJob = (id: number): DesignerJob => ({
+const queuedJob = (id: number, step: string): DesignerJob => ({
   id,
   status: "queued",
-  step: "Designer · reading your brief",
+  step,
   warnings: [],
   error: "",
   campaign: null,
@@ -76,6 +77,7 @@ const queuedJob = (id: number): DesignerJob => ({
  *  preview text on top, the Designer one line below, the editor filling the
  *  rest. Everything she changes saves on its own. */
 export function EmailWorkspace({ target }: { target: WorkspaceTarget }) {
+  const tr = useTranslations("admin.email.workspace");
   const isTemplate = target.kind === "template";
   const navigate = useNavigate();
   const router = useRouter();
@@ -177,12 +179,10 @@ export function EmailWorkspace({ target }: { target: WorkspaceTarget }) {
       setSaveState("saving");
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(() => {
-        flush().catch(() =>
-          toast.error("Your last change could not be saved. Retrying…"),
-        );
+        flush().catch(() => toast.error(tr("saveRetry")));
       }, SAVE_AFTER_MS);
     },
-    [flush],
+    [flush, tr],
   );
 
   // Leaving the page saves what is waiting; closing the tab asks first.
@@ -219,7 +219,8 @@ export function EmailWorkspace({ target }: { target: WorkspaceTarget }) {
   // A run started on the previous screen (the start screen's brief) is picked up here.
   const jobParam = Number(params.get("job")) || 0;
   useEffect(() => {
-    if (jobParam) setJob(queuedJob(jobParam));
+    if (jobParam) setJob(queuedJob(jobParam, tr("readingBrief")));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the step text is only the placeholder until the first poll
   }, [jobParam]);
 
   // The assistant changes this email: its run plays here like the bar's.
@@ -230,7 +231,7 @@ export function EmailWorkspace({ target }: { target: WorkspaceTarget }) {
       applied.target === target.kind &&
       applied.id === target.id
     )
-      setJob(queuedJob(applied.job));
+      setJob(queuedJob(applied.job, tr("readingBrief")));
   });
 
   const finishJob = useCallback(
@@ -242,7 +243,7 @@ export function EmailWorkspace({ target }: { target: WorkspaceTarget }) {
         window.history.replaceState({}, "", url.toString());
       }
       if (done.status === "failed") {
-        toast.error(done.error || "The Designer couldn't finish this one.");
+        toast.error(done.error || tr("designerFailed"));
         return;
       }
       const doc = await load();
@@ -253,14 +254,14 @@ export function EmailWorkspace({ target }: { target: WorkspaceTarget }) {
       if ("name" in doc) setName(doc.name);
       setSaveState("saved");
       if (done.warnings.length) {
-        toast.message("The Designer is done", {
+        toast.message(tr("designerDone"), {
           description: done.warnings.join(" "),
         });
       } else {
-        toast.success("The Designer is done. Undo takes it back.");
+        toast.success(tr("designerDoneUndo"));
       }
     },
-    [jobParam, load],
+    [jobParam, load, tr],
   );
 
   useEffect(() => {
@@ -359,13 +360,13 @@ export function EmailWorkspace({ target }: { target: WorkspaceTarget }) {
   const { run: test, loading: testing } = useAsyncAction(async () => {
     await flush();
     const { sent_to } = await sendTest(target.id);
-    toast.success(`Test sent to ${sent_to}`);
+    toast.success(tr("testSent", { email: sent_to }));
   });
 
   const { run: keepAsTemplate, loading: keeping } = useAsyncAction(async () => {
     await flush();
     const template = await saveAsTemplate(target.id, subject || undefined);
-    toast.success(`Saved to your templates as “${template.name}”`);
+    toast.success(tr("savedAsTemplate", { name: template.name }));
   });
 
   const [leaving, setLeaving] = useState(false);
@@ -385,8 +386,8 @@ export function EmailWorkspace({ target }: { target: WorkspaceTarget }) {
   );
 
   const back = isTemplate
-    ? { href: "/admin/messages/email/templates", label: "Templates" }
-    : { href: "/admin/messages", label: "Messages" };
+    ? { href: "/admin/messages/email/templates", label: tr("templates") }
+    : { href: "/admin/messages", label: tr("messages") };
 
   return (
     <PageState
@@ -415,8 +416,8 @@ export function EmailWorkspace({ target }: { target: WorkspaceTarget }) {
                     setName(e.target.value);
                     queue({ name: e.target.value });
                   }}
-                  aria-label="Template name"
-                  placeholder="Template name"
+                  aria-label={tr("templateName")}
+                  placeholder={tr("templateName")}
                   className="w-full truncate bg-transparent text-base font-semibold outline-none placeholder:text-muted-foreground"
                 />
               )}
@@ -426,8 +427,8 @@ export function EmailWorkspace({ target }: { target: WorkspaceTarget }) {
                   setSubject(e.target.value);
                   queue({ subject: e.target.value });
                 }}
-                aria-label="Subject"
-                placeholder="Subject line"
+                aria-label={tr("subject")}
+                placeholder={tr("subjectPlaceholder")}
                 className={cn(
                   "w-full truncate bg-transparent outline-none placeholder:text-muted-foreground",
                   isTemplate ? "text-sm" : "text-base font-semibold",
@@ -439,8 +440,8 @@ export function EmailWorkspace({ target }: { target: WorkspaceTarget }) {
                   setPreheader(e.target.value);
                   queue({ preheader: e.target.value });
                 }}
-                aria-label="Preview text"
-                placeholder="Preview text: the line inboxes show after the subject"
+                aria-label={tr("previewText")}
+                placeholder={tr("previewPlaceholder")}
                 className="w-full truncate bg-transparent text-xs text-muted-foreground outline-none placeholder:text-muted-foreground/70"
               />
             </div>
@@ -450,9 +451,9 @@ export function EmailWorkspace({ target }: { target: WorkspaceTarget }) {
                 size="sm"
                 onClick={() => startFromTemplate()}
                 loading={using || leaving}
-                loadingText="Opening…"
+                loadingText={tr("opening")}
               >
-                Write an email with it
+                {tr("writeWithIt")}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             ) : (
@@ -462,26 +463,26 @@ export function EmailWorkspace({ target }: { target: WorkspaceTarget }) {
                   size="sm"
                   onClick={() => keepAsTemplate()}
                   loading={keeping}
-                  loadingText="Saving…"
+                  loadingText={tr("saving")}
                 >
-                  Save as template
+                  {tr("saveAsTemplate")}
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => test()}
                   loading={testing}
-                  loadingText="Sending…"
+                  loadingText={tr("sending")}
                 >
-                  Send me a test
+                  {tr("sendTest")}
                 </Button>
                 <Button
                   size="sm"
                   onClick={() => next()}
                   loading={toSend || leaving}
-                  loadingText="Saving…"
+                  loadingText={tr("saving")}
                 >
-                  Next: send
+                  {tr("nextSend")}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -494,9 +495,9 @@ export function EmailWorkspace({ target }: { target: WorkspaceTarget }) {
               aria-live="polite"
               className="flex items-center gap-2.5 border-b bg-muted/30 px-1 py-2.5 text-sm lg:px-4"
             >
-              <Spinner size="sm" label="The Designer is working" />
+              <Spinner size="sm" label={tr("designerWorking")} />
               <span className="truncate">
-                {job?.step || "The Designer is working…"}
+                {job?.step || tr("designerWorkingText")}
               </span>
             </div>
           ) : (
@@ -514,13 +515,13 @@ export function EmailWorkspace({ target }: { target: WorkspaceTarget }) {
               {focus && (
                 <span
                   className="flex shrink-0 items-center gap-0.5 rounded-full border bg-muted/40 py-0.5 pl-2.5 pr-1 text-xs"
-                  title="The Designer changes only this block"
+                  title={tr("onlyThisBlock")}
                 >
                   {focus.label}
                   <button
                     type="button"
                     onClick={() => setFocus(null)}
-                    aria-label="Ask about the whole email"
+                    aria-label={tr("askWhole")}
                     className="rounded-full p-0.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                   >
                     <X className="h-3 w-3" />
@@ -530,11 +531,9 @@ export function EmailWorkspace({ target }: { target: WorkspaceTarget }) {
               <input
                 value={brief}
                 onChange={(e) => setBrief(e.target.value)}
-                aria-label="Ask the Designer"
+                aria-label={tr("askDesigner")}
                 placeholder={
-                  focus
-                    ? "Ask the Designer about this block: “warmer”, “shorter”, “add a photo”…"
-                    : "Ask the Designer: “make it warmer”, “add my next class”, “shorter, with one button”…"
+                  focus ? tr("askBlockPlaceholder") : tr("askPlaceholder")
                 }
                 className="h-8 min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
               />
@@ -544,9 +543,9 @@ export function EmailWorkspace({ target }: { target: WorkspaceTarget }) {
                 variant="outline"
                 disabled={!brief.trim()}
                 loading={asking}
-                loadingText="Asking…"
+                loadingText={tr("asking")}
               >
-                Ask
+                {tr("ask")}
               </Button>
             </form>
           )}
@@ -577,15 +576,13 @@ export function EmailWorkspace({ target }: { target: WorkspaceTarget }) {
           {picker?.kind === "image" && (
             <ImageLibraryDialog
               open
-              title="Choose a photo"
+              title={tr("choosePhoto")}
               onOpenChange={(open) => !open && close(null)}
               onSelect={async (photo) => {
                 try {
                   close(await emailImage(photo.id));
                 } catch {
-                  toast.error(
-                    "That photo could not be added. Try another one.",
-                  );
+                  toast.error(tr("photoError"));
                   close(null);
                 }
               }}
@@ -613,6 +610,7 @@ export function EmailWorkspace({ target }: { target: WorkspaceTarget }) {
 }
 
 function SaveStatus({ state }: { state: "saved" | "saving" | "error" }) {
+  const tr = useTranslations("admin.email.workspace.saveState");
   return (
     <span
       className={cn(
@@ -622,11 +620,7 @@ function SaveStatus({ state }: { state: "saved" | "saving" | "error" }) {
       aria-live="polite"
     >
       {state === "saved" && <Check className="h-3.5 w-3.5" />}
-      {state === "saved"
-        ? "Saved"
-        : state === "saving"
-          ? "Saving…"
-          : "Not saved"}
+      {tr(state)}
     </span>
   );
 }

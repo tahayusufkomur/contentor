@@ -13,15 +13,22 @@ import {
   listRecurring,
   patchRecurring,
 } from "@/lib/announcements";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { weekdayNames } from "@/lib/calendar-utils";
 
-function summary(r: RecurringAnnouncement, locale: string): string {
-  const t = r.send_time?.slice(0, 5);
-  if (r.frequency === "daily") return `Daily at ${t}`;
+function summary(
+  r: RecurringAnnouncement,
+  locale: string,
+  tr: ReturnType<typeof useTranslations>,
+): string {
+  const time = r.send_time?.slice(0, 5);
+  if (r.frequency === "daily") return tr("daily", { time });
   if (r.frequency === "weekly")
-    return `Every ${weekdayNames(locale, "long")[r.weekday ?? 0]} at ${t}`;
-  return `Monthly on day ${r.day_of_month} at ${t}`;
+    return tr("weekly", {
+      day: weekdayNames(locale, "long")[r.weekday ?? 0],
+      time,
+    });
+  return tr("monthly", { day: r.day_of_month ?? 1, time });
 }
 
 export default function AnnouncementRecurringList({
@@ -29,6 +36,7 @@ export default function AnnouncementRecurringList({
 }: {
   refreshKey: number;
 }) {
+  const tr = useTranslations("admin.messages.recurring");
   const [items, setItems] = useState<RecurringAnnouncement[]>([]);
 
   const load = () =>
@@ -36,18 +44,14 @@ export default function AnnouncementRecurringList({
       .then(setItems)
       .catch(() => {
         setItems([]);
-        toast.error("Couldn't load recurring announcements.");
+        toast.error(tr("loadError"));
       });
   useEffect(() => {
     load();
   }, [refreshKey]);
 
   if (items.length === 0)
-    return (
-      <p className="p-4 text-sm text-muted-foreground">
-        No recurring announcements yet.
-      </p>
-    );
+    return <p className="p-4 text-sm text-muted-foreground">{tr("empty")}</p>;
 
   return (
     <div className="divide-y divide-border rounded-xl border border-border">
@@ -66,22 +70,24 @@ function RecurringRow({
   onChanged: () => void;
 }) {
   const locale = useLocale();
+  const tr = useTranslations("admin.messages.recurring");
+  const tc = useTranslations("common.actions");
   const { run: toggle, loading: toggling } = useAsyncAction(
     async () => {
       await patchRecurring(item.id, { is_active: !item.is_active });
       onChanged();
     },
-    { errorToast: "Failed to update" },
+    { errorToast: tr("updateError") },
   );
 
   const { run: remove, loading: removing } = useAsyncAction(
     async () => {
-      if (!confirm("Delete this recurring announcement?")) return;
+      if (!confirm(tr("confirmDelete"))) return;
       await deleteRecurring(item.id);
-      toast.success("Deleted");
+      toast.success(tr("deleted"));
       onChanged();
     },
-    { errorToast: "Failed to delete" },
+    { errorToast: tr("deleteError") },
   );
 
   return (
@@ -90,17 +96,19 @@ function RecurringRow({
         <div className="font-medium">{item.title}</div>
         <div className="text-xs text-muted-foreground">
           <Repeat className="mr-1 inline h-3 w-3 align-[-2px]" />
-          {summary(item, locale)}
+          {summary(item, locale, tr)}
           {item.is_active ? (
             <>
               {" "}
-              · next:{" "}
-              {item.next_run_at
-                ? new Date(item.next_run_at).toLocaleString(locale)
-                : "—"}
+              ·{" "}
+              {tr("nextRun", {
+                when: item.next_run_at
+                  ? new Date(item.next_run_at).toLocaleString(locale)
+                  : "—",
+              })}
             </>
           ) : (
-            <> · paused</>
+            <> · {tr("paused")}</>
           )}
         </div>
       </div>
@@ -109,14 +117,20 @@ function RecurringRow({
         disabled={toggling}
         className="rounded-md px-2 py-1 text-muted-foreground hover:text-foreground disabled:opacity-50"
       >
-        {toggling ? <Spinner size="sm" /> : item.is_active ? "Pause" : "Resume"}
+        {toggling ? (
+          <Spinner size="sm" />
+        ) : item.is_active ? (
+          tr("pause")
+        ) : (
+          tr("resume")
+        )}
       </button>
       <button
         onClick={remove}
         disabled={removing}
         className="rounded-md px-2 py-1 text-muted-foreground hover:text-destructive disabled:opacity-50"
       >
-        {removing ? <Spinner size="sm" /> : "Delete"}
+        {removing ? <Spinner size="sm" /> : tc("delete")}
       </button>
     </div>
   );

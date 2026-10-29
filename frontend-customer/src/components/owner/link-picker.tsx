@@ -16,34 +16,38 @@ import { ModalPortal } from "@/components/ui/modal-portal";
 import { Spinner } from "@/components/ui/spinner";
 import type { Course } from "@/types/course";
 import type { CalendarEvent } from "@/types/live";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 interface LinkTarget {
+  /** What the creator reads in this list. */
   label: string;
+  /** What `onPick` hands back as the link's text: the site's own words for a
+   *  page (it is written onto the site), the item's title for a course or event. */
+  siteLabel: string;
   href: string;
   sub?: string;
 }
 
 type Tab = "pages" | "courses" | "events" | "custom";
 
-// Standard site pages a coach can link to. (`pricing` lives at /plans.)
-const PAGE_TARGETS: LinkTarget[] = [
-  { label: "Home", href: "/" },
-  { label: "About", href: "/about" },
-  { label: "Courses", href: "/courses" },
-  { label: "Pricing / Plans", href: "/plans" },
-  { label: "FAQ", href: "/faq" },
-  { label: "Contact", href: "/contact" },
-  { label: "Calendar", href: "/calendar" },
-  { label: "Events", href: "/events" },
-  { label: "Store", href: "/store" },
-];
+// Standard site pages a creator can link to. (`pricing` lives at /plans.)
+const PAGE_TARGETS = [
+  { id: "home", href: "/" },
+  { id: "about", href: "/about" },
+  { id: "courses", href: "/courses" },
+  { id: "pricing", href: "/plans" },
+  { id: "faq", href: "/faq" },
+  { id: "contact", href: "/contact" },
+  { id: "calendar", href: "/calendar" },
+  { id: "events", href: "/events" },
+  { id: "store", href: "/store" },
+] as const;
 
-const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
-  { id: "pages", label: "Pages", icon: <FileText className="h-4 w-4" /> },
-  { id: "courses", label: "Courses", icon: <BookOpen className="h-4 w-4" /> },
-  { id: "events", label: "Events", icon: <CalendarDays className="h-4 w-4" /> },
-  { id: "custom", label: "Custom URL", icon: <Link2 className="h-4 w-4" /> },
+const TABS: { id: Tab; icon: React.ReactNode }[] = [
+  { id: "pages", icon: <FileText className="h-4 w-4" /> },
+  { id: "courses", icon: <BookOpen className="h-4 w-4" /> },
+  { id: "events", icon: <CalendarDays className="h-4 w-4" /> },
+  { id: "custom", icon: <Link2 className="h-4 w-4" /> },
 ];
 
 /** Modal for choosing a link target — a site page, a course, an event, or a
@@ -58,6 +62,20 @@ export function LinkPickerModal({
   onClose: () => void;
 }) {
   const locale = useLocale();
+  const tr = useTranslations("admin.owner.link");
+  // The site's own words (the `site` messages): the text a picked page gives
+  // the link is written onto the site, so it is in the site's language.
+  const ts = useTranslations("site");
+  const pageTargets: LinkTarget[] = PAGE_TARGETS.map(({ id, href }) => ({
+    label: tr(`page.${id}`),
+    siteLabel:
+      id === "store"
+        ? ts("store.title")
+        : id === "pricing"
+          ? ts("page.pricingOrPlans")
+          : ts(`page.${id}`),
+    href,
+  }));
   const [tab, setTab] = useState<Tab>("pages");
   const [courses, setCourses] = useState<LinkTarget[] | null>(null);
   const [events, setEvents] = useState<LinkTarget[] | null>(null);
@@ -73,6 +91,7 @@ export function LinkPickerModal({
           setCourses(
             cs.map((c) => ({
               label: c.title,
+              siteLabel: c.title,
               href: `/courses/${c.slug}`,
               sub: `/courses/${c.slug}`,
             })),
@@ -80,7 +99,7 @@ export function LinkPickerModal({
         )
         .catch(() => {
           setCourses([]);
-          toast.error("Could not load courses. Please try again.");
+          toast.error(tr("coursesError"));
         })
         .finally(() => setLoading(false));
     }
@@ -96,6 +115,7 @@ export function LinkPickerModal({
           setEvents(
             es.map((e) => ({
               label: e.title,
+              siteLabel: e.title,
               href: `/calendar/${e.type}/${e.id}`,
               sub: new Date(e.scheduled_at).toLocaleDateString(locale),
             })),
@@ -103,7 +123,7 @@ export function LinkPickerModal({
         )
         .catch(() => {
           setEvents([]);
-          toast.error("Could not load events. Please try again.");
+          toast.error(tr("eventsError"));
         })
         .finally(() => setLoading(false));
     }
@@ -111,7 +131,7 @@ export function LinkPickerModal({
 
   const list =
     tab === "pages"
-      ? PAGE_TARGETS
+      ? pageTargets
       : tab === "courses"
         ? courses
         : tab === "events"
@@ -139,7 +159,7 @@ export function LinkPickerModal({
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between border-b px-5 py-3.5">
-            <h2 className="text-sm font-semibold">Choose a link</h2>
+            <h2 className="text-sm font-semibold">{tr("title")}</h2>
             <button
               type="button"
               onClick={onClose}
@@ -166,7 +186,7 @@ export function LinkPickerModal({
                 )}
               >
                 {t.icon}
-                {t.label}
+                {tr(`tab.${t.id}`)}
               </button>
             ))}
           </div>
@@ -178,7 +198,7 @@ export function LinkPickerModal({
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder={`Search ${tab}…`}
+                  placeholder={tr(`search.${tab}`)}
                   className="h-8 w-full rounded-md border border-input bg-background pl-8 pr-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 />
               </div>
@@ -189,7 +209,7 @@ export function LinkPickerModal({
             {tab === "custom" ? (
               <div className="space-y-2">
                 <label className="text-xs text-muted-foreground">
-                  Enter a URL or path
+                  {tr("enterUrl")}
                 </label>
                 <input
                   autoFocus
@@ -200,7 +220,7 @@ export function LinkPickerModal({
                     custom.trim() &&
                     onPick(custom.trim(), custom.trim())
                   }
-                  placeholder="/path or https://…"
+                  placeholder={tr("urlPlaceholder")}
                   className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 />
                 <button
@@ -211,7 +231,7 @@ export function LinkPickerModal({
                   disabled={!custom.trim()}
                   className="w-full rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
                 >
-                  Use this link
+                  {tr("useLink")}
                 </button>
               </div>
             ) : loading && list === null ? (
@@ -224,7 +244,7 @@ export function LinkPickerModal({
                   <button
                     key={target.href}
                     type="button"
-                    onClick={() => onPick(target.href, target.label)}
+                    onClick={() => onPick(target.href, target.siteLabel)}
                     className="flex w-full items-center justify-between gap-3 rounded-md border px-3 py-2 text-left text-sm transition-colors hover:border-primary hover:bg-primary/5"
                   >
                     <span className="font-medium">{target.label}</span>
@@ -236,11 +256,11 @@ export function LinkPickerModal({
               </div>
             ) : q ? (
               <p className="py-10 text-center text-sm text-muted-foreground">
-                No matches for “{query.trim()}”.
+                {tr("noMatches", { query: query.trim() })}
               </p>
             ) : (
               <p className="py-10 text-center text-sm text-muted-foreground">
-                {tab === "courses" ? "No courses yet." : "No events yet."}
+                {tab === "courses" ? tr("noCourses") : tr("noEvents")}
               </p>
             )}
           </div>

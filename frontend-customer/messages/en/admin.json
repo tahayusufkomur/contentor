@@ -731,7 +731,14 @@
     "archiveError": "Could not archive. Please try again.",
     "spamError": "Could not mark as spam. Please try again.",
     "deleteError": "Could not delete. Please try again.",
-    "fillFields": "Please fill in all fields."
+    "fillFields": "Please fill in all fields.",
+    "banner": {
+      "pick": "Pick your email address so students can write to you and their messages land right here in your inbox.",
+      "upgrade": "Your messages are sent from <b>{email}</b>, which students can't reply to. Upgrade your plan to get your own address and receive their emails right here.",
+      "choose": "Choose my address",
+      "plans": "See plans",
+      "dismiss": "Dismiss"
+    }
   },
   "setup": {
     "title": "Get your site live",
@@ -1568,6 +1575,65 @@
         "title": "Your title",
         "body": "Your message",
         "now": "now"
+      },
+      "templateNamePrompt": "Name this template:",
+      "templateSaved": "Template saved",
+      "templateError": "Could not save template",
+      "pickStart": "Pick a start date",
+      "pickWeekday": "Pick a day of the week",
+      "recurringCreated": "Repeating message created",
+      "scheduledToast": "Message scheduled",
+      "sentToast": "Message sent",
+      "draftCleanup": "Sent, but couldn't remove the draft it was reviewed from.",
+      "sendError": "Failed to send announcement",
+      "send": {
+        "recurring": "Create recurring",
+        "schedule": "Schedule",
+        "now": "Send now"
+      },
+      "sending": {
+        "recurring": "Creating…",
+        "schedule": "Scheduling…",
+        "now": "Sending…"
+      },
+      "reviewing": "Reviewing draft — nothing sends until you confirm below.",
+      "startFromTemplate": "Start from a template",
+      "saveAsTemplate": "Save as template",
+      "saving": "Saving…",
+      "titlePlaceholder": "Title",
+      "bodyTitle": "Announcement body",
+      "bodyPlaceholder": "Write announcement body…",
+      "change": "Change",
+      "removeLink": "Remove link",
+      "addLink": "Add a link (optional) — where tapping the announcement takes them",
+      "reach": {
+        "counting": "Calculating who will receive this…",
+        "nobody": "No students match these filters — nobody will receive this message.",
+        "withPush": "Goes to <b>{audience}</b> {audience, plural, one {student} other {students}} in their feed · <b>{push}</b> also get a phone notification",
+        "noPush": "Goes to <b>{audience}</b> {audience, plural, one {student} other {students}} in their feed · none have phone notifications turned on yet"
+      },
+      "mode": {
+        "once": "One time",
+        "repeating": "Repeating"
+      },
+      "freq": {
+        "daily": "Daily",
+        "weekly": "Weekly",
+        "monthly": "Monthly"
+      },
+      "scheduleOptional": "Schedule (optional)",
+      "dayOfMonth": "Day of month",
+      "time": "Time",
+      "starts": "Starts",
+      "ends": "Ends:",
+      "endsNever": "Never",
+      "endsOnDate": "On date",
+      "timezoneNote": "Times are in your account timezone.",
+      "templates": {
+        "title": "Choose a template",
+        "search": "Search templates…",
+        "builtin": "built-in",
+        "empty": "No templates yet."
       }
     },
     "receipt": {
@@ -1682,6 +1748,28 @@
       "duplicate": "Duplicate",
       "duplicateNamed": "Duplicate {name}",
       "deleteNamed": "Delete {name}"
+    },
+    "recurring": {
+      "daily": "Daily at {time}",
+      "weekly": "Every {day} at {time}",
+      "monthly": "Monthly on day {day} at {time}",
+      "loadError": "Couldn't load recurring announcements.",
+      "empty": "No recurring announcements yet.",
+      "updateError": "Failed to update",
+      "confirmDelete": "Delete this recurring announcement?",
+      "deleted": "Deleted",
+      "deleteError": "Failed to delete",
+      "nextRun": "next: {when}",
+      "paused": "paused",
+      "pause": "Pause",
+      "resume": "Resume"
+    },
+    "templateList": {
+      "loadError": "Couldn't load templates.",
+      "empty": "No saved templates yet. Use “Save as template” when composing.",
+      "confirmDelete": "Delete this template?",
+      "deleted": "Deleted",
+      "deleteError": "Failed to delete"
     }
   },
   "events": {
@@ -2219,6 +2307,45 @@
       "cancel": "Cancel",
       "refunding": "Refunding…",
       "confirmRefund": "Confirm refund"
+    },
+    "drawer": {
+      "grantOk": "Course access granted successfully!",
+      "grantError": "Failed to grant course access",
+      "coursesError": "Could not load courses. Please try again.",
+      "na": "N/A",
+      "unnamed": "Unnamed Student",
+      "joined": "Joined {date}",
+      "tabOverview": "Overview",
+      "tabActions": "Quick Actions",
+      "membership": "Membership",
+      "free": "Free",
+      "noMembership": "No active membership.",
+      "enrolled": "Enrolled Courses ({count})",
+      "notEnrolled": "Not enrolled in any course yet.",
+      "lessonsDone": "{total, plural, one {{done} of # lesson completed} other {{done} of # lessons completed}}",
+      "done": "Done",
+      "grantTitle": "Grant Course Access",
+      "grantText": "Enroll this student in a course manually without charging.",
+      "grantButton": "Grant Course Enrollment",
+      "dmTitle": "Send Direct Message",
+      "dmText": "Compose a personal email or in-app message.",
+      "dmButton": "Compose Email Message",
+      "payTitle": "Payment & Refund History",
+      "payText": "View transactions, manage invoices, or issue refunds.",
+      "payButton": "View Transactions",
+      "studentId": "Student ID: #{id}",
+      "modalTitle": "Grant Free Course Access",
+      "selectCourse": "Select Course:",
+      "loadingCourses": "Loading courses...",
+      "duration": "For how long:",
+      "forever": "Forever",
+      "month1": "1 month",
+      "month3": "3 months",
+      "year1": "1 year",
+      "untilDate": "Until a date",
+      "lastDay": "Last day of access",
+      "granting": "Granting…",
+      "confirmGrant": "Confirm Grant"
     }
   },
   "courseForm": {
@@ -2450,5 +2577,362 @@
     "statusLabel": "Status:",
     "close": "Close",
     "manage": "Manage {category}"
+  },
+  "email": {
+    "workspace": {
+      "readingBrief": "Designer · reading your brief",
+      "saveRetry": "Your last change could not be saved. Retrying…",
+      "designerFailed": "The Designer couldn't finish this one.",
+      "designerDone": "The Designer is done",
+      "designerDoneUndo": "The Designer is done. Undo takes it back.",
+      "testSent": "Test sent to {email}",
+      "savedAsTemplate": "Saved to your templates as “{name}”",
+      "templates": "Templates",
+      "messages": "Messages",
+      "templateName": "Template name",
+      "subject": "Subject",
+      "subjectPlaceholder": "Subject line",
+      "previewText": "Preview text",
+      "previewPlaceholder": "Preview text: the line inboxes show after the subject",
+      "opening": "Opening…",
+      "writeWithIt": "Write an email with it",
+      "saveAsTemplate": "Save as template",
+      "saving": "Saving…",
+      "sendTest": "Send me a test",
+      "sending": "Sending…",
+      "nextSend": "Next: send",
+      "designerWorking": "The Designer is working",
+      "designerWorkingText": "The Designer is working…",
+      "onlyThisBlock": "The Designer changes only this block",
+      "askWhole": "Ask about the whole email",
+      "askDesigner": "Ask the Designer",
+      "askBlockPlaceholder": "Ask the Designer about this block: “warmer”, “shorter”, “add a photo”…",
+      "askPlaceholder": "Ask the Designer: “make it warmer”, “add my next live session”, “shorter, with one button”…",
+      "asking": "Asking…",
+      "ask": "Ask",
+      "choosePhoto": "Choose a photo",
+      "photoError": "That photo could not be added. Try another one.",
+      "saveState": {
+        "saved": "Saved",
+        "saving": "Saving…",
+        "error": "Not saved"
+      }
+    },
+    "itemPicker": {
+      "title": "Feature something of yours",
+      "search": "Search your courses, sessions and pages…",
+      "alwaysUpToDate": "Always up to date",
+      "today": "Today: {title}",
+      "offers": "Your offers and pages",
+      "noMatch": "Nothing matches.",
+      "none": "Nothing published yet. Your courses, sessions and articles show here once they are live.",
+      "close": "Close"
+    },
+    "recipients": {
+      "title": "Recipients",
+      "all": "All students",
+      "course": "By course",
+      "individual": "Individual students",
+      "selectCourses": "Select courses",
+      "noCourses": "No courses found.",
+      "searchStudents": "Search students...",
+      "noStudents": "No students found.",
+      "counting": "Counting recipients...",
+      "count": "{count, plural, one {# recipient} other {# recipients}}",
+      "allActive": "All active students",
+      "selectAbove": "Select recipients above"
+    }
+  },
+  "mailbox": {
+    "errors": {
+      "taken": "That address is already taken. Try another.",
+      "reserved_local_part": "That address is reserved. Try another.",
+      "invalid_local_part": "Only letters, numbers, dots, hyphens, and underscores are allowed.",
+      "upgrade_required": "Upgrade your plan to claim an address.",
+      "feature_unavailable": "Custom addresses aren't available right now."
+    },
+    "onlyChars": "Only letters, numbers, dots, hyphens, and underscores are allowed.",
+    "saveFailed": "Could not save. Please try again.",
+    "emailSaved": "Email address saved.",
+    "prefixEmpty": "Email prefix cannot be empty.",
+    "settingsSaved": "Mailbox settings saved.",
+    "settingsError": "Failed to save mailbox settings. Please try again.",
+    "yourAddress": "Your email address",
+    "claimText": "Pick an address on {domain}. Students can write to you there and their messages land in your inbox.",
+    "chooseAddress": "Choose your address",
+    "willSee": "Your students will see: <m>{address}</m>",
+    "active": "Active address: <m>{email}</m>",
+    "saving": "Saving…",
+    "saveAddress": "Save address",
+    "customDomain": "Want a branded address on your own domain (like <m>info@yourdomain.com</m>)? Contact support to add a custom domain.",
+    "title": "Mailbox",
+    "freeText": "Set a custom email address for your platform.",
+    "sendingFrom": "You're currently sending from:",
+    "upgradeText": "Upgrade to a paid plan to get your own email address — students can write to you and their messages land straight in your inbox.",
+    "domainText": "Choose your email address and enable your inbox to receive messages from students.",
+    "enable": "Enable inbox",
+    "enableText": "When enabled, students can send messages to your address.",
+    "saveChanges": "Save Changes"
+  },
+  "owner": {
+    "blockForm": {
+      "notEditable": "This block type isn't editable here."
+    },
+    "brand": {
+      "name": "Brand name",
+      "namePlaceholder": "My Platform",
+      "logo": "Logo",
+      "editLogo": "Edit logo",
+      "createLogo": "Create a logo",
+      "darkMode": "Allow dark mode for visitors",
+      "darkModeHint": "Shows a light/dark toggle in the public header and keeps the dark palette available."
+    },
+    "toolbar": {
+      "drag": "Drag to reorder",
+      "reorder": "Reorder {label} block",
+      "confirmDelete": "Confirm delete",
+      "delete": "Delete block",
+      "cancel": "Cancel"
+    },
+    "canvas": {
+      "empty": "This page has no blocks yet.",
+      "emptyHint": "Add one from the editor panel, or drag a block here.",
+      "editText": "Edit text",
+      "hidden": "Hidden"
+    },
+    "undo": "Undo (⌘Z)",
+    "redo": "Redo (⌘⇧Z)",
+    "cx": {
+      "failure": {
+        "disabled": "AI design isn't available right now. Please try again later.",
+        "upgrade_required": "Custom sections come with the paid plans.",
+        "quota_exhausted": "You've used this month's AI changes. They renew next month.",
+        "error": "I couldn't build that. Try describing it a little differently."
+      },
+      "missing": "Not possible yet: {missing}. I built the closest thing.",
+      "describe": "Describe a section",
+      "placeholder": "A day-by-day plan of my 5-day retreat, with a photo for each day",
+      "designing": "Designing…",
+      "create": "Create with AI",
+      "yours": "Your sections",
+      "change": "Change with AI",
+      "changePlaceholder": "Make it two columns and add a short intro",
+      "changing": "Changing…",
+      "apply": "Apply change"
+    },
+    "logo": {
+      "alt": "Logo",
+      "uploadFailed": "Upload failed",
+      "uploading": "Uploading…",
+      "replace": "Replace logo",
+      "upload": "Upload logo",
+      "uploaded": "{pct}% uploaded"
+    },
+    "look": {
+      "original": "Original",
+      "title": "Look",
+      "hint": "Layouts, colours and fonts for every page.",
+      "change": "Change look",
+      "error": "Couldn’t change the look. Try again.",
+      "dialog": "Change your look",
+      "dialogHint": "Every page takes the look you pick and keeps its words and photos. Tap a look to see it as a page.",
+      "changing": "Changing…",
+      "use": "Use this look",
+      "cancel": "Cancel"
+    },
+    "style": {
+      "title": "Style",
+      "control": {
+        "background": "Background",
+        "spacing": "Spacing",
+        "align": "Text alignment",
+        "textColor": "Text color"
+      },
+      "option": {
+        "background": {
+          "default": "Default",
+          "muted": "Muted",
+          "card": "Card",
+          "accent": "Accent",
+          "primary": "Brand"
+        },
+        "spacing": {
+          "none": "None",
+          "compact": "Compact",
+          "normal": "Normal",
+          "spacious": "Spacious"
+        },
+        "align": {
+          "auto": "Auto",
+          "left": "Left",
+          "center": "Center",
+          "right": "Right"
+        },
+        "textColor": {
+          "default": "Default",
+          "muted": "Muted",
+          "brand": "Brand"
+        }
+      }
+    },
+    "blocks": {
+      "templates": "Templates",
+      "empty": "No blocks yet. Add one below.",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "hiddenTag": "(hidden)",
+      "confirmDelete": "Delete this block?",
+      "addTitle": "Add a block",
+      "add": "Add block",
+      "group": {
+        "content": "Content",
+        "dynamic": "Dynamic",
+        "section": "Sections"
+      },
+      "deleteBlock": "Delete block",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
+    "sidebar": {
+      "saveError": "Could not save your changes. Please try again.",
+      "editSite": "Edit site",
+      "saving": "Saving",
+      "exit": "Exit edit mode — preview your site",
+      "done": "Done",
+      "collapse": "Collapse panel",
+      "tabSite": "Site",
+      "tabPages": "Pages",
+      "siteHint": "Brand and navigation apply across every page.",
+      "section": {
+        "brand": "Brand",
+        "navbar": "Navbar"
+      },
+      "editingPage": "Editing page",
+      "page": {
+        "home": "Home",
+        "about": "About",
+        "courses": "Courses",
+        "pricing": "Pricing",
+        "faq": "FAQ",
+        "contact": "Contact",
+        "events": "Events"
+      },
+      "notEditable": "This page isn't editable from the builder. Pick a page above to edit its content.",
+      "open": "Edit your site"
+    },
+    "navbar": {
+      "layout": "Layout",
+      "layoutAria": "Layout: {name}",
+      "layouts": {
+        "classic": "Classic",
+        "centered": "Centered",
+        "split": "Split",
+        "minimal": "Minimal",
+        "pill": "Pill"
+      },
+      "chooseTitle": "Choose a page or content",
+      "chooseDestination": "Choose destination…",
+      "logoSize": "Logo size",
+      "showBrandName": "Show brand name next to logo",
+      "logoAndName": "Logo and name",
+      "logoLayouts": {
+        "horizontal": "Side by side",
+        "stacked": "Stacked",
+        "name_only": "Name only"
+      },
+      "transparent": "Transparent over hero",
+      "transparentHint": "See-through on the homepage hero, solid after scrolling",
+      "links": "Navigation links",
+      "noLinks": "No links yet. Add one below.",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "moveUpAria": "Move {name} up",
+      "moveDownAria": "Move {name} down",
+      "linkFallback": "link",
+      "labelPlaceholder": "Label",
+      "removeLink": "Remove link",
+      "suggest": {
+        "events": "Live Sessions",
+        "store": "Store"
+      },
+      "addSuggestion": "Add {name}",
+      "addLink": "Add link",
+      "cta": "CTA button",
+      "ctaPlaceholder": "Button text",
+      "showLogin": "Show login button",
+      "showLoginHint": "Display \"Sign In\" link in nav",
+      "showInstall": "Show \"Install app\"",
+      "showInstallHint": "Link visitors to installing your site as an app"
+    },
+    "link": {
+      "title": "Choose a link",
+      "tab": {
+        "pages": "Pages",
+        "courses": "Courses",
+        "events": "Events",
+        "custom": "Custom URL"
+      },
+      "page": {
+        "home": "Home",
+        "about": "About",
+        "courses": "Courses",
+        "pricing": "Pricing / Plans",
+        "faq": "FAQ",
+        "contact": "Contact",
+        "calendar": "Calendar",
+        "events": "Events",
+        "store": "Store"
+      },
+      "search": {
+        "pages": "Search pages…",
+        "courses": "Search courses…",
+        "events": "Search events…"
+      },
+      "coursesError": "Could not load courses. Please try again.",
+      "eventsError": "Could not load events. Please try again.",
+      "enterUrl": "Enter a URL or path",
+      "urlPlaceholder": "/path or https://…",
+      "useLink": "Use this link",
+      "noMatches": "No matches for “{query}”.",
+      "noCourses": "No courses yet.",
+      "noEvents": "No events yet."
+    },
+    "templates": {
+      "delete": "Delete template",
+      "blocks": "{count, plural, one {# block} other {# blocks}}",
+      "replace": "Replace page",
+      "cancel": "Cancel",
+      "use": "Use this template",
+      "title": "Templates",
+      "startFrom": "Start from a template",
+      "none": "No templates for this page yet.",
+      "yours": "Your templates",
+      "saveThisPage": "Save this page as a template",
+      "name": "Template name",
+      "save": "Save"
+    },
+    "rich": {
+      "editText": "Edit text",
+      "bold": "Bold",
+      "italic": "Italic",
+      "bullets": "Bulleted list",
+      "numbers": "Numbered list",
+      "addLink": "Add link",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "field": {
+      "chooseImage": "Choose image",
+      "noText": "No text yet.",
+      "editText": "Edit text",
+      "pathPlaceholder": "/path or https://…",
+      "chooseLink": "Choose a page or content",
+      "browse": "Browse",
+      "noFilters": "No filters yet. Create filters in your Creator studio to show them here.",
+      "item": "Item",
+      "itemNumber": "{name} {number}",
+      "addItem": "Add {name}",
+      "addDefault": "item"
+    }
   }
 }

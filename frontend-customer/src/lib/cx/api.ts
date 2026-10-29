@@ -26,16 +26,12 @@ export interface CxSaved {
   content: Record<string, unknown>;
 }
 
-const MESSAGES: Record<Exclude<CxSource, "ai">, string> = {
-  disabled: "AI design isn't available right now. Please try again later.",
-  upgrade_required: "Custom sections come with the paid plans.",
-  quota_exhausted:
-    "You've used this month's AI changes. They renew next month.",
-  error: "I couldn't build that. Try describing it a little differently.",
-};
-
-export const failureMessage = (source: CxSource) =>
-  source === "ai" ? MESSAGES.error : MESSAGES[source];
+/** What the creator reads for a run that gave no section: `t` is the owner
+ *  tools' `cx.failure` translator, one message per code. */
+export const failureMessage = (
+  source: CxSource,
+  t: (code: Exclude<CxSource, "ai">) => string,
+) => t(source === "ai" ? "error" : source);
 
 export const composeSection = (prompt: string, page: string) =>
   clientFetch<CxResult>("/api/v1/admin/cx/compose/", {

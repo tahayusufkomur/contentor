@@ -731,7 +731,14 @@
     "archiveError": "Archivieren fehlgeschlagen. Bitte versuch es erneut.",
     "spamError": "Markieren als Spam fehlgeschlagen. Bitte versuch es erneut.",
     "deleteError": "Löschen fehlgeschlagen. Bitte versuch es erneut.",
-    "fillFields": "Bitte fülle alle Felder aus."
+    "fillFields": "Bitte fülle alle Felder aus.",
+    "banner": {
+      "pick": "Wähle deine E-Mail-Adresse, damit Teilnehmer dir schreiben können und ihre Nachrichten direkt hier in deinem Posteingang landen.",
+      "upgrade": "Deine Nachrichten werden von <b>{email}</b> gesendet, worauf Teilnehmer nicht antworten können. Upgrade deinen Tarif, um deine eigene Adresse zu erhalten und ihre E-Mails direkt hier zu empfangen.",
+      "choose": "Meine Adresse wählen",
+      "plans": "Tarife ansehen",
+      "dismiss": "Schließen"
+    }
   },
   "setup": {
     "title": "Bring deine Website online",
@@ -1568,6 +1575,65 @@
         "title": "Dein Titel",
         "body": "Deine Nachricht",
         "now": "jetzt"
+      },
+      "templateNamePrompt": "Benenne diese Vorlage:",
+      "templateSaved": "Vorlage gespeichert",
+      "templateError": "Vorlage konnte nicht gespeichert werden",
+      "pickStart": "Startdatum wählen",
+      "pickWeekday": "Wochentag wählen",
+      "recurringCreated": "Wiederkehrende Nachricht erstellt",
+      "scheduledToast": "Nachricht geplant",
+      "sentToast": "Nachricht gesendet",
+      "draftCleanup": "Gesendet, aber der Entwurf, aus dem sie überprüft wurde, konnte nicht entfernt werden.",
+      "sendError": "Ankündigung konnte nicht gesendet werden",
+      "send": {
+        "recurring": "Wiederkehrend erstellen",
+        "schedule": "Planen",
+        "now": "Jetzt senden"
+      },
+      "sending": {
+        "recurring": "Wird erstellt…",
+        "schedule": "Wird geplant…",
+        "now": "Wird gesendet…"
+      },
+      "reviewing": "Entwurf wird überprüft — es wird nichts gesendet, bis du unten bestätigst.",
+      "startFromTemplate": "Mit einer Vorlage starten",
+      "saveAsTemplate": "Als Vorlage speichern",
+      "saving": "Wird gespeichert…",
+      "titlePlaceholder": "Titel",
+      "bodyTitle": "Ankündigungstext",
+      "bodyPlaceholder": "Ankündigungstext schreiben…",
+      "change": "Ändern",
+      "removeLink": "Link entfernen",
+      "addLink": "Link hinzufügen (optional) — wohin das Antippen der Ankündigung führt",
+      "reach": {
+        "counting": "Es wird berechnet, wer dies erhält…",
+        "nobody": "Keine Teilnehmer entsprechen diesen Filtern — niemand wird diese Nachricht erhalten.",
+        "withPush": "Geht an <b>{audience}</b> {audience, plural, one {Teilnehmer} other {Teilnehmer}} in ihrem Feed · <b>{push}</b> erhalten auch eine Benachrichtigung auf dem Smartphone",
+        "noPush": "Geht an <b>{audience}</b> {audience, plural, one {Teilnehmer} other {Teilnehmer}} in ihrem Feed · noch niemand hat Smartphone-Benachrichtigungen aktiviert"
+      },
+      "mode": {
+        "once": "Einmalig",
+        "repeating": "Wiederkehrend"
+      },
+      "freq": {
+        "daily": "Täglich",
+        "weekly": "Wöchentlich",
+        "monthly": "Monatlich"
+      },
+      "scheduleOptional": "Planen (optional)",
+      "dayOfMonth": "Tag des Monats",
+      "time": "Uhrzeit",
+      "starts": "Beginnt",
+      "ends": "Endet:",
+      "endsNever": "Nie",
+      "endsOnDate": "Am Datum",
+      "timezoneNote": "Zeiten entsprechen der Zeitzone deines Kontos.",
+      "templates": {
+        "title": "Wähle eine Vorlage",
+        "search": "Vorlagen durchsuchen…",
+        "builtin": "integriert",
+        "empty": "Noch keine Vorlagen."
       }
     },
     "receipt": {
@@ -1682,6 +1748,28 @@
       "duplicate": "Duplizieren",
       "duplicateNamed": "{name} duplizieren",
       "deleteNamed": "{name} löschen"
+    },
+    "recurring": {
+      "daily": "Täglich um {time}",
+      "weekly": "Jeden {day} um {time}",
+      "monthly": "Monatlich an Tag {day} um {time}",
+      "loadError": "Wiederkehrende Ankündigungen konnten nicht geladen werden.",
+      "empty": "Noch keine wiederkehrenden Ankündigungen.",
+      "updateError": "Aktualisierung fehlgeschlagen",
+      "confirmDelete": "Diese wiederkehrende Ankündigung löschen?",
+      "deleted": "Gelöscht",
+      "deleteError": "Löschen fehlgeschlagen",
+      "nextRun": "nächste: {when}",
+      "paused": "pausiert",
+      "pause": "Pausieren",
+      "resume": "Fortsetzen"
+    },
+    "templateList": {
+      "loadError": "Vorlagen konnten nicht geladen werden.",
+      "empty": "Noch keine gespeicherten Vorlagen. Verwende beim Verfassen “Als Vorlage speichern”.",
+      "confirmDelete": "Diese Vorlage löschen?",
+      "deleted": "Gelöscht",
+      "deleteError": "Löschen fehlgeschlagen"
     }
   },
   "events": {
@@ -2219,6 +2307,45 @@
       "cancel": "Abbrechen",
       "refunding": "Wird erstattet…",
       "confirmRefund": "Erstattung bestätigen"
+    },
+    "drawer": {
+      "grantOk": "Kurszugriff erfolgreich gewährt!",
+      "grantError": "Kurszugriff konnte nicht gewährt werden",
+      "coursesError": "Kurse konnten nicht geladen werden. Bitte versuche es erneut.",
+      "na": "k. A.",
+      "unnamed": "Unbenannter Teilnehmer",
+      "joined": "Beigetreten am {date}",
+      "tabOverview": "Übersicht",
+      "tabActions": "Schnellaktionen",
+      "membership": "Mitgliedschaft",
+      "free": "Kostenlos",
+      "noMembership": "Keine aktive Mitgliedschaft.",
+      "enrolled": "Eingeschriebene Kurse ({count})",
+      "notEnrolled": "Noch in keinem Kurs eingeschrieben.",
+      "lessonsDone": "{total, plural, one {{done} von # Lektion abgeschlossen} other {{done} von # Lektionen abgeschlossen}}",
+      "done": "Fertig",
+      "grantTitle": "Kurszugang gewähren",
+      "grantText": "Schreibe diesen Teilnehmer manuell ohne Berechnung in einen Kurs ein.",
+      "grantButton": "Kurseinschreibung gewähren",
+      "dmTitle": "Direktnachricht senden",
+      "dmText": "Verfasse eine persönliche E-Mail oder In-App-Nachricht.",
+      "dmButton": "E-Mail-Nachricht verfassen",
+      "payTitle": "Zahlungs- & Rückerstattungsverlauf",
+      "payText": "Sieh dir Transaktionen an, verwalte Rechnungen oder veranlasse Rückerstattungen.",
+      "payButton": "Transaktionen anzeigen",
+      "studentId": "Teilnehmer-ID: #{id}",
+      "modalTitle": "Kostenlosen Kurszugang gewähren",
+      "selectCourse": "Kurs auswählen:",
+      "loadingCourses": "Kurse werden geladen...",
+      "duration": "Für wie lange:",
+      "forever": "Für immer",
+      "month1": "1 Monat",
+      "month3": "3 Monate",
+      "year1": "1 Jahr",
+      "untilDate": "Bis zu einem Datum",
+      "lastDay": "Letzter Tag des Zugangs",
+      "granting": "Wird gewährt…",
+      "confirmGrant": "Gewährung bestätigen"
     }
   },
   "courseForm": {
@@ -2450,5 +2577,362 @@
     "statusLabel": "Status:",
     "close": "Schließen",
     "manage": "{category} verwalten"
+  },
+  "email": {
+    "workspace": {
+      "readingBrief": "Designer · liest dein Briefing",
+      "saveRetry": "Deine letzte Änderung konnte nicht gespeichert werden. Wird wiederholt…",
+      "designerFailed": "Der Designer konnte dies nicht fertigstellen.",
+      "designerDone": "Der Designer ist fertig",
+      "designerDoneUndo": "Der Designer ist fertig. Rückgängig nimmt es zurück.",
+      "testSent": "Test an {email} gesendet",
+      "savedAsTemplate": "In deinen Vorlagen als “{name}” gespeichert",
+      "templates": "Vorlagen",
+      "messages": "Nachrichten",
+      "templateName": "Vorlagenname",
+      "subject": "Betreff",
+      "subjectPlaceholder": "Betreffzeile",
+      "previewText": "Vorschautext",
+      "previewPlaceholder": "Vorschautext: die Zeile, die Posteingänge nach dem Betreff anzeigen",
+      "opening": "Wird geöffnet…",
+      "writeWithIt": "Schreibe damit eine E-Mail",
+      "saveAsTemplate": "Als Vorlage speichern",
+      "saving": "Wird gespeichert…",
+      "sendTest": "Test an mich senden",
+      "sending": "Wird gesendet…",
+      "nextSend": "Weiter: Senden",
+      "designerWorking": "Der Designer arbeitet",
+      "designerWorkingText": "Der Designer arbeitet…",
+      "onlyThisBlock": "Der Designer ändert nur diesen Block",
+      "askWhole": "Zur gesamten E-Mail fragen",
+      "askDesigner": "Frag den Designer",
+      "askBlockPlaceholder": "Frag den Designer zu diesem Block: “wärmer”, “kürzer”, “ein Foto hinzufügen”…",
+      "askPlaceholder": "Frag den Designer: “mach es wärmer”, “füge meine nächste Live-Session hinzu”, “kürzer, mit einem Button”…",
+      "asking": "Wird gefragt…",
+      "ask": "Fragen",
+      "choosePhoto": "Foto auswählen",
+      "photoError": "Dieses Foto konnte nicht hinzugefügt werden. Versuche es mit einem anderen.",
+      "saveState": {
+        "saved": "Gespeichert",
+        "saving": "Wird gespeichert…",
+        "error": "Nicht gespeichert"
+      }
+    },
+    "itemPicker": {
+      "title": "Hebe etwas von dir hervor",
+      "search": "Durchsuche deine Kurse, Sessions und Seiten…",
+      "alwaysUpToDate": "Immer aktuell",
+      "today": "Heute: {title}",
+      "offers": "Deine Angebote und Seiten",
+      "noMatch": "Keine Treffer.",
+      "none": "Noch nichts veröffentlicht. Deine Kurse, Sessions und Artikel werden hier angezeigt, sobald sie live sind.",
+      "close": "Schließen"
+    },
+    "recipients": {
+      "title": "Empfänger",
+      "all": "Alle Teilnehmer",
+      "course": "Nach Kurs",
+      "individual": "Einzelne Teilnehmer",
+      "selectCourses": "Kurse auswählen",
+      "noCourses": "Keine Kurse gefunden.",
+      "searchStudents": "Teilnehmer suchen...",
+      "noStudents": "Keine Teilnehmer gefunden.",
+      "counting": "Empfänger werden gezählt...",
+      "count": "{count, plural, one {# Empfänger} other {# Empfänger}}",
+      "allActive": "Alle aktiven Teilnehmer",
+      "selectAbove": "Empfänger oben auswählen"
+    }
+  },
+  "mailbox": {
+    "errors": {
+      "taken": "Diese Adresse ist bereits vergeben. Versuche es mit einer anderen.",
+      "reserved_local_part": "Diese Adresse ist reserviert. Versuche es mit einer anderen.",
+      "invalid_local_part": "Nur Buchstaben, Zahlen, Punkte, Bindestriche und Unterstriche sind erlaubt.",
+      "upgrade_required": "Upgrade deinen Tarif, um eine Adresse zu beanspruchen.",
+      "feature_unavailable": "Benutzerdefinierte Adressen sind derzeit nicht verfügbar."
+    },
+    "onlyChars": "Nur Buchstaben, Zahlen, Punkte, Bindestriche und Unterstriche sind erlaubt.",
+    "saveFailed": "Konnte nicht gespeichert werden. Bitte versuche es erneut.",
+    "emailSaved": "E-Mail-Adresse gespeichert.",
+    "prefixEmpty": "E-Mail-Präfix darf nicht leer sein.",
+    "settingsSaved": "Postfach-Einstellungen gespeichert.",
+    "settingsError": "Fehler beim Speichern der Postfach-Einstellungen. Bitte versuche es erneut.",
+    "yourAddress": "Deine E-Mail-Adresse",
+    "claimText": "Wähle eine Adresse auf {domain}. Teilnehmer können dir dorthin schreiben und ihre Nachrichten landen in deinem Posteingang.",
+    "chooseAddress": "Wähle deine Adresse",
+    "willSee": "Deine Teilnehmer sehen: <m>{address}</m>",
+    "active": "Aktive Adresse: <m>{email}</m>",
+    "saving": "Wird gespeichert…",
+    "saveAddress": "Adresse speichern",
+    "customDomain": "Möchtest du eine gebrandete Adresse auf deiner eigenen Domain (wie <m>info@yourdomain.com</m>)? Kontaktiere den Support, um eine eigene Domain hinzuzufügen.",
+    "title": "Postfach",
+    "freeText": "Lege eine benutzerdefinierte E-Mail-Adresse für deine Plattform fest.",
+    "sendingFrom": "Du sendest derzeit von:",
+    "upgradeText": "Upgrade auf einen kostenpflichtigen Tarif, um deine eigene E-Mail-Adresse zu erhalten — Teilnehmer können dir schreiben und ihre Nachrichten landen direkt in deinem Posteingang.",
+    "domainText": "Wähle deine E-Mail-Adresse und aktiviere deinen Posteingang, um Nachrichten von Teilnehmern zu erhalten.",
+    "enable": "Posteingang aktivieren",
+    "enableText": "Wenn aktiviert, können Teilnehmer Nachrichten an deine Adresse senden.",
+    "saveChanges": "Änderungen speichern"
+  },
+  "owner": {
+    "blockForm": {
+      "notEditable": "Dieser Blocktyp kann hier nicht bearbeitet werden."
+    },
+    "brand": {
+      "name": "Markenname",
+      "namePlaceholder": "Meine Plattform",
+      "logo": "Logo",
+      "editLogo": "Logo bearbeiten",
+      "createLogo": "Logo erstellen",
+      "darkMode": "Dark Mode für Besucher erlauben",
+      "darkModeHint": "Zeigt einen Hell/Dunkel-Schalter im öffentlichen Header an und hält die dunkle Farbpalette verfügbar."
+    },
+    "toolbar": {
+      "drag": "Ziehen zum Neuanordnen",
+      "reorder": "{label}-Block neu anordnen",
+      "confirmDelete": "Löschen bestätigen",
+      "delete": "Block löschen",
+      "cancel": "Abbrechen"
+    },
+    "canvas": {
+      "empty": "Diese Seite hat noch keine Blöcke.",
+      "emptyHint": "Füge einen aus dem Editor-Panel hinzu oder ziehe einen Block hierher.",
+      "editText": "Text bearbeiten",
+      "hidden": "Ausgeblendet"
+    },
+    "undo": "Rückgängig (⌘Z)",
+    "redo": "Wiederholen (⌘⇧Z)",
+    "cx": {
+      "failure": {
+        "disabled": "KI-Design ist derzeit nicht verfügbar. Bitte versuche es später noch einmal.",
+        "upgrade_required": "Eigene Abschnitte sind in den kostenpflichtigen Tarifen enthalten.",
+        "quota_exhausted": "Du hast die KI-Änderungen für diesen Monat aufgebraucht. Sie werden nächsten Monat erneuert.",
+        "error": "Das konnte ich nicht erstellen. Versuche, es etwas anders zu beschreiben."
+      },
+      "missing": "Noch nicht möglich: {missing}. Ich habe das Nächstbeste erstellt.",
+      "describe": "Beschreibe einen Abschnitt",
+      "placeholder": "Ein Tagesablauf für mein 5-tägiges Retreat, mit einem Foto für jeden Tag",
+      "designing": "Wird gestaltet…",
+      "create": "Mit KI erstellen",
+      "yours": "Deine Abschnitte",
+      "change": "Mit KI ändern",
+      "changePlaceholder": "Mach es zweispaltig und füge eine kurze Einleitung hinzu",
+      "changing": "Wird geändert…",
+      "apply": "Änderung anwenden"
+    },
+    "logo": {
+      "alt": "Logo",
+      "uploadFailed": "Upload fehlgeschlagen",
+      "uploading": "Wird hochgeladen…",
+      "replace": "Logo ersetzen",
+      "upload": "Logo hochladen",
+      "uploaded": "{pct}% hochgeladen"
+    },
+    "look": {
+      "original": "Original",
+      "title": "Look",
+      "hint": "Layouts, Farben und Schriftarten für jede Seite.",
+      "change": "Look ändern",
+      "error": "Der Look konnte nicht geändert werden. Versuche es erneut.",
+      "dialog": "Ändere deinen Look",
+      "dialogHint": "Jede Seite übernimmt den Look, den du auswählst, und behält ihre Texte und Fotos. Tippe auf einen Look, um ihn als Seite anzuzeigen.",
+      "changing": "Wird geändert…",
+      "use": "Diesen Look verwenden",
+      "cancel": "Abbrechen"
+    },
+    "style": {
+      "title": "Stil",
+      "control": {
+        "background": "Hintergrund",
+        "spacing": "Abstand",
+        "align": "Textausrichtung",
+        "textColor": "Textfarbe"
+      },
+      "option": {
+        "background": {
+          "default": "Standard",
+          "muted": "Dezent",
+          "card": "Karte",
+          "accent": "Akzent",
+          "primary": "Marke"
+        },
+        "spacing": {
+          "none": "Ohne",
+          "compact": "Kompakt",
+          "normal": "Normal",
+          "spacious": "Großzügig"
+        },
+        "align": {
+          "auto": "Automatisch",
+          "left": "Links",
+          "center": "Zentriert",
+          "right": "Rechts"
+        },
+        "textColor": {
+          "default": "Standard",
+          "muted": "Dezent",
+          "brand": "Marke"
+        }
+      }
+    },
+    "blocks": {
+      "templates": "Vorlagen",
+      "empty": "Noch keine Blöcke. Füge unten einen hinzu.",
+      "moveUp": "Nach oben verschieben",
+      "moveDown": "Nach unten verschieben",
+      "hiddenTag": "(ausgeblendet)",
+      "confirmDelete": "Diesen Block löschen?",
+      "addTitle": "Einen Block hinzufügen",
+      "add": "Block hinzufügen",
+      "group": {
+        "content": "Inhalt",
+        "dynamic": "Dynamisch",
+        "section": "Abschnitte"
+      },
+      "deleteBlock": "Block löschen",
+      "cancel": "Abbrechen",
+      "delete": "Löschen"
+    },
+    "sidebar": {
+      "saveError": "Deine Änderungen konnten nicht gespeichert werden. Bitte versuche es erneut.",
+      "editSite": "Website bearbeiten",
+      "saving": "Wird gespeichert",
+      "exit": "Bearbeitungsmodus verlassen — Vorschau deiner Website",
+      "done": "Fertig",
+      "collapse": "Bedienfeld einklappen",
+      "tabSite": "Website",
+      "tabPages": "Seiten",
+      "siteHint": "Marke und Navigation gelten für jede Seite.",
+      "section": {
+        "brand": "Marke",
+        "navbar": "Navigationsleiste"
+      },
+      "editingPage": "Seite bearbeiten",
+      "page": {
+        "home": "Startseite",
+        "about": "Über uns",
+        "courses": "Kurse",
+        "pricing": "Preise",
+        "faq": "FAQ",
+        "contact": "Kontakt",
+        "events": "Veranstaltungen"
+      },
+      "notEditable": "Diese Seite kann nicht im Builder bearbeitet werden. Wähle oben eine Seite aus, um ihren Inhalt zu bearbeiten.",
+      "open": "Bearbeite deine Website"
+    },
+    "navbar": {
+      "layout": "Layout",
+      "layoutAria": "Layout: {name}",
+      "layouts": {
+        "classic": "Klassisch",
+        "centered": "Zentriert",
+        "split": "Geteilt",
+        "minimal": "Minimal",
+        "pill": "Pille"
+      },
+      "chooseTitle": "Wähle eine Seite oder Inhalte aus",
+      "chooseDestination": "Ziel auswählen…",
+      "logoSize": "Logo-Größe",
+      "showBrandName": "Markennamen neben dem Logo anzeigen",
+      "logoAndName": "Logo und Name",
+      "logoLayouts": {
+        "horizontal": "Nebeneinander",
+        "stacked": "Übereinander",
+        "name_only": "Nur Name"
+      },
+      "transparent": "Transparent über Hero",
+      "transparentHint": "Transparent im Hero-Bereich der Startseite, deckend nach dem Scrollen",
+      "links": "Navigationslinks",
+      "noLinks": "Noch keine Links. Füge unten einen hinzu.",
+      "moveUp": "Nach oben verschieben",
+      "moveDown": "Nach unten verschieben",
+      "moveUpAria": "{name} nach oben verschieben",
+      "moveDownAria": "{name} nach unten verschieben",
+      "linkFallback": "link",
+      "labelPlaceholder": "Beschriftung",
+      "removeLink": "Link entfernen",
+      "suggest": {
+        "events": "Live-Sessions",
+        "store": "Store"
+      },
+      "addSuggestion": "{name} hinzufügen",
+      "addLink": "Link hinzufügen",
+      "cta": "CTA-Button",
+      "ctaPlaceholder": "Button-Text",
+      "showLogin": "Login-Button anzeigen",
+      "showLoginHint": "\"Anmelden\"-Link in der Navigation anzeigen",
+      "showInstall": "\"App installieren\" anzeigen",
+      "showInstallHint": "Besucher zur Installation deiner Website als App weiterleiten"
+    },
+    "link": {
+      "title": "Link auswählen",
+      "tab": {
+        "pages": "Seiten",
+        "courses": "Kurse",
+        "events": "Events",
+        "custom": "Eigene URL"
+      },
+      "page": {
+        "home": "Startseite",
+        "about": "Über uns",
+        "courses": "Kurse",
+        "pricing": "Preise / Tarife",
+        "faq": "FAQ",
+        "contact": "Kontakt",
+        "calendar": "Kalender",
+        "events": "Events",
+        "store": "Store"
+      },
+      "search": {
+        "pages": "Seiten suchen…",
+        "courses": "Kurse suchen…",
+        "events": "Events suchen…"
+      },
+      "coursesError": "Kurse konnten nicht geladen werden. Bitte versuche es erneut.",
+      "eventsError": "Events konnten nicht geladen werden. Bitte versuche es erneut.",
+      "enterUrl": "URL oder Pfad eingeben",
+      "urlPlaceholder": "/pfad oder https://…",
+      "useLink": "Diesen Link verwenden",
+      "noMatches": "Keine Treffer für “{query}”.",
+      "noCourses": "Noch keine Kurse.",
+      "noEvents": "Noch keine Events."
+    },
+    "templates": {
+      "delete": "Vorlage löschen",
+      "blocks": "{count, plural, one {# Block} other {# Blöcke}}",
+      "replace": "Seite ersetzen",
+      "cancel": "Abbrechen",
+      "use": "Diese Vorlage verwenden",
+      "title": "Vorlagen",
+      "startFrom": "Mit einer Vorlage starten",
+      "none": "Noch keine Vorlagen für diese Seite.",
+      "yours": "Deine Vorlagen",
+      "saveThisPage": "Diese Seite als Vorlage speichern",
+      "name": "Vorlagenname",
+      "save": "Speichern"
+    },
+    "rich": {
+      "editText": "Text bearbeiten",
+      "bold": "Fett",
+      "italic": "Kursiv",
+      "bullets": "Aufzählungsliste",
+      "numbers": "Nummerierte Liste",
+      "addLink": "Link hinzufügen",
+      "cancel": "Abbrechen",
+      "save": "Speichern"
+    },
+    "field": {
+      "chooseImage": "Bild auswählen",
+      "noText": "Noch kein Text.",
+      "editText": "Text bearbeiten",
+      "pathPlaceholder": "/pfad oder https://…",
+      "chooseLink": "Eine Seite oder Inhalte auswählen",
+      "browse": "Durchsuchen",
+      "noFilters": "Noch keine Filter. Erstelle Filter in deinem Creator-Studio, um sie hier anzuzeigen.",
+      "item": "Element",
+      "itemNumber": "{name} {number}",
+      "addItem": "{name} hinzufügen",
+      "addDefault": "Element"
+    }
   }
 }

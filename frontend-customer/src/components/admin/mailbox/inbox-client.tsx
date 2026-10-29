@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 import { Mail, X } from "lucide-react";
 
@@ -11,6 +12,7 @@ import { InboxClient as SharedInboxClient } from "@shared/mailbox/inbox-client";
 import { getSettings, type MailboxSettings } from "@/lib/mailbox";
 
 export default function InboxClient() {
+  const tr = useTranslations("admin.inbox.banner");
   const [settings, setSettings] = useState<MailboxSettings | null>(null);
   const [bannerDismissed, setBannerDismissed] = useState(false);
 
@@ -28,18 +30,15 @@ export default function InboxClient() {
         <Mail className="h-4 w-4 shrink-0 text-muted-foreground" />
         <span className="min-w-0 flex-1 text-muted-foreground">
           {settings.platform_eligible ? (
-            <>
-              Pick your email address so students can write to you and their
-              messages land right here in your inbox.
-            </>
+            <>{tr("pick")}</>
           ) : (
             <>
-              Your messages are sent from{" "}
-              <span className="font-medium text-foreground">
-                {settings.from_email}
-              </span>
-              , which students can&apos;t reply to. Upgrade your plan to get
-              your own address and receive their emails right here.
+              {tr.rich("upgrade", {
+                email: settings.from_email,
+                b: (chunks) => (
+                  <span className="font-medium text-foreground">{chunks}</span>
+                ),
+              })}
             </>
           )}
         </span>
@@ -49,14 +48,14 @@ export default function InboxClient() {
               settings.platform_eligible ? "/admin/settings" : "/admin/billing"
             }
           >
-            {settings.platform_eligible ? "Choose my address" : "See plans"}
+            {settings.platform_eligible ? tr("choose") : tr("plans")}
           </Link>
         </Button>
         <button
           type="button"
           onClick={() => setBannerDismissed(true)}
           className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
-          aria-label="Dismiss"
+          aria-label={tr("dismiss")}
         >
           <X className="h-4 w-4" />
         </button>

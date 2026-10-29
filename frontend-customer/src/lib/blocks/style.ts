@@ -138,35 +138,13 @@ export function headingClasses(level?: string): string {
 
 // Option metadata for the editor UI. The first option of each is the "no
 // override" default (cleared from the stored style).
-export const STYLE_OPTIONS: Record<
-  StyleControl,
-  { label: string; value: string }[]
-> = {
-  background: [
-    { label: "Default", value: "default" },
-    { label: "Muted", value: "muted" },
-    { label: "Card", value: "card" },
-    { label: "Accent", value: "accent" },
-    { label: "Brand", value: "primary" },
-  ],
-  spacing: [
-    { label: "None", value: "none" },
-    { label: "Compact", value: "compact" },
-    { label: "Normal", value: "normal" },
-    { label: "Spacious", value: "spacious" },
-  ],
-  align: [
-    { label: "Auto", value: "auto" },
-    { label: "Left", value: "left" },
-    { label: "Center", value: "center" },
-    { label: "Right", value: "right" },
-  ],
-  textColor: [
-    { label: "Default", value: "default" },
-    { label: "Muted", value: "muted" },
-    { label: "Brand", value: "brand" },
-  ],
-};
+// The editor shows each value's label from `admin.owner.style.option`.
+export const STYLE_OPTIONS = {
+  background: ["default", "muted", "card", "accent", "primary"],
+  spacing: ["none", "compact", "normal", "spacious"],
+  align: ["auto", "left", "center", "right"],
+  textColor: ["default", "muted", "brand"],
+} as const satisfies Record<StyleControl, readonly string[]>;
 
 /** The value treated as "no override" for a control (cleared from `style`).
  *  `background:"default"` / `spacing:"normal"` are dropped by the server too;

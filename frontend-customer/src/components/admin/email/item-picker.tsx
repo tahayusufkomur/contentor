@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { ImageIcon, Search, Sparkles, X } from "lucide-react";
 
 import { ModalPortal } from "@/components/ui/modal-portal";
@@ -20,6 +21,7 @@ export function ItemPickerModal({
   onPick: (item: CatalogEntry | CatalogSlot) => void;
   onClose: () => void;
 }) {
+  const tr = useTranslations("admin.email.itemPicker");
   const [query, setQuery] = useState("");
   const q = query.trim().toLowerCase();
   const shown = useMemo(
@@ -40,18 +42,16 @@ export function ItemPickerModal({
       >
         <div
           role="dialog"
-          aria-label="Feature something of yours"
+          aria-label={tr("title")}
           className="flex max-h-[80vh] w-full max-w-lg flex-col overflow-hidden rounded-xl border bg-background shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between border-b px-5 py-3.5">
-            <h2 className="text-sm font-semibold">
-              Feature something of yours
-            </h2>
+            <h2 className="text-sm font-semibold">{tr("title")}</h2>
             <button
               type="button"
               onClick={onClose}
-              aria-label="Close"
+              aria-label={tr("close")}
               className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             >
               <X className="h-4 w-4" />
@@ -65,7 +65,7 @@ export function ItemPickerModal({
                 autoFocus
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search your courses, sessions and pages…"
+                placeholder={tr("search")}
                 className="h-8 w-full rounded-md border border-input bg-background pl-8 pr-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               />
             </div>
@@ -76,7 +76,7 @@ export function ItemPickerModal({
               <section>
                 <h3 className="mb-1.5 flex items-center gap-1.5 px-1 text-xs font-medium text-muted-foreground">
                   <Sparkles className="h-3.5 w-3.5" />
-                  Always up to date
+                  {tr("alwaysUpToDate")}
                 </h3>
                 <ul className="space-y-1">
                   {slots.map((slot) => (
@@ -84,7 +84,7 @@ export function ItemPickerModal({
                       key={slot.ref}
                       item={slot}
                       label={slot.slotLabel}
-                      sub={`Today: ${slot.title}`}
+                      sub={tr("today", { title: slot.title })}
                       onPick={onPick}
                     />
                   ))}
@@ -94,14 +94,12 @@ export function ItemPickerModal({
             <section>
               {!q && slots.length > 0 && (
                 <h3 className="mb-1.5 px-1 text-xs font-medium text-muted-foreground">
-                  Your offers and pages
+                  {tr("offers")}
                 </h3>
               )}
               {shown.length === 0 ? (
                 <p className="px-1 py-6 text-center text-sm text-muted-foreground">
-                  {q
-                    ? "Nothing matches."
-                    : "Nothing published yet. Your courses, sessions and articles show here once they are live."}
+                  {q ? tr("noMatch") : tr("none")}
                 </p>
               ) : (
                 <ul className="space-y-1">

@@ -72,8 +72,8 @@ function getInitials(name: string, locale: string) {
     .toLocaleUpperCase(locale);
 }
 
-function formatDate(dateStr: string, locale: string) {
-  if (!dateStr) return "N/A";
+function formatDate(dateStr: string, locale: string, na: string) {
+  if (!dateStr) return na;
   return new Date(dateStr).toLocaleDateString(locale, {
     year: "numeric",
     month: "short",
@@ -88,6 +88,9 @@ export function StudentDrawer({
 }: StudentDrawerProps) {
   const locale = useLocale();
   const tPlan = useTranslations("studio.plan");
+  const tr = useTranslations("admin.students.drawer");
+  const tc = useTranslations("common.actions");
+  const tSub = useTranslations("admin.subscription.status");
   const [activeTab, setActiveTab] = useState<"overview" | "actions">(
     "overview",
   );
@@ -113,11 +116,11 @@ export function StudentDrawer({
             : duration !== "forever" && { for_days: Number(duration) }),
         }),
       });
-      toast.success("Course access granted successfully!");
+      toast.success(tr("grantOk"));
       setGrantingAccess(false);
       onRefresh?.();
     },
-    { errorToast: "Failed to grant course access" },
+    { errorToast: tr("grantError") },
   );
 
   // Lock body scroll when drawer is open
@@ -143,7 +146,7 @@ export function StudentDrawer({
           setAvailableCourses(items);
           if (items.length > 0) setSelectedCourseId(String(items[0].id));
         })
-        .catch(() => toast.error("Could not load courses. Please try again."))
+        .catch(() => toast.error(tr("coursesError")))
         .finally(() => setLoadingCourses(false));
     }
   }, [grantingAccess, availableCourses.length]);
@@ -169,14 +172,16 @@ export function StudentDrawer({
             </Avatar>
             <div className="min-w-0">
               <h2 className="text-lg font-bold truncate leading-tight">
-                {student.name || "Unnamed Student"}
+                {student.name || tr("unnamed")}
               </h2>
               <p className="text-xs text-muted-foreground truncate flex items-center gap-1 mt-0.5">
                 <Mail className="h-3 w-3" />
                 {student.email}
               </p>
               <p className="text-[11px] text-muted-foreground mt-1">
-                Joined {formatDate(student.date_joined, locale)}
+                {tr("joined", {
+                  date: formatDate(student.date_joined, locale, tr("na")),
+                })}
               </p>
             </div>
           </div>
@@ -200,10 +205,10 @@ export function StudentDrawer({
           >
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="overview" className="text-xs">
-                Overview
+                {tr("tabOverview")}
               </TabsTrigger>
               <TabsTrigger value="actions" className="text-xs">
-                Quick Actions
+                {tr("tabActions")}
               </TabsTrigger>
             </TabsList>
 
@@ -213,14 +218,16 @@ export function StudentDrawer({
               <div className="rounded-xl border bg-card p-4 space-y-2">
                 <div className="flex items-center justify-between text-xs font-semibold">
                   <span className="text-muted-foreground uppercase tracking-wider text-[10px]">
-                    Membership
+                    {tr("membership")}
                   </span>
                   {student.subscription && (
                     <Badge
                       variant="outline"
                       className="text-[10px] uppercase font-mono"
                     >
-                      {student.subscription.status}
+                      {tSub.has(student.subscription.status as never)
+                        ? tSub(student.subscription.status as never)
+                        : student.subscription.status}
                     </Badge>
                   )}
                 </div>
@@ -240,12 +247,12 @@ export function StudentDrawer({
                             student.subscription.interval_months,
                             tPlan,
                           )
-                        : "Free"}
+                        : tr("free")}
                     </span>
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    No active membership.
+                    {tr("noMembership")}
                   </p>
                 )}
               </div>
@@ -255,14 +262,14 @@ export function StudentDrawer({
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-bold flex items-center gap-1.5">
                     <BookOpen className="h-4 w-4 text-primary" />
-                    Enrolled Courses ({coursesProgress.length})
+                    {tr("enrolled", { count: coursesProgress.length })}
                   </h3>
                 </div>
 
                 <div className="space-y-3">
                   {coursesProgress.length === 0 && (
                     <p className="text-sm text-muted-foreground">
-                      Not enrolled in any course yet.
+                      {tr("notEnrolled")}
                     </p>
                   )}
                   {coursesProgress.map((course) => (
@@ -289,12 +296,14 @@ export function StudentDrawer({
 
                       <div className="flex items-center justify-between text-[11px] text-muted-foreground">
                         <span>
-                          {course.completed_lessons} of {course.total_lessons}{" "}
-                          lessons completed
+                          {tr("lessonsDone", {
+                            done: course.completed_lessons,
+                            total: course.total_lessons,
+                          })}
                         </span>
                         {course.progress_percent === 100 && (
                           <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400 font-medium">
-                            <CheckCircle2 className="h-3 w-3" /> Done
+                            <CheckCircle2 className="h-3 w-3" /> {tr("done")}
                           </span>
                         )}
                       </div>
@@ -315,11 +324,10 @@ export function StudentDrawer({
                     </div>
                     <div>
                       <h4 className="text-sm font-semibold">
-                        Grant Course Access
+                        {tr("grantTitle")}
                       </h4>
                       <p className="text-xs text-muted-foreground">
-                        Enroll this student in a course manually without
-                        charging.
+                        {tr("grantText")}
                       </p>
                     </div>
                   </div>
@@ -329,7 +337,7 @@ export function StudentDrawer({
                     onClick={() => setGrantingAccess(true)}
                   >
                     <Key className="h-3.5 w-3.5" />
-                    Grant Course Enrollment
+                    {tr("grantButton")}
                   </Button>
                 </div>
 
@@ -340,11 +348,9 @@ export function StudentDrawer({
                       <Send className="h-5 w-5" />
                     </div>
                     <div>
-                      <h4 className="text-sm font-semibold">
-                        Send Direct Message
-                      </h4>
+                      <h4 className="text-sm font-semibold">{tr("dmTitle")}</h4>
                       <p className="text-xs text-muted-foreground">
-                        Compose a personal email or in-app message.
+                        {tr("dmText")}
                       </p>
                     </div>
                   </div>
@@ -358,7 +364,7 @@ export function StudentDrawer({
                       href={`/admin/messages/email/new?recipient=${student.id}`}
                     >
                       <Mail className="h-3.5 w-3.5" />
-                      Compose Email Message
+                      {tr("dmButton")}
                     </Link>
                   </Button>
                 </div>
@@ -371,10 +377,10 @@ export function StudentDrawer({
                     </div>
                     <div>
                       <h4 className="text-sm font-semibold">
-                        Payment & Refund History
+                        {tr("payTitle")}
                       </h4>
                       <p className="text-xs text-muted-foreground">
-                        View transactions, manage invoices, or issue refunds.
+                        {tr("payText")}
                       </p>
                     </div>
                   </div>
@@ -386,7 +392,7 @@ export function StudentDrawer({
                   >
                     <Link href={`/admin/students/${student.id}`}>
                       <CreditCard className="h-3.5 w-3.5" />
-                      View Transactions
+                      {tr("payButton")}
                     </Link>
                   </Button>
                 </div>
@@ -398,10 +404,10 @@ export function StudentDrawer({
         {/* Drawer Footer */}
         <div className="border-t px-6 py-4 bg-muted/30 flex items-center justify-between">
           <span className="text-xs text-muted-foreground font-mono">
-            Student ID: #{student.id}
+            {tr("studentId", { id: student.id })}
           </span>
           <Button variant="outline" size="sm" onClick={onClose}>
-            Done
+            {tr("done")}
           </Button>
         </div>
 
@@ -416,7 +422,7 @@ export function StudentDrawer({
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between border-b pb-3">
-                <h3 className="text-sm font-bold">Grant Free Course Access</h3>
+                <h3 className="text-sm font-bold">{tr("modalTitle")}</h3>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -429,12 +435,12 @@ export function StudentDrawer({
 
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-muted-foreground">
-                  Select Course:
+                  {tr("selectCourse")}
                 </label>
                 {loadingCourses ? (
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Spinner size="sm" />
-                    Loading courses...
+                    {tr("loadingCourses")}
                   </div>
                 ) : (
                   <select
@@ -456,7 +462,7 @@ export function StudentDrawer({
                   htmlFor="grant-duration"
                   className="text-xs font-semibold text-muted-foreground"
                 >
-                  For how long:
+                  {tr("duration")}
                 </label>
                 <select
                   id="grant-duration"
@@ -464,16 +470,16 @@ export function StudentDrawer({
                   value={duration}
                   onChange={(e) => setDuration(e.target.value)}
                 >
-                  <option value="forever">Forever</option>
-                  <option value="30">1 month</option>
-                  <option value="90">3 months</option>
-                  <option value="365">1 year</option>
-                  <option value="until">Until a date</option>
+                  <option value="forever">{tr("forever")}</option>
+                  <option value="30">{tr("month1")}</option>
+                  <option value="90">{tr("month3")}</option>
+                  <option value="365">{tr("year1")}</option>
+                  <option value="until">{tr("untilDate")}</option>
                 </select>
                 {duration === "until" && (
                   <input
                     type="date"
-                    aria-label="Last day of access"
+                    aria-label={tr("lastDay")}
                     className="w-full rounded-lg border bg-background p-2 text-xs font-medium focus:outline-none"
                     value={untilDate}
                     onChange={(e) => setUntilDate(e.target.value)}
@@ -487,17 +493,17 @@ export function StudentDrawer({
                   size="sm"
                   onClick={() => setGrantingAccess(false)}
                 >
-                  Cancel
+                  {tc("cancel")}
                 </Button>
                 <Button
                   size="sm"
                   className="bg-purple-600 hover:bg-purple-700 text-white"
                   onClick={handleGrantAccess}
                   loading={granting}
-                  loadingText="Granting…"
+                  loadingText={tr("granting")}
                   disabled={duration === "until" && !untilDate}
                 >
-                  Confirm Grant
+                  {tr("confirmGrant")}
                 </Button>
               </div>
             </div>

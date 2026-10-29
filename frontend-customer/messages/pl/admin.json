@@ -731,7 +731,14 @@
     "archiveError": "Nie udało się zarchiwizować. Spróbuj ponownie.",
     "spamError": "Nie udało się oznaczyć jako spam. Spróbuj ponownie.",
     "deleteError": "Nie udało się usunąć. Spróbuj ponownie.",
-    "fillFields": "Wypełnij wszystkie pola."
+    "fillFields": "Wypełnij wszystkie pola.",
+    "banner": {
+      "pick": "Wybierz swój adres e-mail, aby uczestnicy mogli do ciebie pisać, a ich wiadomości trafiały prosto tutaj, do twojej skrzynki odbiorczej.",
+      "upgrade": "Twoje wiadomości są wysyłane z <b>{email}</b>, na który uczestnicy nie mogą odpowiedzieć. Przejdź na wyższy plan, aby zyskać własny adres i odbierać ich wiadomości e-mail prosto tutaj.",
+      "choose": "Wybierz mój adres",
+      "plans": "Zobacz plany",
+      "dismiss": "Odrzuć"
+    }
   },
   "setup": {
     "title": "Uruchom swoją witrynę",
@@ -1568,6 +1575,65 @@
         "title": "Twój tytuł",
         "body": "Twoja wiadomość",
         "now": "teraz"
+      },
+      "templateNamePrompt": "Nazwij ten szablon:",
+      "templateSaved": "Szablon zapisany",
+      "templateError": "Nie udało się zapisać szablonu",
+      "pickStart": "Wybierz datę rozpoczęcia",
+      "pickWeekday": "Wybierz dzień tygodnia",
+      "recurringCreated": "Utworzono wiadomość cykliczną",
+      "scheduledToast": "Wiadomość zaplanowana",
+      "sentToast": "Wiadomość wysłana",
+      "draftCleanup": "Wysłano, ale nie udało się usunąć wersji roboczej, z której ją przejrzano.",
+      "sendError": "Nie udało się wysłać ogłoszenia",
+      "send": {
+        "recurring": "Utwórz cykliczną",
+        "schedule": "Zaplanuj",
+        "now": "Wyślij teraz"
+      },
+      "sending": {
+        "recurring": "Tworzenie…",
+        "schedule": "Planowanie…",
+        "now": "Wysyłanie…"
+      },
+      "reviewing": "Przeglądanie wersji roboczej — nic nie zostanie wysłane, dopóki nie potwierdzisz poniżej.",
+      "startFromTemplate": "Rozpocznij od szablonu",
+      "saveAsTemplate": "Zapisz jako szablon",
+      "saving": "Zapisywanie…",
+      "titlePlaceholder": "Tytuł",
+      "bodyTitle": "Treść ogłoszenia",
+      "bodyPlaceholder": "Wpisz treść ogłoszenia…",
+      "change": "Zmień",
+      "removeLink": "Usuń link",
+      "addLink": "Dodaj link (opcjonalnie) — dokąd przeniesie ich dotknięcie ogłoszenia",
+      "reach": {
+        "counting": "Obliczanie, kto to otrzyma…",
+        "nobody": "Żaden uczestnik nie spełnia tych filtrów — nikt nie otrzyma tej wiadomości.",
+        "withPush": "Trafia do <b>{audience}</b> {audience, plural, one {uczestnika} few {uczestników} many {uczestników} other {uczestników}} w ich aktualnościach · <b>{push}</b> również otrzyma powiadomienie na telefon",
+        "noPush": "Trafia do <b>{audience}</b> {audience, plural, one {uczestnika} few {uczestników} many {uczestników} other {uczestników}} w ich aktualnościach · nikt nie ma jeszcze włączonych powiadomień na telefon"
+      },
+      "mode": {
+        "once": "Jednorazowo",
+        "repeating": "Cyklicznie"
+      },
+      "freq": {
+        "daily": "Codziennie",
+        "weekly": "Co tydzień",
+        "monthly": "Co miesiąc"
+      },
+      "scheduleOptional": "Harmonogram (opcjonalnie)",
+      "dayOfMonth": "Dzień miesiąca",
+      "time": "Godzina",
+      "starts": "Rozpoczyna się",
+      "ends": "Kończy się:",
+      "endsNever": "Nigdy",
+      "endsOnDate": "W wybranym dniu",
+      "timezoneNote": "Godziny są podane w strefie czasowej Twojego konta.",
+      "templates": {
+        "title": "Wybierz szablon",
+        "search": "Szukaj szablonów…",
+        "builtin": "wbudowany",
+        "empty": "Nie ma jeszcze szablonów."
       }
     },
     "receipt": {
@@ -1682,6 +1748,28 @@
       "duplicate": "Duplikuj",
       "duplicateNamed": "Duplikuj {name}",
       "deleteNamed": "Usuń {name}"
+    },
+    "recurring": {
+      "daily": "Codziennie o {time}",
+      "weekly": "Co {day} o {time}",
+      "monthly": "Co miesiąc w dniu {day} o {time}",
+      "loadError": "Nie udało się załadować cyklicznych ogłoszeń.",
+      "empty": "Nie ma jeszcze cyklicznych ogłoszeń.",
+      "updateError": "Nie udało się zaktualizować",
+      "confirmDelete": "Usunąć to cykliczne ogłoszenie?",
+      "deleted": "Usunięto",
+      "deleteError": "Nie udało się usunąć",
+      "nextRun": "następne: {when}",
+      "paused": "wstrzymane",
+      "pause": "Wstrzymaj",
+      "resume": "Wznów"
+    },
+    "templateList": {
+      "loadError": "Nie udało się załadować szablonów.",
+      "empty": "Nie masz jeszcze zapisanych szablonów. Użyj “Zapisz jako szablon” podczas tworzenia.",
+      "confirmDelete": "Usunąć ten szablon?",
+      "deleted": "Usunięto",
+      "deleteError": "Nie udało się usunąć"
     }
   },
   "events": {
@@ -2219,6 +2307,45 @@
       "cancel": "Anuluj",
       "refunding": "Zwracanie…",
       "confirmRefund": "Potwierdź zwrot"
+    },
+    "drawer": {
+      "grantOk": "Pomyślnie przyznano dostęp do kursu!",
+      "grantError": "Nie udało się przyznać dostępu do kursu",
+      "coursesError": "Nie udało się załadować kursów. Spróbuj ponownie.",
+      "na": "N/D",
+      "unnamed": "Nienazwany Uczestnik",
+      "joined": "Dołączył {date}",
+      "tabOverview": "Przegląd",
+      "tabActions": "Szybkie Akcje",
+      "membership": "Członkostwo",
+      "free": "Bezpłatne",
+      "noMembership": "Brak aktywnego członkostwa.",
+      "enrolled": "Zapisane Kursy ({count})",
+      "notEnrolled": "Nie zapisano jeszcze na żaden kurs.",
+      "lessonsDone": "{total, plural, one {{done} z # ukończonej lekcji} few {{done} z # ukończonych lekcji} many {{done} z # ukończonych lekcji} other {{done} z # ukończonych lekcji}}",
+      "done": "Gotowe",
+      "grantTitle": "Przyznaj Dostęp Do Kursu",
+      "grantText": "Zapisz tego uczestnika na kurs ręcznie, bez pobierania opłat.",
+      "grantButton": "Przyznaj Zapis Na Kurs",
+      "dmTitle": "Wyślij Wiadomość Bezpośrednią",
+      "dmText": "Napisz osobistą wiadomość e-mail lub wiadomość w aplikacji.",
+      "dmButton": "Napisz Wiadomość E-mail",
+      "payTitle": "Historia Płatności I Zwrotów",
+      "payText": "Przeglądaj transakcje, zarządzaj fakturami lub zlecaj zwroty.",
+      "payButton": "Wyświetl Transakcje",
+      "studentId": "ID Uczestnika: #{id}",
+      "modalTitle": "Przyznaj Bezpłatny Dostęp Do Kursu",
+      "selectCourse": "Wybierz Kurs:",
+      "loadingCourses": "Ładowanie kursów...",
+      "duration": "Na jak długo:",
+      "forever": "Na zawsze",
+      "month1": "1 miesiąc",
+      "month3": "3 miesiące",
+      "year1": "1 rok",
+      "untilDate": "Do określonej daty",
+      "lastDay": "Ostatni dzień dostępu",
+      "granting": "Przyznawanie…",
+      "confirmGrant": "Potwierdź Przyznanie"
     }
   },
   "courseForm": {
@@ -2450,5 +2577,362 @@
     "statusLabel": "Status:",
     "close": "Zamknij",
     "manage": "Zarządzaj {category}"
+  },
+  "email": {
+    "workspace": {
+      "readingBrief": "Projektant · czyta twój brief",
+      "saveRetry": "Twoja ostatnia zmiana nie mogła zostać zapisana. Ponawianie próby…",
+      "designerFailed": "Projektant nie mógł tego dokończyć.",
+      "designerDone": "Projektant skończył",
+      "designerDoneUndo": "Projektant skończył. Cofnięcie przywraca poprzedni stan.",
+      "testSent": "Wysłano test na adres {email}",
+      "savedAsTemplate": "Zapisano w twoich szablonach jako “{name}”",
+      "templates": "Szablony",
+      "messages": "Wiadomości",
+      "templateName": "Nazwa szablonu",
+      "subject": "Temat",
+      "subjectPlaceholder": "Temat wiadomości",
+      "previewText": "Tekst podglądu",
+      "previewPlaceholder": "Tekst podglądu: linijka wyświetlana w skrzynkach odbiorczych po temacie",
+      "opening": "Otwieranie…",
+      "writeWithIt": "Napisz e-mail za jego pomocą",
+      "saveAsTemplate": "Zapisz jako szablon",
+      "saving": "Zapisywanie…",
+      "sendTest": "Wyślij mi test",
+      "sending": "Wysyłanie…",
+      "nextSend": "Dalej: wyślij",
+      "designerWorking": "Projektant pracuje",
+      "designerWorkingText": "Projektant pracuje…",
+      "onlyThisBlock": "Projektant zmienia tylko ten blok",
+      "askWhole": "Zapytaj o cały e-mail",
+      "askDesigner": "Zapytaj Projektanta",
+      "askBlockPlaceholder": "Zapytaj Projektanta o ten blok: “cieplej”, “krócej”, “dodaj zdjęcie”…",
+      "askPlaceholder": "Zapytaj Projektanta: “zrób cieplej”, “dodaj moją kolejną sesję na żywo”, “krócej, z jednym przyciskiem”…",
+      "asking": "Wysyłanie zapytania…",
+      "ask": "Zapytaj",
+      "choosePhoto": "Wybierz zdjęcie",
+      "photoError": "Nie udało się dodać tego zdjęcia. Spróbuj innego.",
+      "saveState": {
+        "saved": "Zapisano",
+        "saving": "Zapisywanie…",
+        "error": "Nie zapisano"
+      }
+    },
+    "itemPicker": {
+      "title": "Wyróżnij coś swojego",
+      "search": "Szukaj swoich kursów, sesji i stron…",
+      "alwaysUpToDate": "Zawsze aktualne",
+      "today": "Dzisiaj: {title}",
+      "offers": "Twoje oferty i strony",
+      "noMatch": "Nic nie pasuje.",
+      "none": "Jeszcze nic nie opublikowano. Twoje kursy, sesje i artykuły pojawią się tutaj, gdy będą aktywne.",
+      "close": "Zamknij"
+    },
+    "recipients": {
+      "title": "Odbiorcy",
+      "all": "Wszyscy uczestnicy",
+      "course": "Według kursu",
+      "individual": "Pojedynczy uczestnicy",
+      "selectCourses": "Wybierz kursy",
+      "noCourses": "Nie znaleziono kursów.",
+      "searchStudents": "Szukaj uczestników...",
+      "noStudents": "Nie znaleziono uczestników.",
+      "counting": "Liczenie odbiorców...",
+      "count": "{count, plural, one {# odbiorca} few {# odbiorcy} many {# odbiorców} other {# odbiorców}}",
+      "allActive": "Wszyscy aktywni uczestnicy",
+      "selectAbove": "Wybierz odbiorców powyżej"
+    }
+  },
+  "mailbox": {
+    "errors": {
+      "taken": "Ten adres jest już zajęty. Spróbuj innego.",
+      "reserved_local_part": "Ten adres jest zarezerwowany. Spróbuj innego.",
+      "invalid_local_part": "Dozwolone są tylko litery, cyfry, kropki, myślniki i podkreślenia.",
+      "upgrade_required": "Zmień plan na wyższy, aby uzyskać adres.",
+      "feature_unavailable": "Niestandardowe adresy nie są w tej chwili dostępne."
+    },
+    "onlyChars": "Dozwolone są tylko litery, cyfry, kropki, myślniki i podkreślenia.",
+    "saveFailed": "Nie udało się zapisać. Spróbuj ponownie.",
+    "emailSaved": "Adres e-mail został zapisany.",
+    "prefixEmpty": "Prefiks adresu e-mail nie może być pusty.",
+    "settingsSaved": "Ustawienia skrzynki pocztowej zostały zapisane.",
+    "settingsError": "Nie udało się zapisać ustawień skrzynki pocztowej. Spróbuj ponownie.",
+    "yourAddress": "Twój adres e-mail",
+    "claimText": "Wybierz adres w domenie {domain}. Uczestnicy mogą pisać do ciebie pod ten adres, a ich wiadomości trafią do twojej skrzynki odbiorczej.",
+    "chooseAddress": "Wybierz swój adres",
+    "willSee": "Twoi uczestnicy zobaczą: <m>{address}</m>",
+    "active": "Aktywny adres: <m>{email}</m>",
+    "saving": "Zapisywanie…",
+    "saveAddress": "Zapisz adres",
+    "customDomain": "Chcesz mieć markowy adres we własnej domenie (jak <m>info@yourdomain.com</m>)? Skontaktuj się ze wsparciem, aby dodać własną domenę.",
+    "title": "Skrzynka pocztowa",
+    "freeText": "Ustaw niestandardowy adres e-mail dla swojej platformy.",
+    "sendingFrom": "Aktualnie wysyłasz z:",
+    "upgradeText": "Przejdź na płatny plan, aby uzyskać własny adres e-mail — uczestnicy będą mogli pisać do ciebie, a ich wiadomości trafią prosto do twojej skrzynki odbiorczej.",
+    "domainText": "Wybierz swój adres e-mail i włącz skrzynkę odbiorczą, aby otrzymywać wiadomości od uczestników.",
+    "enable": "Włącz skrzynkę odbiorczą",
+    "enableText": "Po włączeniu uczestnicy mogą wysyłać wiadomości na twój adres.",
+    "saveChanges": "Zapisz Zmiany"
+  },
+  "owner": {
+    "blockForm": {
+      "notEditable": "Tego typu bloku nie można tutaj edytować."
+    },
+    "brand": {
+      "name": "Nazwa marki",
+      "namePlaceholder": "Moja Platforma",
+      "logo": "Logo",
+      "editLogo": "Edytuj logo",
+      "createLogo": "Utwórz logo",
+      "darkMode": "Zezwalaj na tryb ciemny dla odwiedzających",
+      "darkModeHint": "Pokazuje przełącznik trybu jasnego/ciemnego w publicznym nagłówku i zachowuje dostępność ciemnej palety."
+    },
+    "toolbar": {
+      "drag": "Przeciągnij, aby zmienić kolejność",
+      "reorder": "Zmień kolejność bloku {label}",
+      "confirmDelete": "Potwierdź usunięcie",
+      "delete": "Usuń blok",
+      "cancel": "Anuluj"
+    },
+    "canvas": {
+      "empty": "Ta strona nie ma jeszcze żadnych bloków.",
+      "emptyHint": "Dodaj go z panelu edytora lub przeciągnij blok tutaj.",
+      "editText": "Edytuj tekst",
+      "hidden": "Ukryty"
+    },
+    "undo": "Cofnij (⌘Z)",
+    "redo": "Ponów (⌘⇧Z)",
+    "cx": {
+      "failure": {
+        "disabled": "Projektowanie AI nie jest teraz dostępne. Spróbuj ponownie później.",
+        "upgrade_required": "Niestandardowe sekcje są dostępne w płatnych planach.",
+        "quota_exhausted": "Wykorzystałeś zmiany AI na ten miesiąc. Odnowią się w przyszłym miesiącu.",
+        "error": "Nie udało mi się tego zbudować. Spróbuj opisać to trochę inaczej."
+      },
+      "missing": "To jeszcze niemożliwe: {missing}. Zbudowałem coś najbardziej zbliżonego.",
+      "describe": "Opisz sekcję",
+      "placeholder": "Plan dzień po dniu mojego 5-dniowego wyjazdu, ze zdjęciem na każdy dzień",
+      "designing": "Projektowanie…",
+      "create": "Utwórz z AI",
+      "yours": "Twoje sekcje",
+      "change": "Zmień z AI",
+      "changePlaceholder": "Zrób dwie kolumny i dodaj krótki wstęp",
+      "changing": "Zmienianie…",
+      "apply": "Zastosuj zmianę"
+    },
+    "logo": {
+      "alt": "Logo",
+      "uploadFailed": "Przesyłanie nie powiodło się",
+      "uploading": "Przesyłanie…",
+      "replace": "Zastąp logo",
+      "upload": "Prześlij logo",
+      "uploaded": "{pct}% przesłano"
+    },
+    "look": {
+      "original": "Oryginalny",
+      "title": "Wygląd",
+      "hint": "Układy, kolory i czcionki dla każdej strony.",
+      "change": "Zmień wygląd",
+      "error": "Nie udało się zmienić wyglądu. Spróbuj ponownie.",
+      "dialog": "Zmień swój wygląd",
+      "dialogHint": "Każda strona przyjmuje wygląd, który wybierzesz, i zachowuje swoje teksty i zdjęcia. Dotknij wyglądu, aby zobaczyć go jako stronę.",
+      "changing": "Zmienianie…",
+      "use": "Użyj tego wyglądu",
+      "cancel": "Anuluj"
+    },
+    "style": {
+      "title": "Styl",
+      "control": {
+        "background": "Tło",
+        "spacing": "Odstępy",
+        "align": "Wyrównanie tekstu",
+        "textColor": "Kolor tekstu"
+      },
+      "option": {
+        "background": {
+          "default": "Domyślne",
+          "muted": "Stonowane",
+          "card": "Karta",
+          "accent": "Akcent",
+          "primary": "Marka"
+        },
+        "spacing": {
+          "none": "Brak",
+          "compact": "Kompaktowe",
+          "normal": "Normalne",
+          "spacious": "Przestronne"
+        },
+        "align": {
+          "auto": "Auto",
+          "left": "Do lewej",
+          "center": "Do środka",
+          "right": "Do prawej"
+        },
+        "textColor": {
+          "default": "Domyślny",
+          "muted": "Stonowany",
+          "brand": "Marka"
+        }
+      }
+    },
+    "blocks": {
+      "templates": "Szablony",
+      "empty": "Nie ma jeszcze bloków. Dodaj blok poniżej.",
+      "moveUp": "Przesuń w górę",
+      "moveDown": "Przesuń w dół",
+      "hiddenTag": "(ukryty)",
+      "confirmDelete": "Usunąć ten blok?",
+      "addTitle": "Dodaj blok",
+      "add": "Dodaj blok",
+      "group": {
+        "content": "Treść",
+        "dynamic": "Dynamiczne",
+        "section": "Sekcje"
+      },
+      "deleteBlock": "Usuń blok",
+      "cancel": "Anuluj",
+      "delete": "Usuń"
+    },
+    "sidebar": {
+      "saveError": "Nie udało się zapisać Twoich zmian. Spróbuj ponownie.",
+      "editSite": "Edytuj witrynę",
+      "saving": "Zapisywanie",
+      "exit": "Wyjdź z trybu edycji — zobacz podgląd swojej witryny",
+      "done": "Gotowe",
+      "collapse": "Zwiń panel",
+      "tabSite": "Witryna",
+      "tabPages": "Strony",
+      "siteHint": "Marka i nawigacja obowiązują na każdej stronie.",
+      "section": {
+        "brand": "Marka",
+        "navbar": "Pasek nawigacji"
+      },
+      "editingPage": "Edycja strony",
+      "page": {
+        "home": "Strona główna",
+        "about": "O nas",
+        "courses": "Kursy",
+        "pricing": "Cennik",
+        "faq": "FAQ",
+        "contact": "Kontakt",
+        "events": "Wydarzenia"
+      },
+      "notEditable": "Tej strony nie można edytować w kreatorze. Wybierz stronę powyżej, aby edytować jej treść.",
+      "open": "Edytuj swoją stronę"
+    },
+    "navbar": {
+      "layout": "Układ",
+      "layoutAria": "Układ: {name}",
+      "layouts": {
+        "classic": "Klasyczny",
+        "centered": "Wyśrodkowany",
+        "split": "Podzielony",
+        "minimal": "Minimalistyczny",
+        "pill": "Pastylka"
+      },
+      "chooseTitle": "Wybierz stronę lub treść",
+      "chooseDestination": "Wybierz miejsce docelowe…",
+      "logoSize": "Rozmiar logo",
+      "showBrandName": "Pokaż nazwę marki obok logo",
+      "logoAndName": "Logo i nazwa",
+      "logoLayouts": {
+        "horizontal": "Obok siebie",
+        "stacked": "Jedno pod drugim",
+        "name_only": "Tylko nazwa"
+      },
+      "transparent": "Przezroczysty nad sekcją główną",
+      "transparentHint": "Przezroczysty w sekcji głównej strony głównej, nieprzezroczysty po przewinięciu",
+      "links": "Linki nawigacyjne",
+      "noLinks": "Nie ma jeszcze żadnych linków. Dodaj link poniżej.",
+      "moveUp": "Przesuń w górę",
+      "moveDown": "Przesuń w dół",
+      "moveUpAria": "Przesuń {name} w górę",
+      "moveDownAria": "Przesuń {name} w dół",
+      "linkFallback": "link",
+      "labelPlaceholder": "Etykieta",
+      "removeLink": "Usuń link",
+      "suggest": {
+        "events": "Sesje na żywo",
+        "store": "Sklep"
+      },
+      "addSuggestion": "Dodaj {name}",
+      "addLink": "Dodaj link",
+      "cta": "Przycisk CTA",
+      "ctaPlaceholder": "Tekst przycisku",
+      "showLogin": "Pokaż przycisk logowania",
+      "showLoginHint": "Wyświetl link \"Zaloguj się\" w nawigacji",
+      "showInstall": "Pokaż \"Zainstaluj aplikację\"",
+      "showInstallHint": "Odsyłaj odwiedzających do instalacji Twojej strony jako aplikacji"
+    },
+    "link": {
+      "title": "Wybierz link",
+      "tab": {
+        "pages": "Strony",
+        "courses": "Kursy",
+        "events": "Wydarzenia",
+        "custom": "Własny adres URL"
+      },
+      "page": {
+        "home": "Strona główna",
+        "about": "O nas",
+        "courses": "Kursy",
+        "pricing": "Cennik / Plany",
+        "faq": "FAQ",
+        "contact": "Kontakt",
+        "calendar": "Kalendarz",
+        "events": "Wydarzenia",
+        "store": "Sklep"
+      },
+      "search": {
+        "pages": "Szukaj stron…",
+        "courses": "Szukaj kursów…",
+        "events": "Szukaj wydarzeń…"
+      },
+      "coursesError": "Nie udało się załadować kursów. Spróbuj ponownie.",
+      "eventsError": "Nie udało się załadować wydarzeń. Spróbuj ponownie.",
+      "enterUrl": "Wpisz adres URL lub ścieżkę",
+      "urlPlaceholder": "/ścieżka lub https://…",
+      "useLink": "Użyj tego linku",
+      "noMatches": "Brak wyników dla “{query}”.",
+      "noCourses": "Nie ma jeszcze kursów.",
+      "noEvents": "Nie ma jeszcze wydarzeń."
+    },
+    "templates": {
+      "delete": "Usuń szablon",
+      "blocks": "{count, plural, one {# blok} few {# bloki} many {# bloków} other {# bloku}}",
+      "replace": "Zastąp stronę",
+      "cancel": "Anuluj",
+      "use": "Użyj tego szablonu",
+      "title": "Szablony",
+      "startFrom": "Zacznij od szablonu",
+      "none": "Nie ma jeszcze szablonów dla tej strony.",
+      "yours": "Twoje szablony",
+      "saveThisPage": "Zapisz tę stronę jako szablon",
+      "name": "Nazwa szablonu",
+      "save": "Zapisz"
+    },
+    "rich": {
+      "editText": "Edytuj tekst",
+      "bold": "Pogrubienie",
+      "italic": "Kursywa",
+      "bullets": "Lista punktowana",
+      "numbers": "Lista numerowana",
+      "addLink": "Dodaj link",
+      "cancel": "Anuluj",
+      "save": "Zapisz"
+    },
+    "field": {
+      "chooseImage": "Wybierz obraz",
+      "noText": "Nie ma jeszcze tekstu.",
+      "editText": "Edytuj tekst",
+      "pathPlaceholder": "/ścieżka lub https://…",
+      "chooseLink": "Wybierz stronę lub treść",
+      "browse": "Przeglądaj",
+      "noFilters": "Nie ma jeszcze filtrów. Utwórz filtry w swoim Studio twórcy, aby je tutaj wyświetlić.",
+      "item": "Element",
+      "itemNumber": "{name} {number}",
+      "addItem": "Dodaj {name}",
+      "addDefault": "element"
+    }
   }
 }

@@ -39,12 +39,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { TenantContext } from "@/hooks/use-tenant";
 import { TenantThemeStyle } from "@/components/shared/tenant-theme-style";
 import { SetupAssistantBubble } from "@/components/setup/setup-assistant-bubble";
-import {
-  PAGE_KEYS,
-  PAGE_LABELS,
-  PAGE_ROUTES,
-  pageKeyForPath,
-} from "@/lib/blocks/pages";
+import { PAGE_KEYS, PAGE_ROUTES, pageKeyForPath } from "@/lib/blocks/pages";
 import { SetupAssistantPanel } from "@/components/setup/setup-assistant-panel";
 import { refreshSetupStatus, useSetupStatus } from "@/lib/setup-assistant";
 import type { Block, PageTemplate, TenantConfig } from "@/types/tenant";
@@ -54,11 +49,10 @@ type SiteSection = "brand" | "navbar";
 
 const SITE_SECTIONS: {
   id: SiteSection;
-  label: string;
   icon: React.ReactNode;
 }[] = [
-  { id: "brand", label: "Brand", icon: <Palette className="h-4 w-4" /> },
-  { id: "navbar", label: "Navbar", icon: <Navigation className="h-4 w-4" /> },
+  { id: "brand", icon: <Palette className="h-4 w-4" /> },
+  { id: "navbar", icon: <Navigation className="h-4 w-4" /> },
 ];
 
 const DEBOUNCE_MS = 800;
@@ -80,6 +74,7 @@ export function EditSidebar({
   embedded = false,
   children,
 }: EditSidebarProps) {
+  const tr = useTranslations("admin.owner.sidebar");
   const router = useRouter();
   const navigate = useNavigate();
   const pathname = usePathname();
@@ -173,9 +168,9 @@ export function EditSidebar({
         if (res.ok) {
           router.refresh();
           void refreshSetupStatus();
-        } else toast.error("Could not save your changes. Please try again.");
+        } else toast.error(tr("saveError"));
       } catch {
-        toast.error("Could not save your changes. Please try again.");
+        toast.error(tr("saveError"));
       } finally {
         setSaving(false);
       }
@@ -184,7 +179,7 @@ export function EditSidebar({
         pendingConfigRef.current = nextConfig;
       return ok;
     },
-    [router],
+    [router, tr],
   );
   // Saves still on their way, so a host that closes the editor can wait for
   // them (closing the frame would cancel a request in flight).
@@ -429,8 +424,10 @@ export function EditSidebar({
                     style={{ minWidth: SIDEBAR_WIDTH }}
                   >
                     <div className="flex items-center gap-2">
-                      <h2 className="text-sm font-semibold">Edit site</h2>
-                      {saving && <Spinner size="sm" label="Saving" />}
+                      <h2 className="text-sm font-semibold">
+                        {tr("editSite")}
+                      </h2>
+                      {saving && <Spinner size="sm" label={tr("saving")} />}
                     </div>
                     <div className="flex items-center gap-1">
                       <UndoRedoControls />
@@ -438,15 +435,15 @@ export function EditSidebar({
                         <button
                           onClick={() => toggleEditMode(false)}
                           className="flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                          title="Exit edit mode — preview your site"
+                          title={tr("exit")}
                         >
-                          <Eye className="h-4 w-4" /> Done
+                          <Eye className="h-4 w-4" /> {tr("done")}
                         </button>
                       )}
                       <button
                         onClick={() => setOpen(false)}
                         className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                        title="Collapse panel"
+                        title={tr("collapse")}
                       >
                         <PanelLeftClose className="h-4 w-4" />
                       </button>
@@ -470,7 +467,7 @@ export function EditSidebar({
                           : "text-muted-foreground hover:bg-accent",
                       )}
                     >
-                      <Settings className="h-4 w-4" /> Site
+                      <Settings className="h-4 w-4" /> {tr("tabSite")}
                     </button>
                     <button
                       onClick={() => setMode("pages")}
@@ -481,7 +478,7 @@ export function EditSidebar({
                           : "text-muted-foreground hover:bg-accent",
                       )}
                     >
-                      <LayoutList className="h-4 w-4" /> Pages
+                      <LayoutList className="h-4 w-4" /> {tr("tabPages")}
                     </button>
                   </div>
 
@@ -495,7 +492,7 @@ export function EditSidebar({
                     {mode === "site" ? (
                       <>
                         <p className="px-5 pb-1 pt-4 text-xs text-muted-foreground">
-                          Brand and navigation apply across every page.
+                          {tr("siteHint")}
                         </p>
                         {SITE_SECTIONS.map((section) => (
                           <div
@@ -510,7 +507,7 @@ export function EditSidebar({
                                 {section.icon}
                               </span>
                               <span className="flex-1 text-left">
-                                {section.label}
+                                {tr(`section.${section.id}`)}
                               </span>
                               <ChevronDown
                                 className={cn(
@@ -553,7 +550,7 @@ export function EditSidebar({
                       <div className="px-5 py-4">
                         {/* Page switcher */}
                         <p className="mb-2 text-xs font-medium text-muted-foreground">
-                          Editing page
+                          {tr("editingPage")}
                         </p>
                         <div className="mb-4 flex flex-wrap gap-1.5">
                           {PAGE_KEYS.map((key) => (
@@ -567,7 +564,7 @@ export function EditSidebar({
                                   : "border-border text-muted-foreground hover:border-foreground hover:text-foreground",
                               )}
                             >
-                              {PAGE_LABELS[key]}
+                              {tr(`page.${key}`)}
                             </button>
                           ))}
                         </div>
@@ -582,8 +579,7 @@ export function EditSidebar({
                           />
                         ) : (
                           <p className="text-xs text-muted-foreground">
-                            This page isn&apos;t editable from the builder. Pick
-                            a page above to edit its content.
+                            {tr("notEditable")}
                           </p>
                         )}
                       </div>
@@ -601,10 +597,10 @@ export function EditSidebar({
                     editMode ? setOpen(true) : toggleEditMode(true)
                   }
                   className="fixed left-0 top-1/2 z-50 flex -translate-y-1/2 items-center gap-1.5 rounded-r-lg border border-l-0 bg-background py-2 pl-2 pr-1.5 text-xs font-medium text-muted-foreground shadow-md transition-colors hover:bg-accent hover:text-foreground"
-                  title="Edit your site"
+                  title={tr("open")}
                 >
                   <Pencil className="h-3.5 w-3.5" />
-                  Edit site
+                  {tr("editSite")}
                   <ChevronRight className="h-3.5 w-3.5" />
                 </button>
               )}

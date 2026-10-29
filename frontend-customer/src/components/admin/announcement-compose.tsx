@@ -84,6 +84,7 @@ export default function AnnouncementCompose({
   const locale = useLocale();
   const tr = useTranslations("admin.messages.compose");
   const tf = useTranslations("admin.focus");
+  const tc = useTranslations("common.actions");
   const editor = useRichEditor();
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -311,7 +312,7 @@ export default function AnnouncementCompose({
   const { run: saveAsTemplate, loading: savingTemplate } = useAsyncAction(
     async () => {
       if (!title.trim()) return;
-      const name = window.prompt("Name this template:", title.trim());
+      const name = window.prompt(tr("templateNamePrompt"), title.trim());
       if (!name) return;
       await saveTemplate({
         name,
@@ -320,20 +321,20 @@ export default function AnnouncementCompose({
         link: link.trim() || "",
         link_label: linkLabel,
       });
-      toast.success("Template saved");
+      toast.success(tr("templateSaved"));
     },
-    { errorToast: "Could not save template" },
+    { errorToast: tr("templateError") },
   );
 
   const { run: send, loading: sending } = useAsyncAction(
     async () => {
       if (!title.trim()) return;
       if (mode === "repeating" && !startDate) {
-        toast.error("Pick a start date");
+        toast.error(tr("pickStart"));
         return;
       }
       if (mode === "repeating" && freq === "weekly" && weekday === null) {
-        toast.error("Pick a day of the week");
+        toast.error(tr("pickWeekday"));
         return;
       }
       if (mode === "repeating") {
@@ -351,7 +352,7 @@ export default function AnnouncementCompose({
           start_date: startDate,
           end_date: endsOnDate && endDate ? endDate : null,
         });
-        toast.success("Repeating message created");
+        toast.success(tr("recurringCreated"));
       } else {
         await createAnnouncement({
           title: title.trim(),
@@ -363,7 +364,7 @@ export default function AnnouncementCompose({
             ? new Date(scheduledAt).toISOString()
             : null,
         });
-        toast.success(scheduledAt ? "Message scheduled" : "Message sent");
+        toast.success(scheduledAt ? tr("scheduledToast") : tr("sentToast"));
       }
       if (reviewDraft) {
         // The draft was only ever a template for the announcement just
@@ -373,30 +374,28 @@ export default function AnnouncementCompose({
         try {
           await deleteAnnouncement(reviewDraft.id);
         } catch {
-          toast.error(
-            "Sent, but couldn't remove the draft it was reviewed from.",
-          );
+          toast.error(tr("draftCleanup"));
         }
         onDraftReviewed?.();
       }
       reset();
       onSent();
     },
-    { errorToast: "Failed to send announcement" },
+    { errorToast: tr("sendError") },
   );
 
   const sendLabel =
     mode === "repeating"
-      ? "Create recurring"
+      ? tr("send.recurring")
       : scheduledAt
-        ? "Schedule"
-        : "Send now";
+        ? tr("send.schedule")
+        : tr("send.now");
   const sendingLabel =
     mode === "repeating"
-      ? "Creating…"
+      ? tr("sending.recurring")
       : scheduledAt
-        ? "Scheduling…"
-        : "Sending…";
+        ? tr("sending.schedule")
+        : tr("sending.now");
 
   return (
     // The phone sits beside the form when the page has room for both (the team
@@ -405,9 +404,7 @@ export default function AnnouncementCompose({
       <div className="min-w-0 flex-1 basis-[22rem] space-y-4 rounded-xl border border-border bg-card p-4">
         {reviewDraft && (
           <div className="flex items-center justify-between gap-2 rounded-lg border border-primary/30 bg-primary/5 p-2.5 text-sm text-foreground">
-            <span>
-              Reviewing draft — nothing sends until you confirm below.
-            </span>
+            <span>{tr("reviewing")}</span>
             <button
               type="button"
               onClick={() => {
@@ -416,7 +413,7 @@ export default function AnnouncementCompose({
               }}
               className="shrink-0 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
             >
-              Cancel
+              {tc("cancel")}
             </button>
           </div>
         )}
@@ -426,7 +423,7 @@ export default function AnnouncementCompose({
             onClick={() => setTemplateOpen(true)}
             className="flex items-center gap-1.5 text-sm text-primary hover:underline"
           >
-            <FileText className="h-4 w-4" /> Start from a template
+            <FileText className="h-4 w-4" /> {tr("startFromTemplate")}
           </button>
           {title.trim() && (
             <Button
@@ -434,10 +431,10 @@ export default function AnnouncementCompose({
               variant="ghost"
               onClick={saveAsTemplate}
               loading={savingTemplate}
-              loadingText="Saving…"
+              loadingText={tr("saving")}
               className="h-auto p-0 text-sm font-normal text-muted-foreground hover:bg-transparent hover:text-foreground"
             >
-              Save as template
+              {tr("saveAsTemplate")}
             </Button>
           )}
         </div>
@@ -453,7 +450,7 @@ export default function AnnouncementCompose({
           value={shown("title")}
           readOnly={writing("title")}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Title"
+          placeholder={tr("titlePlaceholder")}
           maxLength={200} // Announcement.title
           className="w-full rounded-lg border border-border bg-background p-2 text-sm"
         />
@@ -464,7 +461,7 @@ export default function AnnouncementCompose({
           onClick={() =>
             editor?.openRichEditor({
               value: body,
-              title: "Announcement body",
+              title: tr("bodyTitle"),
               onSave: setBody,
             })
           }
@@ -474,7 +471,7 @@ export default function AnnouncementCompose({
           {shown("body") ? (
             <span dangerouslySetInnerHTML={{ __html: shown("body") }} />
           ) : (
-            "Write announcement body…"
+            tr("bodyPlaceholder")
           )}
         </button>
 
@@ -490,11 +487,11 @@ export default function AnnouncementCompose({
                 onClick={() => setLinkPickerOpen(true)}
                 className="rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
               >
-                Change
+                {tr("change")}
               </button>
               <button
                 type="button"
-                aria-label="Remove link"
+                aria-label={tr("removeLink")}
                 onClick={() => {
                   setLink("");
                   setLinkLabel("");
@@ -512,7 +509,7 @@ export default function AnnouncementCompose({
             className="flex w-full items-center gap-2 rounded-lg border border-dashed border-border bg-background p-3 text-left text-sm text-muted-foreground hover:border-primary hover:text-foreground"
           >
             <Link2 className="h-4 w-4 shrink-0" />
-            Add a link (optional) — where tapping the announcement takes them
+            {tr("addLink")}
           </button>
         )}
 
@@ -523,36 +520,27 @@ export default function AnnouncementCompose({
               <div className="font-medium">{tr("audience.title")}</div>
               {reach === null ? (
                 <div className="text-muted-foreground">
-                  Calculating who will receive this…
+                  {tr("reach.counting")}
                 </div>
               ) : reach.audience === 0 ? (
                 <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-2.5 text-destructive">
                   <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                  <span>
-                    No students match these filters — nobody will receive this
-                    message.
-                  </span>
+                  <span>{tr("reach.nobody")}</span>
                 </div>
               ) : (
                 <div className="rounded-lg border border-border bg-background p-2.5">
                   <Megaphone className="mr-1 inline h-4 w-4 align-[-3px]" />
-                  Goes to{" "}
-                  <strong className="text-foreground">
-                    {reach.audience}
-                  </strong>{" "}
-                  student
-                  {reach.audience === 1 ? "" : "s"} in their feed
-                  {reach.push_reachable > 0 ? (
-                    <>
-                      {" "}
-                      ·{" "}
-                      <strong className="text-foreground">
-                        {reach.push_reachable}
-                      </strong>{" "}
-                      also get a phone notification
-                    </>
-                  ) : (
-                    <> · none have phone notifications turned on yet</>
+                  {tr.rich(
+                    reach.push_reachable > 0
+                      ? "reach.withPush"
+                      : "reach.noPush",
+                    {
+                      audience: reach.audience,
+                      push: reach.push_reachable,
+                      b: (chunks) => (
+                        <strong className="text-foreground">{chunks}</strong>
+                      ),
+                    },
                   )}
                 </div>
               )}
@@ -630,14 +618,14 @@ export default function AnnouncementCompose({
                     onClick={() => setMode(m)}
                     className={`rounded-md px-3 py-1 capitalize ${mode === m ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
                   >
-                    {m === "once" ? "One time" : "Repeating"}
+                    {tr(`mode.${m}`)}
                   </button>
                 ))}
               </div>
 
               {mode === "once" ? (
                 <label className="block">
-                  Schedule (optional)
+                  {tr("scheduleOptional")}
                   <input
                     type="datetime-local"
                     value={scheduledAt}
@@ -655,7 +643,7 @@ export default function AnnouncementCompose({
                         onClick={() => setFreq(f)}
                         className={`rounded-full border px-3 py-1 capitalize ${freq === f ? "bg-primary text-primary-foreground" : "border-border"}`}
                       >
-                        {f}
+                        {tr(`freq.${f}`)}
                       </button>
                     ))}
                   </div>
@@ -677,7 +665,7 @@ export default function AnnouncementCompose({
 
                   {freq === "monthly" && (
                     <label className="block">
-                      Day of month
+                      {tr("dayOfMonth")}
                       <input
                         type="number"
                         min={1}
@@ -695,7 +683,7 @@ export default function AnnouncementCompose({
 
                   <div className="flex flex-wrap items-center gap-3">
                     <label>
-                      Time
+                      {tr("time")}
                       <input
                         type="time"
                         value={sendTime}
@@ -704,7 +692,7 @@ export default function AnnouncementCompose({
                       />
                     </label>
                     <label>
-                      Starts
+                      {tr("starts")}
                       <input
                         type="date"
                         value={startDate}
@@ -715,14 +703,14 @@ export default function AnnouncementCompose({
                   </div>
 
                   <div className="flex flex-wrap items-center gap-3">
-                    <span>Ends:</span>
+                    <span>{tr("ends")}</span>
                     <label className="flex items-center gap-1">
                       <input
                         type="radio"
                         checked={!endsOnDate}
                         onChange={() => setEndsOnDate(false)}
                       />{" "}
-                      Never
+                      {tr("endsNever")}
                     </label>
                     <label className="flex items-center gap-1">
                       <input
@@ -730,7 +718,7 @@ export default function AnnouncementCompose({
                         checked={endsOnDate}
                         onChange={() => setEndsOnDate(true)}
                       />{" "}
-                      On date
+                      {tr("endsOnDate")}
                     </label>
                     {endsOnDate && (
                       <input
@@ -743,7 +731,7 @@ export default function AnnouncementCompose({
                   </div>
 
                   <p className="text-xs text-muted-foreground">
-                    Times are in your account timezone.
+                    {tr("timezoneNote")}
                   </p>
                 </div>
               )}
@@ -794,6 +782,7 @@ function TemplatePickerModal({
   onPick: (t: AnnouncementTemplate) => void;
   onClose: () => void;
 }) {
+  const tr = useTranslations("admin.messages.compose.templates");
   const [items, setItems] = useState<AnnouncementTemplate[] | null>(null);
   const [query, setQuery] = useState("");
 
@@ -826,7 +815,7 @@ function TemplatePickerModal({
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between border-b px-5 py-3.5">
-            <h2 className="text-sm font-semibold">Choose a template</h2>
+            <h2 className="text-sm font-semibold">{tr("title")}</h2>
             <button
               type="button"
               onClick={onClose}
@@ -841,7 +830,7 @@ function TemplatePickerModal({
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search templates…"
+                placeholder={tr("search")}
                 className="h-8 w-full rounded-md border border-input bg-background pl-8 pr-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               />
             </div>
@@ -864,7 +853,7 @@ function TemplatePickerModal({
                       {t.name}
                       {t.builtin && (
                         <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
-                          built-in
+                          {tr("builtin")}
                         </span>
                       )}
                     </span>
@@ -876,7 +865,7 @@ function TemplatePickerModal({
               </div>
             ) : (
               <p className="py-10 text-center text-sm text-muted-foreground">
-                No templates yet.
+                {tr("empty")}
               </p>
             )}
           </div>

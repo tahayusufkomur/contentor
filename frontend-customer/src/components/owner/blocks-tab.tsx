@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import {
@@ -34,6 +35,7 @@ export function BlocksTab({
   onSaveTemplate,
   onDeleteTemplate,
 }: BlocksTabProps) {
+  const tr = useTranslations("admin.owner.blocks");
   const store = useEditorStore();
   const blocks = store.blocksFor(pageKey);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
@@ -72,7 +74,7 @@ export function BlocksTab({
         onClick={() => setGalleryOpen(true)}
         className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed py-2 text-xs font-medium text-muted-foreground transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
       >
-        <LayoutTemplate className="h-3.5 w-3.5" /> Templates
+        <LayoutTemplate className="h-3.5 w-3.5" /> {tr("templates")}
       </button>
 
       {galleryOpen && (
@@ -86,9 +88,7 @@ export function BlocksTab({
       )}
 
       {blocks.length === 0 && (
-        <p className="text-xs text-muted-foreground">
-          No blocks yet. Add one below.
-        </p>
+        <p className="text-xs text-muted-foreground">{tr("empty")}</p>
       )}
 
       {blocks.map((block, i) => {
@@ -116,7 +116,7 @@ export function BlocksTab({
                   onClick={() => store.reorderBlocks(pageKey, i, i - 1)}
                   disabled={i === 0}
                   className="hover:text-foreground disabled:opacity-30"
-                  title="Move up"
+                  title={tr("moveUp")}
                 >
                   <ArrowUp className="h-3 w-3" />
                 </button>
@@ -125,7 +125,7 @@ export function BlocksTab({
                   onClick={() => store.reorderBlocks(pageKey, i, i + 1)}
                   disabled={i === blocks.length - 1}
                   className="hover:text-foreground disabled:opacity-30"
-                  title="Move down"
+                  title={tr("moveDown")}
                 >
                   <ArrowDown className="h-3 w-3" />
                 </button>
@@ -145,7 +145,7 @@ export function BlocksTab({
                 </span>
                 {!enabled && (
                   <span className="text-xs text-muted-foreground">
-                    (hidden)
+                    {tr("hiddenTag")}
                   </span>
                 )}
               </button>
@@ -161,7 +161,7 @@ export function BlocksTab({
                   setConfirmingId(confirmingId === block.id ? null : block.id)
                 }
                 className="text-muted-foreground transition-colors hover:text-destructive"
-                title="Delete block"
+                title={tr("deleteBlock")}
               >
                 <Trash2 className="h-4 w-4" />
               </button>
@@ -184,7 +184,7 @@ export function BlocksTab({
             {confirmingId === block.id && (
               <div className="flex items-center justify-between border-t bg-destructive/5 px-3 py-2 text-xs">
                 <span className="text-muted-foreground">
-                  Delete this block?
+                  {tr("confirmDelete")}
                 </span>
                 <div className="flex gap-2">
                   <button
@@ -192,14 +192,14 @@ export function BlocksTab({
                     onClick={() => remove(block.id)}
                     className="font-medium text-destructive hover:underline"
                   >
-                    Delete
+                    {tr("delete")}
                   </button>
                   <button
                     type="button"
                     onClick={() => setConfirmingId(null)}
                     className="text-muted-foreground hover:text-foreground"
                   >
-                    Cancel
+                    {tr("cancel")}
                   </button>
                 </div>
               </div>
@@ -224,14 +224,14 @@ export function BlocksTab({
         <div className="space-y-3 rounded-lg border bg-card p-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Add a block
+              {tr("addTitle")}
             </span>
             <button
               type="button"
               onClick={() => setAdding(false)}
               className="text-xs text-muted-foreground hover:text-foreground"
             >
-              Cancel
+              {tr("cancel")}
             </button>
           </div>
           {store.siteStyle && (
@@ -243,11 +243,7 @@ export function BlocksTab({
           ).map((group) => (
             <div key={group} className="space-y-1.5">
               <p className="text-xs font-medium text-muted-foreground">
-                {group === "content"
-                  ? "Content"
-                  : group === "dynamic"
-                    ? "Dynamic"
-                    : "Sections"}
+                {tr(`group.${group}`)}
               </p>
               <div className="grid grid-cols-2 gap-1.5">
                 {BLOCKS_BY_GROUP[group].map((def) => {
@@ -274,7 +270,7 @@ export function BlocksTab({
           onClick={() => setAdding(true)}
           className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed py-2.5 text-xs font-medium text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
         >
-          <Plus className="h-3.5 w-3.5" /> Add block
+          <Plus className="h-3.5 w-3.5" /> {tr("add")}
         </button>
       )}
     </div>

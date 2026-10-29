@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment } from "react";
+import { useTranslations } from "next-intl";
 import { pageWrapperClass } from "@/lib/blocks/section-defs";
 import {
   SortableContext,
@@ -36,6 +37,7 @@ export function EditModeCanvas({
   dynamicData,
   styleId,
 }: EditModeCanvasProps) {
+  const tr = useTranslations("admin.owner.canvas");
   const store = useOptionalEditorStore();
   const editMode = useEditMode();
   const liveBlocks = store ? store.blocksFor(pageKey) : blocks;
@@ -64,8 +66,8 @@ export function EditModeCanvas({
     <div className={pageWrapperClass(liveBlocks)}>
       {liveBlocks.length === 0 ? (
         <div className="px-4 py-20 text-center text-sm text-muted-foreground">
-          <p className="mb-2">This page has no blocks yet.</p>
-          <p>Add one from the editor panel, or drag a block here.</p>
+          <p className="mb-2">{tr("empty")}</p>
+          <p>{tr("emptyHint")}</p>
           <DropZone pageKey={pageKey} index={0} />
         </div>
       ) : (

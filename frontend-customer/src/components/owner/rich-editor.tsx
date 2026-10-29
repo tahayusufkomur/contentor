@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useTranslations } from "next-intl";
 import { Bold, Italic, List, ListOrdered, Link2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ModalPortal } from "@/components/ui/modal-portal";
@@ -74,6 +75,7 @@ function RichTextModal({
   onSave: (html: string) => void;
   onClose: () => void;
 }) {
+  const tr = useTranslations("admin.owner.rich");
   const ref = useRef<HTMLDivElement | null>(null);
   const savedRange = useRef<Range | null>(null);
   const [linkOpen, setLinkOpen] = useState(false);
@@ -135,7 +137,9 @@ function RichTextModal({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b px-5 py-3.5">
-              <h2 className="text-sm font-semibold">{title || "Edit text"}</h2>
+              <h2 className="text-sm font-semibold">
+                {title || tr("editText")}
+              </h2>
               <button
                 type="button"
                 onClick={onClose}
@@ -150,7 +154,7 @@ function RichTextModal({
               <button
                 type="button"
                 className={toolBtn}
-                title="Bold"
+                title={tr("bold")}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => exec("bold")}
               >
@@ -159,7 +163,7 @@ function RichTextModal({
               <button
                 type="button"
                 className={toolBtn}
-                title="Italic"
+                title={tr("italic")}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => exec("italic")}
               >
@@ -169,7 +173,7 @@ function RichTextModal({
               <button
                 type="button"
                 className={toolBtn}
-                title="Bulleted list"
+                title={tr("bullets")}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => exec("insertUnorderedList")}
               >
@@ -178,7 +182,7 @@ function RichTextModal({
               <button
                 type="button"
                 className={toolBtn}
-                title="Numbered list"
+                title={tr("numbers")}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => exec("insertOrderedList")}
               >
@@ -188,7 +192,7 @@ function RichTextModal({
               <button
                 type="button"
                 className={toolBtn}
-                title="Add link"
+                title={tr("addLink")}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={addLink}
               >
@@ -221,14 +225,14 @@ function RichTextModal({
                 onClick={onClose}
                 className="rounded-md border px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
               >
-                Cancel
+                {tr("cancel")}
               </button>
               <button
                 type="button"
                 onClick={save}
                 className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
               >
-                Save
+                {tr("save")}
               </button>
             </div>
           </div>

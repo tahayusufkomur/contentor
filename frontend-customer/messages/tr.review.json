@@ -2407,6 +2407,26 @@
     "src": "13270443",
     "reviewed": false
   },
+  "admin.inbox.banner.pick": {
+    "src": "b9a844db",
+    "reviewed": false
+  },
+  "admin.inbox.banner.upgrade": {
+    "src": "fb09a86d",
+    "reviewed": false
+  },
+  "admin.inbox.banner.choose": {
+    "src": "21d7bf81",
+    "reviewed": false
+  },
+  "admin.inbox.banner.plans": {
+    "src": "5942a8e3",
+    "reviewed": false
+  },
+  "admin.inbox.banner.dismiss": {
+    "src": "70afe9ef",
+    "reviewed": false
+  },
   "admin.setup.title": {
     "src": "97c20371",
     "reviewed": false
@@ -4999,6 +5019,194 @@
     "src": "c9bc849a",
     "reviewed": false
   },
+  "admin.messages.compose.templateNamePrompt": {
+    "src": "de7508b8",
+    "reviewed": false
+  },
+  "admin.messages.compose.templateSaved": {
+    "src": "aa1dc3dd",
+    "reviewed": false
+  },
+  "admin.messages.compose.templateError": {
+    "src": "6a6dd2b8",
+    "reviewed": false
+  },
+  "admin.messages.compose.pickStart": {
+    "src": "9228cce5",
+    "reviewed": false
+  },
+  "admin.messages.compose.pickWeekday": {
+    "src": "7a077d8e",
+    "reviewed": false
+  },
+  "admin.messages.compose.recurringCreated": {
+    "src": "d21db2b5",
+    "reviewed": false
+  },
+  "admin.messages.compose.scheduledToast": {
+    "src": "853a607a",
+    "reviewed": false
+  },
+  "admin.messages.compose.sentToast": {
+    "src": "9cf1b68c",
+    "reviewed": false
+  },
+  "admin.messages.compose.draftCleanup": {
+    "src": "8e3cd59f",
+    "reviewed": false
+  },
+  "admin.messages.compose.sendError": {
+    "src": "f63345f4",
+    "reviewed": false
+  },
+  "admin.messages.compose.send.recurring": {
+    "src": "1746dea0",
+    "reviewed": false
+  },
+  "admin.messages.compose.send.schedule": {
+    "src": "0a8adac9",
+    "reviewed": false
+  },
+  "admin.messages.compose.send.now": {
+    "src": "dae33010",
+    "reviewed": false
+  },
+  "admin.messages.compose.sending.recurring": {
+    "src": "94d7d8ee",
+    "reviewed": false
+  },
+  "admin.messages.compose.sending.schedule": {
+    "src": "3e462441",
+    "reviewed": false
+  },
+  "admin.messages.compose.sending.now": {
+    "src": "cf765512",
+    "reviewed": false
+  },
+  "admin.messages.compose.reviewing": {
+    "src": "025ba142",
+    "reviewed": false
+  },
+  "admin.messages.compose.startFromTemplate": {
+    "src": "61762f37",
+    "reviewed": false
+  },
+  "admin.messages.compose.saveAsTemplate": {
+    "src": "e438319c",
+    "reviewed": false
+  },
+  "admin.messages.compose.saving": {
+    "src": "56a2285c",
+    "reviewed": false
+  },
+  "admin.messages.compose.titlePlaceholder": {
+    "src": "768e0c1c",
+    "reviewed": false
+  },
+  "admin.messages.compose.bodyTitle": {
+    "src": "b8d57a94",
+    "reviewed": false
+  },
+  "admin.messages.compose.bodyPlaceholder": {
+    "src": "ab42f799",
+    "reviewed": false
+  },
+  "admin.messages.compose.change": {
+    "src": "64fbd995",
+    "reviewed": false
+  },
+  "admin.messages.compose.removeLink": {
+    "src": "8d48d1f9",
+    "reviewed": false
+  },
+  "admin.messages.compose.addLink": {
+    "src": "0e05b354",
+    "reviewed": false
+  },
+  "admin.messages.compose.reach.counting": {
+    "src": "43960ddd",
+    "reviewed": false
+  },
+  "admin.messages.compose.reach.nobody": {
+    "src": "c35b42eb",
+    "reviewed": false
+  },
+  "admin.messages.compose.reach.withPush": {
+    "src": "574282cd",
+    "reviewed": false
+  },
+  "admin.messages.compose.reach.noPush": {
+    "src": "205a23ac",
+    "reviewed": false
+  },
+  "admin.messages.compose.mode.once": {
+    "src": "6fea9e4d",
+    "reviewed": false
+  },
+  "admin.messages.compose.mode.repeating": {
+    "src": "cea2a464",
+    "reviewed": false
+  },
+  "admin.messages.compose.freq.daily": {
+    "src": "728298d3",
+    "reviewed": false
+  },
+  "admin.messages.compose.freq.weekly": {
+    "src": "158f3da5",
+    "reviewed": false
+  },
+  "admin.messages.compose.freq.monthly": {
+    "src": "d31edb7b",
+    "reviewed": false
+  },
+  "admin.messages.compose.scheduleOptional": {
+    "src": "668f72e6",
+    "reviewed": false
+  },
+  "admin.messages.compose.dayOfMonth": {
+    "src": "f5dbae0b",
+    "reviewed": false
+  },
+  "admin.messages.compose.time": {
+    "src": "6c82e6dd",
+    "reviewed": false
+  },
+  "admin.messages.compose.starts": {
+    "src": "fc612a2f",
+    "reviewed": false
+  },
+  "admin.messages.compose.ends": {
+    "src": "06e9778f",
+    "reviewed": false
+  },
+  "admin.messages.compose.endsNever": {
+    "src": "80c3052d",
+    "reviewed": false
+  },
+  "admin.messages.compose.endsOnDate": {
+    "src": "594e71c9",
+    "reviewed": false
+  },
+  "admin.messages.compose.timezoneNote": {
+    "src": "0758abaf",
+    "reviewed": false
+  },
+  "admin.messages.compose.templates.title": {
+    "src": "b65c748e",
+    "reviewed": false
+  },
+  "admin.messages.compose.templates.search": {
+    "src": "ea73467c",
+    "reviewed": false
+  },
+  "admin.messages.compose.templates.builtin": {
+    "src": "20338f43",
+    "reviewed": false
+  },
+  "admin.messages.compose.templates.empty": {
+    "src": "2bb24d25",
+    "reviewed": false
+  },
   "admin.messages.receipt.loadError": {
     "src": "86efe6c4",
     "reviewed": false
@@ -5393,6 +5601,78 @@
   },
   "admin.messages.templates.deleteNamed": {
     "src": "1164a628",
+    "reviewed": false
+  },
+  "admin.messages.recurring.daily": {
+    "src": "0f0cf434",
+    "reviewed": false
+  },
+  "admin.messages.recurring.weekly": {
+    "src": "31867b91",
+    "reviewed": false
+  },
+  "admin.messages.recurring.monthly": {
+    "src": "609e1202",
+    "reviewed": false
+  },
+  "admin.messages.recurring.loadError": {
+    "src": "aa246b14",
+    "reviewed": false
+  },
+  "admin.messages.recurring.empty": {
+    "src": "a0fbfcf0",
+    "reviewed": false
+  },
+  "admin.messages.recurring.updateError": {
+    "src": "197acf74",
+    "reviewed": false
+  },
+  "admin.messages.recurring.confirmDelete": {
+    "src": "40acf3a0",
+    "reviewed": false
+  },
+  "admin.messages.recurring.deleted": {
+    "src": "441bda6c",
+    "reviewed": false
+  },
+  "admin.messages.recurring.deleteError": {
+    "src": "07931ff7",
+    "reviewed": false
+  },
+  "admin.messages.recurring.nextRun": {
+    "src": "9509239b",
+    "reviewed": false
+  },
+  "admin.messages.recurring.paused": {
+    "src": "11b1b5ec",
+    "reviewed": false
+  },
+  "admin.messages.recurring.pause": {
+    "src": "781961bc",
+    "reviewed": false
+  },
+  "admin.messages.recurring.resume": {
+    "src": "b3bd0b5a",
+    "reviewed": false
+  },
+  "admin.messages.templateList.loadError": {
+    "src": "094ace05",
+    "reviewed": false
+  },
+  "admin.messages.templateList.empty": {
+    "src": "0a3287ee",
+    "reviewed": false
+  },
+  "admin.messages.templateList.confirmDelete": {
+    "src": "0cbdbdae",
+    "reviewed": false
+  },
+  "admin.messages.templateList.deleted": {
+    "src": "441bda6c",
+    "reviewed": false
+  },
+  "admin.messages.templateList.deleteError": {
+    "src": "07931ff7",
     "reviewed": false
   },
   "admin.events.subtitle": {
@@ -7159,6 +7439,154 @@
     "src": "60385069",
     "reviewed": false
   },
+  "admin.students.drawer.grantOk": {
+    "src": "9e11885f",
+    "reviewed": false
+  },
+  "admin.students.drawer.grantError": {
+    "src": "24ba77a7",
+    "reviewed": false
+  },
+  "admin.students.drawer.coursesError": {
+    "src": "ded1e376",
+    "reviewed": false
+  },
+  "admin.students.drawer.na": {
+    "src": "08d2e98e",
+    "reviewed": false
+  },
+  "admin.students.drawer.unnamed": {
+    "src": "ed63880b",
+    "reviewed": false
+  },
+  "admin.students.drawer.joined": {
+    "src": "6d49a430",
+    "reviewed": false
+  },
+  "admin.students.drawer.tabOverview": {
+    "src": "0efc2e6b",
+    "reviewed": false
+  },
+  "admin.students.drawer.tabActions": {
+    "src": "c40810f5",
+    "reviewed": false
+  },
+  "admin.students.drawer.membership": {
+    "src": "53bc9670",
+    "reviewed": false
+  },
+  "admin.students.drawer.free": {
+    "src": "75f52718",
+    "reviewed": false
+  },
+  "admin.students.drawer.noMembership": {
+    "src": "1f849e70",
+    "reviewed": false
+  },
+  "admin.students.drawer.enrolled": {
+    "src": "3c8934ac",
+    "reviewed": false
+  },
+  "admin.students.drawer.notEnrolled": {
+    "src": "17d5adc7",
+    "reviewed": false
+  },
+  "admin.students.drawer.lessonsDone": {
+    "src": "ef2fa376",
+    "reviewed": false
+  },
+  "admin.students.drawer.done": {
+    "src": "e9b450d1",
+    "reviewed": false
+  },
+  "admin.students.drawer.grantTitle": {
+    "src": "efa1a927",
+    "reviewed": false
+  },
+  "admin.students.drawer.grantText": {
+    "src": "10ec1bee",
+    "reviewed": false
+  },
+  "admin.students.drawer.grantButton": {
+    "src": "1e8ef9da",
+    "reviewed": false
+  },
+  "admin.students.drawer.dmTitle": {
+    "src": "6db175ad",
+    "reviewed": false
+  },
+  "admin.students.drawer.dmText": {
+    "src": "1f3481c3",
+    "reviewed": false
+  },
+  "admin.students.drawer.dmButton": {
+    "src": "a48b1941",
+    "reviewed": false
+  },
+  "admin.students.drawer.payTitle": {
+    "src": "2fee4636",
+    "reviewed": false
+  },
+  "admin.students.drawer.payText": {
+    "src": "db0dfc04",
+    "reviewed": false
+  },
+  "admin.students.drawer.payButton": {
+    "src": "4ebcef3f",
+    "reviewed": false
+  },
+  "admin.students.drawer.studentId": {
+    "src": "f4049cf5",
+    "reviewed": false
+  },
+  "admin.students.drawer.modalTitle": {
+    "src": "9fb1a1e1",
+    "reviewed": false
+  },
+  "admin.students.drawer.selectCourse": {
+    "src": "f68a8944",
+    "reviewed": false
+  },
+  "admin.students.drawer.loadingCourses": {
+    "src": "1c9c9378",
+    "reviewed": false
+  },
+  "admin.students.drawer.duration": {
+    "src": "2e6a0744",
+    "reviewed": false
+  },
+  "admin.students.drawer.forever": {
+    "src": "2502483d",
+    "reviewed": false
+  },
+  "admin.students.drawer.month1": {
+    "src": "42fa50c1",
+    "reviewed": false
+  },
+  "admin.students.drawer.month3": {
+    "src": "b9e4e6ff",
+    "reviewed": false
+  },
+  "admin.students.drawer.year1": {
+    "src": "afe36da6",
+    "reviewed": false
+  },
+  "admin.students.drawer.untilDate": {
+    "src": "00dcbdbc",
+    "reviewed": false
+  },
+  "admin.students.drawer.lastDay": {
+    "src": "f84fa2c3",
+    "reviewed": false
+  },
+  "admin.students.drawer.granting": {
+    "src": "b80d7b3b",
+    "reviewed": false
+  },
+  "admin.students.drawer.confirmGrant": {
+    "src": "d632068f",
+    "reviewed": false
+  },
   "admin.courseForm.createdNoAccess": {
     "src": "c707723c",
     "reviewed": false
@@ -7893,6 +8321,1122 @@
   },
   "admin.calendar.manage": {
     "src": "c0d6bfbe",
+    "reviewed": false
+  },
+  "admin.email.workspace.readingBrief": {
+    "src": "3e2635aa",
+    "reviewed": false
+  },
+  "admin.email.workspace.saveRetry": {
+    "src": "22fd8d71",
+    "reviewed": false
+  },
+  "admin.email.workspace.designerFailed": {
+    "src": "21159b28",
+    "reviewed": false
+  },
+  "admin.email.workspace.designerDone": {
+    "src": "86303e9a",
+    "reviewed": false
+  },
+  "admin.email.workspace.designerDoneUndo": {
+    "src": "a420a020",
+    "reviewed": false
+  },
+  "admin.email.workspace.testSent": {
+    "src": "eaea2e96",
+    "reviewed": false
+  },
+  "admin.email.workspace.savedAsTemplate": {
+    "src": "991d9751",
+    "reviewed": false
+  },
+  "admin.email.workspace.templates": {
+    "src": "f25b700e",
+    "reviewed": false
+  },
+  "admin.email.workspace.messages": {
+    "src": "f1702b46",
+    "reviewed": false
+  },
+  "admin.email.workspace.templateName": {
+    "src": "954ab955",
+    "reviewed": false
+  },
+  "admin.email.workspace.subject": {
+    "src": "8d183dbd",
+    "reviewed": false
+  },
+  "admin.email.workspace.subjectPlaceholder": {
+    "src": "26225393",
+    "reviewed": false
+  },
+  "admin.email.workspace.previewText": {
+    "src": "7729c5bd",
+    "reviewed": false
+  },
+  "admin.email.workspace.previewPlaceholder": {
+    "src": "8cf46cde",
+    "reviewed": false
+  },
+  "admin.email.workspace.opening": {
+    "src": "b1b8530b",
+    "reviewed": false
+  },
+  "admin.email.workspace.writeWithIt": {
+    "src": "2406a365",
+    "reviewed": false
+  },
+  "admin.email.workspace.saveAsTemplate": {
+    "src": "e438319c",
+    "reviewed": false
+  },
+  "admin.email.workspace.saving": {
+    "src": "56a2285c",
+    "reviewed": false
+  },
+  "admin.email.workspace.sendTest": {
+    "src": "653745c9",
+    "reviewed": false
+  },
+  "admin.email.workspace.sending": {
+    "src": "cf765512",
+    "reviewed": false
+  },
+  "admin.email.workspace.nextSend": {
+    "src": "90e5ff0f",
+    "reviewed": false
+  },
+  "admin.email.workspace.designerWorking": {
+    "src": "678fcf61",
+    "reviewed": false
+  },
+  "admin.email.workspace.designerWorkingText": {
+    "src": "fb2a5a73",
+    "reviewed": false
+  },
+  "admin.email.workspace.onlyThisBlock": {
+    "src": "3b12ce72",
+    "reviewed": false
+  },
+  "admin.email.workspace.askWhole": {
+    "src": "8cc79b45",
+    "reviewed": false
+  },
+  "admin.email.workspace.askDesigner": {
+    "src": "825c01bf",
+    "reviewed": false
+  },
+  "admin.email.workspace.askBlockPlaceholder": {
+    "src": "9474ccca",
+    "reviewed": false
+  },
+  "admin.email.workspace.askPlaceholder": {
+    "src": "70eca271",
+    "reviewed": false
+  },
+  "admin.email.workspace.asking": {
+    "src": "b18ce81d",
+    "reviewed": false
+  },
+  "admin.email.workspace.ask": {
+    "src": "3562777b",
+    "reviewed": false
+  },
+  "admin.email.workspace.choosePhoto": {
+    "src": "90bd2810",
+    "reviewed": false
+  },
+  "admin.email.workspace.photoError": {
+    "src": "bc582ddc",
+    "reviewed": false
+  },
+  "admin.email.workspace.saveState.saved": {
+    "src": "c0ae8f6e",
+    "reviewed": false
+  },
+  "admin.email.workspace.saveState.saving": {
+    "src": "56a2285c",
+    "reviewed": false
+  },
+  "admin.email.workspace.saveState.error": {
+    "src": "3d56409d",
+    "reviewed": false
+  },
+  "admin.email.itemPicker.title": {
+    "src": "b9d116cb",
+    "reviewed": false
+  },
+  "admin.email.itemPicker.search": {
+    "src": "0a0a6bad",
+    "reviewed": false
+  },
+  "admin.email.itemPicker.alwaysUpToDate": {
+    "src": "fc8d698b",
+    "reviewed": false
+  },
+  "admin.email.itemPicker.today": {
+    "src": "f7070282",
+    "reviewed": false
+  },
+  "admin.email.itemPicker.offers": {
+    "src": "b536b333",
+    "reviewed": false
+  },
+  "admin.email.itemPicker.noMatch": {
+    "src": "9f857673",
+    "reviewed": false
+  },
+  "admin.email.itemPicker.none": {
+    "src": "2a010546",
+    "reviewed": false
+  },
+  "admin.email.itemPicker.close": {
+    "src": "bbfa773e",
+    "reviewed": false
+  },
+  "admin.email.recipients.title": {
+    "src": "78cbf8eb",
+    "reviewed": false
+  },
+  "admin.email.recipients.all": {
+    "src": "ed5dda1c",
+    "reviewed": false
+  },
+  "admin.email.recipients.course": {
+    "src": "e9c169a9",
+    "reviewed": false
+  },
+  "admin.email.recipients.individual": {
+    "src": "8e094b25",
+    "reviewed": false
+  },
+  "admin.email.recipients.selectCourses": {
+    "src": "32ce238e",
+    "reviewed": false
+  },
+  "admin.email.recipients.noCourses": {
+    "src": "e0ba4cf2",
+    "reviewed": false
+  },
+  "admin.email.recipients.searchStudents": {
+    "src": "f5129050",
+    "reviewed": false
+  },
+  "admin.email.recipients.noStudents": {
+    "src": "2783d95d",
+    "reviewed": false
+  },
+  "admin.email.recipients.counting": {
+    "src": "0ccf67b2",
+    "reviewed": false
+  },
+  "admin.email.recipients.count": {
+    "src": "359eded1",
+    "reviewed": false
+  },
+  "admin.email.recipients.allActive": {
+    "src": "f0056dad",
+    "reviewed": false
+  },
+  "admin.email.recipients.selectAbove": {
+    "src": "fd0b1930",
+    "reviewed": false
+  },
+  "admin.mailbox.errors.taken": {
+    "src": "ccb0c0d7",
+    "reviewed": false
+  },
+  "admin.mailbox.errors.reserved_local_part": {
+    "src": "705a4286",
+    "reviewed": false
+  },
+  "admin.mailbox.errors.invalid_local_part": {
+    "src": "4d9a3ee0",
+    "reviewed": false
+  },
+  "admin.mailbox.errors.upgrade_required": {
+    "src": "924d1cde",
+    "reviewed": false
+  },
+  "admin.mailbox.errors.feature_unavailable": {
+    "src": "18d562c3",
+    "reviewed": false
+  },
+  "admin.mailbox.onlyChars": {
+    "src": "4d9a3ee0",
+    "reviewed": false
+  },
+  "admin.mailbox.saveFailed": {
+    "src": "982fc91b",
+    "reviewed": false
+  },
+  "admin.mailbox.emailSaved": {
+    "src": "946e8c84",
+    "reviewed": false
+  },
+  "admin.mailbox.prefixEmpty": {
+    "src": "17ea9613",
+    "reviewed": false
+  },
+  "admin.mailbox.settingsSaved": {
+    "src": "5b268efd",
+    "reviewed": false
+  },
+  "admin.mailbox.settingsError": {
+    "src": "c5fd6306",
+    "reviewed": false
+  },
+  "admin.mailbox.yourAddress": {
+    "src": "e1b1790d",
+    "reviewed": false
+  },
+  "admin.mailbox.claimText": {
+    "src": "47567251",
+    "reviewed": false
+  },
+  "admin.mailbox.chooseAddress": {
+    "src": "e4229312",
+    "reviewed": false
+  },
+  "admin.mailbox.willSee": {
+    "src": "04a605a3",
+    "reviewed": false
+  },
+  "admin.mailbox.active": {
+    "src": "8a437c5d",
+    "reviewed": false
+  },
+  "admin.mailbox.saving": {
+    "src": "56a2285c",
+    "reviewed": false
+  },
+  "admin.mailbox.saveAddress": {
+    "src": "c08b67b2",
+    "reviewed": false
+  },
+  "admin.mailbox.customDomain": {
+    "src": "4ac3d876",
+    "reviewed": false
+  },
+  "admin.mailbox.title": {
+    "src": "2f5c26f8",
+    "reviewed": false
+  },
+  "admin.mailbox.freeText": {
+    "src": "f46c251b",
+    "reviewed": false
+  },
+  "admin.mailbox.sendingFrom": {
+    "src": "f1a1a55d",
+    "reviewed": false
+  },
+  "admin.mailbox.upgradeText": {
+    "src": "0b3aac86",
+    "reviewed": false
+  },
+  "admin.mailbox.domainText": {
+    "src": "50bcf8c3",
+    "reviewed": false
+  },
+  "admin.mailbox.enable": {
+    "src": "e3ba1316",
+    "reviewed": false
+  },
+  "admin.mailbox.enableText": {
+    "src": "85260d78",
+    "reviewed": false
+  },
+  "admin.mailbox.saveChanges": {
+    "src": "fa2984b3",
+    "reviewed": false
+  },
+  "admin.owner.blockForm.notEditable": {
+    "src": "e06b1904",
+    "reviewed": false
+  },
+  "admin.owner.brand.name": {
+    "src": "6b4b8b5d",
+    "reviewed": false
+  },
+  "admin.owner.brand.namePlaceholder": {
+    "src": "fb48b1b1",
+    "reviewed": false
+  },
+  "admin.owner.brand.logo": {
+    "src": "83fce832",
+    "reviewed": false
+  },
+  "admin.owner.brand.editLogo": {
+    "src": "8016e9a2",
+    "reviewed": false
+  },
+  "admin.owner.brand.createLogo": {
+    "src": "41d6f812",
+    "reviewed": false
+  },
+  "admin.owner.brand.darkMode": {
+    "src": "d7b63b9d",
+    "reviewed": false
+  },
+  "admin.owner.brand.darkModeHint": {
+    "src": "dc15a08c",
+    "reviewed": false
+  },
+  "admin.owner.toolbar.drag": {
+    "src": "e7541faf",
+    "reviewed": false
+  },
+  "admin.owner.toolbar.reorder": {
+    "src": "ff6763fe",
+    "reviewed": false
+  },
+  "admin.owner.toolbar.confirmDelete": {
+    "src": "c9f2829e",
+    "reviewed": false
+  },
+  "admin.owner.toolbar.delete": {
+    "src": "fa55fdfe",
+    "reviewed": false
+  },
+  "admin.owner.toolbar.cancel": {
+    "src": "77dfd213",
+    "reviewed": false
+  },
+  "admin.owner.canvas.empty": {
+    "src": "da7311e0",
+    "reviewed": false
+  },
+  "admin.owner.canvas.emptyHint": {
+    "src": "5029e6bb",
+    "reviewed": false
+  },
+  "admin.owner.canvas.editText": {
+    "src": "6597b9e3",
+    "reviewed": false
+  },
+  "admin.owner.canvas.hidden": {
+    "src": "d4c2792a",
+    "reviewed": false
+  },
+  "admin.owner.undo": {
+    "src": "b35df2eb",
+    "reviewed": false
+  },
+  "admin.owner.redo": {
+    "src": "b09f9e7f",
+    "reviewed": false
+  },
+  "admin.owner.cx.failure.disabled": {
+    "src": "8126ec5a",
+    "reviewed": false
+  },
+  "admin.owner.cx.failure.upgrade_required": {
+    "src": "41a91716",
+    "reviewed": false
+  },
+  "admin.owner.cx.failure.quota_exhausted": {
+    "src": "3c3a6b87",
+    "reviewed": false
+  },
+  "admin.owner.cx.failure.error": {
+    "src": "8c1737d4",
+    "reviewed": false
+  },
+  "admin.owner.cx.missing": {
+    "src": "dfe07c07",
+    "reviewed": false
+  },
+  "admin.owner.cx.describe": {
+    "src": "a4ab6b7f",
+    "reviewed": false
+  },
+  "admin.owner.cx.placeholder": {
+    "src": "559f8a1c",
+    "reviewed": false
+  },
+  "admin.owner.cx.designing": {
+    "src": "b42dab05",
+    "reviewed": false
+  },
+  "admin.owner.cx.create": {
+    "src": "5a98372d",
+    "reviewed": false
+  },
+  "admin.owner.cx.yours": {
+    "src": "ec063f7a",
+    "reviewed": false
+  },
+  "admin.owner.cx.change": {
+    "src": "4eac7ed1",
+    "reviewed": false
+  },
+  "admin.owner.cx.changePlaceholder": {
+    "src": "dc56ccca",
+    "reviewed": false
+  },
+  "admin.owner.cx.changing": {
+    "src": "a6eb2aeb",
+    "reviewed": false
+  },
+  "admin.owner.cx.apply": {
+    "src": "139b0bf5",
+    "reviewed": false
+  },
+  "admin.owner.logo.alt": {
+    "src": "83fce832",
+    "reviewed": false
+  },
+  "admin.owner.logo.uploadFailed": {
+    "src": "ad0d0603",
+    "reviewed": false
+  },
+  "admin.owner.logo.uploading": {
+    "src": "d921a79a",
+    "reviewed": false
+  },
+  "admin.owner.logo.replace": {
+    "src": "8be846da",
+    "reviewed": false
+  },
+  "admin.owner.logo.upload": {
+    "src": "a564e951",
+    "reviewed": false
+  },
+  "admin.owner.logo.uploaded": {
+    "src": "69ed1d05",
+    "reviewed": false
+  },
+  "admin.owner.look.original": {
+    "src": "c0a8060f",
+    "reviewed": false
+  },
+  "admin.owner.look.title": {
+    "src": "b8db515e",
+    "reviewed": false
+  },
+  "admin.owner.look.hint": {
+    "src": "50f6ead3",
+    "reviewed": false
+  },
+  "admin.owner.look.change": {
+    "src": "99c7121f",
+    "reviewed": false
+  },
+  "admin.owner.look.error": {
+    "src": "c235a0f7",
+    "reviewed": false
+  },
+  "admin.owner.look.dialog": {
+    "src": "d011bf4d",
+    "reviewed": false
+  },
+  "admin.owner.look.dialogHint": {
+    "src": "3126e72d",
+    "reviewed": false
+  },
+  "admin.owner.look.changing": {
+    "src": "a6eb2aeb",
+    "reviewed": false
+  },
+  "admin.owner.look.use": {
+    "src": "086274de",
+    "reviewed": false
+  },
+  "admin.owner.look.cancel": {
+    "src": "77dfd213",
+    "reviewed": false
+  },
+  "admin.owner.style.title": {
+    "src": "99a0efc6",
+    "reviewed": false
+  },
+  "admin.owner.style.control.background": {
+    "src": "64dd60fe",
+    "reviewed": false
+  },
+  "admin.owner.style.control.spacing": {
+    "src": "2acbb307",
+    "reviewed": false
+  },
+  "admin.owner.style.control.align": {
+    "src": "ca9524f8",
+    "reviewed": false
+  },
+  "admin.owner.style.control.textColor": {
+    "src": "1c7a30e5",
+    "reviewed": false
+  },
+  "admin.owner.style.option.background.default": {
+    "src": "808d7dca",
+    "reviewed": false
+  },
+  "admin.owner.style.option.background.muted": {
+    "src": "b9e78ced",
+    "reviewed": false
+  },
+  "admin.owner.style.option.background.card": {
+    "src": "4d4ce73b",
+    "reviewed": false
+  },
+  "admin.owner.style.option.background.accent": {
+    "src": "233064dd",
+    "reviewed": false
+  },
+  "admin.owner.style.option.background.primary": {
+    "src": "62b4aa57",
+    "reviewed": false
+  },
+  "admin.owner.style.option.spacing.none": {
+    "src": "6eef6648",
+    "reviewed": false
+  },
+  "admin.owner.style.option.spacing.compact": {
+    "src": "1df39aa5",
+    "reviewed": false
+  },
+  "admin.owner.style.option.spacing.normal": {
+    "src": "45e118d0",
+    "reviewed": false
+  },
+  "admin.owner.style.option.spacing.spacious": {
+    "src": "af7760d4",
+    "reviewed": false
+  },
+  "admin.owner.style.option.align.auto": {
+    "src": "c614ba7c",
+    "reviewed": false
+  },
+  "admin.owner.style.option.align.left": {
+    "src": "8ae1c34b",
+    "reviewed": false
+  },
+  "admin.owner.style.option.align.center": {
+    "src": "a2391118",
+    "reviewed": false
+  },
+  "admin.owner.style.option.align.right": {
+    "src": "954daa8b",
+    "reviewed": false
+  },
+  "admin.owner.style.option.textColor.default": {
+    "src": "808d7dca",
+    "reviewed": false
+  },
+  "admin.owner.style.option.textColor.muted": {
+    "src": "b9e78ced",
+    "reviewed": false
+  },
+  "admin.owner.style.option.textColor.brand": {
+    "src": "62b4aa57",
+    "reviewed": false
+  },
+  "admin.owner.blocks.templates": {
+    "src": "f25b700e",
+    "reviewed": false
+  },
+  "admin.owner.blocks.empty": {
+    "src": "be37a06b",
+    "reviewed": false
+  },
+  "admin.owner.blocks.moveUp": {
+    "src": "b4f57cd0",
+    "reviewed": false
+  },
+  "admin.owner.blocks.moveDown": {
+    "src": "260ff8ae",
+    "reviewed": false
+  },
+  "admin.owner.blocks.hiddenTag": {
+    "src": "b1e8e67d",
+    "reviewed": false
+  },
+  "admin.owner.blocks.confirmDelete": {
+    "src": "35aae547",
+    "reviewed": false
+  },
+  "admin.owner.blocks.addTitle": {
+    "src": "b7d15c4f",
+    "reviewed": false
+  },
+  "admin.owner.blocks.add": {
+    "src": "e0d0ba74",
+    "reviewed": false
+  },
+  "admin.owner.blocks.group.content": {
+    "src": "4f9be057",
+    "reviewed": false
+  },
+  "admin.owner.blocks.group.dynamic": {
+    "src": "ceb739df",
+    "reviewed": false
+  },
+  "admin.owner.blocks.group.section": {
+    "src": "7ff5a6da",
+    "reviewed": false
+  },
+  "admin.owner.blocks.deleteBlock": {
+    "src": "fa55fdfe",
+    "reviewed": false
+  },
+  "admin.owner.blocks.cancel": {
+    "src": "77dfd213",
+    "reviewed": false
+  },
+  "admin.owner.blocks.delete": {
+    "src": "f6fdbe48",
+    "reviewed": false
+  },
+  "admin.owner.sidebar.saveError": {
+    "src": "6ebc03bb",
+    "reviewed": false
+  },
+  "admin.owner.sidebar.editSite": {
+    "src": "22978984",
+    "reviewed": false
+  },
+  "admin.owner.sidebar.saving": {
+    "src": "369c534d",
+    "reviewed": false
+  },
+  "admin.owner.sidebar.exit": {
+    "src": "5df94029",
+    "reviewed": false
+  },
+  "admin.owner.sidebar.done": {
+    "src": "e9b450d1",
+    "reviewed": false
+  },
+  "admin.owner.sidebar.collapse": {
+    "src": "02d7f3c8",
+    "reviewed": false
+  },
+  "admin.owner.sidebar.tabSite": {
+    "src": "5b6825d3",
+    "reviewed": false
+  },
+  "admin.owner.sidebar.tabPages": {
+    "src": "600584c2",
+    "reviewed": false
+  },
+  "admin.owner.sidebar.siteHint": {
+    "src": "702c205e",
+    "reviewed": false
+  },
+  "admin.owner.sidebar.section.brand": {
+    "src": "62b4aa57",
+    "reviewed": false
+  },
+  "admin.owner.sidebar.section.navbar": {
+    "src": "690afa83",
+    "reviewed": false
+  },
+  "admin.owner.sidebar.editingPage": {
+    "src": "3129ab48",
+    "reviewed": false
+  },
+  "admin.owner.sidebar.page.home": {
+    "src": "70f8bb9a",
+    "reviewed": false
+  },
+  "admin.owner.sidebar.page.about": {
+    "src": "6b21fb79",
+    "reviewed": false
+  },
+  "admin.owner.sidebar.page.courses": {
+    "src": "a16536d7",
+    "reviewed": false
+  },
+  "admin.owner.sidebar.page.pricing": {
+    "src": "a0d9bbad",
+    "reviewed": false
+  },
+  "admin.owner.sidebar.page.faq": {
+    "src": "03688ba6",
+    "reviewed": false
+  },
+  "admin.owner.sidebar.page.contact": {
+    "src": "b37456c4",
+    "reviewed": false
+  },
+  "admin.owner.sidebar.page.events": {
+    "src": "c5497bca",
+    "reviewed": false
+  },
+  "admin.owner.sidebar.notEditable": {
+    "src": "0133d101",
+    "reviewed": false
+  },
+  "admin.owner.sidebar.open": {
+    "src": "a3baf892",
+    "reviewed": false
+  },
+  "admin.owner.navbar.layout": {
+    "src": "972ad8d8",
+    "reviewed": false
+  },
+  "admin.owner.navbar.layoutAria": {
+    "src": "2461a045",
+    "reviewed": false
+  },
+  "admin.owner.navbar.layouts.classic": {
+    "src": "130cd7fe",
+    "reviewed": false
+  },
+  "admin.owner.navbar.layouts.centered": {
+    "src": "6d00bb19",
+    "reviewed": false
+  },
+  "admin.owner.navbar.layouts.split": {
+    "src": "fc8230b4",
+    "reviewed": false
+  },
+  "admin.owner.navbar.layouts.minimal": {
+    "src": "a711cca9",
+    "reviewed": false
+  },
+  "admin.owner.navbar.layouts.pill": {
+    "src": "38ea5ba8",
+    "reviewed": false
+  },
+  "admin.owner.navbar.chooseTitle": {
+    "src": "4974e687",
+    "reviewed": false
+  },
+  "admin.owner.navbar.chooseDestination": {
+    "src": "f80988dc",
+    "reviewed": false
+  },
+  "admin.owner.navbar.logoSize": {
+    "src": "ed15d71c",
+    "reviewed": false
+  },
+  "admin.owner.navbar.showBrandName": {
+    "src": "fea919ba",
+    "reviewed": false
+  },
+  "admin.owner.navbar.logoAndName": {
+    "src": "df6a2ec5",
+    "reviewed": false
+  },
+  "admin.owner.navbar.logoLayouts.horizontal": {
+    "src": "5f65cb44",
+    "reviewed": false
+  },
+  "admin.owner.navbar.logoLayouts.stacked": {
+    "src": "9eafca46",
+    "reviewed": false
+  },
+  "admin.owner.navbar.logoLayouts.name_only": {
+    "src": "224e65ba",
+    "reviewed": false
+  },
+  "admin.owner.navbar.transparent": {
+    "src": "d4eb8d98",
+    "reviewed": false
+  },
+  "admin.owner.navbar.transparentHint": {
+    "src": "d0ac661a",
+    "reviewed": false
+  },
+  "admin.owner.navbar.links": {
+    "src": "d2c7f2c7",
+    "reviewed": false
+  },
+  "admin.owner.navbar.noLinks": {
+    "src": "c8723fde",
+    "reviewed": false
+  },
+  "admin.owner.navbar.moveUp": {
+    "src": "b4f57cd0",
+    "reviewed": false
+  },
+  "admin.owner.navbar.moveDown": {
+    "src": "260ff8ae",
+    "reviewed": false
+  },
+  "admin.owner.navbar.moveUpAria": {
+    "src": "2590f4da",
+    "reviewed": false
+  },
+  "admin.owner.navbar.moveDownAria": {
+    "src": "79aa2de9",
+    "reviewed": false
+  },
+  "admin.owner.navbar.linkFallback": {
+    "src": "4f0aa52d",
+    "reviewed": false
+  },
+  "admin.owner.navbar.labelPlaceholder": {
+    "src": "74341e3c",
+    "reviewed": false
+  },
+  "admin.owner.navbar.removeLink": {
+    "src": "8d48d1f9",
+    "reviewed": false
+  },
+  "admin.owner.navbar.suggest.events": {
+    "src": "245bab9a",
+    "reviewed": false
+  },
+  "admin.owner.navbar.suggest.store": {
+    "src": "0d8a7046",
+    "reviewed": false
+  },
+  "admin.owner.navbar.addSuggestion": {
+    "src": "3796d1b1",
+    "reviewed": false
+  },
+  "admin.owner.navbar.addLink": {
+    "src": "538b47ce",
+    "reviewed": false
+  },
+  "admin.owner.navbar.cta": {
+    "src": "9481fe6d",
+    "reviewed": false
+  },
+  "admin.owner.navbar.ctaPlaceholder": {
+    "src": "2c1bff44",
+    "reviewed": false
+  },
+  "admin.owner.navbar.showLogin": {
+    "src": "dc0a91f4",
+    "reviewed": false
+  },
+  "admin.owner.navbar.showLoginHint": {
+    "src": "b6d4ca70",
+    "reviewed": false
+  },
+  "admin.owner.navbar.showInstall": {
+    "src": "a98839d4",
+    "reviewed": false
+  },
+  "admin.owner.navbar.showInstallHint": {
+    "src": "b585e2a6",
+    "reviewed": false
+  },
+  "admin.owner.link.title": {
+    "src": "58ae333c",
+    "reviewed": false
+  },
+  "admin.owner.link.tab.pages": {
+    "src": "600584c2",
+    "reviewed": false
+  },
+  "admin.owner.link.tab.courses": {
+    "src": "a16536d7",
+    "reviewed": false
+  },
+  "admin.owner.link.tab.events": {
+    "src": "c5497bca",
+    "reviewed": false
+  },
+  "admin.owner.link.tab.custom": {
+    "src": "9c155e9d",
+    "reviewed": false
+  },
+  "admin.owner.link.page.home": {
+    "src": "70f8bb9a",
+    "reviewed": false
+  },
+  "admin.owner.link.page.about": {
+    "src": "6b21fb79",
+    "reviewed": false
+  },
+  "admin.owner.link.page.courses": {
+    "src": "a16536d7",
+    "reviewed": false
+  },
+  "admin.owner.link.page.pricing": {
+    "src": "48d4384b",
+    "reviewed": false
+  },
+  "admin.owner.link.page.faq": {
+    "src": "03688ba6",
+    "reviewed": false
+  },
+  "admin.owner.link.page.contact": {
+    "src": "b37456c4",
+    "reviewed": false
+  },
+  "admin.owner.link.page.calendar": {
+    "src": "adab5090",
+    "reviewed": false
+  },
+  "admin.owner.link.page.events": {
+    "src": "c5497bca",
+    "reviewed": false
+  },
+  "admin.owner.link.page.store": {
+    "src": "0d8a7046",
+    "reviewed": false
+  },
+  "admin.owner.link.search.pages": {
+    "src": "d09a6b6c",
+    "reviewed": false
+  },
+  "admin.owner.link.search.courses": {
+    "src": "40a05ea0",
+    "reviewed": false
+  },
+  "admin.owner.link.search.events": {
+    "src": "0a086126",
+    "reviewed": false
+  },
+  "admin.owner.link.coursesError": {
+    "src": "ded1e376",
+    "reviewed": false
+  },
+  "admin.owner.link.eventsError": {
+    "src": "8f5b959e",
+    "reviewed": false
+  },
+  "admin.owner.link.enterUrl": {
+    "src": "5757275c",
+    "reviewed": false
+  },
+  "admin.owner.link.urlPlaceholder": {
+    "src": "e67834d0",
+    "reviewed": false
+  },
+  "admin.owner.link.useLink": {
+    "src": "92ec2b7e",
+    "reviewed": false
+  },
+  "admin.owner.link.noMatches": {
+    "src": "235ec61a",
+    "reviewed": false
+  },
+  "admin.owner.link.noCourses": {
+    "src": "d35ccc93",
+    "reviewed": false
+  },
+  "admin.owner.link.noEvents": {
+    "src": "32b6ad19",
+    "reviewed": false
+  },
+  "admin.owner.templates.delete": {
+    "src": "399bf72a",
+    "reviewed": false
+  },
+  "admin.owner.templates.blocks": {
+    "src": "b570d613",
+    "reviewed": false
+  },
+  "admin.owner.templates.replace": {
+    "src": "28410d6a",
+    "reviewed": false
+  },
+  "admin.owner.templates.cancel": {
+    "src": "77dfd213",
+    "reviewed": false
+  },
+  "admin.owner.templates.use": {
+    "src": "258ae8d2",
+    "reviewed": false
+  },
+  "admin.owner.templates.title": {
+    "src": "f25b700e",
+    "reviewed": false
+  },
+  "admin.owner.templates.startFrom": {
+    "src": "61762f37",
+    "reviewed": false
+  },
+  "admin.owner.templates.none": {
+    "src": "54ce299b",
+    "reviewed": false
+  },
+  "admin.owner.templates.yours": {
+    "src": "adcfed38",
+    "reviewed": false
+  },
+  "admin.owner.templates.saveThisPage": {
+    "src": "68a85574",
+    "reviewed": false
+  },
+  "admin.owner.templates.name": {
+    "src": "954ab955",
+    "reviewed": false
+  },
+  "admin.owner.templates.save": {
+    "src": "efc007a3",
+    "reviewed": false
+  },
+  "admin.owner.rich.editText": {
+    "src": "6597b9e3",
+    "reviewed": false
+  },
+  "admin.owner.rich.bold": {
+    "src": "19e07430",
+    "reviewed": false
+  },
+  "admin.owner.rich.italic": {
+    "src": "1616e2e5",
+    "reviewed": false
+  },
+  "admin.owner.rich.bullets": {
+    "src": "dd870cfc",
+    "reviewed": false
+  },
+  "admin.owner.rich.numbers": {
+    "src": "8294ea4f",
+    "reviewed": false
+  },
+  "admin.owner.rich.addLink": {
+    "src": "538b47ce",
+    "reviewed": false
+  },
+  "admin.owner.rich.cancel": {
+    "src": "77dfd213",
+    "reviewed": false
+  },
+  "admin.owner.rich.save": {
+    "src": "efc007a3",
+    "reviewed": false
+  },
+  "admin.owner.field.chooseImage": {
+    "src": "6c406be5",
+    "reviewed": false
+  },
+  "admin.owner.field.noText": {
+    "src": "ea17cccb",
+    "reviewed": false
+  },
+  "admin.owner.field.editText": {
+    "src": "6597b9e3",
+    "reviewed": false
+  },
+  "admin.owner.field.pathPlaceholder": {
+    "src": "e67834d0",
+    "reviewed": false
+  },
+  "admin.owner.field.chooseLink": {
+    "src": "4974e687",
+    "reviewed": false
+  },
+  "admin.owner.field.browse": {
+    "src": "2f3b5c55",
+    "reviewed": false
+  },
+  "admin.owner.field.noFilters": {
+    "src": "a17159b9",
+    "reviewed": false
+  },
+  "admin.owner.field.item": {
+    "src": "ecdda59a",
+    "reviewed": false
+  },
+  "admin.owner.field.itemNumber": {
+    "src": "492eb006",
+    "reviewed": false
+  },
+  "admin.owner.field.addItem": {
+    "src": "3796d1b1",
+    "reviewed": false
+  },
+  "admin.owner.field.addDefault": {
+    "src": "3a7d9767",
     "reviewed": false
   },
   "common.actions.save": {
