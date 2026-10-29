@@ -20,39 +20,22 @@
       "inPlans": "w {plans}",
       "inPlansWindow": "w {plans} {window}",
       "from": "od {date}",
-      "until": "do {date}",
-      "freeOpensAfter": "po {span} od dołączenia",
-      "freeClosesAfter": "przez {span} po dołączeniu",
-      "freeClosesUntil": "do {span} po dołączeniu",
-      "buyOpens": "otwiera się {span} po zakupie",
-      "buyClosesAfter": "z {span} dostępu",
-      "buyClosesUntil": "do {span} po zakupie",
-      "planOpens": "po {span} członkostwa",
-      "planClosesAfter": "przez {span} członkostwa",
-      "planClosesUntil": "do {span} członkostwa"
+      "until": "do {date}"
     },
     "pill": {
       "from": "Od {date}",
       "until": "Do {date}",
       "buy": {
         "opensOn": "Otwiera się {date}",
-        "opensAfter": "Otwiera się {span} po zakupie",
-        "closesAfter": "{span} od zakupu",
         "forever": "Na zawsze"
       },
       "link": {
-        "opensAfter": "Po {span} członkostwa",
         "now": "Od razu",
-        "closesAfter": "zamyka się po {span}",
         "closesOn": "zamyka się {date}",
         "never": "nigdy się nie zamyka"
       },
       "free": {
-        "afterThenUntil": "Po {opens} od dołączenia · do {closes} po dołączeniu",
-        "fromThenUntil": "Od {opens} · do {closes} po dołączeniu",
-        "first": "Pierwsze {closes} po dołączeniu",
         "between": "{opens} – {closes}",
-        "after": "Po {opens} od dołączenia",
         "always": "Zawsze"
       }
     },
@@ -72,7 +55,7 @@
       "fromTo": "Od <from></from> do <to></to>",
       "freeFromAria": "Bezpłatnie od",
       "freeToAria": "Bezpłatnie do",
-      "firstDaysAfter": "Przez pierwsze <days></days> dni po tym, jak ktoś dołączy do strony",
+      "firstDaysAfter": "Przez pierwsze <days></days> {count, plural, one {dzień} few {dni} many {dni} other {dni}} po dołączeniu kogoś do strony",
       "access": "Dostęp",
       "forever": "Na zawsze",
       "customDays": "Niestandardowa liczba dni",
@@ -124,7 +107,99 @@
     "nothingTicked": "Nic jeszcze nie zaznaczono.",
     "checkDatesPlan": "Sprawdź dni lub daty dla {name}.",
     "checkDatesBuyers": "Sprawdź dni lub daty dla kupujących.",
-    "checkDatesFree": "Sprawdź dni lub daty dla opcji Bezpłatne."
+    "checkDatesFree": "Sprawdź dni lub daty dla opcji Bezpłatne.",
+    "phrase": {
+      "freeOpensAfter": {
+        "year": "{count, plural, one {po # roku od dołączenia} few {po # latach od dołączenia} many {po # latach od dołączenia} other {po # latach od dołączenia}}",
+        "month": "{count, plural, one {po # miesiącu od dołączenia} few {po # miesiącach od dołączenia} many {po # miesiącach od dołączenia} other {po # miesiącach od dołączenia}}",
+        "week": "{count, plural, one {po # tygodniu od dołączenia} few {po # tygodniach od dołączenia} many {po # tygodniach od dołączenia} other {po # tygodniach od dołączenia}}",
+        "day": "{count, plural, one {po # dniu od dołączenia} few {po # dniach od dołączenia} many {po # dniach od dołączenia} other {po # dniach od dołączenia}}"
+      },
+      "freeClosesAfter": {
+        "year": "{count, plural, one {przez # rok po dołączeniu} few {przez # lata po dołączeniu} many {przez # lat po dołączeniu} other {przez # lat po dołączeniu}}",
+        "month": "{count, plural, one {przez # miesiąc po dołączeniu} few {przez # miesiące po dołączeniu} many {przez # miesięcy po dołączeniu} other {przez # miesięcy po dołączeniu}}",
+        "week": "{count, plural, one {przez # tydzień po dołączeniu} few {przez # tygodnie po dołączeniu} many {przez # tygodni po dołączeniu} other {przez # tygodni po dołączeniu}}",
+        "day": "{count, plural, one {przez # dzień po dołączeniu} few {przez # dni po dołączeniu} many {przez # dni po dołączeniu} other {przez # dni po dołączeniu}}"
+      },
+      "freeClosesUntil": {
+        "year": "{count, plural, one {do # roku po dołączeniu} few {do # lat po dołączeniu} many {do # lat po dołączeniu} other {do # lat po dołączeniu}}",
+        "month": "{count, plural, one {do # miesiąca po dołączeniu} few {do # miesięcy po dołączeniu} many {do # miesięcy po dołączeniu} other {do # miesięcy po dołączeniu}}",
+        "week": "{count, plural, one {do # tygodnia po dołączeniu} few {do # tygodni po dołączeniu} many {do # tygodni po dołączeniu} other {do # tygodni po dołączeniu}}",
+        "day": "{count, plural, one {do # dnia po dołączeniu} few {do # dni po dołączeniu} many {do # dni po dołączeniu} other {do # dni po dołączeniu}}"
+      },
+      "buyOpens": {
+        "year": "{count, plural, one {otwiera się # rok po zakupie} few {otwiera się # lata po zakupie} many {otwiera się # lat po zakupie} other {otwiera się # lat po zakupie}}",
+        "month": "{count, plural, one {otwiera się # miesiąc po zakupie} few {otwiera się # miesiące po zakupie} many {otwiera się # miesięcy po zakupie} other {otwiera się # miesięcy po zakupie}}",
+        "week": "{count, plural, one {otwiera się # tydzień po zakupie} few {otwiera się # tygodnie po zakupie} many {otwiera się # tygodni po zakupie} other {otwiera się # tygodni po zakupie}}",
+        "day": "{count, plural, one {otwiera się # dzień po zakupie} few {otwiera się # dni po zakupie} many {otwiera się # dni po zakupie} other {otwiera się # dni po zakupie}}"
+      },
+      "buyClosesAfter": {
+        "year": "{count, plural, one {z # rokiem dostępu} few {z # latami dostępu} many {z # latami dostępu} other {z # latami dostępu}}",
+        "month": "{count, plural, one {z # miesiącem dostępu} few {z # miesiącami dostępu} many {z # miesiącami dostępu} other {z # miesiącami dostępu}}",
+        "week": "{count, plural, one {z # tygodniem dostępu} few {z # tygodniami dostępu} many {z # tygodniami dostępu} other {z # tygodniami dostępu}}",
+        "day": "{count, plural, one {z # dniem dostępu} few {z # dniami dostępu} many {z # dniami dostępu} other {z # dniami dostępu}}"
+      },
+      "buyClosesUntil": {
+        "year": "{count, plural, one {do # roku po zakupie} few {do # lat po zakupie} many {do # lat po zakupie} other {do # lat po zakupie}}",
+        "month": "{count, plural, one {do # miesiąca po zakupie} few {do # miesięcy po zakupie} many {do # miesięcy po zakupie} other {do # miesięcy po zakupie}}",
+        "week": "{count, plural, one {do # tygodnia po zakupie} few {do # tygodni po zakupie} many {do # tygodni po zakupie} other {do # tygodni po zakupie}}",
+        "day": "{count, plural, one {do # dnia po zakupie} few {do # dni po zakupie} many {do # dni po zakupie} other {do # dni po zakupie}}"
+      },
+      "planOpens": {
+        "year": "{count, plural, one {po # roku członkostwa} few {po # latach członkostwa} many {po # latach członkostwa} other {po # latach członkostwa}}",
+        "month": "{count, plural, one {po # miesiącu członkostwa} few {po # miesiącach członkostwa} many {po # miesiącach członkostwa} other {po # miesiącach członkostwa}}",
+        "week": "{count, plural, one {po # tygodniu członkostwa} few {po # tygodniach członkostwa} many {po # tygodniach członkostwa} other {po # tygodniach członkostwa}}",
+        "day": "{count, plural, one {po # dniu członkostwa} few {po # dniach członkostwa} many {po # dniach członkostwa} other {po # dniach członkostwa}}"
+      },
+      "planClosesAfter": {
+        "year": "{count, plural, one {przez # rok członkostwa} few {przez # lata członkostwa} many {przez # lat członkostwa} other {przez # lat członkostwa}}",
+        "month": "{count, plural, one {przez # miesiąc członkostwa} few {przez # miesiące członkostwa} many {przez # miesięcy członkostwa} other {przez # miesięcy członkostwa}}",
+        "week": "{count, plural, one {przez # tydzień członkostwa} few {przez # tygodnie członkostwa} many {przez # tygodni członkostwa} other {przez # tygodni członkostwa}}",
+        "day": "{count, plural, one {przez # dzień członkostwa} few {przez # dni członkostwa} many {przez # dni członkostwa} other {przez # dni członkostwa}}"
+      },
+      "planClosesUntil": {
+        "year": "{count, plural, one {do # roku członkostwa} few {do # lat członkostwa} many {do # lat członkostwa} other {do # lat członkostwa}}",
+        "month": "{count, plural, one {do # miesiąca członkostwa} few {do # miesięcy członkostwa} many {do # miesięcy członkostwa} other {do # miesięcy członkostwa}}",
+        "week": "{count, plural, one {do # tygodnia członkostwa} few {do # tygodni członkostwa} many {do # tygodni członkostwa} other {do # tygodnia członkostwa}}",
+        "day": "{count, plural, one {do # dnia członkostwa} few {do # dni członkostwa} many {do # dni członkostwa} other {do # dnia członkostwa}}"
+      },
+      "buyPillOpens": {
+        "year": "{count, plural, one {Otwiera się # rok po zakupie} few {Otwiera się # lata po zakupie} many {Otwiera się # lat po zakupie} other {Otwiera się # roku po zakupie}}",
+        "month": "{count, plural, one {Otwiera się # miesiąc po zakupie} few {Otwiera się # miesiące po zakupie} many {Otwiera się # miesięcy po zakupie} other {Otwiera się # miesiąca po zakupie}}",
+        "week": "{count, plural, one {Otwiera się # tydzień po zakupie} few {Otwiera się # tygodnie po zakupie} many {Otwiera się # tygodni po zakupie} other {Otwiera się # tygodnia po zakupie}}",
+        "day": "{count, plural, one {Otwiera się # dzień po zakupie} few {Otwiera się # dni po zakupie} many {Otwiera się # dni po zakupie} other {Otwiera się # dnia po zakupie}}"
+      },
+      "buyPillCloses": {
+        "year": "{count, plural, one {# rok od zakupu} few {# lata od zakupu} many {# lat od zakupu} other {# roku od zakupu}}",
+        "month": "{count, plural, one {# miesiąc od zakupu} few {# miesiące od zakupu} many {# miesięcy od zakupu} other {# miesiąca od zakupu}}",
+        "week": "{count, plural, one {# tydzień od zakupu} few {# tygodnie od zakupu} many {# tygodni od zakupu} other {# tygodnia od zakupu}}",
+        "day": "{count, plural, one {# dzień od zakupu} few {# dni od zakupu} many {# dni od zakupu} other {# dnia od zakupu}}"
+      },
+      "linkPillOpens": {
+        "year": "{count, plural, one {Po # roku członkostwa} few {Po # latach członkostwa} many {Po # latach członkostwa} other {Po # roku członkostwa}}",
+        "month": "{count, plural, one {Po # miesiącu członkostwa} few {Po # miesiącach członkostwa} many {Po # miesiącach członkostwa} other {Po # miesiąca członkostwa}}",
+        "week": "{count, plural, one {Po # tygodniu członkostwa} few {Po # tygodniach członkostwa} many {Po # tygodniach członkostwa} other {Po # tygodnia członkostwa}}",
+        "day": "{count, plural, one {Po # dniu członkostwa} few {Po # dniach członkostwa} many {Po # dniach członkostwa} other {Po # dnia członkostwa}}"
+      },
+      "linkPillCloses": {
+        "year": "{count, plural, one {zamyka się po # roku} few {zamyka się po # latach} many {zamyka się po # latach} other {zamyka się po # roku}}",
+        "month": "{count, plural, one {zamyka się po # miesiącu} few {zamyka się po # miesiącach} many {zamyka się po # miesiącach} other {zamyka się po # miesiąca}}",
+        "week": "{count, plural, one {zamyka się po # tygodniu} few {zamyka się po # tygodniach} many {zamyka się po # tygodniach} other {zamyka się po # tygodnia}}",
+        "day": "{count, plural, one {zamyka się po # dniu} few {zamyka się po # dniach} many {zamyka się po # dniach} other {zamyka się po # dnia}}"
+      },
+      "freePillAfter": {
+        "year": "{count, plural, one {Po # roku od dołączenia} few {Po # latach od dołączenia} many {Po # latach od dołączenia} other {Po # roku od dołączenia}}",
+        "month": "{count, plural, one {Po # miesiącu od dołączenia} few {Po # miesiącach od dołączenia} many {Po # miesiącach od dołączenia} other {Po # miesiąca od dołączenia}}",
+        "week": "{count, plural, one {Po # tygodniu od dołączenia} few {Po # tygodniach od dołączenia} many {Po # tygodniach od dołączenia} other {Po # tygodnia od dołączenia}}",
+        "day": "{count, plural, one {Po # dniu od dołączenia} few {Po # dniach od dołączenia} many {Po # dniach od dołączenia} other {Po # dnia od dołączenia}}"
+      },
+      "freePillFirst": {
+        "year": "{count, plural, one {Pierwszy # rok po dołączeniu} few {Pierwsze # lata po dołączeniu} many {Pierwsze # lat po dołączeniu} other {Pierwsze # roku po dołączeniu}}",
+        "month": "{count, plural, one {Pierwszy # miesiąc po dołączeniu} few {Pierwsze # miesiące po dołączeniu} many {Pierwsze # miesięcy po dołączeniu} other {Pierwsze # miesiąca po dołączeniu}}",
+        "week": "{count, plural, one {Pierwszy # tydzień po dołączeniu} few {Pierwsze # tygodnie po dołączeniu} many {Pierwsze # tygodni po dołączeniu} other {Pierwsze # tygodnia po dołączeniu}}",
+        "day": "{count, plural, one {Pierwszy # dzień po dołączeniu} few {Pierwsze # dni po dołączeniu} many {Pierwsze # dni po dołączeniu} other {Pierwsze # dnia po dołączeniu}}"
+      }
+    }
   },
   "contentPicker": {
     "loadFailed": "Nie udało się załadować treści.",

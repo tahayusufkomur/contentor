@@ -20,39 +20,22 @@
       "inPlans": "{plans} kapsamında",
       "inPlansWindow": "{plans} kapsamında {window}",
       "from": "{date} tarihinden itibaren",
-      "until": "{date} tarihine kadar",
-      "freeOpensAfter": "katıldıktan {span} sonra",
-      "freeClosesAfter": "katıldıktan sonra {span} boyunca",
-      "freeClosesUntil": "katıldıktan {span} sonrasına kadar",
-      "buyOpens": "satın alımdan {span} sonra açılır",
-      "buyClosesAfter": "{span} erişimle",
-      "buyClosesUntil": "satın alımdan {span} sonrasına kadar",
-      "planOpens": "üyelikten {span} sonra",
-      "planClosesAfter": "üyelikten sonra {span} boyunca",
-      "planClosesUntil": "üyelikten {span} sonrasına kadar"
+      "until": "{date} tarihine kadar"
     },
     "pill": {
       "from": "{date} tarihinden itibaren",
       "until": "{date} tarihine kadar",
       "buy": {
         "opensOn": "{date} tarihinde açılır",
-        "opensAfter": "Satın alımdan {span} sonra açılır",
-        "closesAfter": "Satın alımdan itibaren {span}",
         "forever": "Süresiz"
       },
       "link": {
-        "opensAfter": "Üyelikten {span} sonra",
         "now": "Hemen",
-        "closesAfter": "{span} sonra kapanır",
         "closesOn": "{date} tarihinde kapanır",
         "never": "asla kapanmaz"
       },
       "free": {
-        "afterThenUntil": "Katıldıktan {opens} sonra · katıldıktan {closes} sonrasına kadar",
-        "fromThenUntil": "{opens} tarihinden itibaren · katıldıktan {closes} sonrasına kadar",
-        "first": "Katıldıktan sonraki ilk {closes}",
         "between": "{opens} – {closes}",
-        "after": "Katıldıktan {opens} sonra",
         "always": "Her zaman"
       }
     },
@@ -72,7 +55,7 @@
       "fromTo": "<from></from> ile <to></to> arası",
       "freeFromAria": "Şu tarihten itibaren ücretsiz",
       "freeToAria": "Şu tarihe kadar ücretsiz",
-      "firstDaysAfter": "Biri siteye katıldıktan sonraki ilk <days></days> gün boyunca",
+      "firstDaysAfter": "Biri siteye katıldıktan sonraki ilk <days></days> {count, plural, one {gün} other {gün}} boyunca",
       "access": "Erişim",
       "forever": "Süresiz",
       "customDays": "Özel gün sayısı",
@@ -124,7 +107,99 @@
     "nothingTicked": "Henüz hiçbir şey işaretlenmedi.",
     "checkDatesPlan": "{name} için günleri veya tarihleri kontrol et.",
     "checkDatesBuyers": "Satın alanlar için günleri veya tarihleri kontrol et.",
-    "checkDatesFree": "Ücretsiz için günleri veya tarihleri kontrol et."
+    "checkDatesFree": "Ücretsiz için günleri veya tarihleri kontrol et.",
+    "phrase": {
+      "freeOpensAfter": {
+        "year": "{count, plural, one {katıldıktan # yıl sonra} other {katıldıktan # yıl sonra}}",
+        "month": "{count, plural, one {katıldıktan # ay sonra} other {katıldıktan # ay sonra}}",
+        "week": "{count, plural, one {katıldıktan # hafta sonra} other {katıldıktan # hafta sonra}}",
+        "day": "{count, plural, one {katıldıktan # gün sonra} other {katıldıktan # gün sonra}}"
+      },
+      "freeClosesAfter": {
+        "year": "{count, plural, one {katıldıktan sonra # yıl boyunca} other {katıldıktan sonra # yıl boyunca}}",
+        "month": "{count, plural, one {katıldıktan sonra # ay boyunca} other {katıldıktan sonra # ay boyunca}}",
+        "week": "{count, plural, one {katıldıktan sonra # hafta boyunca} other {katıldıktan sonra # hafta boyunca}}",
+        "day": "{count, plural, one {katıldıktan sonra # gün boyunca} other {katıldıktan sonra # gün boyunca}}"
+      },
+      "freeClosesUntil": {
+        "year": "{count, plural, one {katıldıktan # yıl sonrasına kadar} other {katıldıktan # yıl sonrasına kadar}}",
+        "month": "{count, plural, one {katıldıktan # ay sonrasına kadar} other {katıldıktan # ay sonrasına kadar}}",
+        "week": "{count, plural, one {katıldıktan # hafta sonrasına kadar} other {katıldıktan # hafta sonrasına kadar}}",
+        "day": "{count, plural, one {katıldıktan # gün sonrasına kadar} other {katıldıktan # gün sonrasına kadar}}"
+      },
+      "buyOpens": {
+        "year": "{count, plural, one {satın aldıktan # yıl sonra açılır} other {satın aldıktan # yıl sonra açılır}}",
+        "month": "{count, plural, one {satın aldıktan # ay sonra açılır} other {satın aldıktan # ay sonra açılır}}",
+        "week": "{count, plural, one {satın aldıktan # hafta sonra açılır} other {satın aldıktan # hafta sonra açılır}}",
+        "day": "{count, plural, one {satın aldıktan # gün sonra açılır} other {satın aldıktan # gün sonra açılır}}"
+      },
+      "buyClosesAfter": {
+        "year": "{count, plural, one {# yıllık erişimle} other {# yıllık erişimle}}",
+        "month": "{count, plural, one {# aylık erişimle} other {# aylık erişimle}}",
+        "week": "{count, plural, one {# haftalık erişimle} other {# haftalık erişimle}}",
+        "day": "{count, plural, one {# günlük erişimle} other {# günlük erişimle}}"
+      },
+      "buyClosesUntil": {
+        "year": "{count, plural, one {satın aldıktan # yıl sonrasına kadar} other {satın aldıktan # yıl sonrasına kadar}}",
+        "month": "{count, plural, one {satın aldıktan # ay sonrasına kadar} other {satın aldıktan # ay sonrasına kadar}}",
+        "week": "{count, plural, one {satın aldıktan # hafta sonrasına kadar} other {satın aldıktan # hafta sonrasına kadar}}",
+        "day": "{count, plural, one {satın aldıktan # gün sonrasına kadar} other {satın aldıktan # gün sonrasına kadar}}"
+      },
+      "planOpens": {
+        "year": "{count, plural, one {# yıllık üyelikten sonra} other {# yıllık üyelikten sonra}}",
+        "month": "{count, plural, one {# aylık üyelikten sonra} other {# aylık üyelikten sonra}}",
+        "week": "{count, plural, one {# haftalık üyelikten sonra} other {# haftalık üyelikten sonra}}",
+        "day": "{count, plural, one {# günlük üyelikten sonra} other {# günlük üyelikten sonra}}"
+      },
+      "planClosesAfter": {
+        "year": "{count, plural, one {# yıllık üyelik boyunca} other {# yıllık üyelik boyunca}}",
+        "month": "{count, plural, one {# aylık üyelik boyunca} other {# aylık üyelik boyunca}}",
+        "week": "{count, plural, one {# haftalık üyelik boyunca} other {# haftalık üyelik boyunca}}",
+        "day": "{count, plural, one {# günlük üyelik boyunca} other {# günlük üyelik boyunca}}"
+      },
+      "planClosesUntil": {
+        "year": "{count, plural, one {üyelikte # yıl dolana kadar} other {üyelikte # yıl dolana kadar}}",
+        "month": "{count, plural, one {üyelikte # ay dolana kadar} other {üyelikte # ay dolana kadar}}",
+        "week": "{count, plural, one {üyelikten itibaren # haftaya kadar} other {üyelikten itibaren # haftaya kadar}}",
+        "day": "{count, plural, one {üyelikten itibaren # güne kadar} other {üyelikten itibaren # güne kadar}}"
+      },
+      "buyPillOpens": {
+        "year": "{count, plural, one {Satın alımdan # yıl sonra açılır} other {Satın alımdan # yıl sonra açılır}}",
+        "month": "{count, plural, one {Satın alımdan # ay sonra açılır} other {Satın alımdan # ay sonra açılır}}",
+        "week": "{count, plural, one {Satın alımdan # hafta sonra açılır} other {Satın alımdan # hafta sonra açılır}}",
+        "day": "{count, plural, one {Satın alımdan # gün sonra açılır} other {Satın alımdan # gün sonra açılır}}"
+      },
+      "buyPillCloses": {
+        "year": "{count, plural, one {Satın alımdan itibaren # yıl} other {Satın alımdan itibaren # yıl}}",
+        "month": "{count, plural, one {Satın alımdan itibaren # ay} other {Satın alımdan itibaren # ay}}",
+        "week": "{count, plural, one {Satın alımdan itibaren # hafta} other {Satın alımdan itibaren # hafta}}",
+        "day": "{count, plural, one {Satın alımdan itibaren # gün} other {Satın alımdan itibaren # gün}}"
+      },
+      "linkPillOpens": {
+        "year": "{count, plural, one {Üyelikten # yıl sonra} other {Üyelikten # yıl sonra}}",
+        "month": "{count, plural, one {Üyelikten # ay sonra} other {Üyelikten # ay sonra}}",
+        "week": "{count, plural, one {Üyelikten # hafta sonra} other {Üyelikten # hafta sonra}}",
+        "day": "{count, plural, one {Üyelikten # gün sonra} other {Üyelikten # gün sonra}}"
+      },
+      "linkPillCloses": {
+        "year": "{count, plural, one {# yıl sonra kapanır} other {# yıl sonra kapanır}}",
+        "month": "{count, plural, one {# ay sonra kapanır} other {# ay sonra kapanır}}",
+        "week": "{count, plural, one {# hafta sonra kapanır} other {# hafta sonra kapanır}}",
+        "day": "{count, plural, one {# gün sonra kapanır} other {# gün sonra kapanır}}"
+      },
+      "freePillAfter": {
+        "year": "{count, plural, one {Katıldıktan # yıl sonra} other {Katıldıktan # yıl sonra}}",
+        "month": "{count, plural, one {Katıldıktan # ay sonra} other {Katıldıktan # ay sonra}}",
+        "week": "{count, plural, one {Katıldıktan # hafta sonra} other {Katıldıktan # hafta sonra}}",
+        "day": "{count, plural, one {Katıldıktan # gün sonra} other {Katıldıktan # gün sonra}}"
+      },
+      "freePillFirst": {
+        "year": "{count, plural, one {Katıldıktan sonraki ilk # yıl} other {Katıldıktan sonraki ilk # yıl}}",
+        "month": "{count, plural, one {Katıldıktan sonraki ilk # ay} other {Katıldıktan sonraki ilk # ay}}",
+        "week": "{count, plural, one {Katıldıktan sonraki ilk # hafta} other {Katıldıktan sonraki ilk # hafta}}",
+        "day": "{count, plural, one {Katıldıktan sonraki ilk # gün} other {Katıldıktan sonraki ilk # gün}}"
+      }
+    }
   },
   "contentPicker": {
     "loadFailed": "İçerik yüklenemedi.",

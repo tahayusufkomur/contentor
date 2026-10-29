@@ -45,13 +45,13 @@ export function TagFilterBar({ scope, value, onChange }: TagFilterBarProps) {
       <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
         <TagIcon className="h-3.5 w-3.5" /> {t("tagFilter.label")}
       </span>
-      {tags.map((t) => {
-        const active = value.includes(t.id);
+      {tags.map((tag) => {
+        const active = value.includes(tag.id);
         return (
           <button
-            key={t.id}
+            key={tag.id}
             type="button"
-            onClick={() => toggle(t.id)}
+            onClick={() => toggle(tag.id)}
             className={cn(
               "inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors",
               active
@@ -59,7 +59,7 @@ export function TagFilterBar({ scope, value, onChange }: TagFilterBarProps) {
                 : "border-border bg-background text-foreground hover:bg-accent",
             )}
           >
-            {t.name}
+            {tag.name}
           </button>
         );
       })}

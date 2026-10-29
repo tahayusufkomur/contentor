@@ -1064,8 +1064,8 @@
       "urlCopied": "CDN-URL in die Zwischenablage kopiert!",
       "embedCopied": "HTML-Einbettungscode in die Zwischenablage kopiert!",
       "types": {
-        "photo": "foto",
-        "video": "video"
+        "photo": "Foto",
+        "video": "Video"
       },
       "size": "Größe: {size}",
       "duration": "Dauer: {time}",
@@ -2428,7 +2428,7 @@
     "loadError": "Elemente konnten nicht geladen werden. Bitte versuche es erneut.",
     "confirmAction": "{action} {count, plural, one {# Element} other {# Elemente}}? Dies kann nicht rückgängig gemacht werden.",
     "allSelected": "Alle {count, plural, one {# Element} other {# Elemente}} ausgewählt",
-    "selected": "{count} ausgewählt",
+    "selected": "{count, plural, one {# ausgewählt} other {# ausgewählt}}",
     "actions": "Aktionen",
     "clearSelection": "Auswahl aufheben",
     "pageSelected": "Alle {count, plural, one {# Element} other {# Elemente}} auf dieser Seite sind ausgewählt.",
@@ -2576,7 +2576,10 @@
     },
     "statusLabel": "Status:",
     "close": "Schließen",
-    "manage": "{category} verwalten"
+    "manageLive": "Live-Event verwalten",
+    "manageEmail": "E-Mail-Broadcast verwalten",
+    "manageBlog": "Blogbeitrag verwalten",
+    "manageOther": "Verwalten"
   },
   "email": {
     "workspace": {

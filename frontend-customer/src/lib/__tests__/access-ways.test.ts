@@ -1,6 +1,8 @@
 import { describe as suite, expect, it } from "vitest";
 import { createTranslator } from "next-intl";
 import studio from "@shared/i18n/messages/en/studio.json";
+import deStudio from "@shared/i18n/messages/de/studio.json";
+import plStudio from "@shared/i18n/messages/pl/studio.json";
 import {
   buyPill as buyPillIn,
   formatDay,
@@ -11,6 +13,7 @@ import {
   problems,
   spanText,
   type Ways,
+  type WaysT,
 } from "@/lib/access/ways";
 
 type Win = Parameters<typeof buyPillIn>[0];
@@ -232,5 +235,133 @@ suite("dates and prices follow the locale", () => {
         t,
       ).replace(/\s/g, " "),
     ).toBe("4,50 € once, theirs to keep.");
+  });
+});
+
+suite("a counted span is owned by its sentence", () => {
+  // The span is never rendered on its own and pasted into another message:
+  // in de and pl the unit changes case with the sentence around it.
+  const calls: [string, Record<string, unknown> | undefined][] = [];
+  const spy = ((key: string, values?: Record<string, unknown>) => {
+    calls.push([key, values]);
+    return key;
+  }) as unknown as WaysT;
+  const keyed = () => calls.map(([key, values]) => [key, values?.count]);
+
+  it("describe passes count and unit to the context", () => {
+    calls.length = 0;
+    describe(
+      {
+        free: { window: { opens_after_days: 14 } },
+        buy: { price: "49", window: { closes_after_days: 90 } },
+        plans: [{ plan_id: 1, window: { closes_after_days: 7 } }],
+      },
+      plans,
+      "EUR",
+      "en",
+      spy,
+    );
+    expect(keyed()).toEqual(
+      expect.arrayContaining([
+        ["access.phrase.freeOpensAfter.week", 2],
+        ["access.phrase.buyClosesAfter.month", 3],
+        ["access.phrase.planClosesAfter.week", 1],
+      ]),
+    );
+    for (const [, values] of calls)
+      expect(values ?? {}).not.toHaveProperty("span");
+  });
+
+  it("the pills pass count and unit too", () => {
+    calls.length = 0;
+    freePillIn({ opens_after_days: 30, closes_after_days: 90 }, "en", spy);
+    buyPillIn({ opens_after_days: 7, closes_after_days: 365 }, "en", spy);
+    linkPillIn({ opens_after_days: 2 }, "en", spy);
+    expect(keyed()).toEqual(
+      expect.arrayContaining([
+        ["access.phrase.freePillAfter.month", 1],
+        ["access.phrase.freeClosesUntil.month", 3],
+        ["access.phrase.buyPillOpens.week", 1],
+        ["access.phrase.buyPillCloses.year", 1],
+        ["access.phrase.linkPillOpens.day", 2],
+      ]),
+    );
+    for (const [, values] of calls) {
+      expect(values ?? {}).not.toHaveProperty("span");
+      expect(values ?? {}).not.toHaveProperty("opens");
+    }
+  });
+});
+
+suite("describe with three subscriptions", () => {
+  it("lists them with the locale's own 'and' (English: an Oxford comma)", () => {
+    const three = [
+      ...plans,
+      {
+        id: 3,
+        name: "Bronze",
+        price: "5.00",
+        billing_interval_months: 1,
+        is_active: true,
+      },
+    ];
+    expect(
+      describe(
+        {
+          ...none,
+          plans: [1, 2, 3].map((plan_id) => ({ plan_id, window: null })),
+        },
+        three,
+        "EUR",
+        "en",
+        t,
+      ),
+    ).toBe("In Gold, Silver, and Bronze.");
+  });
+});
+
+suite("de and pl read the span in the case its sentence needs", () => {
+  const tr = (locale: string, messages: typeof studio) =>
+    createTranslator({
+      locale,
+      messages: { studio: messages },
+      namespace: "studio",
+    });
+  const de = tr("de", deStudio as typeof studio);
+  const pl = tr("pl", plStudio as typeof studio);
+
+  const buy90 = {
+    ...none,
+    buy: { price: "49", window: { closes_after_days: 90 } },
+  };
+
+  it("de: 'nach 2 Monaten', 'mit 3 Monaten'", () => {
+    expect(
+      freePillIn({ opens_after_days: 60, closes_after_days: 90 }, "de", de),
+    ).toBe("Nach 2 Monaten ab Beitritt · bis 3 Monate nach dem Beitritt");
+    expect(linkPillIn({ opens_after_days: 60 }, "de", de)).toBe(
+      "Nach 2 Monaten Mitgliedschaft · schließt nie",
+    );
+    expect(buyPillIn({ closes_after_days: 7 }, "de", de)).toBe(
+      "1 Woche ab Kauf",
+    );
+    expect(describe(buy90, plans, "EUR", "de", de).replace(/\s/g, " ")).toBe(
+      "49 € einmalig mit 3 Monaten Zugang.",
+    );
+  });
+
+  it("pl: 'po 2 miesiącach', 'Pierwsze 2 tygodnie'", () => {
+    expect(
+      freePillIn({ opens_after_days: 60, closes_after_days: 90 }, "pl", pl),
+    ).toBe("Po 2 miesiącach od dołączenia · do 3 miesięcy po dołączeniu");
+    expect(freePillIn({ closes_after_days: 7 }, "pl", pl)).toBe(
+      "Pierwszy 1 tydzień po dołączeniu",
+    );
+    expect(freePillIn({ closes_after_days: 14 }, "pl", pl)).toBe(
+      "Pierwsze 2 tygodnie po dołączeniu",
+    );
+    expect(describe(buy90, plans, "EUR", "pl", pl).replace(/\s/g, " ")).toBe(
+      "49 € jednorazowo z 3 miesiącami dostępu.",
+    );
   });
 });

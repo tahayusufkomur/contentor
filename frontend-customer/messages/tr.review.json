@@ -7856,7 +7856,7 @@
     "reviewed": false
   },
   "admin.mediaBrowser.selected": {
-    "src": "bc67a440",
+    "src": "78290087",
     "reviewed": false
   },
   "admin.mediaBrowser.actions": {
@@ -8319,8 +8319,20 @@
     "src": "bbfa773e",
     "reviewed": false
   },
-  "admin.calendar.manage": {
-    "src": "c0d6bfbe",
+  "admin.calendar.manageLive": {
+    "src": "63745080",
+    "reviewed": false
+  },
+  "admin.calendar.manageEmail": {
+    "src": "0ede6710",
+    "reviewed": false
+  },
+  "admin.calendar.manageBlog": {
+    "src": "524d62f6",
+    "reviewed": false
+  },
+  "admin.calendar.manageOther": {
+    "src": "bf58d17e",
     "reviewed": false
   },
   "admin.email.workspace.readingBrief": {

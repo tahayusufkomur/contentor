@@ -2428,7 +2428,7 @@
     "loadError": "Nie udało się załadować elementów. Spróbuj ponownie.",
     "confirmAction": "{action} {count, plural, one {# element} few {# elementy} many {# elementów} other {# elementów}}? Tego nie można cofnąć.",
     "allSelected": "Wszystkie {count, plural, one {# element} few {# elementy} many {# elementów} other {# elementów}} zaznaczone",
-    "selected": "{count} zaznaczonych",
+    "selected": "{count, plural, one {# wybrany} few {# wybrane} many {# wybranych} other {# wybranych}}",
     "actions": "Działania",
     "clearSelection": "Wyczyść zaznaczenie",
     "pageSelected": "Wszystkie {count, plural, one {# element} few {# elementy} many {# elementów} other {# elementu}} na tej stronie są zaznaczone.",
@@ -2576,7 +2576,10 @@
     },
     "statusLabel": "Status:",
     "close": "Zamknij",
-    "manage": "Zarządzaj {category}"
+    "manageLive": "Zarządzaj wydarzeniem na żywo",
+    "manageEmail": "Zarządzaj wysyłką e-mail",
+    "manageBlog": "Zarządzaj wpisem na blogu",
+    "manageOther": "Zarządzaj"
   },
   "email": {
     "workspace": {

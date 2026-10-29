@@ -20,39 +20,22 @@
       "inPlans": "in {plans}",
       "inPlansWindow": "in {plans} {window}",
       "from": "from {date}",
-      "until": "until {date}",
-      "freeOpensAfter": "after {span} of joining",
-      "freeClosesAfter": "for {span} after joining",
-      "freeClosesUntil": "until {span} after joining",
-      "buyOpens": "opening {span} after purchase",
-      "buyClosesAfter": "with {span} of access",
-      "buyClosesUntil": "until {span} after purchase",
-      "planOpens": "after {span} of membership",
-      "planClosesAfter": "for {span} of membership",
-      "planClosesUntil": "until {span} into membership"
+      "until": "until {date}"
     },
     "pill": {
       "from": "From {date}",
       "until": "Until {date}",
       "buy": {
         "opensOn": "Opens {date}",
-        "opensAfter": "Opens {span} after purchase",
-        "closesAfter": "{span} from purchase",
         "forever": "Forever"
       },
       "link": {
-        "opensAfter": "After {span} of membership",
         "now": "Right away",
-        "closesAfter": "closes after {span}",
         "closesOn": "closes {date}",
         "never": "never closes"
       },
       "free": {
-        "afterThenUntil": "After {opens} of joining · until {closes} after joining",
-        "fromThenUntil": "From {opens} · until {closes} after joining",
-        "first": "First {closes} after joining",
         "between": "{opens} – {closes}",
-        "after": "After {opens} of joining",
         "always": "Always"
       }
     },
@@ -72,7 +55,7 @@
       "fromTo": "From <from></from> to <to></to>",
       "freeFromAria": "Free from",
       "freeToAria": "Free to",
-      "firstDaysAfter": "For the first <days></days> days after someone joins the site",
+      "firstDaysAfter": "For the first <days></days> {count, plural, one {day} other {days}} after someone joins the site",
       "access": "Access",
       "forever": "Forever",
       "customDays": "Custom days",
@@ -124,7 +107,99 @@
     "nothingTicked": "Nothing ticked yet.",
     "checkDatesPlan": "Check the days or dates for {name}.",
     "checkDatesBuyers": "Check the days or dates for buyers.",
-    "checkDatesFree": "Check the days or dates for Free."
+    "checkDatesFree": "Check the days or dates for Free.",
+    "phrase": {
+      "freeOpensAfter": {
+        "year": "{count, plural, one {after # year of joining} other {after # years of joining}}",
+        "month": "{count, plural, one {after # month of joining} other {after # months of joining}}",
+        "week": "{count, plural, one {after # week of joining} other {after # weeks of joining}}",
+        "day": "{count, plural, one {after # day of joining} other {after # days of joining}}"
+      },
+      "freeClosesAfter": {
+        "year": "{count, plural, one {for # year after joining} other {for # years after joining}}",
+        "month": "{count, plural, one {for # month after joining} other {for # months after joining}}",
+        "week": "{count, plural, one {for # week after joining} other {for # weeks after joining}}",
+        "day": "{count, plural, one {for # day after joining} other {for # days after joining}}"
+      },
+      "freeClosesUntil": {
+        "year": "{count, plural, one {until # year after joining} other {until # years after joining}}",
+        "month": "{count, plural, one {until # month after joining} other {until # months after joining}}",
+        "week": "{count, plural, one {until # week after joining} other {until # weeks after joining}}",
+        "day": "{count, plural, one {until # day after joining} other {until # days after joining}}"
+      },
+      "buyOpens": {
+        "year": "{count, plural, one {opening # year after purchase} other {opening # years after purchase}}",
+        "month": "{count, plural, one {opening # month after purchase} other {opening # months after purchase}}",
+        "week": "{count, plural, one {opening # week after purchase} other {opening # weeks after purchase}}",
+        "day": "{count, plural, one {opening # day after purchase} other {opening # days after purchase}}"
+      },
+      "buyClosesAfter": {
+        "year": "{count, plural, one {with # year of access} other {with # years of access}}",
+        "month": "{count, plural, one {with # month of access} other {with # months of access}}",
+        "week": "{count, plural, one {with # week of access} other {with # weeks of access}}",
+        "day": "{count, plural, one {with # day of access} other {with # days of access}}"
+      },
+      "buyClosesUntil": {
+        "year": "{count, plural, one {until # year after purchase} other {until # years after purchase}}",
+        "month": "{count, plural, one {until # month after purchase} other {until # months after purchase}}",
+        "week": "{count, plural, one {until # week after purchase} other {until # weeks after purchase}}",
+        "day": "{count, plural, one {until # day after purchase} other {until # days after purchase}}"
+      },
+      "planOpens": {
+        "year": "{count, plural, one {after # year of membership} other {after # years of membership}}",
+        "month": "{count, plural, one {after # month of membership} other {after # months of membership}}",
+        "week": "{count, plural, one {after # week of membership} other {after # weeks of membership}}",
+        "day": "{count, plural, one {after # day of membership} other {after # days of membership}}"
+      },
+      "planClosesAfter": {
+        "year": "{count, plural, one {for # year of membership} other {for # years of membership}}",
+        "month": "{count, plural, one {for # month of membership} other {for # months of membership}}",
+        "week": "{count, plural, one {for # week of membership} other {for # weeks of membership}}",
+        "day": "{count, plural, one {for # day of membership} other {for # days of membership}}"
+      },
+      "planClosesUntil": {
+        "year": "{count, plural, one {until # year into membership} other {until # years into membership}}",
+        "month": "{count, plural, one {until # month into membership} other {until # months into membership}}",
+        "week": "{count, plural, one {until # week into membership} other {until # weeks into membership}}",
+        "day": "{count, plural, one {until # day into membership} other {until # days into membership}}"
+      },
+      "buyPillOpens": {
+        "year": "{count, plural, one {Opens # year after purchase} other {Opens # years after purchase}}",
+        "month": "{count, plural, one {Opens # month after purchase} other {Opens # months after purchase}}",
+        "week": "{count, plural, one {Opens # week after purchase} other {Opens # weeks after purchase}}",
+        "day": "{count, plural, one {Opens # day after purchase} other {Opens # days after purchase}}"
+      },
+      "buyPillCloses": {
+        "year": "{count, plural, one {# year from purchase} other {# years from purchase}}",
+        "month": "{count, plural, one {# month from purchase} other {# months from purchase}}",
+        "week": "{count, plural, one {# week from purchase} other {# weeks from purchase}}",
+        "day": "{count, plural, one {# day from purchase} other {# days from purchase}}"
+      },
+      "linkPillOpens": {
+        "year": "{count, plural, one {After # year of membership} other {After # years of membership}}",
+        "month": "{count, plural, one {After # month of membership} other {After # months of membership}}",
+        "week": "{count, plural, one {After # week of membership} other {After # weeks of membership}}",
+        "day": "{count, plural, one {After # day of membership} other {After # days of membership}}"
+      },
+      "linkPillCloses": {
+        "year": "{count, plural, one {closes after # year} other {closes after # years}}",
+        "month": "{count, plural, one {closes after # month} other {closes after # months}}",
+        "week": "{count, plural, one {closes after # week} other {closes after # weeks}}",
+        "day": "{count, plural, one {closes after # day} other {closes after # days}}"
+      },
+      "freePillAfter": {
+        "year": "{count, plural, one {After # year of joining} other {After # years of joining}}",
+        "month": "{count, plural, one {After # month of joining} other {After # months of joining}}",
+        "week": "{count, plural, one {After # week of joining} other {After # weeks of joining}}",
+        "day": "{count, plural, one {After # day of joining} other {After # days of joining}}"
+      },
+      "freePillFirst": {
+        "year": "{count, plural, one {First # year after joining} other {First # years after joining}}",
+        "month": "{count, plural, one {First # month after joining} other {First # months after joining}}",
+        "week": "{count, plural, one {First # week after joining} other {First # weeks after joining}}",
+        "day": "{count, plural, one {First # day after joining} other {First # days after joining}}"
+      }
+    }
   },
   "contentPicker": {
     "loadFailed": "Failed to load content.",

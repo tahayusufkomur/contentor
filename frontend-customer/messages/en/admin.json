@@ -2428,7 +2428,7 @@
     "loadError": "Could not load items. Please try again.",
     "confirmAction": "{action} {count, plural, one {# item} other {# items}}? This cannot be undone.",
     "allSelected": "All {count, plural, one {# item} other {# items}} selected",
-    "selected": "{count} selected",
+    "selected": "{count, plural, one {# selected} other {# selected}}",
     "actions": "Actions",
     "clearSelection": "Clear selection",
     "pageSelected": "All {count, plural, one {# item} other {# items}} on this page are selected.",
@@ -2576,7 +2576,10 @@
     },
     "statusLabel": "Status:",
     "close": "Close",
-    "manage": "Manage {category}"
+    "manageLive": "Manage Live Event",
+    "manageEmail": "Manage Email Broadcast",
+    "manageBlog": "Manage Blog Post",
+    "manageOther": "Manage"
   },
   "email": {
     "workspace": {

@@ -299,6 +299,7 @@ function FreePanel({
       {mode === "first" && (
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           {t.rich("access.window.firstDaysAfter", {
+            count: w.closes_after_days ?? 7,
             days: () => (
               <DaysInput
                 days={w.closes_after_days ?? 7}

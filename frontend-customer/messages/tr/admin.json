@@ -2428,7 +2428,7 @@
     "loadError": "Öğeler yüklenemedi. Lütfen tekrar dene.",
     "confirmAction": "{action} {count, plural, one {# öğe} other {# öğe}}? Bu işlem geri alınamaz.",
     "allSelected": "Tüm {count, plural, one {# öğe} other {# öğe}} seçildi",
-    "selected": "{count} seçildi",
+    "selected": "{count, plural, one {# seçildi} other {# seçildi}}",
     "actions": "İşlemler",
     "clearSelection": "Seçimi temizle",
     "pageSelected": "Bu sayfadaki {count, plural, one {# öğenin} other {# öğenin}} tümü seçildi.",
@@ -2576,7 +2576,10 @@
     },
     "statusLabel": "Durum:",
     "close": "Kapat",
-    "manage": "{category} yönet"
+    "manageLive": "Canlı Etkinliği Yönet",
+    "manageEmail": "E-posta Yayınını Yönet",
+    "manageBlog": "Blog Yazısını Yönet",
+    "manageOther": "Yönet"
   },
   "email": {
     "workspace": {

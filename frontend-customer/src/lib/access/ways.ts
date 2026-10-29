@@ -70,22 +70,54 @@ export function formatDay(iso: string, locale: string): string {
   return formatDayMonth(new Date(Date.UTC(y, m - 1, d)), locale, true, "UTC");
 }
 
-type Phrase = (span: string) => string;
+/**
+ * The sentences that carry a counted span. Each owns its count and unit
+ * (`access.phrase.<context>.<unit>`, one plural message per unit): the span is
+ * never rendered alone and pasted in, because the unit's case follows the
+ * sentence in de and pl ("after 2 months" is a different form from "for 2 months").
+ */
+type PhraseContext =
+  | "freeOpensAfter"
+  | "freeClosesAfter"
+  | "freeClosesUntil"
+  | "buyOpens"
+  | "buyClosesAfter"
+  | "buyClosesUntil"
+  | "planOpens"
+  | "planClosesAfter"
+  | "planClosesUntil"
+  | "buyPillOpens"
+  | "buyPillCloses"
+  | "linkPillOpens"
+  | "linkPillCloses"
+  | "freePillAfter"
+  | "freePillFirst";
+
+function phrase(t: WaysT, context: PhraseContext, days: number): string {
+  const { unit, count } = spanParts(days);
+  return t(`access.phrase.${context}.${unit}`, { count });
+}
+
+type Phrases = {
+  opensAfter: PhraseContext;
+  closesAfter: PhraseContext;
+  closesUntil: PhraseContext;
+};
 
 /**
- * The window as phrases; the templates take a span such as "1 month". A span to
- * the close counts from when they got in, so once an opening is set it reads
- * `closesUntil`, not a length (as the backend's `_clauses`).
+ * The window as phrases. A span to the close counts from when they got in, so
+ * once an opening is set it reads `closesUntil`, not a length (as the backend's
+ * `_clauses`).
  */
 function clauses(
   w: Window | null,
-  phrases: { opensAfter: Phrase; closesAfter: Phrase; closesUntil: Phrase },
+  phrases: Phrases,
   locale: string,
   t: WaysT,
 ): string[] {
   const out: string[] = [];
   if (w?.opens_after_days !== undefined)
-    out.push(phrases.opensAfter(spanText(w.opens_after_days, t)));
+    out.push(phrase(t, phrases.opensAfter, w.opens_after_days));
   if (w?.opens_on)
     out.push(
       t("access.describe.from", { date: formatDay(w.opens_on, locale) }),
@@ -93,8 +125,10 @@ function clauses(
   if (w?.closes_after_days !== undefined) {
     const opens = w.opens_after_days !== undefined || !!w.opens_on;
     out.push(
-      (opens ? phrases.closesUntil : phrases.closesAfter)(
-        spanText(w.closes_after_days, t),
+      phrase(
+        t,
+        opens ? phrases.closesUntil : phrases.closesAfter,
+        w.closes_after_days,
       ),
     );
   }
@@ -105,7 +139,28 @@ function clauses(
   return out;
 }
 
-/** The same sentence as the backend's `describe`. */
+const FREE: Phrases = {
+  opensAfter: "freeOpensAfter",
+  closesAfter: "freeClosesAfter",
+  closesUntil: "freeClosesUntil",
+};
+const BUY: Phrases = {
+  opensAfter: "buyOpens",
+  closesAfter: "buyClosesAfter",
+  closesUntil: "buyClosesUntil",
+};
+const PLAN: Phrases = {
+  opensAfter: "planOpens",
+  closesAfter: "planClosesAfter",
+  closesUntil: "planClosesUntil",
+};
+
+/**
+ * The ways in as one sentence, built like the backend's `describe` (same
+ * clauses and order). Not byte-identical: a list of three or more names takes
+ * the locale's own conjunction (English "A, B, and C"; the backend writes
+ * "A, B and C").
+ */
 export function describe(
   ways: Ways,
   plans: AccessPayload["plans"],
@@ -115,16 +170,7 @@ export function describe(
 ): string {
   const parts: string[] = [];
   if (ways.free) {
-    const c = clauses(
-      ways.free.window,
-      {
-        opensAfter: (span) => t("access.describe.freeOpensAfter", { span }),
-        closesAfter: (span) => t("access.describe.freeClosesAfter", { span }),
-        closesUntil: (span) => t("access.describe.freeClosesUntil", { span }),
-      },
-      locale,
-      t,
-    );
+    const c = clauses(ways.free.window, FREE, locale, t);
     parts.push(
       c.length
         ? t("access.describe.free", { window: c.join(" ") })
@@ -132,16 +178,7 @@ export function describe(
     );
   }
   if (ways.buy) {
-    const c = clauses(
-      ways.buy.window,
-      {
-        opensAfter: (span) => t("access.describe.buyOpens", { span }),
-        closesAfter: (span) => t("access.describe.buyClosesAfter", { span }),
-        closesUntil: (span) => t("access.describe.buyClosesUntil", { span }),
-      },
-      locale,
-      t,
-    );
+    const c = clauses(ways.buy.window, BUY, locale, t);
     const price = formatMoney(ways.buy.price, currency, locale);
     parts.push(
       c.length
@@ -155,16 +192,7 @@ export function describe(
     for (const p of ways.plans) {
       const name = names.get(p.plan_id);
       if (name === undefined) continue;
-      const c = clauses(
-        p.window,
-        {
-          opensAfter: (span) => t("access.describe.planOpens", { span }),
-          closesAfter: (span) => t("access.describe.planClosesAfter", { span }),
-          closesUntil: (span) => t("access.describe.planClosesUntil", { span }),
-        },
-        locale,
-        t,
-      );
+      const c = clauses(p.window, PLAN, locale, t);
       const key = JSON.stringify(c);
       const group = groups.get(key) ?? { c, names: [] };
       group.names.push(name);
@@ -192,13 +220,11 @@ export function buyPill(w: Window | null, locale: string, t: WaysT): string {
   const opens = w?.opens_on
     ? `${t("access.pill.buy.opensOn", { date: formatDay(w.opens_on, locale) })} · `
     : w?.opens_after_days !== undefined
-      ? `${t("access.pill.buy.opensAfter", { span: spanText(w.opens_after_days, t) })} · `
+      ? `${phrase(t, "buyPillOpens", w.opens_after_days)} · `
       : "";
   const closes =
     w?.closes_after_days !== undefined
-      ? t("access.pill.buy.closesAfter", {
-          span: spanText(w.closes_after_days, t),
-        })
+      ? phrase(t, "buyPillCloses", w.closes_after_days)
       : w?.closes_on
         ? t("access.pill.until", { date: formatDay(w.closes_on, locale) })
         : t("access.pill.buy.forever");
@@ -208,17 +234,13 @@ export function buyPill(w: Window | null, locale: string, t: WaysT): string {
 export function linkPill(w: Window | null, locale: string, t: WaysT): string {
   const opens =
     w?.opens_after_days !== undefined
-      ? t("access.pill.link.opensAfter", {
-          span: spanText(w.opens_after_days, t),
-        })
+      ? phrase(t, "linkPillOpens", w.opens_after_days)
       : w?.opens_on
         ? t("access.pill.from", { date: formatDay(w.opens_on, locale) })
         : t("access.pill.link.now");
   const closes =
     w?.closes_after_days !== undefined
-      ? t("access.pill.link.closesAfter", {
-          span: spanText(w.closes_after_days, t),
-        })
+      ? phrase(t, "linkPillCloses", w.closes_after_days)
       : w?.closes_on
         ? t("access.pill.link.closesOn", {
             date: formatDay(w.closes_on, locale),
@@ -230,19 +252,14 @@ export function linkPill(w: Window | null, locale: string, t: WaysT): string {
 export function freePill(w: Window | null, locale: string, t: WaysT): string {
   const day = (iso: string) => formatDay(iso, locale);
   if (w?.closes_after_days !== undefined) {
-    // With an opening, the close (counted from joining) is a point, not a length.
-    const closes = spanText(w.closes_after_days, t);
+    // With an opening, the close (counted from joining) is a point, not a length:
+    // two facts, each a whole phrase, listed with " · ".
+    const until = phrase(t, "freeClosesUntil", w.closes_after_days);
     if (w.opens_after_days !== undefined)
-      return t("access.pill.free.afterThenUntil", {
-        opens: spanText(w.opens_after_days, t),
-        closes,
-      });
+      return `${phrase(t, "freePillAfter", w.opens_after_days)} · ${until}`;
     if (w.opens_on)
-      return t("access.pill.free.fromThenUntil", {
-        opens: day(w.opens_on),
-        closes,
-      });
-    return t("access.pill.free.first", { closes });
+      return `${t("access.pill.from", { date: day(w.opens_on) })} · ${until}`;
+    return phrase(t, "freePillFirst", w.closes_after_days);
   }
   if (w?.opens_on && w.closes_on)
     return t("access.pill.free.between", {
@@ -252,9 +269,7 @@ export function freePill(w: Window | null, locale: string, t: WaysT): string {
   if (w?.closes_on) return t("access.pill.until", { date: day(w.closes_on) });
   if (w?.opens_on) return t("access.pill.from", { date: day(w.opens_on) });
   if (w?.opens_after_days !== undefined)
-    return t("access.pill.free.after", {
-      opens: spanText(w.opens_after_days, t),
-    });
+    return phrase(t, "freePillAfter", w.opens_after_days);
   return t("access.pill.free.always");
 }
 

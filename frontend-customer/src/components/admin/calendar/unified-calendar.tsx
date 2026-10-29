@@ -58,6 +58,17 @@ export interface UnifiedCalendarItem {
   href: string;
 }
 
+/** The "Manage …" button's whole message for an item; one per category, so each language can decline the noun. */
+export function manageKey(category: string) {
+  return category === "live"
+    ? "manageLive"
+    : category === "email"
+      ? "manageEmail"
+      : category === "blog"
+        ? "manageBlog"
+        : "manageOther";
+}
+
 const STATUSES: string[] = [
   "scheduled",
   "published",
@@ -565,11 +576,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
               </Button>
               <Button asChild size="sm" className="gap-1.5">
                 <Link href={selectedItem.href}>
-                  <span>
-                    {t("manage", {
-                      category: t(`category.${selectedItem.category}`),
-                    })}
-                  </span>
+                  <span>{t(manageKey(selectedItem.category))}</span>
                   <ExternalLink className="h-3.5 w-3.5" />
                 </Link>
               </Button>

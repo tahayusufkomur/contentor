@@ -2335,42 +2335,6 @@
     "src": "b798a191",
     "reviewed": false
   },
-  "studio.access.describe.freeOpensAfter": {
-    "src": "fb8a06ad",
-    "reviewed": false
-  },
-  "studio.access.describe.freeClosesAfter": {
-    "src": "02566303",
-    "reviewed": false
-  },
-  "studio.access.describe.freeClosesUntil": {
-    "src": "7f1ccd1e",
-    "reviewed": false
-  },
-  "studio.access.describe.buyOpens": {
-    "src": "7e75a58f",
-    "reviewed": false
-  },
-  "studio.access.describe.buyClosesAfter": {
-    "src": "878a7304",
-    "reviewed": false
-  },
-  "studio.access.describe.buyClosesUntil": {
-    "src": "d7d8fc36",
-    "reviewed": false
-  },
-  "studio.access.describe.planOpens": {
-    "src": "29ff9325",
-    "reviewed": false
-  },
-  "studio.access.describe.planClosesAfter": {
-    "src": "086ffe2f",
-    "reviewed": false
-  },
-  "studio.access.describe.planClosesUntil": {
-    "src": "9ab1c7a1",
-    "reviewed": false
-  },
   "studio.access.pill.from": {
     "src": "11622483",
     "reviewed": false
@@ -2383,28 +2347,12 @@
     "src": "e67a54c8",
     "reviewed": false
   },
-  "studio.access.pill.buy.opensAfter": {
-    "src": "cbe3d254",
-    "reviewed": false
-  },
-  "studio.access.pill.buy.closesAfter": {
-    "src": "bb341a75",
-    "reviewed": false
-  },
   "studio.access.pill.buy.forever": {
     "src": "2502483d",
     "reviewed": false
   },
-  "studio.access.pill.link.opensAfter": {
-    "src": "92bcfe90",
-    "reviewed": false
-  },
   "studio.access.pill.link.now": {
     "src": "efac6f45",
-    "reviewed": false
-  },
-  "studio.access.pill.link.closesAfter": {
-    "src": "4207f598",
     "reviewed": false
   },
   "studio.access.pill.link.closesOn": {
@@ -2415,24 +2363,8 @@
     "src": "180e0be2",
     "reviewed": false
   },
-  "studio.access.pill.free.afterThenUntil": {
-    "src": "4699db72",
-    "reviewed": false
-  },
-  "studio.access.pill.free.fromThenUntil": {
-    "src": "5f55d3da",
-    "reviewed": false
-  },
-  "studio.access.pill.free.first": {
-    "src": "0f32990a",
-    "reviewed": false
-  },
   "studio.access.pill.free.between": {
     "src": "e638b4a0",
-    "reviewed": false
-  },
-  "studio.access.pill.free.after": {
-    "src": "e858346b",
     "reviewed": false
   },
   "studio.access.pill.free.always": {
@@ -2492,7 +2424,7 @@
     "reviewed": false
   },
   "studio.access.window.firstDaysAfter": {
-    "src": "d945f56a",
+    "src": "dd39ae59",
     "reviewed": false
   },
   "studio.access.window.access": {
@@ -2697,6 +2629,246 @@
   },
   "studio.access.checkDatesFree": {
     "src": "95961ee3",
+    "reviewed": false
+  },
+  "studio.access.phrase.freeOpensAfter.year": {
+    "src": "3f693a37",
+    "reviewed": false
+  },
+  "studio.access.phrase.freeOpensAfter.month": {
+    "src": "d7fbd167",
+    "reviewed": false
+  },
+  "studio.access.phrase.freeOpensAfter.week": {
+    "src": "759e4d05",
+    "reviewed": false
+  },
+  "studio.access.phrase.freeOpensAfter.day": {
+    "src": "2e686d18",
+    "reviewed": false
+  },
+  "studio.access.phrase.freeClosesAfter.year": {
+    "src": "5e780997",
+    "reviewed": false
+  },
+  "studio.access.phrase.freeClosesAfter.month": {
+    "src": "2168e04d",
+    "reviewed": false
+  },
+  "studio.access.phrase.freeClosesAfter.week": {
+    "src": "592c3fb4",
+    "reviewed": false
+  },
+  "studio.access.phrase.freeClosesAfter.day": {
+    "src": "e9c3d05b",
+    "reviewed": false
+  },
+  "studio.access.phrase.freeClosesUntil.year": {
+    "src": "8ed276b4",
+    "reviewed": false
+  },
+  "studio.access.phrase.freeClosesUntil.month": {
+    "src": "0f4801df",
+    "reviewed": false
+  },
+  "studio.access.phrase.freeClosesUntil.week": {
+    "src": "ff7f3e6c",
+    "reviewed": false
+  },
+  "studio.access.phrase.freeClosesUntil.day": {
+    "src": "89f03a92",
+    "reviewed": false
+  },
+  "studio.access.phrase.buyOpens.year": {
+    "src": "5e69798b",
+    "reviewed": false
+  },
+  "studio.access.phrase.buyOpens.month": {
+    "src": "0236e79c",
+    "reviewed": false
+  },
+  "studio.access.phrase.buyOpens.week": {
+    "src": "2332e398",
+    "reviewed": false
+  },
+  "studio.access.phrase.buyOpens.day": {
+    "src": "202112c3",
+    "reviewed": false
+  },
+  "studio.access.phrase.buyClosesAfter.year": {
+    "src": "767d3636",
+    "reviewed": false
+  },
+  "studio.access.phrase.buyClosesAfter.month": {
+    "src": "fdfcf646",
+    "reviewed": false
+  },
+  "studio.access.phrase.buyClosesAfter.week": {
+    "src": "9d2f7539",
+    "reviewed": false
+  },
+  "studio.access.phrase.buyClosesAfter.day": {
+    "src": "5f59bb8a",
+    "reviewed": false
+  },
+  "studio.access.phrase.buyClosesUntil.year": {
+    "src": "6755e1b8",
+    "reviewed": false
+  },
+  "studio.access.phrase.buyClosesUntil.month": {
+    "src": "852e054c",
+    "reviewed": false
+  },
+  "studio.access.phrase.buyClosesUntil.week": {
+    "src": "ab4a4963",
+    "reviewed": false
+  },
+  "studio.access.phrase.buyClosesUntil.day": {
+    "src": "19799aa0",
+    "reviewed": false
+  },
+  "studio.access.phrase.planOpens.year": {
+    "src": "b4bc42cb",
+    "reviewed": false
+  },
+  "studio.access.phrase.planOpens.month": {
+    "src": "a31dc1ec",
+    "reviewed": false
+  },
+  "studio.access.phrase.planOpens.week": {
+    "src": "26ff8f10",
+    "reviewed": false
+  },
+  "studio.access.phrase.planOpens.day": {
+    "src": "c8f1d9a8",
+    "reviewed": false
+  },
+  "studio.access.phrase.planClosesAfter.year": {
+    "src": "a841cd05",
+    "reviewed": false
+  },
+  "studio.access.phrase.planClosesAfter.month": {
+    "src": "2bd84636",
+    "reviewed": false
+  },
+  "studio.access.phrase.planClosesAfter.week": {
+    "src": "81ecb183",
+    "reviewed": false
+  },
+  "studio.access.phrase.planClosesAfter.day": {
+    "src": "cb558f44",
+    "reviewed": false
+  },
+  "studio.access.phrase.planClosesUntil.year": {
+    "src": "83325aad",
+    "reviewed": false
+  },
+  "studio.access.phrase.planClosesUntil.month": {
+    "src": "0264118a",
+    "reviewed": false
+  },
+  "studio.access.phrase.planClosesUntil.week": {
+    "src": "edd89054",
+    "reviewed": false
+  },
+  "studio.access.phrase.planClosesUntil.day": {
+    "src": "c4da4f10",
+    "reviewed": false
+  },
+  "studio.access.phrase.buyPillOpens.year": {
+    "src": "157f5c68",
+    "reviewed": false
+  },
+  "studio.access.phrase.buyPillOpens.month": {
+    "src": "7a916c5a",
+    "reviewed": false
+  },
+  "studio.access.phrase.buyPillOpens.week": {
+    "src": "f613a778",
+    "reviewed": false
+  },
+  "studio.access.phrase.buyPillOpens.day": {
+    "src": "87d2a122",
+    "reviewed": false
+  },
+  "studio.access.phrase.buyPillCloses.year": {
+    "src": "46ffd314",
+    "reviewed": false
+  },
+  "studio.access.phrase.buyPillCloses.month": {
+    "src": "a3445832",
+    "reviewed": false
+  },
+  "studio.access.phrase.buyPillCloses.week": {
+    "src": "f1df6c5f",
+    "reviewed": false
+  },
+  "studio.access.phrase.buyPillCloses.day": {
+    "src": "1605a66d",
+    "reviewed": false
+  },
+  "studio.access.phrase.linkPillOpens.year": {
+    "src": "0a06e6cc",
+    "reviewed": false
+  },
+  "studio.access.phrase.linkPillOpens.month": {
+    "src": "a5ddd0fa",
+    "reviewed": false
+  },
+  "studio.access.phrase.linkPillOpens.week": {
+    "src": "48fe20a0",
+    "reviewed": false
+  },
+  "studio.access.phrase.linkPillOpens.day": {
+    "src": "90cd22fa",
+    "reviewed": false
+  },
+  "studio.access.phrase.linkPillCloses.year": {
+    "src": "38ca6d46",
+    "reviewed": false
+  },
+  "studio.access.phrase.linkPillCloses.month": {
+    "src": "bd57b8a1",
+    "reviewed": false
+  },
+  "studio.access.phrase.linkPillCloses.week": {
+    "src": "4c182262",
+    "reviewed": false
+  },
+  "studio.access.phrase.linkPillCloses.day": {
+    "src": "b706eb4e",
+    "reviewed": false
+  },
+  "studio.access.phrase.freePillAfter.year": {
+    "src": "d5366c8d",
+    "reviewed": false
+  },
+  "studio.access.phrase.freePillAfter.month": {
+    "src": "96fba0b7",
+    "reviewed": false
+  },
+  "studio.access.phrase.freePillAfter.week": {
+    "src": "3533382a",
+    "reviewed": false
+  },
+  "studio.access.phrase.freePillAfter.day": {
+    "src": "64757809",
+    "reviewed": false
+  },
+  "studio.access.phrase.freePillFirst.year": {
+    "src": "38ccc8c8",
+    "reviewed": false
+  },
+  "studio.access.phrase.freePillFirst.month": {
+    "src": "950d92e1",
+    "reviewed": false
+  },
+  "studio.access.phrase.freePillFirst.week": {
+    "src": "9497ac16",
+    "reviewed": false
+  },
+  "studio.access.phrase.freePillFirst.day": {
+    "src": "fa906906",
     "reviewed": false
   },
   "studio.contentPicker.loadFailed": {
