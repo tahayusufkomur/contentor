@@ -143,6 +143,28 @@ def phrases(reel) -> list[dict] | None:
     return found.get("groups") or []
 
 
+def caption_language(reel) -> str:
+    """The language the captions are drawn in: the target's when its translation is there, else as spoken
+    (so the captions and the end card always agree)."""
+    if phrases(reel) is not None:
+        return options_of(reel)["language"]
+    return reel.video.captions_language or ""
+
+
+def ensure_translation(reel) -> None:
+    """A reel whose target language has no translation yet (the site's default, before any edit) is
+    translated where it is made. A translation that fails leaves the reel as spoken, captions and end card."""
+    language = options_of(reel)["language"]
+    if not language or language == reel.video.captions_language or phrases(reel) is not None:
+        return
+    try:
+        reel.translation = translate(reel)
+    except moments.TranslationError as exc:
+        logger.warning("reel %s: captions not translated into %s: %s", reel.pk, language, exc)
+        return
+    Reel.objects.filter(pk=reel.pk).update(translation=reel.translation)
+
+
 PHRASE = 34  # characters of a translated sentence on screen at once
 
 
@@ -235,7 +257,7 @@ def end_card_of(reel, found_kit=None) -> dict:
     """What the end card shows: the site's name, address (and its QR code) and a line."""
     found_kit = found_kit or kit()
     opts = options_of(reel)
-    language = (opts["language"] or reel.video.captions_language or found_kit["language"] or "en")[:2]
+    language = (caption_language(reel) or found_kit["language"] or "en")[:2]
     return {
         "look": found_kit["look"],
         "colors": found_kit["colors"],
@@ -361,7 +383,7 @@ def job_for(reel, upload: str) -> dict:
         length=w.length_of(kept),
         style=reel.style,
         colors=found_kit["colors"],
-        language=opts["language"] if translated is not None else video.captions_language,
+        language=caption_language(reel),
         layout=frame["layout"],
         phrases=translated,
         below=round(edits["caption_at"] * 1920) if edits.get("caption_at") is not None else None,
@@ -405,6 +427,7 @@ def run(reel) -> None:
         ExpiresIn=3600,
     )
     try:
+        ensure_translation(reel)
         stamp = fingerprint(reel)
         job = job_for(reel, upload)
         res = requests.post(f"{settings.VIDEO_URL.rstrip('/')}/render", json=job, timeout=RENDER_TIMEOUT)

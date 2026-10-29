@@ -1574,10 +1574,11 @@ def subject_of(answers: dict, *, language: str | None = None) -> str:
     boxing coach's photos as "fitness", and "general" as "coaching".
     Their words are in `language` (the site's); a search passes it so the subject comes back
     in English, anything that is read as text leaves it out and gets their own words."""
-    if focus := focus_of(answers):
+    if focus := focus_of(answers, language=language):
         return focus["disciplines"][0]  # the one that leads; photo searches take a single subject
     niche = str(answers.get("niche") or "general").replace("_", " ")
-    teaches = f"{answers.get('specialty') or ''} {answers.get('teaches') or ''}".lower()
+    # (Turkish "İ" lowercases to "i" + a combining dot, which would split the word: drop the dot.)
+    teaches = f"{answers.get('specialty') or ''} {answers.get('teaches') or ''}".lower().replace("\u0307", "")
     if niche != "general" and niche in teaches:
         return niche
     words = [w for w in re.findall(r"[^\W\d_]+", teaches) if w not in _STOP_WORDS]
@@ -1685,11 +1686,12 @@ def parse_focus(raw, answers: dict) -> dict | None:
     return {"mode": "primary", "primary": named[0], "secondary": [n for n in names if n != named[0]]}
 
 
-def focus_of(answers: dict) -> dict | None:
+def focus_of(answers: dict, *, language: str | None = None) -> dict | None:
     """How her disciplines shape the site, as the composer reads it; None for one discipline, before she
     has answered, or when her answer no longer fits what she offers. Subjects and niches are lead first (her
     main one, else the first she gave): {"mode", "disciplines": [subject], "niches": [niche]} and, for a
-    main focus, "primary" (its subject) and "secondary" (the others')."""
+    main focus, "primary" (its subject) and "secondary" (the others'). With `language` (hers, when her words are
+    not English) the subjects come back in English, as a search needs them; without it they are her own words."""
     names, saved = disciplines_of(answers), answers.get("discipline_focus")
     if len(names) < 2 or not isinstance(saved, dict) or saved.get("mode") not in ("equal", "primary"):
         return None
@@ -1699,6 +1701,10 @@ def focus_of(answers: dict) -> dict | None:
             return None
         names = [lead, *(n for n in names if n != lead)]
     rows = [_niche_and_subject(answers, n) for n in names]
+    if language:
+        from apps.core.onboarding.ai_curate import english_terms
+
+        rows = [(niche, english_terms(subject, language=language) if subject else subject) for niche, subject in rows]
     view = {"mode": saved["mode"], "disciplines": [s for _, s in rows], "niches": [n for n, _ in rows]}
     if saved["mode"] == "primary":
         view |= {"primary": rows[0][1], "secondary": [s for _, s in rows[1:]]}

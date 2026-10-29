@@ -384,11 +384,15 @@ def reel_detail(request, pk):
     if refused:
         return Response({"detail": refused}, status=400)
     options = render.options_of(reel)
-    if options["language"] and options["language"] != reel.video.captions_language and render.phrases(reel) is None:
+    # Only a language she chose is translated here; the site's default is translated where the reel is made.
+    chosen = (reel.options or {}).get("language")
+    if chosen and chosen != reel.video.captions_language and render.phrases(reel) is None:
         try:
             reel.translation = render.translate(reel)
         except moments.TranslationError as exc:
-            return Response({"detail": str(exc)}, status=502)
+            if "language" in (data.get("options") if isinstance(data.get("options"), dict) else {}):
+                return Response({"detail": str(exc)}, status=502)
+            # An edit to a reel already set to a language is saved; the render tries the translation again.
     if options["cutaways"] and not reel.cutaways and reel.ideas:
         reel.cutaways = render.find_photos(reel)
     reel.save()

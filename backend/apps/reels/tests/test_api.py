@@ -13,7 +13,7 @@ from apps.accounts.models import User
 from apps.core.storage import build_s3_path
 from apps.courses.models import Video
 from apps.courses.tests.test_views import make_client
-from apps.reels import covers, fonts, framing, jobs, render
+from apps.reels import covers, fonts, framing, jobs, moments, render
 from apps.reels.models import Reel
 from apps.reels.tests.test_moments import talk
 
@@ -403,6 +403,68 @@ class TestRender:
             f"/api/v1/reels/{reel.pk}/cover/"
         )
         assert res.status_code == 200 and "response-content-disposition=attachment" in res.json()["url"]
+
+    @pytest.fixture()
+    def german(self, reel):
+        """A German site and an English video (the site's config does not outlive the test)."""
+        from apps.tenant_config.models import TenantConfig
+
+        TenantConfig.objects.all().delete()
+        TenantConfig.objects.create(brand_name="Glow", default_locale="de")
+        Video.objects.filter(pk=reel.video_id).update(captions_language="en")
+        reel.refresh_from_db()
+        yield {k: "" for k in ("look", "name", "site", "host", "logo")} | {"colors": {}, "language": "de"}
+        TenantConfig.objects.all().delete()
+
+    def _run(self, settings, reel, translate):
+        settings.VIDEO_URL = "http://video:7100"
+        sent = {}
+
+        def video_service(url, json=None, timeout=None):
+            sent.update(json)
+            return _Answer(200, {"duration": 24.5, "size": 1234})
+
+        with (
+            mock.patch("apps.reels.render.fonts.files", return_value=FONTS),
+            mock.patch("apps.reels.render.requests.post", side_effect=video_service),
+            mock.patch("apps.reels.moments.translate", **translate) as ask,
+        ):
+            render.run(reel)
+        reel.refresh_from_db()
+        return sent, ask
+
+    def test_a_render_without_an_edit_translates_the_sites_default_language(self, settings, reel, german):
+        kit = german
+        sent, ask = self._run(settings, reel, {"side_effect": lambda lines, lang: [f"de:{x}" for x in lines]})
+        assert ask.call_count == 1 and reel.translation["language"] == "de"
+        assert "DE:S0W0" in sent["captions"]
+        assert render.end_card_of(reel, kit)["line"] == render.END_LINES["de"]
+        self._run(settings, reel, {"side_effect": AssertionError})  # kept: the next render asks nothing
+
+    def test_a_translation_that_fails_renders_spoken_captions_and_the_spoken_end_card(self, settings, reel, german):
+        kit = german
+        sent, _ask = self._run(settings, reel, {"side_effect": moments.TranslationError("hub down")})
+        assert reel.status == Reel.READY and not reel.translation
+        assert "S0W0" in sent["captions"] and "DE:" not in sent["captions"]
+        assert render.end_card_of(reel, kit)["line"] == render.END_LINES["en"]  # as spoken, not half German
+
+    def test_an_edit_does_not_need_the_model_when_the_language_was_not_chosen(self, coach, reel, german):
+        with mock.patch("apps.reels.moments.translate", side_effect=moments.TranslationError("hub down")) as ask:
+            res = make_client(coach).patch(f"/api/v1/reels/{reel.pk}/", {"end": 24}, format="json")
+        assert res.status_code == 200 and not ask.called
+        reel.refresh_from_db()
+        assert reel.end == 24 and not reel.translation
+
+    def test_an_edit_to_a_chosen_language_saves_when_the_translation_fails(self, coach, reel, german):
+        Reel.objects.filter(pk=reel.pk).update(options={"language": "de"})
+        with mock.patch("apps.reels.moments.translate", side_effect=moments.TranslationError("hub down")):
+            res = make_client(coach).patch(f"/api/v1/reels/{reel.pk}/", {"end": 24}, format="json")
+            assert res.status_code == 200
+            # Choosing the language is what needs the translation: that one says so.
+            res = make_client(coach).patch(f"/api/v1/reels/{reel.pk}/", {"options": {"language": "de"}}, format="json")
+        assert res.status_code == 502
+        reel.refresh_from_db()
+        assert reel.end == 24
 
     def test_a_failed_render_tells_the_coach(self, settings, reel):
         settings.VIDEO_URL = "http://video:7100"

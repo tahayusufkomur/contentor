@@ -1457,3 +1457,10 @@ def test_the_photos_of_every_discipline_are_allowed_and_the_generic_briefs_leave
     assert {"boxing", "yoga"} <= ctx["allowed"]  # the supporting discipline's photos are never "off topic"
     assert sc._generic_brief("hero", "image", ctx, "home")["subject"] == "instructor teaching a class"
     assert "boxing" not in sc._queries(sc._generic_brief("hero", "image", ctx, "home"), {**ctx, "topic": "yoga"}, "")[0]
+
+
+def test_the_photo_brief_fields_are_asked_for_in_english():
+    # The plan call runs in the site's language; these fields go to Pix4Less as they are written.
+    assert "Write subject, action, setting and person in English whatever language the site is in" in (
+        sc.PLAN_SYSTEM_PROMPT
+    )

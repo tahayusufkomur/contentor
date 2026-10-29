@@ -228,12 +228,22 @@ def speaker(brand, description="", answers=None) -> str:
 
 
 def _ctx(
-    niche, brand, description="", subject="", links=ALLOWED_LINKS, first_name="", said="", focus=None, language="en"
+    niche,
+    brand,
+    description="",
+    subject="",
+    links=ALLOWED_LINKS,
+    first_name="",
+    said="",
+    focus=None,
+    language="en",
+    also="",
 ) -> dict:
     """``language``: the site's, for the labels, titles and fallback copy (fallback_fields) that a visitor
     reads. ``said``: "I" or "we" as _coach_data read it from her answers. ``focus``: how her
     disciplines shape the site (_coach_data["focus"]: mode "equal" | "primary", "disciplines" lead first, and for a
-    main focus "primary" and "secondary"), None for one discipline."""
+    main focus "primary" and "secondary"), None for one discipline. ``also``: the supporting disciplines in her own
+    words (the focus has them in English, for searches), for the hero line a visitor reads."""
     from apps.tenant_config import interview_brief
 
     t = subject or topic(niche)
@@ -260,7 +270,7 @@ def _ctx(
         # names the others beside it in the hero (``also``); with equal, ``topic`` already names them all.
         "topics": topics,
         "focus": (focus or {}).get("mode"),
-        "also": interview_brief.say_list((focus or {}).get("secondary") or ()),
+        "also": also or interview_brief.say_list((focus or {}).get("secondary") or ()),
         "brand": brand or "this studio",
         "topic": t,
         "Topic": t[:1].upper() + t[1:],
@@ -1045,6 +1055,8 @@ For every photo slot listed for a section you keep, write a brief (moments: slot
 - setting: where, 2-5 words ("bright studio, wooden floor")
 - person: who is in frame, with age range and gender matched to the coach's audience ("woman in her 30s"). Infer \
 the audience from the niche and the coach's words; follow the coach when they name it.
+Write subject, action, setting and person in English whatever language the site is in: they are search words for a \
+stock photo catalog.
 Every photo has a person in it: never a flat lay, an empty room or objects alone. Plain visual words for a stock \
 photo search: no brand names, no text in the image, no camera jargon.
 One person stands for the coach. Brief a recognisable portrait of the coach for at most one slot per page \
@@ -1195,6 +1207,7 @@ def _plan_site(tenant, *, force=False) -> dict:
         said=coach["speaker"],
         focus=coach.get("focus"),
         language=site_language(tenant),
+        also=coach.get("also", ""),
     )
     raw, source = None, "fallback"
     if ai_compose.compose_available():
@@ -1323,14 +1336,16 @@ def _coach_data(tenant, brand) -> dict:
     niche = answers.get("niche") or getattr(tenant, "template_niche", "") or "general"
     # She offers several things and said how they weigh (interview_brief.focus_of): equal names them all in
     # the topic, a main focus makes it the topic and lists the others as supporting. One discipline: no focus.
-    focus = interview_brief.focus_of(answers)
+    words = ai_curate.words_language(tenant)  # the language she wrote in; her subjects are searched in English
+    focus = interview_brief.focus_of(answers, language=words)
     subject = (
         interview_brief.say_list(focus["disciplines"])
         if focus and focus["mode"] == "equal"
-        else interview_brief.subject_of(
-            answers, language=ai_curate.words_language(tenant)
-        )  # English: it is searched for
+        else interview_brief.subject_of(answers, language=words)
     )
+    # What a visitor reads ("I also teach ..."): her own words; the searches get the English ones above.
+    said = interview_brief.focus_of(answers)
+    also = {"also": interview_brief.say_list(said["secondary"])} if said and said["mode"] == "primary" else {}
     followups = [
         {"q": str(item.get("q") or "").strip()[:200], "a": str(item.get("a") or "").strip()[:500]}
         for item in ((answers.get("description_followups") or {}).get("items") or [])
@@ -1348,6 +1363,7 @@ def _coach_data(tenant, brand) -> dict:
         # The pages her site may link to (every Href field is one of them).
         "links": list(coach_links(answers)),
         **({"focus": {k: v for k, v in focus.items() if k != "niches"}} if focus else {}),
+        **also,
         # The statement is made from it (GIVEN_FAMILIES); absent when she gave none.
         **({"belief": belief} if (belief := " ".join(str(answers.get("belief") or "").split())[:300]) else {}),
     }
@@ -2197,6 +2213,7 @@ def compose_page(tenant, page_key, *, instruction=None) -> list[dict]:
         coach["speaker"],
         coach.get("focus"),
         site_language(tenant),
+        coach.get("also", ""),
     )
     ctx["given"] = given  # her proof and clip ride the fallback fields the model never writes (_fill_page)
 

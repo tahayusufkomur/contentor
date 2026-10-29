@@ -97,3 +97,47 @@ def test_the_creators_words_are_translated_from_the_language_she_wrote_in(tenant
     brief = ai_curate.CoachBrief.from_tenant(tenant)
     assert len(model.calls) == calls
     assert brief.subject == ("face yoga exercises" if calls else "yüz yogası")
+
+
+def test_subject_of_keeps_a_capital_dotted_i_turkish_word_whole(model):
+    for words, kept in (("İngilizce", "ingilizce"), ("İspanyolca dersi", "ispanyolca dersi"), ("İş", "iş")):
+        assert interview_brief.subject_of({"niche": "general", "teaches": words}) == kept
+
+
+@pytest.fixture()
+def two_disciplines(monkeypatch, model):
+    """ "yüz yogası, beslenme" with her focus answered; each word translates to its own English."""
+    english = {"yüz yogası": "face yoga", "beslenme": "nutrition"}
+    monkeypatch.setattr(interview_brief, "niche_for", lambda text: "general")
+    monkeypatch.setattr(core_ai, "structured", lambda **k: (SimpleNamespace(terms=english[k["user"]]), 0, "fake"))
+    return lambda mode: {"niche": "general", "teaches": "yüz yogası, beslenme", "discipline_focus": {"mode": mode}}
+
+
+def test_every_discipline_of_a_focus_is_searched_in_english(two_disciplines):
+    answers = two_disciplines("equal")
+    assert interview_brief.focus_of(answers)["disciplines"] == ["yüz yogası", "beslenme"]  # her own words
+    assert interview_brief.focus_of(answers, language="tr")["disciplines"] == ["face yoga", "nutrition"]
+    assert interview_brief.subject_of(answers, language="tr") == "face yoga"  # the lead one
+    assert interview_brief.subject_of(answers) == "yüz yogası"  # read as text: her words
+
+
+@pytest.mark.django_db(transaction=True)
+@pytest.mark.parametrize("mode", ["equal", "primary"])
+def test_the_composers_topic_and_photo_disciplines_are_english(tenant_ctx, two_disciplines, mode):
+    from apps.core.onboarding import site_composer
+    from apps.tenant_config.models import TenantConfig
+
+    TenantConfig.objects.all().delete()
+    TenantConfig.objects.create(brand_name="Glow", default_locale="tr")
+    answers = two_disciplines(mode)
+    if mode == "primary":
+        answers["discipline_focus"] = {"mode": "primary", "primary": "yüz yogası"}
+    tenant = SimpleNamespace(schema_name=tenant_ctx.schema_name, wizard_state={"answers": answers}, name="Glow")
+    coach = site_composer._coach_data(tenant, "Glow")
+    assert coach["topic"] == ("face yoga and nutrition" if mode == "equal" else "face yoga")
+    assert coach["focus"]["disciplines"] == ["face yoga", "nutrition"]
+    # What a visitor reads ("I also teach ...") stays her own words.
+    ctx = site_composer._ctx(
+        "general", "Glow", subject=coach["topic"], focus=coach["focus"], language="tr", also=coach.get("also", "")
+    )
+    assert ctx["topics"] == ("face yoga", "nutrition") and ctx["also"] == ("" if mode == "equal" else "beslenme")
