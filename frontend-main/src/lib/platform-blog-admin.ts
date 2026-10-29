@@ -7,6 +7,7 @@ export interface PlatformBlogPostAdmin {
   id: number;
   slug: string;
   title: string;
+  language: string;
   excerpt: string;
   meta_description: string;
   tags: string[];
@@ -29,6 +30,7 @@ export const listPlatformPosts = () =>
 export const generatePlatformPost = (body: {
   topic: string;
   instructions?: string;
+  language?: string;
 }) =>
   jsonFetch<GenerateResponse>(`${BASE}/generate/`, {
     method: "POST",

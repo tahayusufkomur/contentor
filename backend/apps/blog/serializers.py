@@ -172,6 +172,7 @@ class PlatformBlogPostSerializer(serializers.ModelSerializer):
             "id",
             "slug",
             "title",
+            "language",
             "excerpt",
             "meta_description",
             "tags",

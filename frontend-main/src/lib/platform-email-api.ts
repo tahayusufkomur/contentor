@@ -6,11 +6,13 @@ import type { BrandKit, EmailDesign } from "@shared/email/editor";
 
 import { jsonFetch } from "./api-client";
 
-export type RecipientFilter =
+/** Who gets a campaign; `language` narrows it to creators of that language (none: every language). */
+export type RecipientFilter = (
   | { type: "all_coaches" }
   | { type: "plan"; plan_ids: number[] }
   | { type: "tenant"; tenant_ids: number[] }
-  | { type: "individual"; user_ids: number[] };
+  | { type: "individual"; user_ids: number[] }
+) & { language?: string };
 
 export interface RecipientOptions {
   coaches: { id: number; name: string; email: string }[];

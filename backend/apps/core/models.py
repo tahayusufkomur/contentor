@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db import models
 from django_tenants.models import DomainMixin, TenantMixin
 
-from .constants import CURRENCY_CHOICES, REGION_CHOICES, REGION_GLOBAL
+from .constants import CURRENCY_CHOICES, LOCALE_CHOICES, LOCALE_EN, REGION_CHOICES, REGION_GLOBAL
 from .validators import validate_tenant_slug
 
 
@@ -555,6 +555,7 @@ class PlatformBlogPost(models.Model):
 
     title = models.CharField(max_length=200)
     slug = models.SlugField(max_length=70, unique=True)
+    language = models.CharField(max_length=2, choices=LOCALE_CHOICES, default=LOCALE_EN)
     body_html = models.TextField(blank=True, default="")
     excerpt = models.CharField(max_length=300, blank=True, default="")
     meta_description = models.CharField(max_length=170, blank=True, default="")

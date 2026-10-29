@@ -25,7 +25,7 @@ export default async function PlatformBlogIndexPage() {
   const t = await getTranslations("marketing.blog");
   const [user, posts] = await Promise.all([
     getAuthUser(),
-    fetchPlatformPosts(),
+    fetchPlatformPosts(locale),
   ]);
   // The API orders by -published_at: the first post is the newest.
   const [latest, ...rest] = posts;

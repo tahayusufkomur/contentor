@@ -31,7 +31,9 @@ def send_one(campaign, *, to, name="", subject="", html=None, text=None) -> bool
     from .views import build
 
     if html is None:
-        html, text = build(campaign.design, campaign.subject, campaign.preheader)
+        html, text = build(
+            campaign.design, campaign.subject, campaign.preheader, campaign.recipient_filter.get("language")
+        )
     values = {"FirstName": first_name(name), "Name": name or "there"}
     return send_email(
         to=to,
@@ -61,7 +63,9 @@ def send_platform_campaign_emails(_self, campaign_id: int):
 
     success = failure = 0
     try:
-        html, text = build(campaign.design, campaign.subject, campaign.preheader)
+        html, text = build(
+            campaign.design, campaign.subject, campaign.preheader, campaign.recipient_filter.get("language")
+        )
         for idx, recipient in enumerate(recipients):
             name = recipient["name"] or ""
             try:

@@ -5,7 +5,7 @@ import { PlatformFooter } from "@/components/shared/platform-footer";
 import { BlogCover } from "@/components/blog/blog-cover";
 import { ReadingProgress } from "@/components/blog/reading-progress";
 import { getAuthUser } from "@/lib/auth";
-import { fetchPlatformPost } from "@/lib/platform-blog";
+import { fetchPlatformPost, postLanguage, postPath } from "@/lib/platform-blog";
 import { getLocale, getTranslations } from "next-intl/server";
 import { ogLocale } from "@shared/i18n/locales";
 
@@ -23,11 +23,11 @@ export async function generateMetadata({
   return {
     title: t("postTitle", { title: post.title }),
     description: post.meta_description || post.excerpt,
-    // Posts are written in English only: /tr/blog/x is the same article in a
-    // translated frame, so every language points at the English address.
-    alternates: { canonical: `/blog/${slug}` },
+    // A post is written in one language and lives at that language's address:
+    // the same article under another prefix is a copy, so it points there too.
+    alternates: { canonical: postPath(post) },
     openGraph: {
-      locale: ogLocale("en"),
+      locale: ogLocale(postLanguage(post)),
       title: post.title,
       description: post.meta_description || post.excerpt,
       type: "article",
@@ -55,6 +55,7 @@ export default async function PlatformBlogPostPage({
     "@type": "BlogPosting",
     headline: post.title,
     description: post.meta_description || post.excerpt,
+    inLanguage: postLanguage(post),
     datePublished: post.published_at,
     author: { "@type": "Organization", name: "Contentor" },
     ...(post.cover_photo_url ? { image: post.cover_photo_url } : {}),

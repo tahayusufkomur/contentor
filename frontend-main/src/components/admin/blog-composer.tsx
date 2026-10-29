@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { DEFAULT_LOCALE, LOCALES, nativeName } from "@shared/i18n/locales";
 import {
   generatePlatformPost,
   type PlatformBlogPostAdmin,
@@ -17,6 +18,7 @@ export function BlogComposer({
 }) {
   const [topic, setTopic] = useState("");
   const [instructions, setInstructions] = useState("");
+  const [language, setLanguage] = useState(DEFAULT_LOCALE);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,6 +30,7 @@ export function BlogComposer({
       const res = await generatePlatformPost({
         topic: topic.trim(),
         instructions: instructions.trim() || undefined,
+        language,
       });
       if (res.source === "ai" && res.post) {
         onGenerated(res.post);
@@ -66,6 +69,20 @@ export function BlogComposer({
         rows={2}
         className="w-full rounded-md border bg-background px-3 py-2 text-sm"
       />
+      <label className="flex items-center gap-2 text-sm">
+        Language
+        <select
+          value={language}
+          onChange={(e) => setLanguage(e.target.value)}
+          className="rounded-md border bg-background px-3 py-2 text-sm"
+        >
+          {LOCALES.map((code) => (
+            <option key={code} value={code}>
+              {nativeName(code)}
+            </option>
+          ))}
+        </select>
+      </label>
       {error && <p className="text-sm text-destructive">{error}</p>}
       <Button
         size="sm"

@@ -338,11 +338,11 @@ class WebhookEventAdmin(ModelAdmin):
 class PlatformBlogPostAdmin(ModelAdmin):
     icon = "newspaper"
     description = "Contentor.app marketing blog posts (public SEO). Generate drafts from Admin → Blog."
-    list_display = ("title", "slug", "status", "source", "published_at")
+    list_display = ("title", "slug", "language", "status", "source", "published_at")
     search_fields = ("title", "slug")
-    list_filters = ("status", "source")
+    list_filters = ("language", "status", "source")
     ordering = ("-created_at",)
-    fields = ("title", "slug", "excerpt", "meta_description", "tags", "body_html", "status", "published_at")
+    fields = ("title", "slug", "language", "excerpt", "meta_description", "tags", "body_html", "status", "published_at")
 
 
 @platform_site.register(PlatformKbEntry)

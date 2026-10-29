@@ -11,6 +11,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+from apps.core import languages
 from apps.core.models import PlatformBlogPost
 from apps.core.permissions import IsSuperUser
 from apps.core.slugs import slugify
@@ -40,14 +41,22 @@ def platform_unique_slug(title):
     return slug
 
 
+class _PlatformPagination(_PublicPagination):
+    page_size_query_param = "page_size"  # the header asks for one post to learn whether a language has any
+    max_page_size = _PublicPagination.page_size
+
+
 class PlatformPostList(generics.ListAPIView):
     authentication_classes = []
     permission_classes = [AllowAny]
     serializer_class = PlatformBlogPostSerializer
-    pagination_class = _PublicPagination
+    pagination_class = _PlatformPagination
 
     def get_queryset(self):
-        return PlatformBlogPost.objects.filter(status="published").order_by("-published_at")
+        posts = PlatformBlogPost.objects.filter(status="published").order_by("-published_at")
+        language = self.request.query_params.get("language")
+        # A hidden or unknown language lists English, like everywhere else.
+        return posts.filter(language=languages.resolve(language)) if language else posts
 
 
 class PlatformPostDetail(generics.RetrieveAPIView):
@@ -69,9 +78,11 @@ def platform_blog_generate(request):
         return Response({"post": None, "source": "error"}, status=400)
     if ai.global_spend() >= Decimal(str(settings.BLOG_AI_MONTHLY_BUDGET_USD)):
         return Response({"post": None, "source": "budget"})
+    language = data.get("language") or languages.DEFAULT
+    if language not in languages.CODES:
+        return Response({"post": None, "source": "error"}, status=400)
     try:
-        # English until PlatformBlogPost has a language of its own (Task 3.5).
-        result = ai.generate_post(PLATFORM_BRIEF, topic, str(data.get("instructions") or "")[:500], language="en")
+        result = ai.generate_post(PLATFORM_BRIEF, topic, str(data.get("instructions") or "")[:500], language=language)
     except ai.BlogAiError as exc:
         ai.record_attempt_cost("public", exc.cost_usd)
         logger.exception("platform blog generate failed")
@@ -85,6 +96,7 @@ def platform_blog_generate(request):
         slug=platform_unique_slug(result.fields["title"]),
         status="draft",
         source="ai",
+        language=language,
         created_by=request.user,
         **result.fields,
     )

@@ -8,9 +8,12 @@ Filter shapes:
     {"type": "plan",   "plan_ids":   [1, 2]}
     {"type": "tenant", "tenant_ids": [3, 4]}
     {"type": "individual", "user_ids": [5, 6]}
+
+Any of them may add {"language": "pl"}: only creators whose language it is (an empty one counts as English).
 """
 
 from apps.accounts.models import User
+from apps.core import languages
 from apps.core.models import Tenant
 
 FILTER_TYPES = ("all_coaches", "plan", "tenant", "individual")
@@ -28,6 +31,14 @@ def _emails_for_tenants(tenant_qs) -> list[str]:
 
 def resolve_recipients(recipient_filter: dict):
     """Deduplicated queryset of active coach users matching the filter."""
+    users = _by_type(recipient_filter)
+    language = recipient_filter.get("language") if isinstance(recipient_filter, dict) else None
+    if not language:
+        return users
+    return users.filter(preferred_locale__in=("", language) if language == languages.DEFAULT else (language,))
+
+
+def _by_type(recipient_filter):
     if not isinstance(recipient_filter, dict):
         return User.objects.none()
 

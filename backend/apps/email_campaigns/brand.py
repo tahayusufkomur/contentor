@@ -96,7 +96,7 @@ def kit(tenant, cfg=None) -> dict:
     }
 
 
-def platform_kit() -> dict:
+def platform_kit(language: str = languages.DEFAULT) -> dict:
     """Contentor's own kit (its mark, ink and amber), for the superadmin's emails to coaches."""
     from django.templatetags.static import static
 
@@ -124,7 +124,7 @@ def platform_kit() -> dict:
         "radius": 10,
         "socials": [],
         "address": "",
-        "language": "en",
+        "language": languages.resolve(language),
     }
 
 
@@ -204,8 +204,10 @@ def resolve(design: dict, kit_: dict, found: dict | None = None) -> tuple[dict, 
 def build(design: dict, tenant=None, *, subject: str = "", preheader: str = "", kit_: dict | None = None):
     """-> (html, text, warnings): the email as sent, with {{FirstName}}/{{UnsubscribeUrl}} left for
     ``render.personalize``. ``tenant`` None: no catalog (the platform's emails)."""
-    # Students read it in the site's language; the platform's own emails (no tenant) are English.
-    with override(languages.site_language(tenant) if tenant is not None else languages.DEFAULT):
+    # Students read it in the site's language; the platform's own emails (no tenant) in their kit's.
+    with override(
+        languages.site_language(tenant) if tenant is not None else (kit_ or {}).get("language", languages.DEFAULT)
+    ):
         kit_ = kit_ or kit(tenant)
         found = catalog.find(refs_in(design), tenant) if tenant is not None else {}
         resolved, warnings = resolve(design, kit_, found)

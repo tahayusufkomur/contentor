@@ -32,9 +32,12 @@ from .serializers import (
 logger = logging.getLogger(__name__)
 
 
-def build(design, subject="", preheader=""):
-    """(html, text) of a platform email in Contentor's kit, merge variables left for personalize."""
-    html, text, _warnings = brand.build(design, None, subject=subject, preheader=preheader, kit_=brand.platform_kit())
+def build(design, subject="", preheader="", language=None):
+    """(html, text) of a platform email in Contentor's kit and the creators' `language`, merge variables left
+    for personalize."""
+    html, text, _warnings = brand.build(
+        design, None, subject=subject, preheader=preheader, kit_=brand.platform_kit(language)
+    )
     return html, text
 
 

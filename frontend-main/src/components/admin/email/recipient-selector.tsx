@@ -7,6 +7,7 @@ import {
   type RecipientFilter,
   type RecipientOptions,
 } from "@/lib/platform-email-api";
+import { LOCALES, nativeName } from "@shared/i18n/locales";
 
 interface RecipientSelectorProps {
   value: RecipientFilter;
@@ -46,12 +47,12 @@ export function RecipientSelector({
     onCountChange(null);
     setLoadingCount(true);
     const timer = window.setTimeout(() => {
-      if (value.type === "all_coaches") {
+      if (value.type === "all_coaches" && !value.language) {
         onCountChange(options.coaches.length);
-      } else if (value.type === "individual") {
+      } else if (value.type === "individual" && !value.language) {
         onCountChange(value.user_ids.length);
       } else {
-        onCountChange(null); // plan/tenant resolved on send
+        onCountChange(null); // plan/tenant/language resolved on send
       }
       setLoadingCount(false);
     }, 250);
@@ -82,12 +83,15 @@ export function RecipientSelector({
               name="recipient_type"
               checked={filterType === key}
               onChange={() => {
-                if (key === "all_coaches") onChange({ type: "all_coaches" });
-                if (key === "plan") onChange({ type: "plan", plan_ids: [] });
+                const { language } = value;
+                if (key === "all_coaches")
+                  onChange({ type: "all_coaches", language });
+                if (key === "plan")
+                  onChange({ type: "plan", plan_ids: [], language });
                 if (key === "tenant")
-                  onChange({ type: "tenant", tenant_ids: [] });
+                  onChange({ type: "tenant", tenant_ids: [], language });
                 if (key === "individual")
-                  onChange({ type: "individual", user_ids: [] });
+                  onChange({ type: "individual", user_ids: [], language });
               }}
               className="accent-primary"
             />
@@ -95,6 +99,24 @@ export function RecipientSelector({
           </label>
         ))}
       </div>
+
+      <label className="flex items-center gap-2 text-sm">
+        Language
+        <select
+          value={value.language ?? ""}
+          onChange={(e) =>
+            onChange({ ...value, language: e.target.value || undefined })
+          }
+          className="rounded-md border bg-background px-3 py-1.5 text-sm"
+        >
+          <option value="">Every language</option>
+          {LOCALES.map((code) => (
+            <option key={code} value={code}>
+              {nativeName(code)}
+            </option>
+          ))}
+        </select>
+      </label>
 
       {filterType === "plan" && (
         <div className="space-y-2">
@@ -116,7 +138,7 @@ export function RecipientSelector({
                       const nextIds = selected
                         ? value.plan_ids.filter((id) => id !== plan.id)
                         : [...value.plan_ids, plan.id];
-                      onChange({ type: "plan", plan_ids: nextIds });
+                      onChange({ ...value, plan_ids: nextIds });
                     }}
                     className="accent-primary"
                   />
@@ -155,7 +177,7 @@ export function RecipientSelector({
                       const nextIds = selected
                         ? value.tenant_ids.filter((id) => id !== tenant.id)
                         : [...value.tenant_ids, tenant.id];
-                      onChange({ type: "tenant", tenant_ids: nextIds });
+                      onChange({ ...value, tenant_ids: nextIds });
                     }}
                     className="accent-primary"
                   />
@@ -204,7 +226,7 @@ export function RecipientSelector({
                       const nextIds = selected
                         ? value.user_ids.filter((id) => id !== coach.id)
                         : [...value.user_ids, coach.id];
-                      onChange({ type: "individual", user_ids: nextIds });
+                      onChange({ ...value, user_ids: nextIds });
                     }}
                     className="accent-primary"
                   />
@@ -231,7 +253,7 @@ export function RecipientSelector({
           ? "Counting recipients..."
           : recipientCount !== null
             ? `${recipientCount} recipient${recipientCount === 1 ? "" : "s"}`
-            : filterType === "all_coaches"
+            : filterType === "all_coaches" && !value.language
               ? "All active creators"
               : "Recipients resolved on send"}
       </div>
