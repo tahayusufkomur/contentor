@@ -19,6 +19,7 @@ type Brief = {
   description: string;
   followups?: { q: string; a: string }[];
   goals?: string[];
+  language?: string; // the site's language; absent = English
 };
 type ComposedPage = {
   key: string;
@@ -73,6 +74,22 @@ const CRITERIA = {
   protagonist:
     "Does the site read as one real person's? Photos of the coach show one consistent person (or her own photos), not a different model in every slot; any proof is specific and real.",
 };
+
+const LANGUAGE_NAMES: Record<string, string> = {
+  tr: "Turkish",
+  de: "German",
+  pl: "Polish",
+};
+const LANGUAGE_FLOOR = 9;
+// A site in another language is also scored on its language; English briefs are not.
+function criteriaOf(brief: Brief): Record<string, string> {
+  const name = LANGUAGE_NAMES[brief.language ?? ""];
+  if (!name) return CRITERIA;
+  return {
+    ...CRITERIA,
+    language_purity: `Every visible word is in ${name}, except brand names and the coach's own words. One interface word in another language is a 6 or lower.`,
+  };
+}
 
 const BRIEFS: Brief[] = JSON.parse(
   fs.readFileSync(
@@ -165,6 +182,7 @@ function judgePrompt(brief: Brief, pageKey: string, shots: Shot[]): string {
     brand: brief.brand,
     niche: brief.niche,
     description: brief.description,
+    language: brief.language ?? "en",
   };
   return [
     "You are a senior web designer judging one page of a coach's website for a design-quality eval.",
@@ -179,11 +197,13 @@ function judgePrompt(brief: Brief, pageKey: string, shots: Shot[]): string {
     "Score each criterion from 1 to 10. Be strict: 8 means a professional designer would ship it",
     "unchanged; 10 matches award-recognised coach and creator sites (an Awwwards Honorable Mention).",
     "The best Framer, Webflow or Squarespace templates are a 7.",
-    ...Object.entries(CRITERIA).map(([key, text]) => `- ${key}: ${text}`),
+    ...Object.entries(criteriaOf(brief)).map(
+      ([key, text]) => `- ${key}: ${text}`,
+    ),
     "Then give an overall score (1-10) for the page as a whole.",
     "",
     "Reply with only this JSON object, nothing around it:",
-    `{${Object.keys(CRITERIA)
+    `{${Object.keys(criteriaOf(brief))
       .map((k) => `"${k}": n`)
       .join(
         ", ",
@@ -191,11 +211,11 @@ function judgePrompt(brief: Brief, pageKey: string, shots: Shot[]): string {
   ].join("\n");
 }
 
-function parseJudgement(text: string): Judgement {
+function parseJudgement(text: string, brief: Brief): Judgement {
   const match = text.match(/\{[\s\S]*\}/);
   if (!match) throw new Error(`no JSON in judge reply: ${text.slice(0, 200)}`);
   const raw = JSON.parse(match[0]);
-  for (const key of [...Object.keys(CRITERIA), "overall"]) {
+  for (const key of [...Object.keys(criteriaOf(brief)), "overall"]) {
     const n = raw[key];
     if (typeof n !== "number" || n < 1 || n > 10)
       throw new Error(`bad ${key}: ${n}`);
@@ -228,7 +248,7 @@ function judge(brief: Brief, pageKey: string, shots: Shot[]): Judgement {
       const envelope = JSON.parse(out);
       if (envelope.status !== "SUCCESS")
         throw new Error(`agy status ${envelope.status}`);
-      return parseJudgement(envelope.response);
+      return parseJudgement(envelope.response, brief);
     } catch (err) {
       last = String(err).slice(0, 500);
     }
@@ -254,6 +274,11 @@ function verdict(results: BriefResult[]) {
         failures.push(`${where}: unscored (${p.judgeError ?? "not judged"})`);
       else {
         scores.push(p.judge.overall);
+        const purity = p.judge.language_purity;
+        if (typeof purity === "number" && purity < LANGUAGE_FLOOR)
+          failures.push(
+            `${where}: language_purity ${purity} < ${LANGUAGE_FLOOR}`,
+          );
         if (p.judge.overall < PASS.floor)
           failures.push(`${where}: overall ${p.judge.overall} < ${PASS.floor}`);
       }
@@ -274,7 +299,10 @@ function writeReport(results: BriefResult[]): ReturnType<typeof verdict> {
   const card = (p: PageResult) => {
     const [desk, mob] = p.shots;
     const rows = p.judge
-      ? Object.keys(CRITERIA)
+      ? [
+          ...Object.keys(CRITERIA),
+          ...("language_purity" in p.judge ? ["language_purity"] : []),
+        ]
           .map(
             (k) =>
               `<tr><td>${k.replace(/_/g, " ")}</td><td>${p.judge![k]}</td></tr>`,

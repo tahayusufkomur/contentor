@@ -154,5 +154,33 @@
       }
     ],
     "goals": ["sell_courses", "run_live_classes", "sell_downloads"]
+  },
+  {
+    "id": "yoga-tr",
+    "brand": "Selin Aydın Yoga",
+    "niche": "yoga",
+    "language": "tr",
+    "description": "Masa başında çalışan insanlara yavaş vinyasa ve yin yoga öğretiyorum. Öğrencilerim genelde tutuk, yorgun ve yoga karşısında biraz çekingen geliyor. Derslerim 45 dakika sürüyor, kalça, omurga ve omuzlara odaklanıyor ve sert bedenler için bolca seçenek sunuyor.",
+    "followups": [
+      {
+        "q": "İdeal öğrencin kim?",
+        "a": "30 ile 50 yaş arası, çoğu kadın ofis çalışanı. Spor salonunda bir derse girip kendini yersiz hissetmiş kişiler."
+      }
+    ],
+    "goals": ["sell_courses", "run_live_classes", "build_community"]
+  },
+  {
+    "id": "chess-pl",
+    "brand": "Szachowy Ruch",
+    "niche": "general",
+    "language": "pl",
+    "description": "Uczę szachów graczy klubowych z rankingiem od 1000 do 1600. Na moich kursach pokazuję, jak rozumieć otwarcia zamiast uczyć się ich na pamięć, jak liczyć warianty w grze środkowej i jak zamieniać wygraną pozycję w pełny punkt w końcówce. Co tydzień analizujemy wasze partie na żywo.",
+    "followups": [
+      {
+        "q": "Czy uczysz też dzieci?",
+        "a": "Uczę nastolatków i dorosłych. Rodzice często dołączają razem z dziećmi."
+      }
+    ],
+    "goals": ["sell_courses", "run_live_classes", "build_community"]
   }
 ]

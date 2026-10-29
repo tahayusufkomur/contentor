@@ -138,6 +138,7 @@ class Command(BaseCommand):
             config.navbar_config = overrides["navbar_config"]
             config.enabled_modules = overrides["enabled_modules"]
             config.style = style
+            config.default_locale = brief.get("language", "en")
             config.pages = sc.skeleton_pages(style, niche=niche, brand_name=brand, description=description)
             config.setup_flow = {}
             config.save()
