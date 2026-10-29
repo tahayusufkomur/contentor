@@ -1,6 +1,6 @@
 "use client";
 
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -69,6 +69,7 @@ function DaysInput({
   /** Whether the box holds something that is not a day count (until it goes away). */
   onBad?: (bad: boolean) => void;
 }) {
+  const t = useTranslations("studio");
   const [text, setText] = useState(String(days));
   const n = Number(text);
   const bad = !Number.isInteger(n) || n < 1 || n > 3650;
@@ -86,7 +87,7 @@ function DaysInput({
         min={1}
         max={3650}
         value={text}
-        aria-label="Number of days"
+        aria-label={t("access.window.daysAria")}
         aria-invalid={bad}
         className="h-8 w-20"
         onChange={(e) => {
@@ -96,7 +97,11 @@ function DaysInput({
             onChange(next);
         }}
       />
-      {bad && <span className="text-xs text-destructive">1 to 3650 days</span>}
+      {bad && (
+        <span className="text-xs text-destructive">
+          {t("access.window.daysRange")}
+        </span>
+      )}
     </span>
   );
 }
@@ -128,6 +133,7 @@ function Bound({
   onChange: (next: { days?: number; date?: string }) => void;
   onBad?: (bad: boolean) => void;
 }) {
+  const t = useTranslations("studio");
   const [custom, setCustom] = useState(false);
   const key =
     date !== undefined
@@ -155,7 +161,7 @@ function Bound({
               onChange({ days: p });
             }}
           >
-            {spanText(p)}
+            {spanText(p, t)}
           </Opt>
         ))}
         <Opt
@@ -207,6 +213,7 @@ function FreePanel({
   onChange: (w: Window | null) => void;
   onBad: (bad: boolean) => void;
 }) {
+  const t = useTranslations("studio");
   const w = value ?? {};
   const mode =
     w.closes_after_days !== undefined
@@ -222,13 +229,13 @@ function FreePanel({
     <>
       <div className="flex flex-wrap items-center gap-1.5">
         <Opt on={mode === "always"} onClick={() => onChange(null)}>
-          Always
+          {t("access.window.always")}
         </Opt>
         <Opt
           on={mode === "until"}
           onClick={() => onChange({ closes_on: w.closes_on ?? inDays(30) })}
         >
-          Until a date
+          {t("access.window.untilDate")}
         </Opt>
         <Opt
           on={mode === "between"}
@@ -239,7 +246,7 @@ function FreePanel({
             })
           }
         >
-          Between two dates
+          {t("access.window.betweenDates")}
         </Opt>
         <Opt
           on={mode === "first"}
@@ -247,12 +254,12 @@ function FreePanel({
             onChange({ closes_after_days: w.closes_after_days ?? 7 })
           }
         >
-          First days after joining
+          {t("access.window.firstDays")}
         </Opt>
       </div>
       {mode === "until" && (
         <label className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          Free until
+          {t("access.window.freeUntil")}
           <Input
             type="date"
             value={w.closes_on ?? ""}
@@ -263,37 +270,43 @@ function FreePanel({
       )}
       {mode === "between" && (
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          From
-          <Input
-            type="date"
-            value={w.opens_on ?? ""}
-            aria-label="Free from"
-            className="h-8 w-40"
-            onChange={(e) =>
-              onChange({ opens_on: e.target.value, closes_on: w.closes_on })
-            }
-          />
-          to
-          <Input
-            type="date"
-            value={w.closes_on ?? ""}
-            aria-label="Free to"
-            className="h-8 w-40"
-            onChange={(e) =>
-              onChange({ opens_on: w.opens_on, closes_on: e.target.value })
-            }
-          />
+          {t.rich("access.window.fromTo", {
+            from: () => (
+              <Input
+                type="date"
+                value={w.opens_on ?? ""}
+                aria-label={t("access.window.freeFromAria")}
+                className="h-8 w-40"
+                onChange={(e) =>
+                  onChange({ opens_on: e.target.value, closes_on: w.closes_on })
+                }
+              />
+            ),
+            to: () => (
+              <Input
+                type="date"
+                value={w.closes_on ?? ""}
+                aria-label={t("access.window.freeToAria")}
+                className="h-8 w-40"
+                onChange={(e) =>
+                  onChange({ opens_on: w.opens_on, closes_on: e.target.value })
+                }
+              />
+            ),
+          })}
         </div>
       )}
       {mode === "first" && (
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          For the first
-          <DaysInput
-            days={w.closes_after_days ?? 7}
-            onChange={(d) => onChange({ closes_after_days: d })}
-            onBad={onBad}
-          />
-          days after someone joins the site
+          {t.rich("access.window.firstDaysAfter", {
+            days: () => (
+              <DaysInput
+                days={w.closes_after_days ?? 7}
+                onChange={(d) => onChange({ closes_after_days: d })}
+                onBad={onBad}
+              />
+            ),
+          })}
         </div>
       )}
     </>
@@ -323,6 +336,7 @@ export function WindowEditor({
   onInvalid?: (invalid: boolean) => void;
 }) {
   const locale = useLocale();
+  const t = useTranslations("studio");
   const [open, setOpen] = useState(false);
   const [badBoxes, setBadBoxes] = useState<Record<string, boolean>>({});
   const bad = (box: string) => (b: boolean) =>
@@ -354,7 +368,7 @@ export function WindowEditor({
           onClick={() => setOpen(!open)}
           className="inline-flex items-center gap-1.5 rounded-full border bg-background py-1 pl-3 pr-2.5 text-xs hover:border-foreground"
         >
-          {PILL[mode](value, locale)}
+          {PILL[mode](value, locale, t)}
           <ChevronDown
             className={cn(
               "h-3 w-3 opacity-60 motion-safe:transition-transform",
@@ -368,12 +382,12 @@ export function WindowEditor({
           {mode === "buy" && (
             <>
               <Bound
-                label="Access"
-                none="Forever"
+                label={t("access.window.access")}
+                none={t("access.window.forever")}
                 presets={PRESETS}
-                daysLabel="Custom days"
-                daysSuffix="days from the day they buy"
-                dateLabel="Until a date"
+                daysLabel={t("access.window.customDays")}
+                daysSuffix={t("access.window.daysFromBuy")}
+                dateLabel={t("access.window.untilDate")}
                 days={w.closes_after_days}
                 date={w.closes_on}
                 onChange={closes}
@@ -382,10 +396,10 @@ export function WindowEditor({
               {presale ? (
                 <div className="grid gap-1.5">
                   <Bound
-                    label="It opens"
-                    daysLabel="A while after they buy"
-                    daysSuffix="days after they buy"
-                    dateLabel="On a date"
+                    label={t("access.window.itOpens")}
+                    daysLabel={t("access.window.whileAfterBuy")}
+                    daysSuffix={t("access.window.daysAfterBuy")}
+                    dateLabel={t("access.window.onDate")}
                     days={w.opens_after_days}
                     date={w.opens_on}
                     onChange={opens}
@@ -396,7 +410,7 @@ export function WindowEditor({
                     className="w-fit text-xs underline underline-offset-2"
                     onClick={() => opens({})}
                   >
-                    Opens right away
+                    {t("access.window.opensRightAway")}
                   </button>
                 </div>
               ) : (
@@ -405,7 +419,7 @@ export function WindowEditor({
                   className="w-fit text-xs underline underline-offset-2"
                   onClick={() => opens({ days: 7 })}
                 >
-                  It opens later (a pre-sale)
+                  {t("access.window.opensLater")}
                 </button>
               )}
             </>
@@ -413,22 +427,22 @@ export function WindowEditor({
           {mode === "plan" && (
             <>
               <Bound
-                label="Opens"
-                none="Right away"
-                daysLabel="After a wait"
-                daysSuffix="days of membership"
-                dateLabel="On a date"
+                label={t("access.window.opens")}
+                none={t("access.window.rightAway")}
+                daysLabel={t("access.window.afterWait")}
+                daysSuffix={t("access.window.daysOfMembership")}
+                dateLabel={t("access.window.onDate")}
                 days={w.opens_after_days}
                 date={w.opens_on}
                 onChange={opens}
                 onBad={bad("opens")}
               />
               <Bound
-                label="Closes"
-                none="Never"
-                daysLabel="After a time"
-                daysSuffix="days from joining"
-                dateLabel="On a date"
+                label={t("access.window.closes")}
+                none={t("access.window.never")}
+                daysLabel={t("access.window.afterTime")}
+                daysSuffix={t("access.window.daysFromJoining")}
+                dateLabel={t("access.window.onDate")}
                 days={w.closes_after_days}
                 date={w.closes_on}
                 onChange={closes}
@@ -441,7 +455,7 @@ export function WindowEditor({
           )}
           {emptyDate && (
             <div role="alert" className="text-xs text-destructive">
-              Pick a date.
+              {t("access.window.pickDate")}
             </div>
           )}
           {note && <div className="text-xs text-muted-foreground">{note}</div>}

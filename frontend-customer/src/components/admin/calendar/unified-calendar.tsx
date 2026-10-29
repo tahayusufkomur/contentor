@@ -33,7 +33,7 @@ import {
   weekdayNames,
 } from "@/lib/calendar-utils";
 import { listContentCalendar } from "@/lib/content-calendar-api";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 export type EventCategory = "all" | "live" | "email" | "blog";
 
@@ -58,29 +58,39 @@ export interface UnifiedCalendarItem {
   href: string;
 }
 
+const STATUSES: string[] = [
+  "scheduled",
+  "published",
+  "draft",
+  "completed",
+  "live",
+  "ended",
+  "sending",
+  "partial",
+  "failed",
+];
+type StatusKey = UnifiedCalendarItem["status"];
+
 const CATEGORY_STYLES = {
   live: {
-    label: "Live Event",
     bg: "bg-purple-100 dark:bg-purple-950/60",
-    text: "text-purple-700 dark:text-purple-300",
+    ink: "text-purple-700 dark:text-purple-300",
     border: "border-purple-300 dark:border-purple-800",
     badge: "bg-purple-600 text-white",
     dot: "bg-purple-500",
     icon: Video,
   },
   email: {
-    label: "Email Broadcast",
     bg: "bg-blue-100 dark:bg-blue-950/60",
-    text: "text-blue-700 dark:text-blue-300",
+    ink: "text-blue-700 dark:text-blue-300",
     border: "border-blue-300 dark:border-blue-800",
     badge: "bg-blue-600 text-white",
     dot: "bg-blue-500",
     icon: Mail,
   },
   blog: {
-    label: "Blog Post",
     bg: "bg-emerald-100 dark:bg-emerald-950/60",
-    text: "text-emerald-700 dark:text-emerald-300",
+    ink: "text-emerald-700 dark:text-emerald-300",
     border: "border-emerald-300 dark:border-emerald-800",
     badge: "bg-emerald-700 text-white",
     dot: "bg-emerald-500",
@@ -94,6 +104,7 @@ interface UnifiedCalendarProps {
 
 export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
   const locale = useLocale();
+  const t = useTranslations("admin.calendar");
   const weekdays = weekdayNames(locale, "short");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<"month" | "week">("month");
@@ -136,9 +147,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
       .catch((err) => {
         if (cancelled) return;
         setError(err);
-        toast.error(
-          err instanceof Error ? err.message : "Failed to load calendar items.",
-        );
+        toast.error(err instanceof Error ? err.message : t("loadError"));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -146,7 +155,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
     return () => {
       cancelled = true;
     };
-  }, [fetchFrom, fetchTo, reloadKey]);
+  }, [fetchFrom, fetchTo, reloadKey, t]);
 
   // Filter items by category
   const filteredItems = useMemo(() => {
@@ -205,6 +214,10 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
     return map;
   }, [filteredItems]);
 
+  // The status comes from the server; one this build has no label for shows as it came.
+  const statusLabel = (status: string) =>
+    STATUSES.includes(status) ? t(`status.${status as StatusKey}`) : status;
+
   const monthLabel = currentDate.toLocaleString(locale, {
     month: "long",
     year: "numeric",
@@ -215,9 +228,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
       {/* Header Toolbar */}
       {/* The calendar is a view of Classes & events, which titles the page. */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <p className="text-sm text-muted-foreground">
-          Your sessions, emails and blog posts, by date.
-        </p>
+        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
 
         {/* Action Controls */}
         <div className="flex flex-wrap items-center gap-2">
@@ -229,7 +240,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
           >
             <Link href="/admin/live?new=1">
               <Plus className="h-4 w-4" />
-              Session or event
+              {t("newSession")}
             </Link>
           </Button>
           <Button
@@ -239,7 +250,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
           >
             <Link href="/admin/messages/email/new">
               <Plus className="h-4 w-4" />
-              Designed email
+              {t("newEmail")}
             </Link>
           </Button>
           <Button
@@ -249,7 +260,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
           >
             <Link href="/admin/blog">
               <Plus className="h-4 w-4" />
-              Blog Article
+              {t("newBlog")}
             </Link>
           </Button>
         </div>
@@ -268,7 +279,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
                 : "bg-background text-muted-foreground hover:text-foreground hover:bg-muted"
             }`}
           >
-            All Items ({items.length})
+            {t("allItems", { count: items.length })}
           </button>
           <button
             type="button"
@@ -280,7 +291,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
             }`}
           >
             <span className="h-2 w-2 rounded-full bg-purple-500" />
-            Live Events
+            {t("filter.live")}
           </button>
           <button
             type="button"
@@ -292,7 +303,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
             }`}
           >
             <span className="h-2 w-2 rounded-full bg-blue-500" />
-            Email Broadcasts
+            {t("filter.email")}
           </button>
           <button
             type="button"
@@ -304,7 +315,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
             }`}
           >
             <span className="h-2 w-2 rounded-full bg-emerald-500" />
-            Blog Posts
+            {t("filter.blog")}
           </button>
         </div>
 
@@ -320,7 +331,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              Month
+              {t("month")}
             </button>
             <button
               type="button"
@@ -331,7 +342,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              Week
+              {t("week")}
             </button>
           </div>
 
@@ -350,7 +361,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
               className="h-8 text-xs font-medium"
               onClick={handleToday}
             >
-              Today
+              {t("today")}
             </Button>
             <Button
               variant="outline"
@@ -381,8 +392,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
         {/* Empty status */}
         {!loading && filteredItems.length === 0 && (
           <div className="rounded-lg border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
-            No scheduled content in this range. Create a live event, broadcast,
-            or blog post to see it appear here.
+            {t("empty")}
           </div>
         )}
 
@@ -432,8 +442,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
                       </span>
                       {dayEvents.length > 0 && (
                         <span className="text-[10px] text-muted-foreground font-mono">
-                          {dayEvents.length} item
-                          {dayEvents.length > 1 ? "s" : ""}
+                          {t("itemCount", { count: dayEvents.length })}
                         </span>
                       )}
                     </div>
@@ -455,7 +464,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
                             key={item.id}
                             type="button"
                             onClick={() => setSelectedItem(item)}
-                            className={`w-full text-left p-1.5 rounded-md border text-xs transition-all hover:scale-[1.02] ${style.bg} ${style.border} ${style.text}`}
+                            className={`w-full text-left p-1.5 rounded-md border text-xs transition-all hover:scale-[1.02] ${style.bg} ${style.border} ${style.ink}`}
                           >
                             <div className="flex items-center gap-1.5 font-medium truncate">
                               <Icon className="h-3 w-3 shrink-0" />
@@ -464,7 +473,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
                             <div className="flex items-center justify-between text-[10px] mt-0.5">
                               <span>{eventTime}</span>
                               <span className="uppercase font-mono text-[9px]">
-                                {item.status}
+                                {statusLabel(item.status)}
                               </span>
                             </div>
                           </button>
@@ -493,7 +502,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
             <div className="flex items-start justify-between gap-4 border-b pb-3">
               <div>
                 <Badge className={CATEGORY_STYLES[selectedItem.category].badge}>
-                  {CATEGORY_STYLES[selectedItem.category].label}
+                  {t(`category.${selectedItem.category}`)}
                 </Badge>
                 <h3 className="text-lg font-bold mt-2 leading-tight">
                   {selectedItem.title}
@@ -533,12 +542,14 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
               )}
 
               <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">Status:</span>
+                <span className="text-muted-foreground">
+                  {t("statusLabel")}
+                </span>
                 <Badge
                   variant="outline"
                   className="capitalize font-mono text-xs"
                 >
-                  {selectedItem.status}
+                  {statusLabel(selectedItem.status)}
                 </Badge>
               </div>
             </div>
@@ -550,12 +561,14 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
                 size="sm"
                 onClick={() => setSelectedItem(null)}
               >
-                Close
+                {t("close")}
               </Button>
               <Button asChild size="sm" className="gap-1.5">
                 <Link href={selectedItem.href}>
                   <span>
-                    Manage {CATEGORY_STYLES[selectedItem.category].label}
+                    {t("manage", {
+                      category: t(`category.${selectedItem.category}`),
+                    })}
                   </span>
                   <ExternalLink className="h-3.5 w-3.5" />
                 </Link>

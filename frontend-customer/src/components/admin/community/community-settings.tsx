@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,6 +15,7 @@ import type { CommunitySettings } from "@/types/community";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 
 export function CommunitySettingsTab() {
+  const t = useTranslations("admin.community.settings");
   const [settings, setSettings] = useState<CommunitySettings | null>(null);
   const [welcome, setWelcome] = useState("");
   const [loading, setLoading] = useState(true);
@@ -33,7 +35,7 @@ export function CommunitySettingsTab() {
       .catch((err) => {
         if (cancelled) return;
         setLoadError(err);
-        toast.error("Couldn't load community settings.");
+        toast.error(t("loadError"));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -41,7 +43,7 @@ export function CommunitySettingsTab() {
     return () => {
       cancelled = true;
     };
-  }, [reloadKey]);
+  }, [reloadKey, t]);
 
   // Each control patches a different field — independent hooks so toggling
   // one switch never disables the others or the (unrelated) save button.
@@ -49,25 +51,25 @@ export function CommunitySettingsTab() {
     async (on: boolean) => {
       const updated = await patchAdminSettings({ is_enabled: on });
       setSettings(updated);
-      toast.success("Saved.");
+      toast.success(t("saved"));
     },
-    { errorToast: "Couldn't save." },
+    { errorToast: t("saveError") },
   );
   const { run: toggleNotify, loading: togglingNotify } = useAsyncAction(
     async (on: boolean) => {
       const updated = await patchAdminSettings({ notify_on_coach_post: on });
       setSettings(updated);
-      toast.success("Saved.");
+      toast.success(t("saved"));
     },
-    { errorToast: "Couldn't save." },
+    { errorToast: t("saveError") },
   );
   const { run: saveWelcome, loading: savingWelcome } = useAsyncAction(
     async () => {
       const updated = await patchAdminSettings({ welcome_message: welcome });
       setSettings(updated);
-      toast.success("Saved.");
+      toast.success(t("saved"));
     },
-    { errorToast: "Couldn't save." },
+    { errorToast: t("saveError") },
   );
 
   return (
@@ -82,10 +84,9 @@ export function CommunitySettingsTab() {
           <CardContent className="space-y-6 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <Label className="text-base">Community</Label>
+                <Label className="text-base">{t("community")}</Label>
                 <p className="text-sm text-muted-foreground">
-                  When on, students see a Community tab and can post, react and
-                  comment.
+                  {t("communityHint")}
                 </p>
               </div>
               <Switch
@@ -96,12 +97,9 @@ export function CommunitySettingsTab() {
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <Label className="text-base">
-                  Notify students when you post
-                </Label>
+                <Label className="text-base">{t("notify")}</Label>
                 <p className="text-sm text-muted-foreground">
-                  Sends a push notification to members whenever you or your team
-                  posts.
+                  {t("notifyHint")}
                 </p>
               </div>
               <Switch
@@ -111,24 +109,24 @@ export function CommunitySettingsTab() {
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-base">Welcome message</Label>
+              <Label className="text-base">{t("welcome")}</Label>
               <p className="text-sm text-muted-foreground">
-                Shown at the top of the community feed.
+                {t("welcomeHint")}
               </p>
               <Textarea
                 value={welcome}
                 onChange={(e) => setWelcome(e.target.value)}
                 rows={3}
-                placeholder="Welcome! Introduce yourself and be kind. 💛"
+                placeholder={t("welcomePlaceholder")}
               />
               <Button
                 size="sm"
                 loading={savingWelcome}
-                loadingText="Saving…"
+                loadingText={t("saving")}
                 disabled={welcome === settings.welcome_message}
                 onClick={() => void saveWelcome()}
               >
-                Save message
+                {t("saveMessage")}
               </Button>
             </div>
           </CardContent>

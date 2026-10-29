@@ -391,7 +391,9 @@
     "newCourse": "Neuer Kurs",
     "empty": "Keine Seite mit diesem Namen.",
     "askAssistant": "Frag den Assistenten: „{query}“",
-    "newMessage": "Neue Nachricht"
+    "newMessage": "Neue Nachricht",
+    "navigate": "zum Navigieren",
+    "select": "zum Auswählen"
   },
   "settingsHub": {
     "title": "Weitere Einstellungen",
@@ -684,7 +686,17 @@
     "deleted": "Gelöscht",
     "delete": "Löschen",
     "saved": "Gespeichert",
-    "regenerated": "Neu generiert"
+    "regenerated": "Neu generiert",
+    "editor": {
+      "placeholder": "Schreibe deinen Beitrag…",
+      "bold": "Fett",
+      "italic": "Kursiv",
+      "heading2": "Überschrift 2",
+      "heading3": "Überschrift 3",
+      "bulletList": "Aufzählungsliste",
+      "link": "Link",
+      "linkUrl": "Link-URL"
+    }
   },
   "inbox": {
     "title": "Posteingang",
@@ -994,6 +1006,66 @@
       "failed": "{name} wurde nicht hochgeladen.",
       "refused": "Hier sind nur Fotos und Videos möglich. Übersprungen: {names}",
       "cancel": "Upload von {name} abbrechen"
+    },
+    "untitled": "Ohne Titel",
+    "untitledPhoto": "Unbenanntes Foto",
+    "untitledVideo": "Unbenanntes Video",
+    "lightbox": "Lightbox",
+    "emptyVideos": "Noch keine Videos. Lade eines hoch, um loszulegen.",
+    "uploaded": "Hochgeladen",
+    "noVideo": "Kein Video",
+    "col": {
+      "photo": "Foto",
+      "title": "Titel",
+      "size": "Größe",
+      "date": "Datum",
+      "actions": "Aktionen",
+      "duration": "Dauer",
+      "video": "Video"
+    },
+    "field": {
+      "title": "Titel",
+      "altText": "Alt-Text",
+      "tags": "Tags",
+      "description": "Beschreibung"
+    },
+    "tip": {
+      "copyCdnUrl": "CDN-URL kopieren",
+      "copyCdnLink": "CDN-Link kopieren",
+      "copyEmbed": "HTML-Embed kopieren",
+      "copyVideoEmbed": "Video-Embed kopieren",
+      "editDetails": "Details bearbeiten",
+      "makeReels": "Reels erstellen"
+    },
+    "toast": {
+      "photoUpdated": "Foto aktualisiert",
+      "photoUpdateFailed": "Foto konnte nicht aktualisiert werden",
+      "cdnLinkCopied": "CDN-Link in die Zwischenablage kopiert!",
+      "embedCopied": "HTML-Einbettungscode kopiert!",
+      "photosDeleted": "Fotos gelöscht",
+      "photoDeleted": "Foto gelöscht",
+      "photoDeleteFailed": "Foto konnte nicht gelöscht werden",
+      "videoUpdated": "Video aktualisiert",
+      "videoUpdateFailed": "Video konnte nicht aktualisiert werden",
+      "cdnVideoCopied": "CDN-Video-URL kopiert!",
+      "videoEmbedCopied": "HTML-Video-Einbettungscode kopiert!",
+      "videosDeleted": "Videos gelöscht",
+      "videoDeleted": "Video gelöscht",
+      "videoDeleteFailed": "Video konnte nicht gelöscht werden"
+    },
+    "lightboxModal": {
+      "urlCopied": "CDN-URL in die Zwischenablage kopiert!",
+      "embedCopied": "HTML-Einbettungscode in die Zwischenablage kopiert!",
+      "types": {
+        "photo": "foto",
+        "video": "video"
+      },
+      "size": "Größe: {size}",
+      "duration": "Dauer: {time}",
+      "uploaded": "Hochgeladen: {date}",
+      "copyLink": "CDN-Link kopieren",
+      "copyEmbed": "HTML-Einbettungscode kopieren",
+      "close": "Vorschau schließen"
     }
   },
   "studio": {
@@ -1931,6 +2003,86 @@
       "reports": "Meldungen",
       "members": "Mitglieder",
       "settings": "Einstellungen"
+    },
+    "settings": {
+      "loadError": "Community-Einstellungen konnten nicht geladen werden.",
+      "saved": "Gespeichert.",
+      "saveError": "Konnte nicht gespeichert werden.",
+      "community": "Community",
+      "communityHint": "Wenn aktiviert, sehen Teilnehmer einen Community-Tab und können posten, reagieren und kommentieren.",
+      "notify": "Teilnehmer benachrichtigen, wenn du postest",
+      "notifyHint": "Sendet eine Push-Benachrichtigung an Mitglieder, wann immer du oder dein Team etwas postet.",
+      "welcome": "Willkommensnachricht",
+      "welcomeHint": "Wird oben im Community-Feed angezeigt.",
+      "welcomePlaceholder": "Willkommen! Stell dich vor und sei freundlich. 💛",
+      "saving": "Wird gespeichert…",
+      "saveMessage": "Nachricht speichern"
+    },
+    "modFeed": {
+      "enableFirst": "Aktiviere die Community zuerst in den Einstellungen.",
+      "offTitle": "Community ist nicht aktiviert",
+      "offHint": "Aktiviere die Community oben im Einstellungen-Tab, um mit dem Posten und Moderieren zu beginnen.",
+      "pinned": "Oben im Feed angepinnt.",
+      "confirmRemovePost": "Diesen Beitrag aus der Community entfernen?",
+      "postRemoved": "Beitrag entfernt.",
+      "confirmBan": "{name} aus der Community sperren? Die Person wird nichts sehen oder posten können.",
+      "banned": "{name} ist gesperrt.",
+      "confirmRemoveComment": "Diesen Kommentar entfernen?",
+      "commentRemoved": "Kommentar entfernt."
+    },
+    "members": {
+      "banned": "Gesperrt",
+      "mutedUntil": "Stummgeschaltet bis {date}",
+      "needsApproval": "Beiträge erfordern Genehmigung",
+      "active": "Aktiv",
+      "actionFailed": "Aktion fehlgeschlagen.",
+      "actions": "Mitgliederaktionen",
+      "unbanned": "{name} kann wieder auf die Community zugreifen.",
+      "unban": "Entsperren",
+      "confirmBan": "{name} sperren? Die Person verliert jeglichen Zugriff auf die Community.",
+      "bannedDone": "{name} ist gesperrt.",
+      "ban": "Sperren",
+      "muteLifted": "Stummschaltung aufgehoben.",
+      "unmute": "Stummschaltung aufheben",
+      "muted": "{name} für 7 Tage stummgeschaltet.",
+      "mute": "Für 7 Tage stummschalten",
+      "approvalOff": "Beiträge werden wieder sofort veröffentlicht.",
+      "approvalOn": "Die nächsten Beiträge warten auf deine Genehmigung.",
+      "stopReview": "Beiträge nicht mehr überprüfen",
+      "reviewFirst": "Beiträge zuerst überprüfen",
+      "loadError": "Mitglieder konnten nicht geladen werden.",
+      "search": "Mitglieder suchen…",
+      "member": "Mitglied",
+      "posts": "Beiträge",
+      "status": "Status"
+    },
+    "reports": {
+      "contentRemoved": "Inhalt entfernt.",
+      "contentKept": "Inhalt beibehalten.",
+      "resolveError": "Meldung konnte nicht aufgelöst werden.",
+      "reasons": {
+        "spam": "Spam",
+        "inappropriate": "Unangemessen",
+        "harassment": "Belästigung",
+        "other": "Sonstiges"
+      },
+      "reportedBy": "Gemeldet von {name} · {time}",
+      "postBy": "Beitrag von {name}",
+      "commentBy": "Kommentar von {name}",
+      "removing": "Wird entfernt…",
+      "remove": "Entfernen",
+      "keeping": "Wird beibehalten…",
+      "keep": "Beibehalten",
+      "postApproved": "Beitrag genehmigt.",
+      "postRemoved": "Beitrag entfernt.",
+      "updateError": "Der Beitrag konnte nicht aktualisiert werden.",
+      "approving": "Wird freigegeben…",
+      "approve": "Freigeben",
+      "loadError": "Die Warteschlange konnte nicht geladen werden.",
+      "allClear": "Alles erledigt",
+      "allClearHint": "Keine Meldungen oder Beiträge warten auf dich.",
+      "waiting": "Wartet auf Freigabe",
+      "reports": "Meldungen"
     }
   },
   "courses": {
@@ -1956,7 +2108,9 @@
       "nameAsc": "Name A-Z",
       "nameDesc": "Name Z-A",
       "largest": "Größte",
-      "smallest": "Kleinste"
+      "smallest": "Kleinste",
+      "longest": "Längste",
+      "shortest": "Kürzeste"
     },
     "col": {
       "title": "Titel",
@@ -2066,5 +2220,235 @@
       "refunding": "Wird erstattet…",
       "confirmRefund": "Erstattung bestätigen"
     }
+  },
+  "courseForm": {
+    "createdNoAccess": "Kurs erstellt, aber wie Teilnehmer ihn erhalten, wurde nicht gespeichert. {reason}",
+    "published": "Kurs veröffentlicht",
+    "savedDraft": "Kurs als Entwurf gespeichert — füge Lektionen hinzu und veröffentliche ihn dann",
+    "saved": "Kurs gespeichert",
+    "createFailed": "Kurs konnte nicht erstellt werden",
+    "saveFailed": "Kurs konnte nicht gespeichert werden",
+    "moduleAdded": "Modul hinzugefügt",
+    "moduleAddFailed": "Modul konnte nicht hinzugefügt werden",
+    "lessonSaved": "Lektion gespeichert",
+    "lessonSaveFailed": "Lektion konnte nicht gespeichert werden",
+    "lessonAdded": "Lektion hinzugefügt",
+    "lessonAddFailed": "Lektion konnte nicht hinzugefügt werden",
+    "moduleDeleted": "Modul gelöscht",
+    "moduleDeleteFailed": "Modul konnte nicht gelöscht werden",
+    "lessonDeleted": "Lektion gelöscht",
+    "lessonDeleteFailed": "Lektion konnte nicht gelöscht werden",
+    "settingsTitle": "Kurseinstellungen",
+    "settingsHint": "Aktualisiere Kursdetails, Preisgestaltung und Veröffentlichung.",
+    "title": "Titel",
+    "titlePlaceholder": "z. B. Einführung in die Fotografie",
+    "description": "Beschreibung",
+    "descriptionPlaceholder": "Beschreibe, was Teilnehmer lernen werden...",
+    "thumbnail": "Vorschaubild",
+    "chooseThumbnail": "Vorschaubild auswählen",
+    "publishNow": "Sofort veröffentlichen",
+    "publishedLabel": "Veröffentlicht",
+    "filters": "Filter",
+    "filtersHint": "Optionale Kategorien (Niveau, Stil…), nach denen Teilnehmer deine Kurse filtern können.",
+    "tags": "Schlagwörter",
+    "saving": "Wird gespeichert…",
+    "saveChanges": "Änderungen speichern",
+    "curriculum": "Curriculum",
+    "curriculumCreateHint": "Füge jetzt Module und Lektionen hinzu — alles wird gemeinsam in einem Schritt erstellt.",
+    "curriculumHint": "Organisiere deinen Kurs in Module und Lektionen.",
+    "moduleTitle": "Modul {n}: {title}",
+    "video": "Video",
+    "preview": "Vorschau",
+    "actions": "Aktionen",
+    "duration": "Dauer",
+    "videoSelected": "Ausgewählt",
+    "noVideo": "Kein Video",
+    "videoUploaded": "Hochgeladen",
+    "free": "Kostenlos",
+    "addLesson": "Lektion hinzufügen",
+    "newModuleTitle": "Neuer Modultitel",
+    "addModule": "Modul hinzufügen",
+    "adding": "Wird hinzugefügt…",
+    "creating": "Wird erstellt…",
+    "createCourse": "Kurs erstellen",
+    "lessonContent": "Lektionsinhalt",
+    "writeContent": "Klicke, um Lektionsinhalt zu schreiben…",
+    "captions": {
+      "waiting": {
+        "label": "Untertitel nicht gestartet",
+        "hint": "Untertitel starten innerhalb weniger Minuten von selbst."
+      },
+      "working": {
+        "label": "Untertitel in Bearbeitung",
+        "hint": "Untertitel werden aus dem Ton des Videos erstellt. Lade die Seite neu, um zu sehen, wann sie bereit sind."
+      },
+      "ready": {
+        "label": "Untertitel bereit",
+        "hint": "Teilnehmer können Untertitel aktivieren und das Transkript unter dem Video lesen."
+      },
+      "failed": {
+        "label": "Untertitel fehlgeschlagen",
+        "hint": "Aus dem Ton dieses Videos konnten keine Untertitel erstellt werden. Beim Ersetzen des Videos wird es erneut versucht."
+      }
+    },
+    "freePreview": "Kostenlose Vorschau",
+    "content": "Inhalt",
+    "editLesson": "Lektion bearbeiten",
+    "newLesson": "Neue Lektion",
+    "lessonTitlePlaceholder": "Lektionstitel"
+  },
+  "mediaBrowser": {
+    "loadError": "Elemente konnten nicht geladen werden. Bitte versuche es erneut.",
+    "confirmAction": "{action} {count, plural, one {# Element} other {# Elemente}}? Dies kann nicht rückgängig gemacht werden.",
+    "allSelected": "Alle {count, plural, one {# Element} other {# Elemente}} ausgewählt",
+    "selected": "{count} ausgewählt",
+    "actions": "Aktionen",
+    "clearSelection": "Auswahl aufheben",
+    "pageSelected": "Alle {count, plural, one {# Element} other {# Elemente}} auf dieser Seite sind ausgewählt.",
+    "selectAllItems": "Alle {count, plural, one {# Element} other {# Elemente}} auswählen",
+    "deselectAll": "Alle abwählen",
+    "selectAll": "Alle auswählen",
+    "search": "Suchen..."
+  },
+  "inlineEdit": {
+    "saving": "Speichern…"
+  },
+  "mediaPicker": {
+    "uploadFailed": "Upload fehlgeschlagen. Bitte versuche es erneut.",
+    "upload": "Hochladen",
+    "progress": "{percent}% hochgeladen"
+  },
+  "videoPicker": {
+    "choose": "Video auswählen",
+    "urlPlaceholder": "YouTube-, Vimeo- oder direkte Video-URL",
+    "title": "Wähle ein Video",
+    "search": "Videos suchen...",
+    "empty": "Noch keine Videos.",
+    "noMatch": "Keine Videos entsprechen deiner Suche."
+  },
+  "photoPicker": {
+    "choose": "Foto auswählen",
+    "selected": "Ausgewählt"
+  },
+  "filterPicker": {
+    "option": "Option",
+    "noOptions": "Noch keine Optionen — füge eine hinzu.",
+    "newOption": "Neue {name}-Option",
+    "add": "Hinzufügen",
+    "newFilterName": "Neuer Filtername (z. B. Level)",
+    "newFilter": "Neuer Filter",
+    "deleteFailed": "Filter konnte nicht gelöscht werden",
+    "deleteAria": "{name}-Filter löschen",
+    "confirmDeleteCourse": "Den Filter \"{name}\" und alle seine Optionen löschen? Er wird aus jedem Kurs entfernt.",
+    "confirmDeleteEvent": "Den Filter \"{name}\" und alle seine Optionen löschen? Er wird aus jeder Veranstaltung entfernt."
+  },
+  "tagFilter": {
+    "label": "Tags:",
+    "clear": "Zurücksetzen"
+  },
+  "tagInput": {
+    "remove": "{name}-Tag entfernen",
+    "placeholder": "Tag hinzufügen…",
+    "create": "“{name}” erstellen"
+  },
+  "publish": {
+    "requirementsUnmet": "Schließe die erforderlichen Einrichtungsschritte ab, bevor du veröffentlichst.",
+    "wrong": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+    "confirmUnpublish": "Deine Website wird für Teilnehmer verborgen, bis du sie wieder veröffentlichst.",
+    "pwSaved": "Vorschau-Passwort gespeichert",
+    "pwCleared": "Vorschau-Passwort gelöscht",
+    "linkCopied": "Link kopiert",
+    "installCopied": "Link zur Installationsanleitung kopiert",
+    "live": "Du bist live! 🎉",
+    "liveHint": "Deine Website ist öffentlich. Teile den Link mit deinen Teilnehmern:",
+    "copy": "Kopieren",
+    "shareInstall": "Installationsanleitung teilen",
+    "inviteStudents": "Lade deine ersten Teilnehmer ein",
+    "done": "Fertig",
+    "siteLive": "Deine Seite ist live",
+    "publishSite": "Veröffentliche deine Seite",
+    "liveStatus": "<live>● Live</live> — Teilnehmer können deine Seite finden und installieren.",
+    "copyLink": "Link kopieren",
+    "unpublishing": "Veröffentlichung wird aufgehoben…",
+    "unpublish": "Veröffentlichung aufheben",
+    "hidden": "Deine Seite ist hinter einer Vorschau-Sperre verborgen. Veröffentliche sie, damit Teilnehmer sie finden und installieren können.",
+    "finishFirst": "Erledige dies zuerst, um zu veröffentlichen:",
+    "publishing": "Wird veröffentlicht…",
+    "finishSteps": "Schließe die erforderlichen Einrichtungsschritte ab, um zu veröffentlichen",
+    "publishGoLive": "Seite veröffentlichen — live gehen",
+    "previewLink": "Vorschau-Link:",
+    "pw": "Vorschau-Passwort",
+    "pwIsSet": "Vorschau-Passwort — festgelegt",
+    "pwChange": "Passwort ändern",
+    "pwSet": "Passwort festlegen",
+    "saving": "Wird gespeichert…",
+    "clearing": "Wird gelöscht…",
+    "clear": "Löschen",
+    "pwHint": "Teile den Vorschau-Link + das Passwort, damit andere die Seite sehen können, bevor du sie veröffentlichst.",
+    "blockers": {
+      "plan": "Wähle einen Tarif",
+      "look": "Füge dein Logo hinzu",
+      "first_course": "Veröffentliche deinen ersten Kurs oder Download",
+      "first_event": "Plane deine erste Live-Session oder Veranstaltung",
+      "first_blog_post": "Veröffentliche deinen ersten Blogbeitrag",
+      "payouts": "Verbinde Zahlungen, um kostenpflichtige Inhalte zu verkaufen",
+      "payoutsTrial": "Kostenpflichtige Inhalte warten auf den Start deines Tarifs — starte ihn jetzt, oder behalte sie als Entwurf",
+      "payoutsFreePlan": "Kostenpflichtige Inhalte erfordern einen Tarif — wähle einen, oder behalte sie als Entwurf"
+    },
+    "close": "Schließen"
+  },
+  "monetize": {
+    "trialing": "Der Verkauf wird freigeschaltet, sobald dein Tarif startet — du kannst dies als Entwurf speichern. <link>Starte ihn jetzt</link>",
+    "freePlan": "Der Verkauf erfordert den Starter-Tarif — du kannst dies als Entwurf speichern. <link>Tarife ansehen</link>",
+    "noPayouts": "Teilnehmer können noch nichts kaufen — <link>richte Auszahlungen ein</link>, um mit dem Verkaufen zu beginnen."
+  },
+  "paused": {
+    "title": "Wähle einen Tarif, um deine Seite zu öffnen",
+    "hint": "Bis dahin sehen Besucher eine “Bald wieder da”-Seite. Alles, was du aufgebaut hast, bleibt erhalten und ist wieder da, sobald du startest."
+  },
+  "usage": {
+    "title": "App-Nutzung (30 Tage)",
+    "installed": "Teilnehmer haben die App installiert",
+    "pwaShare": "PWA {pct}%",
+    "webShare": "Web {pct}%",
+    "dayTitle": "{day}: {pwa} PWA / {web} Web",
+    "none": "Noch keine App-Aktivität."
+  },
+  "calendar": {
+    "loadError": "Kalendereinträge konnten nicht geladen werden.",
+    "subtitle": "Deine Sessions, E-Mails und Blogbeiträge, nach Datum.",
+    "newSession": "Session oder Event",
+    "newEmail": "Gestaltete E-Mail",
+    "newBlog": "Blogartikel",
+    "allItems": "Alle Einträge ({count})",
+    "filter": {
+      "live": "Live-Events",
+      "email": "E-Mail-Broadcasts",
+      "blog": "Blogbeiträge"
+    },
+    "month": "Monat",
+    "week": "Woche",
+    "today": "Heute",
+    "empty": "Keine geplanten Inhalte in diesem Zeitraum. Erstelle ein Live-Event, einen Broadcast oder einen Blogbeitrag, damit er hier erscheint.",
+    "itemCount": "{count, plural, one {# Eintrag} other {# Einträge}}",
+    "category": {
+      "live": "Live-Event",
+      "email": "E-Mail-Broadcast",
+      "blog": "Blogbeitrag"
+    },
+    "status": {
+      "scheduled": "geplant",
+      "published": "veröffentlicht",
+      "draft": "Entwurf",
+      "completed": "abgeschlossen",
+      "live": "live",
+      "ended": "beendet",
+      "sending": "wird gesendet",
+      "partial": "teilweise",
+      "failed": "fehlgeschlagen"
+    },
+    "statusLabel": "Status:",
+    "close": "Schließen",
+    "manage": "{category} verwalten"
   }
 }

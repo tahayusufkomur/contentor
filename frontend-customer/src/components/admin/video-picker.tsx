@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { clientFetch } from "@/lib/api-client";
@@ -33,6 +34,7 @@ export function VideoPicker({
   onChange,
   allowUrl = false,
 }: VideoPickerProps) {
+  const t = useTranslations("admin");
   const [open, setOpen] = useState(false);
 
   async function fetchVideos(search: string): Promise<VideoItem[]> {
@@ -110,7 +112,7 @@ export function VideoPicker({
             size="sm"
             onClick={() => setOpen(true)}
           >
-            Choose video
+            {t("videoPicker.choose")}
           </Button>
           {value && (
             <Button
@@ -129,7 +131,7 @@ export function VideoPicker({
         <Input
           value={value == null ? (previewUrl ?? "") : ""}
           onChange={(e) => onChange(null, e.target.value || null)}
-          placeholder="YouTube, Vimeo, or direct video URL"
+          placeholder={t("videoPicker.urlPlaceholder")}
           className="text-sm"
         />
       )}
@@ -137,9 +139,10 @@ export function VideoPicker({
       <MediaPickerBase<VideoItem>
         open={open}
         onClose={() => setOpen(false)}
-        title="Choose a video"
-        searchPlaceholder="Search videos..."
-        itemLabelPlural="videos"
+        title={t("videoPicker.title")}
+        searchPlaceholder={t("videoPicker.search")}
+        emptyText={t("videoPicker.empty")}
+        noMatchText={t("videoPicker.noMatch")}
         accept="video/mp4,video/quicktime,video/webm"
         contentClassName="p-3"
         itemsContainerClassName="space-y-1"

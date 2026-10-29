@@ -391,7 +391,9 @@
     "newCourse": "Yeni kurs",
     "empty": "Bu adda bir sayfa yok.",
     "askAssistant": "Asistana sor: “{query}”",
-    "newMessage": "Yeni mesaj"
+    "newMessage": "Yeni mesaj",
+    "navigate": "gezinmek için",
+    "select": "seçmek için"
   },
   "settingsHub": {
     "title": "Diğer ayarlar",
@@ -684,7 +686,17 @@
     "deleted": "Silindi",
     "delete": "Sil",
     "saved": "Kaydedildi",
-    "regenerated": "Yeniden Oluşturuldu"
+    "regenerated": "Yeniden Oluşturuldu",
+    "editor": {
+      "placeholder": "Gönderini yaz…",
+      "bold": "Kalın",
+      "italic": "İtalik",
+      "heading2": "Başlık 2",
+      "heading3": "Başlık 3",
+      "bulletList": "Madde işaretli liste",
+      "link": "Bağlantı",
+      "linkUrl": "Bağlantı URL'si"
+    }
   },
   "inbox": {
     "title": "Gelen kutusu",
@@ -994,6 +1006,66 @@
       "failed": "{name} yüklenemedi.",
       "refused": "Buraya yalnızca fotoğraf ve video yüklenebilir. Atlananlar: {names}",
       "cancel": "{name} dosyasının yüklemesini iptal et"
+    },
+    "untitled": "Başlıksız",
+    "untitledPhoto": "Başlıksız Fotoğraf",
+    "untitledVideo": "Başlıksız Video",
+    "lightbox": "Lightbox",
+    "emptyVideos": "Henüz video yok. Başlamak için bir tane yükle.",
+    "uploaded": "Yüklendi",
+    "noVideo": "Video yok",
+    "col": {
+      "photo": "Fotoğraf",
+      "title": "Başlık",
+      "size": "Boyut",
+      "date": "Tarih",
+      "actions": "İşlemler",
+      "duration": "Süre",
+      "video": "Video"
+    },
+    "field": {
+      "title": "Başlık",
+      "altText": "Alt Metin",
+      "tags": "Etiketler",
+      "description": "Açıklama"
+    },
+    "tip": {
+      "copyCdnUrl": "CDN URL'sini Kopyala",
+      "copyCdnLink": "CDN Bağlantısını Kopyala",
+      "copyEmbed": "HTML Yerleştirme Kodunu Kopyala",
+      "copyVideoEmbed": "Video Yerleştirme Kodunu Kopyala",
+      "editDetails": "Ayrıntıları Düzenle",
+      "makeReels": "Reels oluştur"
+    },
+    "toast": {
+      "photoUpdated": "Fotoğraf güncellendi",
+      "photoUpdateFailed": "Fotoğraf güncellenemedi",
+      "cdnLinkCopied": "CDN Bağlantısı panoya kopyalandı!",
+      "embedCopied": "HTML yerleştirme kodu kopyalandı!",
+      "photosDeleted": "Fotoğraflar silindi",
+      "photoDeleted": "Fotoğraf silindi",
+      "photoDeleteFailed": "Fotoğraf silinemedi",
+      "videoUpdated": "Video güncellendi",
+      "videoUpdateFailed": "Video güncellenemedi",
+      "cdnVideoCopied": "CDN Video URL'si kopyalandı!",
+      "videoEmbedCopied": "HTML Video Yerleştirme kodu kopyalandı!",
+      "videosDeleted": "Videolar silindi",
+      "videoDeleted": "Video silindi",
+      "videoDeleteFailed": "Video silinemedi"
+    },
+    "lightboxModal": {
+      "urlCopied": "CDN URL'si panoya kopyalandı!",
+      "embedCopied": "HTML yerleştirme kodu panoya kopyalandı!",
+      "types": {
+        "photo": "fotoğraf",
+        "video": "video"
+      },
+      "size": "Boyut: {size}",
+      "duration": "Süre: {time}",
+      "uploaded": "Yüklendi: {date}",
+      "copyLink": "CDN Bağlantısını Kopyala",
+      "copyEmbed": "HTML Yerleştirme Kodunu Kopyala",
+      "close": "Önizlemeyi Kapat"
     }
   },
   "studio": {
@@ -1931,6 +2003,86 @@
       "reports": "Raporlar",
       "members": "Üyeler",
       "settings": "Ayarlar"
+    },
+    "settings": {
+      "loadError": "Topluluk ayarları yüklenemedi.",
+      "saved": "Kaydedildi.",
+      "saveError": "Kaydedilemedi.",
+      "community": "Topluluk",
+      "communityHint": "Açık olduğunda öğrenciler bir Topluluk sekmesi görür; gönderi paylaşabilir, tepki verebilir ve yorum yapabilir.",
+      "notify": "Gönderi paylaştığında öğrencilere bildir",
+      "notifyHint": "Sen veya ekibin her gönderi paylaştığında üyelere anlık bildirim gönderir.",
+      "welcome": "Karşılama mesajı",
+      "welcomeHint": "Topluluk akışının en üstünde gösterilir.",
+      "welcomePlaceholder": "Hoş geldin! Kendini tanıt ve nazik ol. 💛",
+      "saving": "Kaydediliyor…",
+      "saveMessage": "Mesajı kaydet"
+    },
+    "modFeed": {
+      "enableFirst": "Önce Ayarlar'da topluluğu etkinleştir.",
+      "offTitle": "Topluluk açık değil",
+      "offHint": "Gönderi paylaşmaya ve denetlemeye başlamak için yukarıdaki Ayarlar sekmesinden topluluğu aç.",
+      "pinned": "Akışın en üstüne sabitlendi.",
+      "confirmRemovePost": "Bu gönderi topluluktan kaldırılsın mı?",
+      "postRemoved": "Gönderi kaldırıldı.",
+      "confirmBan": "{name} topluluktan yasaklansın mı? Hiçbir şeyi göremeyecek veya paylaşamayacak.",
+      "banned": "{name} yasaklandı.",
+      "confirmRemoveComment": "Bu yorum kaldırılsın mı?",
+      "commentRemoved": "Yorum kaldırıldı."
+    },
+    "members": {
+      "banned": "Yasaklandı",
+      "mutedUntil": "{date} tarihine kadar sessize alındı",
+      "needsApproval": "Gönderiler onay gerektiriyor",
+      "active": "Aktif",
+      "actionFailed": "İşlem başarısız oldu.",
+      "actions": "Üye işlemleri",
+      "unbanned": "{name} topluluğa yeniden erişebilir.",
+      "unban": "Yasağı kaldır",
+      "confirmBan": "{name} yasaklansın mı? Topluluğa olan tüm erişimini kaybeder.",
+      "bannedDone": "{name} yasaklandı.",
+      "ban": "Yasakla",
+      "muteLifted": "Sessize alma kaldırıldı.",
+      "unmute": "Sessize almayı kaldır",
+      "muted": "{name} 7 gün sessize alındı.",
+      "mute": "7 gün sessize al",
+      "approvalOff": "Gönderileri yeniden anında yayınlanır.",
+      "approvalOn": "Sonraki gönderileri senin onayını bekleyecek.",
+      "stopReview": "Gönderilerini incelemeyi durdur",
+      "reviewFirst": "Önce gönderilerini incele",
+      "loadError": "Üyeler yüklenemedi.",
+      "search": "Üyeleri ara…",
+      "member": "Üye",
+      "posts": "Gönderiler",
+      "status": "Durum"
+    },
+    "reports": {
+      "contentRemoved": "İçerik kaldırıldı.",
+      "contentKept": "İçerik korundu.",
+      "resolveError": "Bildirim çözülemedi.",
+      "reasons": {
+        "spam": "Spam",
+        "inappropriate": "Uygunsuz",
+        "harassment": "Taciz",
+        "other": "Diğer"
+      },
+      "reportedBy": "{name} tarafından bildirildi · {time}",
+      "postBy": "{name} adlı kullanıcının gönderisi",
+      "commentBy": "{name} adlı kullanıcının yorumu",
+      "removing": "Kaldırılıyor…",
+      "remove": "Kaldır",
+      "keeping": "Korunuyor…",
+      "keep": "Koru",
+      "postApproved": "Gönderi onaylandı.",
+      "postRemoved": "Gönderi kaldırıldı.",
+      "updateError": "Gönderi güncellenemedi.",
+      "approving": "Onaylanıyor…",
+      "approve": "Onayla",
+      "loadError": "Kuyruk yüklenemedi.",
+      "allClear": "Her şey yolunda",
+      "allClearHint": "Seni bekleyen şikayet veya gönderi yok.",
+      "waiting": "Onay bekliyor",
+      "reports": "Şikayetler"
     }
   },
   "courses": {
@@ -1956,7 +2108,9 @@
       "nameAsc": "Ad A-Z",
       "nameDesc": "Ad Z-A",
       "largest": "En Büyük",
-      "smallest": "En Küçük"
+      "smallest": "En Küçük",
+      "longest": "En uzun",
+      "shortest": "En kısa"
     },
     "col": {
       "title": "Başlık",
@@ -2066,5 +2220,235 @@
       "refunding": "İade ediliyor…",
       "confirmRefund": "İadeyi onayla"
     }
+  },
+  "courseForm": {
+    "createdNoAccess": "Kurs oluşturuldu ancak öğrencilerin buna nasıl erişeceği kaydedilmedi. {reason}",
+    "published": "Kurs yayınlandı",
+    "savedDraft": "Kurs taslak olarak kaydedildi — ders ekle, ardından yayınla",
+    "saved": "Kurs kaydedildi",
+    "createFailed": "Kurs oluşturulamadı",
+    "saveFailed": "Kurs kaydedilemedi",
+    "moduleAdded": "Modül eklendi",
+    "moduleAddFailed": "Modül eklenemedi",
+    "lessonSaved": "Ders kaydedildi",
+    "lessonSaveFailed": "Ders kaydedilemedi",
+    "lessonAdded": "Ders eklendi",
+    "lessonAddFailed": "Ders eklenemedi",
+    "moduleDeleted": "Modül silindi",
+    "moduleDeleteFailed": "Modül silinemedi",
+    "lessonDeleted": "Ders silindi",
+    "lessonDeleteFailed": "Ders silinemedi",
+    "settingsTitle": "Kurs Ayarları",
+    "settingsHint": "Kurs ayrıntılarını, fiyatlandırmayı ve yayınlamayı güncelle.",
+    "title": "Başlık",
+    "titlePlaceholder": "örn. Fotoğrafçılığa Giriş",
+    "description": "Açıklama",
+    "descriptionPlaceholder": "Öğrencilerin ne öğreneceğini açıkla...",
+    "thumbnail": "Küçük resim",
+    "chooseThumbnail": "Küçük resim seç",
+    "publishNow": "Hemen yayınla",
+    "publishedLabel": "Yayınlandı",
+    "filters": "Filtreler",
+    "filtersHint": "Öğrencilerin kurslarını filtreleyebileceği isteğe bağlı kategoriler (seviye, tarz…).",
+    "tags": "Etiketler",
+    "saving": "Kaydediliyor…",
+    "saveChanges": "Değişiklikleri Kaydet",
+    "curriculum": "Müfredat",
+    "curriculumCreateHint": "Modülleri ve dersleri şimdi ekle — her şey tek bir adımda birlikte oluşturulur.",
+    "curriculumHint": "Kursunu modüller ve dersler halinde düzenle.",
+    "moduleTitle": "Modül {n}: {title}",
+    "video": "Video",
+    "preview": "Önizleme",
+    "actions": "İşlemler",
+    "duration": "Süre",
+    "videoSelected": "Seçildi",
+    "noVideo": "Video yok",
+    "videoUploaded": "Yüklendi",
+    "free": "Ücretsiz",
+    "addLesson": "Ders Ekle",
+    "newModuleTitle": "Yeni modül başlığı",
+    "addModule": "Modül Ekle",
+    "adding": "Ekleniyor…",
+    "creating": "Oluşturuluyor…",
+    "createCourse": "Kurs Oluştur",
+    "lessonContent": "Ders içeriği",
+    "writeContent": "Ders içeriğini yazmak için tıkla…",
+    "captions": {
+      "waiting": {
+        "label": "Altyazılar başlatılmadı",
+        "hint": "Altyazılar birkaç dakika içinde kendiliğinden başlar."
+      },
+      "working": {
+        "label": "Altyazılar hazırlanıyor",
+        "hint": "Altyazılar videonun sesinden yazılıyor. Hazır olduklarında görmek için sayfayı yenile."
+      },
+      "ready": {
+        "label": "Altyazılar hazır",
+        "hint": "Öğrenciler altyazıları açabilir ve videonun altındaki transkripti okuyabilir."
+      },
+      "failed": {
+        "label": "Altyazılar başarısız oldu",
+        "hint": "Bu videonun sesinden altyazı oluşturulamadı. Videoyu değiştirmek işlemi tekrar dener."
+      }
+    },
+    "freePreview": "Ücretsiz Önizleme",
+    "content": "İçerik",
+    "editLesson": "Dersi Düzenle",
+    "newLesson": "Yeni Ders",
+    "lessonTitlePlaceholder": "Ders başlığı"
+  },
+  "mediaBrowser": {
+    "loadError": "Öğeler yüklenemedi. Lütfen tekrar dene.",
+    "confirmAction": "{action} {count, plural, one {# öğe} other {# öğe}}? Bu işlem geri alınamaz.",
+    "allSelected": "Tüm {count, plural, one {# öğe} other {# öğe}} seçildi",
+    "selected": "{count} seçildi",
+    "actions": "İşlemler",
+    "clearSelection": "Seçimi temizle",
+    "pageSelected": "Bu sayfadaki {count, plural, one {# öğenin} other {# öğenin}} tümü seçildi.",
+    "selectAllItems": "{count, plural, one {# öğenin} other {# öğenin}} tümünü seç",
+    "deselectAll": "Tümünün seçimini kaldır",
+    "selectAll": "Tümünü seç",
+    "search": "Ara..."
+  },
+  "inlineEdit": {
+    "saving": "Kaydediliyor…"
+  },
+  "mediaPicker": {
+    "uploadFailed": "Yükleme başarısız oldu. Lütfen tekrar dene.",
+    "upload": "Yükle",
+    "progress": "%{percent} yüklendi"
+  },
+  "videoPicker": {
+    "choose": "Video seç",
+    "urlPlaceholder": "YouTube, Vimeo veya doğrudan video URL'si",
+    "title": "Bir video seç",
+    "search": "Videoları ara...",
+    "empty": "Henüz video yok.",
+    "noMatch": "Aramanla eşleşen video yok."
+  },
+  "photoPicker": {
+    "choose": "Fotoğraf seç",
+    "selected": "Seçildi"
+  },
+  "filterPicker": {
+    "option": "Seçenek",
+    "noOptions": "Henüz seçenek yok — bir tane ekle.",
+    "newOption": "Yeni {name} seçeneği",
+    "add": "Ekle",
+    "newFilterName": "Yeni filtre adı (ör. Seviye)",
+    "newFilter": "Yeni filtre",
+    "deleteFailed": "Filtre silinemedi",
+    "deleteAria": "{name} filtresini sil",
+    "confirmDeleteCourse": "\"{name}\" filtresi ve tüm seçenekleri silinsin mi? Her kurstan kaldırılacak.",
+    "confirmDeleteEvent": "\"{name}\" filtresi ve tüm seçenekleri silinsin mi? Her etkinlikten kaldırılacak."
+  },
+  "tagFilter": {
+    "label": "Etiketler:",
+    "clear": "Temizle"
+  },
+  "tagInput": {
+    "remove": "{name} etiketini kaldır",
+    "placeholder": "Bir etiket ekle…",
+    "create": "“{name}” oluştur"
+  },
+  "publish": {
+    "requirementsUnmet": "Yayınlamadan önce gerekli kurulum adımlarını tamamla.",
+    "wrong": "Bir şeyler ters gitti. Lütfen tekrar dene.",
+    "confirmUnpublish": "Siten, sen tekrar yayınlayana kadar öğrencilerden gizlenecek.",
+    "pwSaved": "Önizleme şifresi kaydedildi",
+    "pwCleared": "Önizleme şifresi temizlendi",
+    "linkCopied": "Bağlantı kopyalandı",
+    "installCopied": "Kurulum kılavuzu bağlantısı kopyalandı",
+    "live": "Yayındasın! 🎉",
+    "liveHint": "Siten herkese açık. Bağlantıyı öğrencilerinle paylaş:",
+    "copy": "Kopyala",
+    "shareInstall": "Yükleme rehberini paylaş",
+    "inviteStudents": "İlk öğrencilerini davet et",
+    "done": "Bitti",
+    "siteLive": "Siten yayında",
+    "publishSite": "Siteni yayınla",
+    "liveStatus": "<live>● Yayında</live> — öğrenciler siteni bulabilir ve yükleyebilir.",
+    "copyLink": "Bağlantıyı kopyala",
+    "unpublishing": "Yayından kaldırılıyor…",
+    "unpublish": "Yayından kaldır",
+    "hidden": "Siten bir ön izleme kapısının arkasında gizli. Öğrencilerin siteni bulabilmesi ve yükleyebilmesi için yayınla.",
+    "finishFirst": "Yayınlamak için önce bunları tamamla:",
+    "publishing": "Yayınlanıyor…",
+    "finishSteps": "Yayınlamak için gerekli kurulum adımlarını tamamla",
+    "publishGoLive": "Siteyi yayınla — yayına geç",
+    "previewLink": "Ön izleme bağlantısı:",
+    "pw": "Ön izleme şifresi",
+    "pwIsSet": "Ön izleme şifresi — ayarlandı",
+    "pwChange": "Şifreyi değiştir",
+    "pwSet": "Bir şifre belirle",
+    "saving": "Kaydediliyor…",
+    "clearing": "Temizleniyor…",
+    "clear": "Temizle",
+    "pwHint": "Yayınlamadan önce başkalarının siteyi görebilmesi için ön izleme bağlantısını + şifreyi paylaş.",
+    "blockers": {
+      "plan": "Bir plan seç",
+      "look": "Logonu ekle",
+      "first_course": "İlk kursunu veya indirilebilir dosyanı yayınla",
+      "first_event": "İlk canlı oturumunu veya etkinliğini planla",
+      "first_blog_post": "İlk blog yazını yayınla",
+      "payouts": "Ücretli içerik satmak için ödemeleri bağla",
+      "payoutsTrial": "Ücretli içerik planının başlamasını bekler — şimdi başlat veya taslak olarak sakla",
+      "payoutsFreePlan": "Ücretli içerik bir plan gerektirir — birini seç veya taslak olarak sakla"
+    },
+    "close": "Kapat"
+  },
+  "monetize": {
+    "trialing": "Satış, planın başladığında açılır — bunu taslak olarak kaydedebilirsin. <link>Şimdi başlat</link>",
+    "freePlan": "Satış için Starter planı gerekir — bunu taslak olarak kaydedebilirsin. <link>Planları gör</link>",
+    "noPayouts": "Öğrenciler henüz satın alamaz — satışa başlamak için <link>ödemeleri ayarla</link>."
+  },
+  "paused": {
+    "title": "Siteni açmak için bir plan seç",
+    "hint": "Bunu yapana kadar ziyaretçiler bir “yakında döneceğiz” sayfası görür. Oluşturduğun her şey korunur ve başladığın anda geri gelir."
+  },
+  "usage": {
+    "title": "Uygulama benimsenmesi (30 gün)",
+    "installed": "öğrenci uygulamayı yükledi",
+    "pwaShare": "PWA %{pct}",
+    "webShare": "Web %{pct}",
+    "dayTitle": "{day}: {pwa} PWA / {web} Web",
+    "none": "Henüz uygulama etkinliği yok."
+  },
+  "calendar": {
+    "loadError": "Takvim öğeleri yüklenemedi.",
+    "subtitle": "Oturumların, e-postaların ve blog yazıların, tarihe göre.",
+    "newSession": "Oturum veya etkinlik",
+    "newEmail": "Tasarlanmış e-posta",
+    "newBlog": "Blog Makalesi",
+    "allItems": "Tüm Öğeler ({count})",
+    "filter": {
+      "live": "Canlı Etkinlikler",
+      "email": "E-posta Yayınları",
+      "blog": "Blog Yazıları"
+    },
+    "month": "Ay",
+    "week": "Hafta",
+    "today": "Bugün",
+    "empty": "Bu aralıkta planlanmış içerik yok. Burada görünmesi için bir canlı etkinlik, yayın veya blog yazısı oluştur.",
+    "itemCount": "{count, plural, one {# öğe} other {# öğe}}",
+    "category": {
+      "live": "Canlı Etkinlik",
+      "email": "E-posta Yayını",
+      "blog": "Blog Yazısı"
+    },
+    "status": {
+      "scheduled": "planlandı",
+      "published": "yayınlandı",
+      "draft": "taslak",
+      "completed": "tamamlandı",
+      "live": "canlı",
+      "ended": "sona erdi",
+      "sending": "gönderiliyor",
+      "partial": "kısmi",
+      "failed": "başarısız"
+    },
+    "statusLabel": "Durum:",
+    "close": "Kapat",
+    "manage": "{category} yönet"
   }
 }

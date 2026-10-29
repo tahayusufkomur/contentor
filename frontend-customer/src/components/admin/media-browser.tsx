@@ -19,6 +19,7 @@ import {
   Trash2,
   type LucideIcon,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Input } from "@/components/ui/input";
@@ -166,6 +167,8 @@ function MediaBrowserInner<T>(
   }: MediaBrowserProps<T>,
   ref: React.ForwardedRef<MediaBrowserHandle>,
 ) {
+  const t = useTranslations("admin");
+  const tc = useTranslations("common");
   const [items, setItems] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -197,9 +200,9 @@ function MediaBrowserInner<T>(
   // Build actions list
   const allActions: BulkAction[] = [];
   if (externalActions) allActions.push(...externalActions);
-  if (onDelete && !allActions.some((a) => a.label === "Delete")) {
+  if (onDelete && !allActions.some((a) => a.onAction === onDelete)) {
     allActions.push({
-      label: "Delete",
+      label: tc("actions.delete"),
       icon: Trash2,
       variant: "destructive",
       onAction: onDelete,
@@ -310,7 +313,7 @@ function MediaBrowserInner<T>(
         hasLoadedOnce.current = true;
       } catch {
         if (request === requestRef.current)
-          toast.error("Could not load items. Please try again.");
+          toast.error(t("mediaBrowser.loadError"));
       } finally {
         if (request === requestRef.current) {
           setLoading(false);
@@ -319,7 +322,7 @@ function MediaBrowserInner<T>(
         }
       }
     },
-    [fetchPage, ordering, search, clearSelection],
+    [fetchPage, ordering, search, clearSelection, t],
   );
 
   // Restore persisted preferences from localStorage on mount (useLayoutEffect runs before paint)
@@ -415,7 +418,7 @@ function MediaBrowserInner<T>(
         action.variant === "destructive" &&
         !window.confirm(
           (action.onAction === onDelete && deleteConfirm?.(count)) ||
-            `${action.label} ${count} ${count === 1 ? "item" : "items"}? This cannot be undone.`,
+            t("mediaBrowser.confirmAction", { action: action.label, count }),
         )
       ) {
         return;
@@ -467,8 +470,8 @@ function MediaBrowserInner<T>(
       <div className="flex items-center gap-3">
         <span className="text-sm font-medium">
           {selectAllMode
-            ? `All ${effectiveTotalCount} items selected`
-            : `${displayCount} selected`}
+            ? t("mediaBrowser.allSelected", { count: effectiveTotalCount })
+            : t("mediaBrowser.selected", { count: displayCount })}
         </span>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -478,7 +481,7 @@ function MediaBrowserInner<T>(
               className="gap-1.5"
               loading={actionLoading}
             >
-              Actions
+              {t("mediaBrowser.actions")}
               <ChevronDown className="h-3.5 w-3.5" />
             </Button>
           </DropdownMenuTrigger>
@@ -514,18 +517,18 @@ function MediaBrowserInner<T>(
           className="ml-auto text-xs"
           disabled={actionLoading}
         >
-          Clear selection
+          {t("mediaBrowser.clearSelection")}
         </Button>
       </div>
       {showSelectAllFromDb && (
         <div className="text-sm text-muted-foreground">
-          All {items.length} items on this page are selected.{" "}
+          {t("mediaBrowser.pageSelected", { count: items.length })}{" "}
           <button
             type="button"
             onClick={activateSelectAll}
             className="font-medium text-primary hover:underline"
           >
-            Select all {effectiveTotalCount} items
+            {t("mediaBrowser.selectAllItems", { count: effectiveTotalCount })}
           </button>
         </div>
       )}
@@ -543,13 +546,15 @@ function MediaBrowserInner<T>(
               onClick={selectAllVisible}
               className="text-xs shrink-0"
             >
-              {allVisibleSelected ? "Deselect all" : "Select all"}
+              {allVisibleSelected
+                ? t("mediaBrowser.deselectAll")
+                : t("mediaBrowser.selectAll")}
             </Button>
           )}
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search..."
+              placeholder={t("mediaBrowser.search")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"

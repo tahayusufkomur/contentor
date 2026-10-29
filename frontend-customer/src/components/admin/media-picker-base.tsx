@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,7 +45,8 @@ export interface MediaPickerBaseProps<T> {
   onClose: () => void;
   title: string; // e.g. "Choose a video" / "Choose a photo"
   searchPlaceholder: string; // e.g. "Search videos..." / "Search photos..."
-  itemLabelPlural: string; // e.g. "videos" / "photos" — used in the empty-state copy
+  emptyText: string; // shown when there is nothing yet, e.g. "No videos yet."
+  noMatchText: string; // shown when a search finds nothing
   accept: string; // file-input accept attr, e.g. "video/mp4,video/quicktime,video/webm" / "image/*"
   contentClassName: string; // padding on the scrollable items container
   itemsContainerClassName: string; // layout of the items container (list vs grid)
@@ -61,7 +63,8 @@ export function MediaPickerBase<T>({
   onClose,
   title,
   searchPlaceholder,
-  itemLabelPlural,
+  emptyText,
+  noMatchText,
   accept,
   contentClassName,
   itemsContainerClassName,
@@ -69,6 +72,7 @@ export function MediaPickerBase<T>({
   uploadFile,
   renderItem,
 }: MediaPickerBaseProps<T>) {
+  const t = useTranslations("admin");
   const [items, setItems] = useState<T[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
@@ -101,7 +105,7 @@ export function MediaPickerBase<T>({
       await refresh();
     } catch (err) {
       console.error(err);
-      toast.error("Upload failed. Please try again.");
+      toast.error(t("mediaPicker.uploadFailed"));
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -160,7 +164,7 @@ export function MediaPickerBase<T>({
               disabled={uploading}
             >
               <Upload className="h-3.5 w-3.5" />
-              Upload
+              {t("mediaPicker.upload")}
             </Button>
           </div>
 
@@ -173,7 +177,7 @@ export function MediaPickerBase<T>({
                 />
               </div>
               <p className="text-xs text-muted-foreground">
-                {uploadProgress}% uploaded
+                {t("mediaPicker.progress", { percent: uploadProgress })}
               </p>
             </div>
           )}
@@ -185,9 +189,7 @@ export function MediaPickerBase<T>({
               </div>
             ) : items.length === 0 ? (
               <p className="py-10 text-center text-sm text-muted-foreground">
-                {search
-                  ? `No ${itemLabelPlural} match your search.`
-                  : `No ${itemLabelPlural} yet.`}
+                {search ? noMatchText : emptyText}
               </p>
             ) : (
               <div className={itemsContainerClassName}>

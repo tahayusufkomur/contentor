@@ -5,6 +5,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import Underline from "@tiptap/extension-underline";
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import StarterKit from "@tiptap/starter-kit";
 import { Bold, Heading2, Heading3, Italic, Link2, List } from "lucide-react";
 
@@ -40,9 +41,9 @@ function ToolbarButton({
   );
 }
 
-function setLink(editor: Editor) {
+function setLink(editor: Editor, promptText: string) {
   const prev = editor.getAttributes("link").href as string | undefined;
-  const url = window.prompt("Link URL", prev || "https://");
+  const url = window.prompt(promptText, prev || "https://");
   if (url === null) return;
   if (url === "") {
     editor.chain().focus().unsetLink().run();
@@ -63,12 +64,13 @@ export function PostEditor({
   onChange,
   readOnly = false,
 }: PostEditorProps) {
+  const t = useTranslations("admin.blog.editor");
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ heading: { levels: [2, 3] } }),
       Underline,
       Link.configure({ openOnClick: false, autolink: true }),
-      Placeholder.configure({ placeholder: "Write your post…" }),
+      Placeholder.configure({ placeholder: t("placeholder") }),
     ],
     content: value,
     // Only her edits: never a change while it is being written for her.
@@ -117,11 +119,12 @@ export function Toolbar({
   editor: Editor;
   disabled: boolean;
 }) {
+  const t = useTranslations("admin.blog.editor");
   return (
     <div className="flex items-center gap-0.5 border-b px-2 py-1">
       <ToolbarButton
         disabled={disabled}
-        label="Bold"
+        label={t("bold")}
         active={editor.isActive("bold")}
         onClick={() => editor.chain().focus().toggleBold().run()}
       >
@@ -129,7 +132,7 @@ export function Toolbar({
       </ToolbarButton>
       <ToolbarButton
         disabled={disabled}
-        label="Italic"
+        label={t("italic")}
         active={editor.isActive("italic")}
         onClick={() => editor.chain().focus().toggleItalic().run()}
       >
@@ -138,7 +141,7 @@ export function Toolbar({
       <div className="mx-1 h-4 w-px bg-border" />
       <ToolbarButton
         disabled={disabled}
-        label="Heading 2"
+        label={t("heading2")}
         active={editor.isActive("heading", { level: 2 })}
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
       >
@@ -146,7 +149,7 @@ export function Toolbar({
       </ToolbarButton>
       <ToolbarButton
         disabled={disabled}
-        label="Heading 3"
+        label={t("heading3")}
         active={editor.isActive("heading", { level: 3 })}
         onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
       >
@@ -155,7 +158,7 @@ export function Toolbar({
       <div className="mx-1 h-4 w-px bg-border" />
       <ToolbarButton
         disabled={disabled}
-        label="Bullet list"
+        label={t("bulletList")}
         active={editor.isActive("bulletList")}
         onClick={() => editor.chain().focus().toggleBulletList().run()}
       >
@@ -163,9 +166,9 @@ export function Toolbar({
       </ToolbarButton>
       <ToolbarButton
         disabled={disabled}
-        label="Link"
+        label={t("link")}
         active={editor.isActive("link")}
-        onClick={() => setLink(editor)}
+        onClick={() => setLink(editor, t("linkUrl"))}
       >
         <Link2 className="h-4 w-4" />
       </ToolbarButton>

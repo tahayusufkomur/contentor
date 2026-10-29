@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Users } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -18,6 +19,7 @@ import {
 import type { CommunityMe } from "@/types/community";
 
 export function ModFeed() {
+  const t = useTranslations("admin.community.modFeed");
   const [me, setMe] = useState<CommunityMe | null>(null);
   const [status, setStatus] = useState<"loading" | "error" | "ready">(
     "loading",
@@ -31,10 +33,10 @@ export function ModFeed() {
         setStatus("ready");
       })
       .catch(() => {
-        toast.error("Enable the community in Settings first.");
+        toast.error(t("enableFirst"));
         setStatus("error");
       });
-  }, []);
+  }, [t]);
 
   if (status === "loading") return <Skeleton className="h-64 w-full" />;
 
@@ -42,8 +44,8 @@ export function ModFeed() {
     return (
       <EmptyState
         icon={Users}
-        title="Community isn't turned on"
-        description="Turn on the community in the Settings tab above to start posting and moderating."
+        title={t("offTitle")}
+        description={t("offHint")}
       />
     );
   }
@@ -53,7 +55,7 @@ export function ModFeed() {
   const hooks: ModeratorHooks = {
     pin: async (post) => {
       await pinPost(post.id);
-      toast.success("Pinned to the top of the feed.");
+      toast.success(t("pinned"));
       refresh();
     },
     unpin: async (post) => {
@@ -61,26 +63,22 @@ export function ModFeed() {
       refresh();
     },
     remove: async (post) => {
-      if (!window.confirm("Remove this post from the community?")) return;
+      if (!window.confirm(t("confirmRemovePost"))) return;
       await removePost(post.id);
-      toast.success("Post removed.");
+      toast.success(t("postRemoved"));
       refresh();
     },
     banAuthor: async (post) => {
-      if (
-        !window.confirm(
-          `Ban ${post.author.display_name} from the community? They won't be able to see or post anything.`,
-        )
-      )
+      if (!window.confirm(t("confirmBan", { name: post.author.display_name })))
         return;
       await banMember(post.author.id);
-      toast.success(`${post.author.display_name} is banned.`);
+      toast.success(t("banned", { name: post.author.display_name }));
       refresh();
     },
     removeComment: async (comment) => {
-      if (!window.confirm("Remove this comment?")) return;
+      if (!window.confirm(t("confirmRemoveComment"))) return;
       await removeCommentMod(comment.id);
-      toast.success("Comment removed.");
+      toast.success(t("commentRemoved"));
       refresh();
     },
   };

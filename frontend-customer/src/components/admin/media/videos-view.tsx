@@ -50,21 +50,24 @@ interface VideoItem {
   created_at: string;
 }
 
+/** The order the server is asked for, with the `list.sort` label for each. */
 const SORT_OPTIONS = [
-  { label: "Newest", value: "-created_at" },
-  { label: "Oldest", value: "created_at" },
-  { label: "Name A-Z", value: "title" },
-  { label: "Name Z-A", value: "-title" },
-  { label: "Largest", value: "-file_size" },
-  { label: "Smallest", value: "file_size" },
-  { label: "Longest", value: "-duration_seconds" },
-  { label: "Shortest", value: "duration_seconds" },
-];
+  { key: "newest", value: "-created_at" },
+  { key: "oldest", value: "created_at" },
+  { key: "nameAsc", value: "title" },
+  { key: "nameDesc", value: "-title" },
+  { key: "largest", value: "-file_size" },
+  { key: "smallest", value: "file_size" },
+  { key: "longest", value: "-duration_seconds" },
+  { key: "shortest", value: "duration_seconds" },
+] as const;
 
 /** The video half of the media library. `refreshSignal` changes when the
  *  page's uploader lands a video. */
 export function VideosView({ refreshSignal }: { refreshSignal: number }) {
   const locale = useLocale();
+  const t = useTranslations("admin.media");
+  const ta = useTranslations("admin");
   const browserRef = useRef<MediaBrowserHandle>(null);
   const [previewItem, setPreviewItem] = useState<MediaItemPayload | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -97,9 +100,9 @@ export function VideosView({ refreshSignal }: { refreshSignal: number }) {
   );
 
   const videoFields: FieldConfig<VideoItem>[] = [
-    { key: "title", label: "Title", type: "text", required: true },
-    { key: "description", label: "Description", type: "textarea" },
-    { key: "tag_ids", label: "Tags", type: "tags", tagScope: "video" },
+    { key: "title", label: t("field.title"), type: "text", required: true },
+    { key: "description", label: t("field.description"), type: "textarea" },
+    { key: "tag_ids", label: t("field.tags"), type: "tags", tagScope: "video" },
   ];
 
   const { run: handleInlineUpdate, loading: saving } = useAsyncAction(
@@ -112,11 +115,11 @@ export function VideosView({ refreshSignal }: { refreshSignal: number }) {
           tag_ids: values.tag_ids ?? [],
         }),
       });
-      toast.success("Video updated");
+      toast.success(t("toast.videoUpdated"));
       setEditingId(null);
       browserRef.current?.refresh();
     },
-    { errorToast: "Failed to update video" },
+    { errorToast: t("toast.videoUpdateFailed") },
   );
 
   return (
@@ -133,10 +136,13 @@ export function VideosView({ refreshSignal }: { refreshSignal: number }) {
             onChange={setTagFilter}
           />
         }
-        sortOptions={SORT_OPTIONS}
+        sortOptions={SORT_OPTIONS.map((o) => ({
+          value: o.value,
+          label: ta(`list.sort.${o.key}`),
+        }))}
         defaultSort="-created_at"
         emptyIcon={Video}
-        emptyMessage="No videos yet. Upload one to get started."
+        emptyMessage={t("emptyVideos")}
         getItemId={(v) => v.id}
         onDelete={async (selection) => {
           await batchedAsync(
@@ -147,16 +153,16 @@ export function VideosView({ refreshSignal }: { refreshSignal: number }) {
                 }),
             ),
           );
-          toast.success("Videos deleted");
+          toast.success(t("toast.videosDeleted"));
           browserRef.current?.refresh();
         }}
         listColumns={[
-          { label: "Title", key: "title" },
-          { label: "Duration", key: "duration" },
-          { label: "Size", key: "size" },
-          { label: "Date", key: "date" },
-          { label: "Video", key: "video" },
-          { label: "Actions", key: "actions" },
+          { label: t("col.title"), key: "title" },
+          { label: t("col.duration"), key: "duration" },
+          { label: t("col.size"), key: "size" },
+          { label: t("col.date"), key: "date" },
+          { label: t("col.video"), key: "video" },
+          { label: t("col.actions"), key: "actions" },
         ]}
         renderGalleryItem={(video) => (
           <div className="group overflow-hidden rounded-xl border bg-card shadow-sm hover:shadow-md transition-all">
@@ -166,7 +172,7 @@ export function VideosView({ refreshSignal }: { refreshSignal: number }) {
                 onClick={() =>
                   setPreviewItem({
                     id: video.id,
-                    title: video.title || "Untitled Video",
+                    title: video.title || t("untitledVideo"),
                     type: "video",
                     url: video.video_signed_url!,
                     s3_key: video.s3_key,
@@ -216,10 +222,10 @@ export function VideosView({ refreshSignal }: { refreshSignal: number }) {
                           navigator.clipboard.writeText(
                             video.video_signed_url!,
                           );
-                          toast.success("CDN Video URL copied!");
+                          toast.success(t("toast.cdnVideoCopied"));
                         }}
                         className="p-1 hover:text-foreground rounded"
-                        title="Copy CDN Link"
+                        title={t("tip.copyCdnLink")}
                       >
                         <Copy className="h-3.5 w-3.5" />
                       </button>
@@ -228,10 +234,10 @@ export function VideosView({ refreshSignal }: { refreshSignal: number }) {
                         onClick={() => {
                           const embed = `<video src="${video.video_signed_url}" controls class="rounded-lg w-full max-w-2xl"></video>`;
                           navigator.clipboard.writeText(embed);
-                          toast.success("HTML Video Embed code copied!");
+                          toast.success(t("toast.videoEmbedCopied"));
                         }}
                         className="p-1 hover:text-foreground rounded"
-                        title="Copy Video Embed"
+                        title={t("tip.copyVideoEmbed")}
                       >
                         <Code className="h-3.5 w-3.5" />
                       </button>
@@ -240,7 +246,7 @@ export function VideosView({ refreshSignal }: { refreshSignal: number }) {
                   <NavLink
                     href={`/admin/reels?video=${video.id}`}
                     className="p-1 hover:text-foreground rounded"
-                    title="Make reels"
+                    title={t("tip.makeReels")}
                   >
                     <Clapperboard className="h-3.5 w-3.5" />
                   </NavLink>
@@ -248,7 +254,7 @@ export function VideosView({ refreshSignal }: { refreshSignal: number }) {
                     type="button"
                     onClick={() => setEditingId(video.id)}
                     className="p-1 hover:text-foreground rounded"
-                    title="Edit Details"
+                    title={t("tip.editDetails")}
                   >
                     <Pencil className="h-3.5 w-3.5" />
                   </button>
@@ -284,7 +290,7 @@ export function VideosView({ refreshSignal }: { refreshSignal: number }) {
             <TableCell>{formatDate(video.created_at, locale)}</TableCell>
             <TableCell>
               <Badge variant={video.video_signed_url ? "success" : "secondary"}>
-                {video.video_signed_url ? "Uploaded" : "No video"}
+                {video.video_signed_url ? t("uploaded") : t("noVideo")}
               </Badge>
             </TableCell>
             <TableCell>
@@ -297,9 +303,9 @@ export function VideosView({ refreshSignal }: { refreshSignal: number }) {
                       className="h-8 w-8 p-0"
                       onClick={() => {
                         navigator.clipboard.writeText(video.video_signed_url!);
-                        toast.success("CDN Video URL copied!");
+                        toast.success(t("toast.cdnVideoCopied"));
                       }}
-                      title="Copy CDN Link"
+                      title={t("tip.copyCdnLink")}
                     >
                       <Copy className="h-3.5 w-3.5 text-muted-foreground" />
                     </Button>
@@ -310,9 +316,9 @@ export function VideosView({ refreshSignal }: { refreshSignal: number }) {
                       onClick={() => {
                         const embed = `<video src="${video.video_signed_url}" controls class="rounded-lg w-full max-w-2xl"></video>`;
                         navigator.clipboard.writeText(embed);
-                        toast.success("HTML Video Embed code copied!");
+                        toast.success(t("toast.videoEmbedCopied"));
                       }}
-                      title="Copy Video Embed"
+                      title={t("tip.copyVideoEmbed")}
                     >
                       <Code className="h-3.5 w-3.5 text-muted-foreground" />
                     </Button>
@@ -323,7 +329,7 @@ export function VideosView({ refreshSignal }: { refreshSignal: number }) {
                   size="sm"
                   variant="ghost"
                   className="h-8 w-8 p-0"
-                  title="Make reels"
+                  title={t("tip.makeReels")}
                 >
                   <NavLink href={`/admin/reels?video=${video.id}`}>
                     <Clapperboard className="h-3.5 w-3.5 text-muted-foreground" />
@@ -384,10 +390,10 @@ function VideoDeleteButton({
       await clientFetch(`/api/v1/courses/videos/${video.id}/`, {
         method: "DELETE",
       });
-      toast.success("Video deleted");
+      toast.success(t("toast.videoDeleted"));
       onDeleted();
     },
-    { errorToast: "Failed to delete video" },
+    { errorToast: t("toast.videoDeleteFailed") },
   );
 
   return (

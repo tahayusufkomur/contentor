@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { clientFetch } from "@/lib/api-client";
 import { Plus, Trash2 } from "lucide-react";
@@ -21,6 +22,7 @@ interface FilterPickerProps {
  *  filter (scoped to this element type), add options to it, select which apply
  *  to this entity, and delete a filter — all without leaving the form. */
 export function FilterPicker({ value, onChange, scope }: FilterPickerProps) {
+  const t = useTranslations("admin");
   const [groups, setGroups] = useState<FilterGroup[]>([]);
   const [addingGroup, setAddingGroup] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
@@ -106,7 +108,7 @@ export function FilterPicker({ value, onChange, scope }: FilterPickerProps) {
                 }}
                 className="flex items-center gap-1 text-xs transition-colors hover:text-foreground"
               >
-                <Plus className="h-3 w-3" /> Option
+                <Plus className="h-3 w-3" /> {t("filterPicker.option")}
               </button>
               <DeleteFilterGroupButton
                 group={g}
@@ -118,7 +120,7 @@ export function FilterPicker({ value, onChange, scope }: FilterPickerProps) {
           <div className="flex flex-wrap gap-1.5">
             {g.options.length === 0 && (
               <span className="text-xs text-muted-foreground">
-                No options yet — add one.
+                {t("filterPicker.noOptions")}
               </span>
             )}
             {g.options.map((o) => {
@@ -145,7 +147,7 @@ export function FilterPicker({ value, onChange, scope }: FilterPickerProps) {
               <Input
                 value={newOptionName}
                 onChange={(e) => setNewOptionName(e.target.value)}
-                placeholder={`New ${g.name} option`}
+                placeholder={t("filterPicker.newOption", { name: g.name })}
                 className="h-8 text-sm"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
@@ -161,7 +163,7 @@ export function FilterPicker({ value, onChange, scope }: FilterPickerProps) {
                 className="inline-flex shrink-0 items-center gap-1 rounded-md border px-2.5 text-xs font-medium transition-colors hover:border-primary hover:bg-primary/5 disabled:opacity-50"
               >
                 {creatingOption && <Spinner size="sm" />}
-                Add
+                {t("filterPicker.add")}
               </button>
             </div>
           )}
@@ -173,7 +175,7 @@ export function FilterPicker({ value, onChange, scope }: FilterPickerProps) {
           <Input
             value={newGroupName}
             onChange={(e) => setNewGroupName(e.target.value)}
-            placeholder="New filter name (e.g. Level)"
+            placeholder={t("filterPicker.newFilterName")}
             className="h-8 text-sm"
             autoFocus
             onKeyDown={(e) => {
@@ -194,7 +196,7 @@ export function FilterPicker({ value, onChange, scope }: FilterPickerProps) {
             className="inline-flex shrink-0 items-center gap-1 rounded-md border px-2.5 text-xs font-medium transition-colors hover:border-primary hover:bg-primary/5 disabled:opacity-50"
           >
             {creatingGroup && <Spinner size="sm" />}
-            Add
+            {t("filterPicker.add")}
           </button>
         </div>
       ) : (
@@ -203,7 +205,7 @@ export function FilterPicker({ value, onChange, scope }: FilterPickerProps) {
           onClick={() => setAddingGroup(true)}
           className="flex items-center gap-1.5 rounded-md border border-dashed px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
         >
-          <Plus className="h-3.5 w-3.5" /> New filter
+          <Plus className="h-3.5 w-3.5" /> {t("filterPicker.newFilter")}
         </button>
       )}
     </div>
@@ -221,6 +223,7 @@ function DeleteFilterGroupButton({
   scope: "course" | "event";
   onDeleted: (group: FilterGroup) => void;
 }) {
+  const t = useTranslations("admin");
   const { run: handleDelete, loading } = useAsyncAction(
     async () => {
       await clientFetch(`/api/v1/filters/groups/${group.id}/`, {
@@ -228,7 +231,7 @@ function DeleteFilterGroupButton({
       });
       onDeleted(group);
     },
-    { errorToast: "Failed to delete filter" },
+    { errorToast: t("filterPicker.deleteFailed") },
   );
 
   return (
@@ -237,14 +240,19 @@ function DeleteFilterGroupButton({
       onClick={() => {
         if (
           window.confirm(
-            `Delete the "${group.name}" filter and all its options? It will be removed from every ${scope}.`,
+            t(
+              scope === "course"
+                ? "filterPicker.confirmDeleteCourse"
+                : "filterPicker.confirmDeleteEvent",
+              { name: group.name },
+            ),
           )
         ) {
           void handleDelete();
         }
       }}
       disabled={loading}
-      aria-label={`Delete ${group.name} filter`}
+      aria-label={t("filterPicker.deleteAria", { name: group.name })}
       className="rounded p-0.5 transition-colors hover:text-destructive disabled:opacity-50"
     >
       {loading ? <Spinner size="sm" /> : <Trash2 className="h-3.5 w-3.5" />}

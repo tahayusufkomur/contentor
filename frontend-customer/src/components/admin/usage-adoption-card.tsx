@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { Globe, Smartphone } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageState } from "@/components/ui/page-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { clientFetch } from "@/lib/api-client";
+import { formatDay } from "@/lib/access/ways";
 
 interface DailyPoint {
   day: string;
@@ -22,6 +24,8 @@ interface UsageSummary {
 }
 
 export function UsageAdoptionCard() {
+  const t = useTranslations("admin.usage");
+  const locale = useLocale();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<UsageSummary | null>(null);
   const [error, setError] = useState<unknown>(null);
@@ -79,15 +83,13 @@ export function UsageAdoptionCard() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              App adoption (30 days)
+              {t("title")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
               <p className="text-2xl font-bold">{data.installed_students}</p>
-              <p className="text-xs text-muted-foreground">
-                students installed the app
-              </p>
+              <p className="text-xs text-muted-foreground">{t("installed")}</p>
             </div>
 
             {/* PWA vs Web split */}
@@ -100,10 +102,11 @@ export function UsageAdoptionCard() {
               </div>
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span className="inline-flex items-center gap-1">
-                  <Smartphone className="h-3 w-3" /> PWA {data.pwa_pct}%
+                  <Smartphone className="h-3 w-3" />{" "}
+                  {t("pwaShare", { pct: data.pwa_pct })}
                 </span>
                 <span className="inline-flex items-center gap-1">
-                  <Globe className="h-3 w-3" /> Web {webPct}%
+                  <Globe className="h-3 w-3" /> {t("webShare", { pct: webPct })}
                 </span>
               </div>
             </div>
@@ -118,7 +121,11 @@ export function UsageAdoptionCard() {
                       key={d.day}
                       className="flex flex-1 flex-col-reverse rounded-sm bg-muted-foreground/20"
                       style={{ height: `${(dayTotal / maxDay) * 100}%` }}
-                      title={`${d.day}: ${d.pwa} PWA / ${d.browser} Web`}
+                      title={t("dayTitle", {
+                        day: formatDay(d.day, locale),
+                        pwa: d.pwa,
+                        web: d.browser,
+                      })}
                     >
                       <div
                         className="bg-primary"
@@ -133,9 +140,7 @@ export function UsageAdoptionCard() {
                 })}
               </div>
             ) : (
-              <p className="text-xs text-muted-foreground">
-                No app activity yet.
-              </p>
+              <p className="text-xs text-muted-foreground">{t("none")}</p>
             )}
           </CardContent>
         </Card>

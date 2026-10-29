@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { blockerMeta, PUBLISH_BLOCKER_META } from "../publish-blockers";
+import { createTranslator } from "next-intl";
+import admin from "../../../messages/en/admin.json";
+import { blockerMeta, PUBLISH_BLOCKER_HREF } from "../publish-blockers";
+
+const t = createTranslator({
+  locale: "en",
+  messages: { admin },
+  namespace: "admin",
+});
 
 describe("publish blockers", () => {
   it("labels every key the backend can return", () => {
@@ -11,24 +19,31 @@ describe("publish blockers", () => {
       "first_blog_post",
       "payouts",
     ]) {
-      expect(PUBLISH_BLOCKER_META[key]?.label).toBeTruthy();
+      expect(
+        PUBLISH_BLOCKER_HREF[key as keyof typeof PUBLISH_BLOCKER_HREF],
+      ).toBeTruthy();
+      expect(blockerMeta(key, {}, t).label).toBeTruthy();
     }
   });
 
   it("sends a free-plan coach to upgrade instead of to payouts", () => {
-    const meta = blockerMeta("payouts", { onFreePlan: true });
+    const meta = blockerMeta("payouts", { onFreePlan: true }, t);
     expect(meta.href).toBe("/admin/billing");
     expect(meta.label).toMatch(/needs a plan/);
-    expect(blockerMeta("payouts").href).toBe("/admin/payouts");
+    expect(blockerMeta("payouts", {}, t).href).toBe("/admin/payouts");
   });
 
   it("tells a trial coach that selling waits for the plan, not an upgrade", () => {
-    const meta = blockerMeta("payouts", { onFreePlan: true, trialing: true });
+    const meta = blockerMeta(
+      "payouts",
+      { onFreePlan: true, trialing: true },
+      t,
+    );
     expect(meta.href).toBe("/admin/billing");
     expect(meta.label).toMatch(/plan to start/);
   });
 
   it("never hides an unknown blocker", () => {
-    expect(blockerMeta("some_new_rule").label).toBe("some new rule");
+    expect(blockerMeta("some_new_rule", {}, t).label).toBe("some new rule");
   });
 });

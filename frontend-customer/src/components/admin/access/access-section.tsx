@@ -21,29 +21,32 @@ import {
   parsePrice,
   problems,
   type AccessPayload,
+  type WaysT,
   type Window,
   type Ways,
 } from "@/lib/access/ways";
-import { currencySymbol } from "@/lib/format";
+import { currencySymbol, formatMoney } from "@/lib/format";
 import { KIND_ROUTES } from "@/lib/focus/kinds";
 import { cn } from "@/lib/utils";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 const NEW_PLAN_HREF = "/admin/store/plans/new";
 
 const hasWindow = (w: Window | null) => !!w && Object.keys(w).length > 0;
 
-/** "49", "19.50": the amount with no ".00". */
-const amount = (price: string) => Number(price).toFixed(2).replace(/\.00$/, "");
-
 function planPrice(
   p: AccessPayload["plans"][number],
   currency: string,
   locale: string,
+  t: WaysT,
 ) {
   const m = p.billing_interval_months;
-  const every = m === 1 ? "month" : m === 12 ? "year" : `${m} months`;
-  return `${currencySymbol(currency, locale)}${amount(p.price)}/${every}`;
+  const amount = formatMoney(p.price, currency, locale);
+  return m === 1
+    ? t("access.planPerMonth", { amount })
+    : m === 12
+      ? t("access.planPerYear", { amount })
+      : t("access.planPerMonths", { amount, count: m });
 }
 
 /** One way: its tick box, title, a right-hand control, and its body. */
@@ -137,11 +140,12 @@ export function AccessSection({
   onProblems?: (problems: Problems) => void;
   quietZeroPrice?: boolean;
 }) {
+  const t = useTranslations("studio");
   if (!payload || !value) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Access</CardTitle>
+          <CardTitle className="text-base">{t("access.title")}</CardTitle>
         </CardHeader>
         <CardContent>
           <SkeletonForm fields={3} />
@@ -168,6 +172,7 @@ function Loaded({
   quietZeroPrice?: boolean;
 }) {
   const locale = useLocale();
+  const t = useTranslations("studio");
   // The In subscriptions box can be ticked before any plan is: a draft.
   const [plansDraft, setPlansDraft] = useState(false);
   const [refused, setRefused] = useState(false);
@@ -199,7 +204,7 @@ function Loaded({
   const plansTicked = plans.length > 0 || plansDraft;
   const count = (free ? 1 : 0) + (buy ? 1 : 0) + (plansTicked ? 1 : 0);
   const covering = !!free && !hasWindow(free.window) && !onlyFree;
-  const found = problems(ways, payload.allowed, plansTicked);
+  const found = problems(ways, payload.allowed, plansTicked, t);
   const buyError = found.find(
     (p) =>
       p.way === "buy" &&
@@ -213,7 +218,8 @@ function Loaded({
   const windowBad = (key: string) => (b: boolean) =>
     setBadWindows((prev) => (!!prev[key] === b ? prev : { ...prev, [key]: b }));
   const planName = (id: number) =>
-    payload.plans.find((p) => p.id === id)?.name ?? "this subscription";
+    payload.plans.find((p) => p.id === id)?.name ??
+    t("access.thisSubscription");
   const reportable: Problems = [
     ...found,
     ...Object.entries(badWindows)
@@ -222,9 +228,12 @@ function Loaded({
         const plan = key.startsWith("plan:") ? Number(key.slice(5)) : null;
         return {
           way: plan !== null ? "plans" : (key as "buy" | "free"),
-          text: `Check the days or dates for ${
-            plan !== null ? planName(plan) : key === "buy" ? "buyers" : "Free"
-          }.`,
+          text:
+            plan !== null
+              ? t("access.checkDatesPlan", { name: planName(plan) })
+              : key === "buy"
+                ? t("access.checkDatesBuyers")
+                : t("access.checkDatesFree"),
         };
       }),
   ];
@@ -314,11 +323,9 @@ function Loaded({
     // Focus mode's "Add a time limit" brings this into view.
     <Card data-access-section>
       <CardHeader className="pb-1">
-        <CardTitle className="text-base">Access</CardTitle>
+        <CardTitle className="text-base">{t("access.title")}</CardTitle>
         <CardDescription>
-          {onlyFree
-            ? "Zoom sessions are free to join"
-            : "How students get this. Tick every way in."}
+          {onlyFree ? t("access.subOnlyFree") : t("access.subtitle")}
         </CardDescription>
       </CardHeader>
       <CardContent className="p-0 pt-3">
@@ -327,8 +334,7 @@ function Loaded({
             role="alert"
             className="mx-5 mb-2 rounded-lg bg-muted px-3 py-2 text-xs"
           >
-            Keep at least one way ticked. A draft is hidden from students
-            anyway, so you never need to untick them all.
+            {t("access.keepOne")}
           </div>
         )}
         {allError && (
@@ -340,8 +346,8 @@ function Loaded({
         {has("buy") && (
           <Way
             id={`access-${kind}-buy`}
-            title="Sell it once"
-            sub="Anyone can buy it for a one-time price."
+            title={t("access.buyTitle")}
+            sub={t("access.buySub")}
             checked={!!buy}
             fixed={onlyBuy}
             onCheckedChange={toggleBuy}
@@ -353,7 +359,7 @@ function Loaded({
                     htmlFor={`access-${kind}-price`}
                     className="text-xs text-muted-foreground"
                   >
-                    Price
+                    {t("access.price")}
                   </Label>
                   <span className="text-sm text-muted-foreground">
                     {symbol}
@@ -377,11 +383,11 @@ function Loaded({
                 {buyError && <Err>{buyError.text}</Err>}
                 <WindowEditor
                   mode="buy"
-                  label="Buyers keep it"
+                  label={t("access.buyersKeep")}
                   value={buy.window}
                   onChange={(window) => change({ buy: { ...buy, window } })}
                   onInvalid={windowBad("buy")}
-                  note="A purchase keeps these terms. Changing them later only affects new buyers."
+                  note={t("access.buyNote")}
                 />
               </>
             )}
@@ -391,8 +397,8 @@ function Loaded({
         {has("plans") && (
           <Way
             id={`access-${kind}-plans`}
-            title="In subscriptions"
-            sub="Members of the subscriptions you tick get it as part of what they pay."
+            title={t("access.plansTitle")}
+            sub={t("access.plansSub")}
             checked={plansTicked}
             disabled={!canEditPlans}
             onCheckedChange={togglePlans}
@@ -402,8 +408,7 @@ function Loaded({
               <>
                 {!canEditPlans && (
                   <div className="mb-2 rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
-                    Only the site owner changes which subscriptions include
-                    this.
+                    {t("access.ownerOnly")}
                   </div>
                 )}
                 {payload.plans.map((plan) => {
@@ -428,11 +433,11 @@ function Loaded({
                             {plan.name}
                           </Label>
                           <span className="text-xs text-muted-foreground">
-                            · {planPrice(plan, currency, locale)}
+                            · {planPrice(plan, currency, locale, t)}
                           </span>
                           {!plan.is_active && (
                             <Badge variant="outline" className="text-[11px]">
-                              Off sale
+                              {t("access.offSale")}
                             </Badge>
                           )}
                         </div>
@@ -441,15 +446,17 @@ function Loaded({
                             {canEditPlans ? (
                               <WindowEditor
                                 mode="plan"
-                                label="Members get it"
+                                label={t("access.membersGet")}
                                 value={link.window}
                                 onChange={(w) => setPlanWindow(plan.id, w)}
                                 onInvalid={windowBad(`plan:${plan.id}`)}
-                                note={`This applies to current ${plan.name} members too, including those who already have it.`}
+                                note={t("access.planNote", {
+                                  name: plan.name,
+                                })}
                               />
                             ) : (
                               <span className="text-xs text-muted-foreground">
-                                {linkPill(link.window, locale)}
+                                {linkPill(link.window, locale, t)}
                               </span>
                             )}
                           </div>
@@ -464,7 +471,7 @@ function Loaded({
                       href={newPlanHref}
                       className="text-xs underline underline-offset-2"
                     >
-                      + New subscription
+                      {t("access.newPlan")}
                     </NavLink>
                   </div>
                 )}
@@ -477,8 +484,8 @@ function Loaded({
         {has("free") && (
           <Way
             id={`access-${kind}-free`}
-            title="Free"
-            sub="Anyone signed in to the site can open it."
+            title={t("access.freeTitle")}
+            sub={t("access.freeSub")}
             checked={!!free}
             fixed={onlyFree}
             onCheckedChange={toggleFree}
@@ -487,25 +494,25 @@ function Loaded({
               <>
                 <WindowEditor
                   mode="free"
-                  label="When"
+                  label={t("access.when")}
                   value={free.window}
                   onChange={(window) => change({ free: { window } })}
                   onInvalid={windowBad("free")}
                 />
                 <div className="mt-2.5 text-xs text-muted-foreground">
-                  {covering && (buy || plansTicked) ? (
-                    <>
-                      <b className="font-medium text-foreground">
-                        Free for everyone covers every student,
-                      </b>{" "}
-                      so the ways above do nothing while this is on. Their
-                      settings are kept for when you untick Free.
-                    </>
-                  ) : !covering && (buy || plansTicked) ? (
-                    "While the free window is open anyone can start it. Outside it, the ways above apply."
-                  ) : !covering ? (
-                    "Outside the free window nobody can open it, since nothing else is ticked."
-                  ) : null}
+                  {covering && (buy || plansTicked)
+                    ? t.rich("access.freeCovers", {
+                        b: (chunks) => (
+                          <b className="font-medium text-foreground">
+                            {chunks}
+                          </b>
+                        ),
+                      })
+                    : !covering && (buy || plansTicked)
+                      ? t("access.freeWindowOpen")
+                      : !covering
+                        ? t("access.freeOutside")
+                        : null}
                 </div>
               </>
             )}
@@ -514,31 +521,31 @@ function Loaded({
 
         {payload.bundles.length > 0 && (
           <div className="border-t px-5 py-3 text-sm text-muted-foreground">
-            Also in a bundle:{" "}
-            {payload.bundles.map((b, i) => (
-              <span key={b.id}>
-                {i > 0 && ", "}
-                <NavLink
-                  href={`/admin/store/bundles/${b.id}`}
-                  className="text-foreground underline underline-offset-2"
-                >
-                  {b.name} · {symbol}
-                  {amount(b.price)}
-                </NavLink>
-              </span>
-            ))}
-            . Bundles have their own page.
+            {t.rich("access.inBundle", {
+              list: () =>
+                payload.bundles.map((b, i) => (
+                  <span key={b.id}>
+                    {i > 0 && ", "}
+                    <NavLink
+                      href={`/admin/store/bundles/${b.id}`}
+                      className="text-foreground underline underline-offset-2"
+                    >
+                      {b.name} · {formatMoney(b.price, currency, locale)}
+                    </NavLink>
+                  </span>
+                )),
+            })}
           </div>
         )}
 
         <div className="mx-5 flex items-baseline gap-2.5 border-t pb-4 pt-3">
           <span className="whitespace-nowrap text-[11px] font-semibold uppercase tracking-wider text-primary">
-            In short
+            {t("access.inShort")}
           </span>
           <span className="text-sm">
             {count > 0
-              ? describe(shown, payload.plans, currency, locale)
-              : "Nothing ticked yet."}
+              ? describe(shown, payload.plans, currency, locale, t)
+              : t("access.nothingTicked")}
           </span>
         </div>
       </CardContent>

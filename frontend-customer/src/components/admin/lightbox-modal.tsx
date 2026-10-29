@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { formatFileSize, formatDate, formatDuration } from "@/lib/format";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 export interface MediaItemPayload {
   id: number | string;
@@ -36,6 +36,7 @@ interface LightboxModalProps {
 
 export function LightboxModal({ item, onClose }: LightboxModalProps) {
   const locale = useLocale();
+  const t = useTranslations("admin.media.lightboxModal");
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [copiedEmbed, setCopiedEmbed] = useState(false);
 
@@ -50,14 +51,14 @@ export function LightboxModal({ item, onClose }: LightboxModalProps) {
   const copyUrl = () => {
     navigator.clipboard.writeText(cdnUrl);
     setCopiedUrl(true);
-    toast.success("CDN URL copied to clipboard!");
+    toast.success(t("urlCopied"));
     setTimeout(() => setCopiedUrl(false), 2000);
   };
 
   const copyEmbed = () => {
     navigator.clipboard.writeText(embedCode);
     setCopiedEmbed(true);
-    toast.success("HTML embed code copied to clipboard!");
+    toast.success(t("embedCopied"));
     setTimeout(() => setCopiedEmbed(false), 2000);
   };
 
@@ -105,7 +106,7 @@ export function LightboxModal({ item, onClose }: LightboxModalProps) {
                 variant="outline"
                 className="uppercase font-mono text-[10px] mb-2"
               >
-                {item.type}
+                {t(`types.${item.type}`)}
               </Badge>
               <h3 className="text-lg font-bold leading-tight break-words">
                 {item.title}
@@ -117,21 +118,31 @@ export function LightboxModal({ item, onClose }: LightboxModalProps) {
               {item.file_size !== undefined && (
                 <div className="flex items-center gap-2">
                   <HardDrive className="h-3.5 w-3.5" />
-                  <span>Size: {formatFileSize(item.file_size)}</span>
+                  <span>
+                    {t("size", { size: formatFileSize(item.file_size) })}
+                  </span>
                 </div>
               )}
 
               {item.duration_seconds !== undefined && (
                 <div className="flex items-center gap-2">
                   <FileText className="h-3.5 w-3.5" />
-                  <span>Duration: {formatDuration(item.duration_seconds)}</span>
+                  <span>
+                    {t("duration", {
+                      time: formatDuration(item.duration_seconds),
+                    })}
+                  </span>
                 </div>
               )}
 
               {item.created_at && (
                 <div className="flex items-center gap-2">
                   <Calendar className="h-3.5 w-3.5" />
-                  <span>Uploaded: {formatDate(item.created_at, locale)}</span>
+                  <span>
+                    {t("uploaded", {
+                      date: formatDate(item.created_at, locale),
+                    })}
+                  </span>
                 </div>
               )}
             </div>
@@ -146,7 +157,7 @@ export function LightboxModal({ item, onClose }: LightboxModalProps) {
               >
                 <span className="flex items-center gap-1.5">
                   <ExternalLink className="h-3.5 w-3.5 text-primary" />
-                  Copy CDN Link
+                  {t("copyLink")}
                 </span>
                 {copiedUrl ? (
                   <Check className="h-3.5 w-3.5 text-emerald-600" />
@@ -163,7 +174,7 @@ export function LightboxModal({ item, onClose }: LightboxModalProps) {
               >
                 <span className="flex items-center gap-1.5">
                   <Code className="h-3.5 w-3.5 text-purple-600" />
-                  Copy HTML Embed Code
+                  {t("copyEmbed")}
                 </span>
                 {copiedEmbed ? (
                   <Check className="h-3.5 w-3.5 text-emerald-600" />
@@ -181,7 +192,7 @@ export function LightboxModal({ item, onClose }: LightboxModalProps) {
               className="w-full text-xs text-muted-foreground"
               onClick={onClose}
             >
-              Close Preview
+              {t("close")}
             </Button>
           </div>
         </div>

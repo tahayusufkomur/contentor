@@ -1,3 +1,4 @@
+import type { useTranslations } from "next-intl";
 import { formatDayMonth, formatMoney } from "@/lib/format";
 
 export type Window = {
@@ -47,10 +48,20 @@ export function spanParts(days: number): {
   return { unit: "day", count: days };
 }
 
-/** The creator's English span ("3 months"); students read `site.access.span*`. */
-export function spanText(days: number): string {
+/** The `studio` translator: these sentences live under `studio.access.*`. */
+export type WaysT = ReturnType<typeof useTranslations<"studio">>;
+
+const SPAN_KEY = {
+  year: "access.span.year",
+  month: "access.span.month",
+  week: "access.span.week",
+  day: "access.span.day",
+} as const;
+
+/** The span in the creator's language ("3 months"). */
+export function spanText(days: number, t: WaysT): string {
   const { unit, count } = spanParts(days);
-  return `${count} ${unit}${count === 1 ? "" : "s"}`;
+  return t(SPAN_KEY[unit], { count });
 }
 
 /** An ISO date as "26 Oct 2026" (day, month, year in every language). */
@@ -59,6 +70,8 @@ export function formatDay(iso: string, locale: string): string {
   return formatDayMonth(new Date(Date.UTC(y, m - 1, d)), locale, true, "UTC");
 }
 
+type Phrase = (span: string) => string;
+
 /**
  * The window as phrases; the templates take a span such as "1 month". A span to
  * the close counts from when they got in, so once an opening is set it reads
@@ -66,29 +79,30 @@ export function formatDay(iso: string, locale: string): string {
  */
 function clauses(
   w: Window | null,
-  opensAfter: (span: string) => string,
-  closesAfter: (span: string) => string,
-  closesUntil: (span: string) => string,
+  phrases: { opensAfter: Phrase; closesAfter: Phrase; closesUntil: Phrase },
   locale: string,
+  t: WaysT,
 ): string[] {
   const out: string[] = [];
   if (w?.opens_after_days !== undefined)
-    out.push(opensAfter(spanText(w.opens_after_days)));
-  if (w?.opens_on) out.push(`from ${formatDay(w.opens_on, locale)}`);
+    out.push(phrases.opensAfter(spanText(w.opens_after_days, t)));
+  if (w?.opens_on)
+    out.push(
+      t("access.describe.from", { date: formatDay(w.opens_on, locale) }),
+    );
   if (w?.closes_after_days !== undefined) {
     const opens = w.opens_after_days !== undefined || !!w.opens_on;
     out.push(
-      (opens ? closesUntil : closesAfter)(spanText(w.closes_after_days)),
+      (opens ? phrases.closesUntil : phrases.closesAfter)(
+        spanText(w.closes_after_days, t),
+      ),
     );
   }
-  if (w?.closes_on) out.push(`until ${formatDay(w.closes_on, locale)}`);
+  if (w?.closes_on)
+    out.push(
+      t("access.describe.until", { date: formatDay(w.closes_on, locale) }),
+    );
   return out;
-}
-
-function list(names: string[]): string {
-  return names.length === 1
-    ? names[0]
-    : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
 }
 
 /** The same sentence as the backend's `describe`. */
@@ -97,29 +111,42 @@ export function describe(
   plans: AccessPayload["plans"],
   currency: string,
   locale: string,
+  t: WaysT,
 ): string {
   const parts: string[] = [];
   if (ways.free) {
     const c = clauses(
       ways.free.window,
-      (s) => `after ${s} of joining`,
-      (s) => `for ${s} after joining`,
-      (s) => `until ${s} after joining`,
+      {
+        opensAfter: (span) => t("access.describe.freeOpensAfter", { span }),
+        closesAfter: (span) => t("access.describe.freeClosesAfter", { span }),
+        closesUntil: (span) => t("access.describe.freeClosesUntil", { span }),
+      },
       locale,
+      t,
     );
-    parts.push(c.length ? ["Free", ...c].join(" ") : "Free for everyone");
+    parts.push(
+      c.length
+        ? t("access.describe.free", { window: c.join(" ") })
+        : t("access.describe.freeAll"),
+    );
   }
   if (ways.buy) {
     const c = clauses(
       ways.buy.window,
-      (s) => `opening ${s} after purchase`,
-      (s) => `with ${s} of access`,
-      (s) => `until ${s} after purchase`,
+      {
+        opensAfter: (span) => t("access.describe.buyOpens", { span }),
+        closesAfter: (span) => t("access.describe.buyClosesAfter", { span }),
+        closesUntil: (span) => t("access.describe.buyClosesUntil", { span }),
+      },
       locale,
+      t,
     );
+    const price = formatMoney(ways.buy.price, currency, locale);
     parts.push(
-      `${formatMoney(ways.buy.price, currency, locale)} once` +
-        (c.length ? ` ${c.join(", ")}` : ", theirs to keep"),
+      c.length
+        ? t("access.describe.buy", { price, window: c.join(", ") })
+        : t("access.describe.buyKeep", { price }),
     );
   }
   if (ways.plans.length) {
@@ -130,19 +157,30 @@ export function describe(
       if (name === undefined) continue;
       const c = clauses(
         p.window,
-        (s) => `after ${s} of membership`,
-        (s) => `for ${s} of membership`,
-        (s) => `until ${s} into membership`,
+        {
+          opensAfter: (span) => t("access.describe.planOpens", { span }),
+          closesAfter: (span) => t("access.describe.planClosesAfter", { span }),
+          closesUntil: (span) => t("access.describe.planClosesUntil", { span }),
+        },
         locale,
+        t,
       );
       const key = JSON.stringify(c);
       const group = groups.get(key) ?? { c, names: [] };
       group.names.push(name);
       groups.set(key, group);
     }
+    const and = new Intl.ListFormat(locale, { type: "conjunction" });
     parts.push(
       [...groups.values()]
-        .map((g) => `in ${list(g.names)}${g.c.map((x) => ` ${x}`).join("")}`)
+        .map((g) =>
+          g.c.length
+            ? t("access.describe.inPlansWindow", {
+                plans: and.format(g.names),
+                window: g.c.join(" "),
+              })
+            : t("access.describe.inPlans", { plans: and.format(g.names) }),
+        )
         .join(", "),
     );
   }
@@ -150,53 +188,74 @@ export function describe(
   return `${text.charAt(0).toLocaleUpperCase(locale)}${text.slice(1)}.`;
 }
 
-export function buyPill(w: Window | null, locale: string): string {
+export function buyPill(w: Window | null, locale: string, t: WaysT): string {
   const opens = w?.opens_on
-    ? `Opens ${formatDay(w.opens_on, locale)} · `
+    ? `${t("access.pill.buy.opensOn", { date: formatDay(w.opens_on, locale) })} · `
     : w?.opens_after_days !== undefined
-      ? `Opens ${spanText(w.opens_after_days)} after purchase · `
+      ? `${t("access.pill.buy.opensAfter", { span: spanText(w.opens_after_days, t) })} · `
       : "";
   const closes =
     w?.closes_after_days !== undefined
-      ? `${spanText(w.closes_after_days)} from purchase`
+      ? t("access.pill.buy.closesAfter", {
+          span: spanText(w.closes_after_days, t),
+        })
       : w?.closes_on
-        ? `Until ${formatDay(w.closes_on, locale)}`
-        : "Forever";
+        ? t("access.pill.until", { date: formatDay(w.closes_on, locale) })
+        : t("access.pill.buy.forever");
   return opens + closes;
 }
 
-export function linkPill(w: Window | null, locale: string): string {
+export function linkPill(w: Window | null, locale: string, t: WaysT): string {
   const opens =
     w?.opens_after_days !== undefined
-      ? `After ${spanText(w.opens_after_days)} of membership`
+      ? t("access.pill.link.opensAfter", {
+          span: spanText(w.opens_after_days, t),
+        })
       : w?.opens_on
-        ? `From ${formatDay(w.opens_on, locale)}`
-        : "Right away";
+        ? t("access.pill.from", { date: formatDay(w.opens_on, locale) })
+        : t("access.pill.link.now");
   const closes =
     w?.closes_after_days !== undefined
-      ? `closes after ${spanText(w.closes_after_days)}`
+      ? t("access.pill.link.closesAfter", {
+          span: spanText(w.closes_after_days, t),
+        })
       : w?.closes_on
-        ? `closes ${formatDay(w.closes_on, locale)}`
-        : "never closes";
+        ? t("access.pill.link.closesOn", {
+            date: formatDay(w.closes_on, locale),
+          })
+        : t("access.pill.link.never");
   return `${opens} · ${closes}`;
 }
 
-export function freePill(w: Window | null, locale: string): string {
+export function freePill(w: Window | null, locale: string, t: WaysT): string {
+  const day = (iso: string) => formatDay(iso, locale);
   if (w?.closes_after_days !== undefined) {
     // With an opening, the close (counted from joining) is a point, not a length.
-    const until = `until ${spanText(w.closes_after_days)} after joining`;
+    const closes = spanText(w.closes_after_days, t);
     if (w.opens_after_days !== undefined)
-      return `After ${spanText(w.opens_after_days)} of joining · ${until}`;
-    if (w.opens_on) return `From ${formatDay(w.opens_on, locale)} · ${until}`;
-    return `First ${spanText(w.closes_after_days)} after joining`;
+      return t("access.pill.free.afterThenUntil", {
+        opens: spanText(w.opens_after_days, t),
+        closes,
+      });
+    if (w.opens_on)
+      return t("access.pill.free.fromThenUntil", {
+        opens: day(w.opens_on),
+        closes,
+      });
+    return t("access.pill.free.first", { closes });
   }
   if (w?.opens_on && w.closes_on)
-    return `${formatDay(w.opens_on, locale)} – ${formatDay(w.closes_on, locale)}`;
-  if (w?.closes_on) return `Until ${formatDay(w.closes_on, locale)}`;
-  if (w?.opens_on) return `From ${formatDay(w.opens_on, locale)}`;
+    return t("access.pill.free.between", {
+      opens: day(w.opens_on),
+      closes: day(w.closes_on),
+    });
+  if (w?.closes_on) return t("access.pill.until", { date: day(w.closes_on) });
+  if (w?.opens_on) return t("access.pill.from", { date: day(w.opens_on) });
   if (w?.opens_after_days !== undefined)
-    return `After ${spanText(w.opens_after_days)} of joining`;
-  return "Always";
+    return t("access.pill.free.after", {
+      opens: spanText(w.opens_after_days, t),
+    });
+  return t("access.pill.free.always");
 }
 
 /**
@@ -206,15 +265,16 @@ export function freePill(w: Window | null, locale: string): string {
 export function problems(
   ways: Ways,
   allowed: string[],
-  plansTicked = false,
+  plansTicked: boolean,
+  t: WaysT,
 ): { way: "buy" | "plans" | "all"; text: string }[] {
   const out: { way: "buy" | "plans" | "all"; text: string }[] = [];
   if (ways.buy && parsePrice(ways.buy.price) === null)
-    out.push({ way: "buy", text: "Add a price above 0." });
+    out.push({ way: "buy", text: t("access.problems.price") });
   if (allowed.includes("plans") && plansTicked && !ways.plans.length)
-    out.push({ way: "plans", text: "Tick at least one subscription." });
+    out.push({ way: "plans", text: t("access.problems.plans") });
   if (!ways.free && !ways.buy && !ways.plans.length && !plansTicked)
-    out.push({ way: "all", text: "Keep at least one way ticked." });
+    out.push({ way: "all", text: t("access.problems.none") });
   return out;
 }
 

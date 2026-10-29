@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Image as ImageIcon, X } from "lucide-react";
 import { ImageLibraryDialog } from "@/components/admin/blog/image-library-dialog";
 import { Button } from "@/components/ui/button";
@@ -20,8 +21,10 @@ export function PhotoPicker({
   previewUrl,
   onSelect,
   onClear,
-  label = "Choose photo",
+  label,
 }: PhotoPickerProps) {
+  const t = useTranslations("admin");
+  const buttonLabel = label ?? t("photoPicker.choose");
   const [open, setOpen] = useState(false);
 
   // A raw s3 key (e.g. "demo/photos/x.jpg") must never become an <img src> —
@@ -41,7 +44,7 @@ export function PhotoPicker({
           <div className="relative h-16 w-24 shrink-0 overflow-hidden rounded-md border bg-muted">
             <img
               src={displayUrl}
-              alt="Selected"
+              alt={t("photoPicker.selected")}
               className="h-full w-full object-cover"
             />
           </div>
@@ -57,7 +60,7 @@ export function PhotoPicker({
             size="sm"
             onClick={() => setOpen(true)}
           >
-            {label}
+            {buttonLabel}
           </Button>
           {displayUrl && onClear && (
             <Button type="button" variant="ghost" size="sm" onClick={onClear}>
@@ -72,7 +75,7 @@ export function PhotoPicker({
       <ImageLibraryDialog
         open={open}
         onOpenChange={setOpen}
-        title={label}
+        title={buttonLabel}
         onSelect={async (picked) =>
           onSelect(await clientFetch<Photo>(`/api/v1/photos/${picked.id}/`))
         }

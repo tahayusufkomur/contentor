@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -66,6 +67,8 @@ export function InlineEditPanel<T extends Record<string, any>>({
   onCancel,
   saving = false,
 }: InlineEditPanelProps<T>) {
+  const t = useTranslations("admin");
+  const tc = useTranslations("common");
   const [values, setValues] = useState<Record<string, unknown>>(() => {
     const init: Record<string, unknown> = {};
     for (const f of fields) {
@@ -263,16 +266,16 @@ export function InlineEditPanel<T extends Record<string, any>>({
 
       <div className="mt-4 flex justify-end gap-2">
         <Button variant="ghost" size="sm" onClick={onCancel} disabled={saving}>
-          Cancel
+          {tc("actions.cancel")}
         </Button>
         <Button
           size="sm"
           onClick={handleSubmit}
           disabled={hasEmptyRequired}
           loading={saving}
-          loadingText="Saving…"
+          loadingText={t("inlineEdit.saving")}
         >
-          Save
+          {tc("actions.save")}
         </Button>
       </div>
     </div>

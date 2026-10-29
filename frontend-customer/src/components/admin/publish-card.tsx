@@ -9,6 +9,7 @@ import {
   KeyRound,
   Rocket,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,18 +53,24 @@ function pickCurrentTenant(tenants: MeTenant[]): MeTenant | null {
 
 // The backend enforces the same publish gate; surface it if a button was
 // somehow triggered while requirements are unmet.
-function patchErrorToast(err: unknown) {
+function patchErrorToast(
+  err: unknown,
+  t: ReturnType<typeof useTranslations<"admin.publish">>,
+) {
   if (
     err instanceof ApiError &&
     err.data?.detail === "publish_requirements_unmet"
   ) {
-    toast.error("Finish the required setup steps before publishing.");
+    toast.error(t("requirementsUnmet"));
   } else {
-    toast.error("Something went wrong. Please try again.");
+    toast.error(t("wrong"));
   }
 }
 
 export function PublishCard() {
+  const t = useTranslations("admin.publish");
+  const ta = useTranslations("admin");
+  const tc = useTranslations("common");
   const [tenant, setTenant] = useState<MeTenant | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<unknown>(null);
@@ -111,21 +118,16 @@ export function PublishCard() {
       void refreshSetupStatus();
       setWentLive(true);
     },
-    { onError: patchErrorToast },
+    { onError: (err) => patchErrorToast(err, t) },
   );
 
   const { run: unpublish, loading: unpublishing } = useAsyncAction(
     async () => {
-      if (
-        !window.confirm(
-          "Your site will be hidden from students until you publish again.",
-        )
-      )
-        return;
+      if (!window.confirm(t("confirmUnpublish"))) return;
       await patchTenant({ is_published: false });
       void refreshSetupStatus();
     },
-    { onError: patchErrorToast },
+    { onError: (err) => patchErrorToast(err, t) },
   );
 
   const { run: savePassword, loading: savingPassword } = useAsyncAction(
@@ -134,29 +136,29 @@ export function PublishCard() {
       if (!value) return;
       await patchTenant({ preview_password: value });
       setPw("");
-      toast.success("Preview password saved");
+      toast.success(t("pwSaved"));
     },
-    { onError: patchErrorToast },
+    { onError: (err) => patchErrorToast(err, t) },
   );
 
   const { run: clearPassword, loading: clearingPassword } = useAsyncAction(
     async () => {
       await patchTenant({ preview_password: "" });
-      toast.success("Preview password cleared");
+      toast.success(t("pwCleared"));
     },
-    { onError: patchErrorToast },
+    { onError: (err) => patchErrorToast(err, t) },
   );
 
   function copyLink() {
     if (!tenant) return;
     void navigator.clipboard?.writeText(tenant.studio_url);
-    toast.success("Link copied");
+    toast.success(t("linkCopied"));
   }
 
   function copyInstallGuide() {
     if (!tenant) return;
     void navigator.clipboard?.writeText(`${tenant.studio_url}/install`);
-    toast.success("Install-guide link copied");
+    toast.success(t("installCopied"));
   }
 
   return (
@@ -181,7 +183,7 @@ export function PublishCard() {
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
             <button
               type="button"
-              aria-label="Close"
+              aria-label={t("close")}
               onClick={() => setWentLive(false)}
               className="absolute inset-0 bg-black/50"
             />
@@ -190,10 +192,8 @@ export function PublishCard() {
               aria-modal="true"
               className="relative w-full max-w-md space-y-4 rounded-xl border bg-background p-5 shadow-xl"
             >
-              <h3 className="text-lg font-semibold">You&apos;re live! 🎉</h3>
-              <p className="text-sm text-muted-foreground">
-                Your site is public. Share the link with your students:
-              </p>
+              <h3 className="text-lg font-semibold">{t("live")}</h3>
+              <p className="text-sm text-muted-foreground">{t("liveHint")}</p>
               <div className="flex items-center gap-2">
                 <code className="min-w-0 flex-1 truncate rounded bg-muted px-2 py-1.5 text-sm">
                   {tenant.studio_url}
@@ -204,7 +204,7 @@ export function PublishCard() {
                   className="gap-1"
                   onClick={copyLink}
                 >
-                  <Copy className="h-3.5 w-3.5" /> Copy
+                  <Copy className="h-3.5 w-3.5" /> {t("copy")}
                 </Button>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -214,14 +214,14 @@ export function PublishCard() {
                   className="gap-1"
                   onClick={copyInstallGuide}
                 >
-                  <Copy className="h-3.5 w-3.5" /> Share install guide
+                  <Copy className="h-3.5 w-3.5" /> {t("shareInstall")}
                 </Button>
                 <Button asChild size="sm">
                   <NavLink
                     href="/admin/students"
                     onClick={() => setWentLive(false)}
                   >
-                    Invite your first students
+                    {t("inviteStudents")}
                   </NavLink>
                 </Button>
               </div>
@@ -231,7 +231,7 @@ export function PublishCard() {
                   size="sm"
                   onClick={() => setWentLive(false)}
                 >
-                  Done
+                  {t("done")}
                 </Button>
               </div>
             </div>
@@ -247,12 +247,12 @@ export function PublishCard() {
             <CardTitle className="flex items-center gap-2 text-base">
               {tenant.is_published ? (
                 <>
-                  <Globe className="h-4 w-4 text-chart-2" /> Your site is live
+                  <Globe className="h-4 w-4 text-chart-2" /> {t("siteLive")}
                 </>
               ) : (
                 <>
-                  <Rocket className="h-4 w-4 text-marketing-accent" /> Publish
-                  your site
+                  <Rocket className="h-4 w-4 text-marketing-accent" />{" "}
+                  {t("publishSite")}
                 </>
               )}
             </CardTitle>
@@ -261,8 +261,11 @@ export function PublishCard() {
             {tenant.is_published ? (
               <>
                 <p className="text-sm text-muted-foreground">
-                  <span className="font-medium text-chart-2">● Live</span> —
-                  students can find and install your site.
+                  {t.rich("liveStatus", {
+                    live: (chunks) => (
+                      <span className="font-medium text-chart-2">{chunks}</span>
+                    ),
+                  })}
                 </p>
                 <div className="flex flex-wrap items-center gap-2">
                   <Button asChild variant="outline" size="sm" className="gap-1">
@@ -271,7 +274,7 @@ export function PublishCard() {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <ExternalLink className="h-3.5 w-3.5" /> View site
+                      <ExternalLink className="h-3.5 w-3.5" /> {ta("viewSite")}
                     </a>
                   </Button>
                   <Button
@@ -280,7 +283,7 @@ export function PublishCard() {
                     className="gap-1"
                     onClick={copyLink}
                   >
-                    <Copy className="h-3.5 w-3.5" /> Copy link
+                    <Copy className="h-3.5 w-3.5" /> {t("copyLink")}
                   </Button>
                   <Button
                     variant="ghost"
@@ -288,36 +291,37 @@ export function PublishCard() {
                     className="gap-1"
                     onClick={copyInstallGuide}
                   >
-                    <Copy className="h-3.5 w-3.5" /> Share install guide
+                    <Copy className="h-3.5 w-3.5" /> {t("shareInstall")}
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={unpublish}
                     loading={unpublishing}
-                    loadingText="Unpublishing…"
+                    loadingText={t("unpublishing")}
                   >
-                    Unpublish
+                    {t("unpublish")}
                   </Button>
                 </div>
               </>
             ) : (
               <>
-                <p className="text-sm text-muted-foreground">
-                  Your site is hidden behind a preview gate. Publish it to let
-                  students find and install it.
-                </p>
+                <p className="text-sm text-muted-foreground">{t("hidden")}</p>
                 {!canPublish && (
                   <div className="rounded-md border border-border bg-background p-3">
                     <p className="mb-2 text-sm font-medium text-foreground">
-                      Finish these first to publish:
+                      {t("finishFirst")}
                     </p>
                     <ul className="space-y-1.5">
                       {blockers.map((key) => {
-                        const meta = blockerMeta(key, {
-                          onFreePlan: freePlan,
-                          trialing,
-                        });
+                        const meta = blockerMeta(
+                          key,
+                          {
+                            onFreePlan: freePlan,
+                            trialing,
+                          },
+                          ta,
+                        );
                         return (
                           <li key={key}>
                             <NavLink
@@ -337,18 +341,14 @@ export function PublishCard() {
                   onClick={publish}
                   disabled={!canPublish}
                   loading={publishing}
-                  loadingText="Publishing…"
+                  loadingText={t("publishing")}
                   className="gap-2"
-                  title={
-                    canPublish
-                      ? undefined
-                      : "Finish the required setup steps to publish"
-                  }
+                  title={canPublish ? undefined : t("finishSteps")}
                 >
-                  <Rocket className="h-4 w-4" /> Publish site — go live
+                  <Rocket className="h-4 w-4" /> {t("publishGoLive")}
                 </Button>
                 <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                  <span>Preview link:</span>
+                  <span>{t("previewLink")}</span>
                   <code className="rounded bg-muted px-1.5 py-0.5">
                     {tenant.studio_url}
                   </code>
@@ -358,7 +358,7 @@ export function PublishCard() {
                     className="h-6 gap-1 px-2"
                     onClick={copyLink}
                   >
-                    <Copy className="h-3 w-3" /> Copy
+                    <Copy className="h-3 w-3" /> {t("copy")}
                   </Button>
                 </div>
               </>
@@ -368,8 +368,8 @@ export function PublishCard() {
             {!tenant.is_published && (
               <div className="space-y-2 border-t pt-3">
                 <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                  <KeyRound className="h-3.5 w-3.5" /> Preview password
-                  {tenant.has_preview_password ? " — set" : ""}
+                  <KeyRound className="h-3.5 w-3.5" />{" "}
+                  {tenant.has_preview_password ? t("pwIsSet") : t("pw")}
                 </p>
                 <div className="flex flex-wrap items-center gap-2">
                   <Input
@@ -377,9 +377,7 @@ export function PublishCard() {
                     value={pw}
                     onChange={(e) => setPw(e.target.value)}
                     placeholder={
-                      tenant.has_preview_password
-                        ? "Change password"
-                        : "Set a password"
+                      tenant.has_preview_password ? t("pwChange") : t("pwSet")
                     }
                     className="h-9 w-48"
                   />
@@ -389,9 +387,9 @@ export function PublishCard() {
                     onClick={savePassword}
                     disabled={!pw.trim()}
                     loading={savingPassword}
-                    loadingText="Saving…"
+                    loadingText={t("saving")}
                   >
-                    Save
+                    {tc("actions.save")}
                   </Button>
                   {tenant.has_preview_password && (
                     <Button
@@ -399,16 +397,13 @@ export function PublishCard() {
                       size="sm"
                       onClick={clearPassword}
                       loading={clearingPassword}
-                      loadingText="Clearing…"
+                      loadingText={t("clearing")}
                     >
-                      Clear
+                      {t("clear")}
                     </Button>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Share the preview link + password to let others see the site
-                  before you publish.
-                </p>
+                <p className="text-xs text-muted-foreground">{t("pwHint")}</p>
               </div>
             )}
           </CardContent>

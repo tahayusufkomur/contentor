@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { clientFetch } from "@/lib/api-client";
 import { Plus, X } from "lucide-react";
@@ -19,6 +20,7 @@ interface TagInputProps {
  *  the "Create …" row) makes a new one on the fly, selected tags show as
  *  removable pills. Admin-only — used to organise/filter content. */
 export function TagInput({ value, onChange, scope }: TagInputProps) {
+  const tr = useTranslations("admin");
   const [tags, setTags] = useState<Tag[]>([]);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -87,7 +89,7 @@ export function TagInput({ value, onChange, scope }: TagInputProps) {
               <button
                 type="button"
                 onClick={() => remove(t.id)}
-                aria-label={`Remove ${t.name} tag`}
+                aria-label={tr("tagInput.remove", { name: t.name })}
                 className="rounded-full transition-opacity hover:opacity-80"
               >
                 <X className="h-3 w-3" />
@@ -106,7 +108,7 @@ export function TagInput({ value, onChange, scope }: TagInputProps) {
           }}
           onFocus={() => setOpen(true)}
           onBlur={() => setTimeout(() => setOpen(false), 120)}
-          placeholder="Add a tag…"
+          placeholder={tr("tagInput.placeholder")}
           className="h-8 text-sm"
           onKeyDown={(e) => {
             if (e.key === "Enter") {
@@ -140,8 +142,8 @@ export function TagInput({ value, onChange, scope }: TagInputProps) {
                 disabled={busy}
                 className="flex w-full items-center gap-1.5 rounded-sm px-2 py-1.5 text-left text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
               >
-                <Plus className="h-3.5 w-3.5" /> Create &ldquo;{query.trim()}
-                &rdquo;
+                <Plus className="h-3.5 w-3.5" />{" "}
+                {tr("tagInput.create", { name: query.trim() })}
               </button>
             )}
           </div>

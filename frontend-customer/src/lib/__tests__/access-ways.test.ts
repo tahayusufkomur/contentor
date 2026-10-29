@@ -1,4 +1,6 @@
 import { describe as suite, expect, it } from "vitest";
+import { createTranslator } from "next-intl";
+import studio from "@shared/i18n/messages/en/studio.json";
 import {
   buyPill as buyPillIn,
   formatDay,
@@ -12,9 +14,14 @@ import {
 } from "@/lib/access/ways";
 
 type Win = Parameters<typeof buyPillIn>[0];
-const buyPill = (w: Win) => buyPillIn(w, "en");
-const linkPill = (w: Win) => linkPillIn(w, "en");
-const freePill = (w: Win) => freePillIn(w, "en");
+const t = createTranslator({
+  locale: "en",
+  messages: { studio },
+  namespace: "studio",
+});
+const buyPill = (w: Win) => buyPillIn(w, "en", t);
+const linkPill = (w: Win) => linkPillIn(w, "en", t);
+const freePill = (w: Win) => freePillIn(w, "en", t);
 
 const plans = [
   {
@@ -37,7 +44,7 @@ const none: Ways = { free: null, buy: null, plans: [] };
 suite("describe", () => {
   it("says it in plain words", () => {
     expect(
-      describe({ ...none, free: { window: null } }, plans, "EUR", "en"),
+      describe({ ...none, free: { window: null } }, plans, "EUR", "en", t),
     ).toBe("Free for everyone.");
     expect(
       describe(
@@ -45,6 +52,7 @@ suite("describe", () => {
         plans,
         "EUR",
         "en",
+        t,
       ),
     ).toBe("€29 once, theirs to keep.");
     expect(
@@ -60,6 +68,7 @@ suite("describe", () => {
         plans,
         "EUR",
         "en",
+        t,
       ),
     ).toBe(
       "€49 once with 1 year of access; in Gold and Silver after 1 month of membership.",
@@ -74,6 +83,7 @@ suite("describe", () => {
         plans,
         "EUR",
         "en",
+        t,
       ),
     ).toBe("Free until 26 Oct 2026; €29 once, theirs to keep.");
     expect(
@@ -82,6 +92,7 @@ suite("describe", () => {
         plans,
         "EUR",
         "en",
+        t,
       ),
     ).toBe("In Gold.");
   });
@@ -93,6 +104,7 @@ suite("describe", () => {
         plans,
         "EUR",
         "en",
+        t,
       ),
     ).toBe("€4.50 once, theirs to keep.");
     expect(
@@ -101,6 +113,7 @@ suite("describe", () => {
         plans,
         "EUR",
         "en",
+        t,
       ),
     ).toBe("Free for 1 week after joining.");
     expect(
@@ -109,6 +122,7 @@ suite("describe", () => {
         plans,
         "EUR",
         "en",
+        t,
       ),
     ).toBe("€9 once opening 2 weeks after purchase.");
     // The same sentence as the backend once both ends are spans.
@@ -119,6 +133,7 @@ suite("describe", () => {
         plans,
         "EUR",
         "en",
+        t,
       ),
     ).toBe(
       "€49 once opening 1 month after purchase, until 3 months after purchase.",
@@ -128,10 +143,10 @@ suite("describe", () => {
 
 suite("spanText", () => {
   it("uses the largest exact unit", () => {
-    expect(spanText(365)).toBe("1 year");
-    expect(spanText(30)).toBe("1 month");
-    expect(spanText(14)).toBe("2 weeks");
-    expect(spanText(10)).toBe("10 days");
+    expect(spanText(365, t)).toBe("1 year");
+    expect(spanText(30, t)).toBe("1 month");
+    expect(spanText(14, t)).toBe("2 weeks");
+    expect(spanText(10, t)).toBe("10 days");
   });
 });
 
@@ -145,18 +160,25 @@ suite("parsePrice", () => {
 
 suite("problems", () => {
   it("names what blocks a save", () => {
-    expect(problems(none, ["free", "buy", "plans"])).toContainEqual({
+    expect(problems(none, ["free", "buy", "plans"], false, t)).toContainEqual({
       way: "all",
       text: "Keep at least one way ticked.",
     });
     expect(
-      problems({ ...none, buy: { price: "0", window: null } }, ["buy"]),
+      problems(
+        { ...none, buy: { price: "0", window: null } },
+        ["buy"],
+        false,
+        t,
+      ),
     ).toContainEqual({ way: "buy", text: "Add a price above 0." });
-    expect(problems(none, ["plans"], true)).toContainEqual({
+    expect(problems(none, ["plans"], true, t)).toContainEqual({
       way: "plans",
       text: "Tick at least one subscription.",
     });
-    expect(problems({ ...none, free: { window: null } }, ["free"])).toEqual([]);
+    expect(
+      problems({ ...none, free: { window: null } }, ["free"], false, t),
+    ).toEqual([]);
   });
 });
 
@@ -195,7 +217,7 @@ suite("dates and prices follow the locale", () => {
   it("names the month in the locale and keeps day-month-year", () => {
     expect(formatDay("2026-10-26", "en")).toBe("26 Oct 2026");
     expect(formatDay("2026-11-05", "tr")).toBe("5 Kas 2026");
-    expect(buyPillIn({ closes_on: "2026-11-05" }, "tr")).toBe(
+    expect(buyPillIn({ closes_on: "2026-11-05" }, "tr", t)).toBe(
       "Until 5 Kas 2026",
     );
   });
@@ -207,6 +229,7 @@ suite("dates and prices follow the locale", () => {
         plans,
         "EUR",
         "de",
+        t,
       ).replace(/\s/g, " "),
     ).toBe("4,50 € once, theirs to keep.");
   });

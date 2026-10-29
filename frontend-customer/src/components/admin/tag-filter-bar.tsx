@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { clientFetch } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import { Tag as TagIcon } from "lucide-react";
@@ -16,6 +17,7 @@ interface TagFilterBarProps {
  *  (the consuming page sends the selected ids as ?tags=). Renders nothing
  *  until the scope has at least one tag. */
 export function TagFilterBar({ scope, value, onChange }: TagFilterBarProps) {
+  const t = useTranslations("admin");
   const [tags, setTags] = useState<Tag[]>([]);
 
   const fetchTags = useCallback(async () => {
@@ -41,7 +43,7 @@ export function TagFilterBar({ scope, value, onChange }: TagFilterBarProps) {
   return (
     <div className="flex flex-wrap items-center gap-1.5">
       <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
-        <TagIcon className="h-3.5 w-3.5" /> Tags:
+        <TagIcon className="h-3.5 w-3.5" /> {t("tagFilter.label")}
       </span>
       {tags.map((t) => {
         const active = value.includes(t.id);
@@ -67,7 +69,7 @@ export function TagFilterBar({ scope, value, onChange }: TagFilterBarProps) {
           onClick={() => onChange([])}
           className="text-xs text-muted-foreground underline-offset-2 transition-colors hover:text-foreground hover:underline"
         >
-          Clear
+          {t("tagFilter.clear")}
         </button>
       )}
     </div>

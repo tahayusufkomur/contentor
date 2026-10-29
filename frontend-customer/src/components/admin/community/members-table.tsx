@@ -31,19 +31,23 @@ import {
   unbanMember,
 } from "@/lib/community-admin";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
-function stateBadge(m: ModerationMember, locale: string) {
-  if (m.is_banned) return <Badge variant="destructive">Banned</Badge>;
+type MembersT = ReturnType<typeof useTranslations<"admin.community.members">>;
+
+function stateBadge(m: ModerationMember, locale: string, t: MembersT) {
+  if (m.is_banned) return <Badge variant="destructive">{t("banned")}</Badge>;
   if (m.muted_until && new Date(m.muted_until) > new Date())
     return (
       <Badge variant="outline">
-        Muted until {new Date(m.muted_until).toLocaleDateString(locale)}
+        {t("mutedUntil", {
+          date: new Date(m.muted_until).toLocaleDateString(locale),
+        })}
       </Badge>
     );
   if (m.requires_approval)
-    return <Badge variant="outline">Posts need approval</Badge>;
-  return <Badge variant="secondary">Active</Badge>;
+    return <Badge variant="outline">{t("needsApproval")}</Badge>;
+  return <Badge variant="secondary">{t("active")}</Badge>;
 }
 
 // Per-row: moderation actions need their own in-flight tracking, otherwise a
@@ -58,13 +62,14 @@ function MemberRow({
   onAction: () => void;
 }) {
   const locale = useLocale();
+  const t = useTranslations("admin.community.members");
   const { run: act, loading: busy } = useAsyncAction(
     async (action: () => Promise<void>, message: string) => {
       await action();
       toast.success(message);
       onAction();
     },
-    { errorToast: "Action failed." },
+    { errorToast: t("actionFailed") },
   );
 
   const isMuted =
@@ -77,14 +82,14 @@ function MemberRow({
         <div className="text-xs text-muted-foreground">{member.email}</div>
       </TableCell>
       <TableCell>{member.post_count}</TableCell>
-      <TableCell>{stateBadge(member, locale)}</TableCell>
+      <TableCell>{stateBadge(member, locale, t)}</TableCell>
       <TableCell>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
-              aria-label="Member actions"
+              aria-label={t("actions")}
               loading={busy}
               disabled={busy}
             >
@@ -97,11 +102,11 @@ function MemberRow({
                 onClick={() =>
                   void act(
                     () => unbanMember(member.id),
-                    `${member.display_name} can access the community again.`,
+                    t("unbanned", { name: member.display_name }),
                   )
                 }
               >
-                Unban
+                {t("unban")}
               </DropdownMenuItem>
             ) : (
               <DropdownMenuItem
@@ -109,36 +114,36 @@ function MemberRow({
                 onClick={() => {
                   if (
                     window.confirm(
-                      `Ban ${member.display_name}? They lose all access to the community.`,
+                      t("confirmBan", { name: member.display_name }),
                     )
                   )
                     void act(
                       () => banMember(member.id),
-                      `${member.display_name} is banned.`,
+                      t("bannedDone", { name: member.display_name }),
                     );
                 }}
               >
-                Ban
+                {t("ban")}
               </DropdownMenuItem>
             )}
             {isMuted ? (
               <DropdownMenuItem
                 onClick={() =>
-                  void act(() => muteMember(member.id, 0), "Mute lifted.")
+                  void act(() => muteMember(member.id, 0), t("muteLifted"))
                 }
               >
-                Unmute
+                {t("unmute")}
               </DropdownMenuItem>
             ) : (
               <DropdownMenuItem
                 onClick={() =>
                   void act(
                     () => muteMember(member.id, 7),
-                    `${member.display_name} muted for 7 days.`,
+                    t("muted", { name: member.display_name }),
                   )
                 }
               >
-                Mute for 7 days
+                {t("mute")}
               </DropdownMenuItem>
             )}
             <DropdownMenuItem
@@ -146,15 +151,11 @@ function MemberRow({
                 void act(
                   () =>
                     setRequiresApproval(member.id, !member.requires_approval),
-                  member.requires_approval
-                    ? "Their posts publish instantly again."
-                    : "Their next posts will wait for your approval.",
+                  member.requires_approval ? t("approvalOff") : t("approvalOn"),
                 )
               }
             >
-              {member.requires_approval
-                ? "Stop reviewing their posts"
-                : "Review their posts first"}
+              {member.requires_approval ? t("stopReview") : t("reviewFirst")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -164,6 +165,7 @@ function MemberRow({
 }
 
 export function MembersTable() {
+  const t = useTranslations("admin.community.members");
   const [members, setMembers] = useState<ModerationMember[] | null>(null);
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
@@ -182,7 +184,7 @@ export function MembersTable() {
       .catch((err) => {
         if (!cancelled) {
           setError(err);
-          toast.error("Couldn't load members.");
+          toast.error(t("loadError"));
         }
       })
       .finally(() => {
@@ -191,23 +193,26 @@ export function MembersTable() {
     return () => {
       cancelled = true;
     };
-  }, [reloadKey]);
+  }, [reloadKey, t]);
 
   // Live search — silent refresh, doesn't touch the loading/error state so
   // typing never re-triggers the full-page skeleton.
-  const search = useCallback((query: string) => {
-    setQ(query);
-    getMembers(query)
-      .then((r) => setMembers(r.results))
-      .catch(() => toast.error("Couldn't load members."));
-  }, []);
+  const search = useCallback(
+    (query: string) => {
+      setQ(query);
+      getMembers(query)
+        .then((r) => setMembers(r.results))
+        .catch(() => toast.error(t("loadError")));
+    },
+    [t],
+  );
 
   // Refresh after a row action resolves — reapplies the current search.
   const refresh = useCallback(() => {
     getMembers(q)
       .then((r) => setMembers(r.results))
-      .catch(() => toast.error("Couldn't load members."));
-  }, [q]);
+      .catch(() => toast.error(t("loadError")));
+  }, [q, t]);
 
   return (
     <div className="space-y-4">
@@ -215,7 +220,7 @@ export function MembersTable() {
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
           className="pl-8"
-          placeholder="Search members…"
+          placeholder={t("search")}
           value={q}
           onChange={(e) => search(e.target.value)}
         />
@@ -229,9 +234,9 @@ export function MembersTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Member</TableHead>
-              <TableHead>Posts</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>{t("member")}</TableHead>
+              <TableHead>{t("posts")}</TableHead>
+              <TableHead>{t("status")}</TableHead>
               <TableHead className="w-10" />
             </TableRow>
           </TableHeader>

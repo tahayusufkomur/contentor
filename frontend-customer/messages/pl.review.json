@@ -1303,6 +1303,14 @@
     "src": "1ed2e7b5",
     "reviewed": false
   },
+  "admin.palette.navigate": {
+    "src": "130c10ed",
+    "reviewed": false
+  },
+  "admin.palette.select": {
+    "src": "e4e5b8e7",
+    "reviewed": false
+  },
   "admin.settingsHub.title": {
     "src": "bd657ce8",
     "reviewed": false
@@ -2233,6 +2241,38 @@
   },
   "admin.blog.regenerated": {
     "src": "96c78ab2",
+    "reviewed": false
+  },
+  "admin.blog.editor.placeholder": {
+    "src": "d6d35ab4",
+    "reviewed": false
+  },
+  "admin.blog.editor.bold": {
+    "src": "19e07430",
+    "reviewed": false
+  },
+  "admin.blog.editor.italic": {
+    "src": "1616e2e5",
+    "reviewed": false
+  },
+  "admin.blog.editor.heading2": {
+    "src": "6542d386",
+    "reviewed": false
+  },
+  "admin.blog.editor.heading3": {
+    "src": "9694d18f",
+    "reviewed": false
+  },
+  "admin.blog.editor.bulletList": {
+    "src": "660d9fbe",
+    "reviewed": false
+  },
+  "admin.blog.editor.link": {
+    "src": "d0517071",
+    "reviewed": false
+  },
+  "admin.blog.editor.linkUrl": {
+    "src": "08738f6e",
     "reviewed": false
   },
   "admin.inbox.title": {
@@ -3169,6 +3209,198 @@
   },
   "admin.media.upload.cancel": {
     "src": "057747be",
+    "reviewed": false
+  },
+  "admin.media.untitled": {
+    "src": "621521f9",
+    "reviewed": false
+  },
+  "admin.media.untitledPhoto": {
+    "src": "958278a0",
+    "reviewed": false
+  },
+  "admin.media.untitledVideo": {
+    "src": "c4ee4daa",
+    "reviewed": false
+  },
+  "admin.media.lightbox": {
+    "src": "99f6a030",
+    "reviewed": false
+  },
+  "admin.media.emptyVideos": {
+    "src": "7fc52884",
+    "reviewed": false
+  },
+  "admin.media.uploaded": {
+    "src": "80c49489",
+    "reviewed": false
+  },
+  "admin.media.noVideo": {
+    "src": "4fa77f0c",
+    "reviewed": false
+  },
+  "admin.media.col.photo": {
+    "src": "d01d9003",
+    "reviewed": false
+  },
+  "admin.media.col.title": {
+    "src": "768e0c1c",
+    "reviewed": false
+  },
+  "admin.media.col.size": {
+    "src": "b7152342",
+    "reviewed": false
+  },
+  "admin.media.col.date": {
+    "src": "eb9a4bc1",
+    "reviewed": false
+  },
+  "admin.media.col.actions": {
+    "src": "c3cd636a",
+    "reviewed": false
+  },
+  "admin.media.col.duration": {
+    "src": "1370004d",
+    "reviewed": false
+  },
+  "admin.media.col.video": {
+    "src": "bc17c1f0",
+    "reviewed": false
+  },
+  "admin.media.field.title": {
+    "src": "768e0c1c",
+    "reviewed": false
+  },
+  "admin.media.field.altText": {
+    "src": "1910e1df",
+    "reviewed": false
+  },
+  "admin.media.field.tags": {
+    "src": "848eed0f",
+    "reviewed": false
+  },
+  "admin.media.field.description": {
+    "src": "55f8ebc8",
+    "reviewed": false
+  },
+  "admin.media.tip.copyCdnUrl": {
+    "src": "36ba83c9",
+    "reviewed": false
+  },
+  "admin.media.tip.copyCdnLink": {
+    "src": "ff82dc7c",
+    "reviewed": false
+  },
+  "admin.media.tip.copyEmbed": {
+    "src": "c2748d71",
+    "reviewed": false
+  },
+  "admin.media.tip.copyVideoEmbed": {
+    "src": "8e4d8045",
+    "reviewed": false
+  },
+  "admin.media.tip.editDetails": {
+    "src": "924fc4e4",
+    "reviewed": false
+  },
+  "admin.media.tip.makeReels": {
+    "src": "27b3517d",
+    "reviewed": false
+  },
+  "admin.media.toast.photoUpdated": {
+    "src": "3623c0eb",
+    "reviewed": false
+  },
+  "admin.media.toast.photoUpdateFailed": {
+    "src": "7b3c6847",
+    "reviewed": false
+  },
+  "admin.media.toast.cdnLinkCopied": {
+    "src": "68cb143d",
+    "reviewed": false
+  },
+  "admin.media.toast.embedCopied": {
+    "src": "e9804db2",
+    "reviewed": false
+  },
+  "admin.media.toast.photosDeleted": {
+    "src": "bb3a90ad",
+    "reviewed": false
+  },
+  "admin.media.toast.photoDeleted": {
+    "src": "1f644f37",
+    "reviewed": false
+  },
+  "admin.media.toast.photoDeleteFailed": {
+    "src": "9fd736d3",
+    "reviewed": false
+  },
+  "admin.media.toast.videoUpdated": {
+    "src": "af380442",
+    "reviewed": false
+  },
+  "admin.media.toast.videoUpdateFailed": {
+    "src": "6961c57c",
+    "reviewed": false
+  },
+  "admin.media.toast.cdnVideoCopied": {
+    "src": "3f925c1d",
+    "reviewed": false
+  },
+  "admin.media.toast.videoEmbedCopied": {
+    "src": "18d18df9",
+    "reviewed": false
+  },
+  "admin.media.toast.videosDeleted": {
+    "src": "28b38961",
+    "reviewed": false
+  },
+  "admin.media.toast.videoDeleted": {
+    "src": "5a794ab2",
+    "reviewed": false
+  },
+  "admin.media.toast.videoDeleteFailed": {
+    "src": "be102603",
+    "reviewed": false
+  },
+  "admin.media.lightboxModal.urlCopied": {
+    "src": "51090f13",
+    "reviewed": false
+  },
+  "admin.media.lightboxModal.embedCopied": {
+    "src": "7d29cdeb",
+    "reviewed": false
+  },
+  "admin.media.lightboxModal.types.photo": {
+    "src": "eeb35d33",
+    "reviewed": false
+  },
+  "admin.media.lightboxModal.types.video": {
+    "src": "ffbaf58f",
+    "reviewed": false
+  },
+  "admin.media.lightboxModal.size": {
+    "src": "5f2f6eab",
+    "reviewed": false
+  },
+  "admin.media.lightboxModal.duration": {
+    "src": "57ed9906",
+    "reviewed": false
+  },
+  "admin.media.lightboxModal.uploaded": {
+    "src": "0bb1fa3e",
+    "reviewed": false
+  },
+  "admin.media.lightboxModal.copyLink": {
+    "src": "ff82dc7c",
+    "reviewed": false
+  },
+  "admin.media.lightboxModal.copyEmbed": {
+    "src": "5222b2f9",
+    "reviewed": false
+  },
+  "admin.media.lightboxModal.close": {
+    "src": "ed326ddc",
     "reviewed": false
   },
   "admin.studio.subtitle": {
@@ -6215,6 +6447,286 @@
     "src": "c7f73bb5",
     "reviewed": false
   },
+  "admin.community.settings.loadError": {
+    "src": "3d8eca59",
+    "reviewed": false
+  },
+  "admin.community.settings.saved": {
+    "src": "9d4af690",
+    "reviewed": false
+  },
+  "admin.community.settings.saveError": {
+    "src": "2873d0fd",
+    "reviewed": false
+  },
+  "admin.community.settings.community": {
+    "src": "bfd58ee3",
+    "reviewed": false
+  },
+  "admin.community.settings.communityHint": {
+    "src": "d69c2b02",
+    "reviewed": false
+  },
+  "admin.community.settings.notify": {
+    "src": "69ace591",
+    "reviewed": false
+  },
+  "admin.community.settings.notifyHint": {
+    "src": "5b40b7c7",
+    "reviewed": false
+  },
+  "admin.community.settings.welcome": {
+    "src": "93a51294",
+    "reviewed": false
+  },
+  "admin.community.settings.welcomeHint": {
+    "src": "5a0b4258",
+    "reviewed": false
+  },
+  "admin.community.settings.welcomePlaceholder": {
+    "src": "e91002ec",
+    "reviewed": false
+  },
+  "admin.community.settings.saving": {
+    "src": "56a2285c",
+    "reviewed": false
+  },
+  "admin.community.settings.saveMessage": {
+    "src": "8ad12beb",
+    "reviewed": false
+  },
+  "admin.community.modFeed.enableFirst": {
+    "src": "c71ed2ca",
+    "reviewed": false
+  },
+  "admin.community.modFeed.offTitle": {
+    "src": "f39c6a07",
+    "reviewed": false
+  },
+  "admin.community.modFeed.offHint": {
+    "src": "81beaf0e",
+    "reviewed": false
+  },
+  "admin.community.modFeed.pinned": {
+    "src": "1008c161",
+    "reviewed": false
+  },
+  "admin.community.modFeed.confirmRemovePost": {
+    "src": "62dbe6f1",
+    "reviewed": false
+  },
+  "admin.community.modFeed.postRemoved": {
+    "src": "04ad65ec",
+    "reviewed": false
+  },
+  "admin.community.modFeed.confirmBan": {
+    "src": "840893cb",
+    "reviewed": false
+  },
+  "admin.community.modFeed.banned": {
+    "src": "16832a35",
+    "reviewed": false
+  },
+  "admin.community.modFeed.confirmRemoveComment": {
+    "src": "8db50fe1",
+    "reviewed": false
+  },
+  "admin.community.modFeed.commentRemoved": {
+    "src": "24360c4d",
+    "reviewed": false
+  },
+  "admin.community.members.banned": {
+    "src": "c8cd83f6",
+    "reviewed": false
+  },
+  "admin.community.members.mutedUntil": {
+    "src": "df85b12c",
+    "reviewed": false
+  },
+  "admin.community.members.needsApproval": {
+    "src": "1ec3867e",
+    "reviewed": false
+  },
+  "admin.community.members.active": {
+    "src": "a733b809",
+    "reviewed": false
+  },
+  "admin.community.members.actionFailed": {
+    "src": "bb2ebaad",
+    "reviewed": false
+  },
+  "admin.community.members.actions": {
+    "src": "f350e0b3",
+    "reviewed": false
+  },
+  "admin.community.members.unbanned": {
+    "src": "bb750bcc",
+    "reviewed": false
+  },
+  "admin.community.members.unban": {
+    "src": "d2671bfb",
+    "reviewed": false
+  },
+  "admin.community.members.confirmBan": {
+    "src": "c9f499a6",
+    "reviewed": false
+  },
+  "admin.community.members.bannedDone": {
+    "src": "16832a35",
+    "reviewed": false
+  },
+  "admin.community.members.ban": {
+    "src": "bfa1bfbf",
+    "reviewed": false
+  },
+  "admin.community.members.muteLifted": {
+    "src": "4a1231d9",
+    "reviewed": false
+  },
+  "admin.community.members.unmute": {
+    "src": "7044c310",
+    "reviewed": false
+  },
+  "admin.community.members.muted": {
+    "src": "81b4f2df",
+    "reviewed": false
+  },
+  "admin.community.members.mute": {
+    "src": "b50a043d",
+    "reviewed": false
+  },
+  "admin.community.members.approvalOff": {
+    "src": "a1132790",
+    "reviewed": false
+  },
+  "admin.community.members.approvalOn": {
+    "src": "dcdae055",
+    "reviewed": false
+  },
+  "admin.community.members.stopReview": {
+    "src": "7bdd13a4",
+    "reviewed": false
+  },
+  "admin.community.members.reviewFirst": {
+    "src": "ad685e16",
+    "reviewed": false
+  },
+  "admin.community.members.loadError": {
+    "src": "59b1066d",
+    "reviewed": false
+  },
+  "admin.community.members.search": {
+    "src": "bdad23d6",
+    "reviewed": false
+  },
+  "admin.community.members.member": {
+    "src": "6853c98a",
+    "reviewed": false
+  },
+  "admin.community.members.posts": {
+    "src": "a0ca0c31",
+    "reviewed": false
+  },
+  "admin.community.members.status": {
+    "src": "bae7d5be",
+    "reviewed": false
+  },
+  "admin.community.reports.contentRemoved": {
+    "src": "a1e384ab",
+    "reviewed": false
+  },
+  "admin.community.reports.contentKept": {
+    "src": "66156d88",
+    "reviewed": false
+  },
+  "admin.community.reports.resolveError": {
+    "src": "71376a0a",
+    "reviewed": false
+  },
+  "admin.community.reports.reasons.spam": {
+    "src": "d8628a52",
+    "reviewed": false
+  },
+  "admin.community.reports.reasons.inappropriate": {
+    "src": "29141add",
+    "reviewed": false
+  },
+  "admin.community.reports.reasons.harassment": {
+    "src": "8fddd79e",
+    "reviewed": false
+  },
+  "admin.community.reports.reasons.other": {
+    "src": "6e6a6f20",
+    "reviewed": false
+  },
+  "admin.community.reports.reportedBy": {
+    "src": "1bba1873",
+    "reviewed": false
+  },
+  "admin.community.reports.postBy": {
+    "src": "53602293",
+    "reviewed": false
+  },
+  "admin.community.reports.commentBy": {
+    "src": "dec2008a",
+    "reviewed": false
+  },
+  "admin.community.reports.removing": {
+    "src": "579d7e74",
+    "reviewed": false
+  },
+  "admin.community.reports.remove": {
+    "src": "e963907d",
+    "reviewed": false
+  },
+  "admin.community.reports.keeping": {
+    "src": "8ae5242f",
+    "reviewed": false
+  },
+  "admin.community.reports.keep": {
+    "src": "466fc492",
+    "reviewed": false
+  },
+  "admin.community.reports.postApproved": {
+    "src": "0fecaf15",
+    "reviewed": false
+  },
+  "admin.community.reports.postRemoved": {
+    "src": "04ad65ec",
+    "reviewed": false
+  },
+  "admin.community.reports.updateError": {
+    "src": "43e07477",
+    "reviewed": false
+  },
+  "admin.community.reports.approving": {
+    "src": "26fb03f8",
+    "reviewed": false
+  },
+  "admin.community.reports.approve": {
+    "src": "7b2c7f14",
+    "reviewed": false
+  },
+  "admin.community.reports.loadError": {
+    "src": "f4bcea8f",
+    "reviewed": false
+  },
+  "admin.community.reports.allClear": {
+    "src": "360e1182",
+    "reviewed": false
+  },
+  "admin.community.reports.allClearHint": {
+    "src": "80c6471b",
+    "reviewed": false
+  },
+  "admin.community.reports.waiting": {
+    "src": "0a1ea528",
+    "reviewed": false
+  },
+  "admin.community.reports.reports": {
+    "src": "88bc3fe3",
+    "reviewed": false
+  },
   "admin.courses.loadError": {
     "src": "7401ff4c",
     "reviewed": false
@@ -6285,6 +6797,14 @@
   },
   "admin.list.sort.smallest": {
     "src": "c513b869",
+    "reviewed": false
+  },
+  "admin.list.sort.longest": {
+    "src": "691955e0",
+    "reviewed": false
+  },
+  "admin.list.sort.shortest": {
+    "src": "da93563b",
     "reviewed": false
   },
   "admin.list.col.title": {
@@ -6637,6 +7157,742 @@
   },
   "admin.students.payments.confirmRefund": {
     "src": "60385069",
+    "reviewed": false
+  },
+  "admin.courseForm.createdNoAccess": {
+    "src": "c707723c",
+    "reviewed": false
+  },
+  "admin.courseForm.published": {
+    "src": "536b5573",
+    "reviewed": false
+  },
+  "admin.courseForm.savedDraft": {
+    "src": "3fae908a",
+    "reviewed": false
+  },
+  "admin.courseForm.saved": {
+    "src": "a42d086f",
+    "reviewed": false
+  },
+  "admin.courseForm.createFailed": {
+    "src": "35db1501",
+    "reviewed": false
+  },
+  "admin.courseForm.saveFailed": {
+    "src": "3bfd99aa",
+    "reviewed": false
+  },
+  "admin.courseForm.moduleAdded": {
+    "src": "eb5ce303",
+    "reviewed": false
+  },
+  "admin.courseForm.moduleAddFailed": {
+    "src": "685b2ebd",
+    "reviewed": false
+  },
+  "admin.courseForm.lessonSaved": {
+    "src": "e675118b",
+    "reviewed": false
+  },
+  "admin.courseForm.lessonSaveFailed": {
+    "src": "1c90aac4",
+    "reviewed": false
+  },
+  "admin.courseForm.lessonAdded": {
+    "src": "80cf6bc6",
+    "reviewed": false
+  },
+  "admin.courseForm.lessonAddFailed": {
+    "src": "25cbb158",
+    "reviewed": false
+  },
+  "admin.courseForm.moduleDeleted": {
+    "src": "deae9cce",
+    "reviewed": false
+  },
+  "admin.courseForm.moduleDeleteFailed": {
+    "src": "3923faa6",
+    "reviewed": false
+  },
+  "admin.courseForm.lessonDeleted": {
+    "src": "b8fbca26",
+    "reviewed": false
+  },
+  "admin.courseForm.lessonDeleteFailed": {
+    "src": "758ba681",
+    "reviewed": false
+  },
+  "admin.courseForm.settingsTitle": {
+    "src": "e3944e97",
+    "reviewed": false
+  },
+  "admin.courseForm.settingsHint": {
+    "src": "74c48d8b",
+    "reviewed": false
+  },
+  "admin.courseForm.title": {
+    "src": "768e0c1c",
+    "reviewed": false
+  },
+  "admin.courseForm.titlePlaceholder": {
+    "src": "b7f25681",
+    "reviewed": false
+  },
+  "admin.courseForm.description": {
+    "src": "55f8ebc8",
+    "reviewed": false
+  },
+  "admin.courseForm.descriptionPlaceholder": {
+    "src": "24e854e0",
+    "reviewed": false
+  },
+  "admin.courseForm.thumbnail": {
+    "src": "20f9b91f",
+    "reviewed": false
+  },
+  "admin.courseForm.chooseThumbnail": {
+    "src": "8a967ea0",
+    "reviewed": false
+  },
+  "admin.courseForm.publishNow": {
+    "src": "6851c542",
+    "reviewed": false
+  },
+  "admin.courseForm.publishedLabel": {
+    "src": "483bf207",
+    "reviewed": false
+  },
+  "admin.courseForm.filters": {
+    "src": "96e57821",
+    "reviewed": false
+  },
+  "admin.courseForm.filtersHint": {
+    "src": "dc261c61",
+    "reviewed": false
+  },
+  "admin.courseForm.tags": {
+    "src": "848eed0f",
+    "reviewed": false
+  },
+  "admin.courseForm.saving": {
+    "src": "56a2285c",
+    "reviewed": false
+  },
+  "admin.courseForm.saveChanges": {
+    "src": "fa2984b3",
+    "reviewed": false
+  },
+  "admin.courseForm.curriculum": {
+    "src": "23364909",
+    "reviewed": false
+  },
+  "admin.courseForm.curriculumCreateHint": {
+    "src": "326e3609",
+    "reviewed": false
+  },
+  "admin.courseForm.curriculumHint": {
+    "src": "2e73808c",
+    "reviewed": false
+  },
+  "admin.courseForm.moduleTitle": {
+    "src": "d9a5ba3f",
+    "reviewed": false
+  },
+  "admin.courseForm.video": {
+    "src": "bc17c1f0",
+    "reviewed": false
+  },
+  "admin.courseForm.preview": {
+    "src": "f1fbb2b4",
+    "reviewed": false
+  },
+  "admin.courseForm.actions": {
+    "src": "c3cd636a",
+    "reviewed": false
+  },
+  "admin.courseForm.duration": {
+    "src": "1370004d",
+    "reviewed": false
+  },
+  "admin.courseForm.videoSelected": {
+    "src": "9a976fc2",
+    "reviewed": false
+  },
+  "admin.courseForm.noVideo": {
+    "src": "4fa77f0c",
+    "reviewed": false
+  },
+  "admin.courseForm.videoUploaded": {
+    "src": "80c49489",
+    "reviewed": false
+  },
+  "admin.courseForm.free": {
+    "src": "75f52718",
+    "reviewed": false
+  },
+  "admin.courseForm.addLesson": {
+    "src": "d2a8b089",
+    "reviewed": false
+  },
+  "admin.courseForm.newModuleTitle": {
+    "src": "a08b5b63",
+    "reviewed": false
+  },
+  "admin.courseForm.addModule": {
+    "src": "573dc7a5",
+    "reviewed": false
+  },
+  "admin.courseForm.adding": {
+    "src": "ffb2e628",
+    "reviewed": false
+  },
+  "admin.courseForm.creating": {
+    "src": "94d7d8ee",
+    "reviewed": false
+  },
+  "admin.courseForm.createCourse": {
+    "src": "cf5ac9de",
+    "reviewed": false
+  },
+  "admin.courseForm.lessonContent": {
+    "src": "daa05292",
+    "reviewed": false
+  },
+  "admin.courseForm.writeContent": {
+    "src": "72588aef",
+    "reviewed": false
+  },
+  "admin.courseForm.captions.waiting.label": {
+    "src": "47b7483f",
+    "reviewed": false
+  },
+  "admin.courseForm.captions.waiting.hint": {
+    "src": "f83426e9",
+    "reviewed": false
+  },
+  "admin.courseForm.captions.working.label": {
+    "src": "d9372a43",
+    "reviewed": false
+  },
+  "admin.courseForm.captions.working.hint": {
+    "src": "24188a5c",
+    "reviewed": false
+  },
+  "admin.courseForm.captions.ready.label": {
+    "src": "a4227cc3",
+    "reviewed": false
+  },
+  "admin.courseForm.captions.ready.hint": {
+    "src": "349c690b",
+    "reviewed": false
+  },
+  "admin.courseForm.captions.failed.label": {
+    "src": "0e44fe9e",
+    "reviewed": false
+  },
+  "admin.courseForm.captions.failed.hint": {
+    "src": "312ee418",
+    "reviewed": false
+  },
+  "admin.courseForm.freePreview": {
+    "src": "a63229f4",
+    "reviewed": false
+  },
+  "admin.courseForm.content": {
+    "src": "4f9be057",
+    "reviewed": false
+  },
+  "admin.courseForm.editLesson": {
+    "src": "02431b2e",
+    "reviewed": false
+  },
+  "admin.courseForm.newLesson": {
+    "src": "c82bfff8",
+    "reviewed": false
+  },
+  "admin.courseForm.lessonTitlePlaceholder": {
+    "src": "8bcf8d73",
+    "reviewed": false
+  },
+  "admin.mediaBrowser.loadError": {
+    "src": "6db032cc",
+    "reviewed": false
+  },
+  "admin.mediaBrowser.confirmAction": {
+    "src": "fa0a9246",
+    "reviewed": false
+  },
+  "admin.mediaBrowser.allSelected": {
+    "src": "24a59034",
+    "reviewed": false
+  },
+  "admin.mediaBrowser.selected": {
+    "src": "bc67a440",
+    "reviewed": false
+  },
+  "admin.mediaBrowser.actions": {
+    "src": "c3cd636a",
+    "reviewed": false
+  },
+  "admin.mediaBrowser.clearSelection": {
+    "src": "247fd631",
+    "reviewed": false
+  },
+  "admin.mediaBrowser.pageSelected": {
+    "src": "fe0bb1da",
+    "reviewed": false
+  },
+  "admin.mediaBrowser.selectAllItems": {
+    "src": "1e88972d",
+    "reviewed": false
+  },
+  "admin.mediaBrowser.deselectAll": {
+    "src": "85cce1e1",
+    "reviewed": false
+  },
+  "admin.mediaBrowser.selectAll": {
+    "src": "913afff1",
+    "reviewed": false
+  },
+  "admin.mediaBrowser.search": {
+    "src": "6d7a30a9",
+    "reviewed": false
+  },
+  "admin.inlineEdit.saving": {
+    "src": "56a2285c",
+    "reviewed": false
+  },
+  "admin.mediaPicker.uploadFailed": {
+    "src": "f2f38773",
+    "reviewed": false
+  },
+  "admin.mediaPicker.upload": {
+    "src": "8bdf057f",
+    "reviewed": false
+  },
+  "admin.mediaPicker.progress": {
+    "src": "3f2dc3f1",
+    "reviewed": false
+  },
+  "admin.videoPicker.choose": {
+    "src": "547ac09a",
+    "reviewed": false
+  },
+  "admin.videoPicker.urlPlaceholder": {
+    "src": "6743e50e",
+    "reviewed": false
+  },
+  "admin.videoPicker.title": {
+    "src": "11124ddf",
+    "reviewed": false
+  },
+  "admin.videoPicker.search": {
+    "src": "9cf0b428",
+    "reviewed": false
+  },
+  "admin.videoPicker.empty": {
+    "src": "9c808602",
+    "reviewed": false
+  },
+  "admin.videoPicker.noMatch": {
+    "src": "7367cde4",
+    "reviewed": false
+  },
+  "admin.photoPicker.choose": {
+    "src": "4a7eded8",
+    "reviewed": false
+  },
+  "admin.photoPicker.selected": {
+    "src": "9a976fc2",
+    "reviewed": false
+  },
+  "admin.filterPicker.option": {
+    "src": "e31d9722",
+    "reviewed": false
+  },
+  "admin.filterPicker.noOptions": {
+    "src": "3c7d2f3b",
+    "reviewed": false
+  },
+  "admin.filterPicker.newOption": {
+    "src": "7df7ff56",
+    "reviewed": false
+  },
+  "admin.filterPicker.add": {
+    "src": "61cc55aa",
+    "reviewed": false
+  },
+  "admin.filterPicker.newFilterName": {
+    "src": "1b6e9860",
+    "reviewed": false
+  },
+  "admin.filterPicker.newFilter": {
+    "src": "d69c36f4",
+    "reviewed": false
+  },
+  "admin.filterPicker.deleteFailed": {
+    "src": "52cad930",
+    "reviewed": false
+  },
+  "admin.filterPicker.deleteAria": {
+    "src": "106cde21",
+    "reviewed": false
+  },
+  "admin.filterPicker.confirmDeleteCourse": {
+    "src": "4e44c770",
+    "reviewed": false
+  },
+  "admin.filterPicker.confirmDeleteEvent": {
+    "src": "063f1aa6",
+    "reviewed": false
+  },
+  "admin.tagFilter.label": {
+    "src": "b5ddd4e8",
+    "reviewed": false
+  },
+  "admin.tagFilter.clear": {
+    "src": "719ea396",
+    "reviewed": false
+  },
+  "admin.tagInput.remove": {
+    "src": "74c22ed9",
+    "reviewed": false
+  },
+  "admin.tagInput.placeholder": {
+    "src": "4a9e5b03",
+    "reviewed": false
+  },
+  "admin.tagInput.create": {
+    "src": "44ce75c6",
+    "reviewed": false
+  },
+  "admin.publish.requirementsUnmet": {
+    "src": "142895f7",
+    "reviewed": false
+  },
+  "admin.publish.wrong": {
+    "src": "9a3ea059",
+    "reviewed": false
+  },
+  "admin.publish.confirmUnpublish": {
+    "src": "8b237864",
+    "reviewed": false
+  },
+  "admin.publish.pwSaved": {
+    "src": "f1eba3f9",
+    "reviewed": false
+  },
+  "admin.publish.pwCleared": {
+    "src": "c128f9c6",
+    "reviewed": false
+  },
+  "admin.publish.linkCopied": {
+    "src": "c2e98476",
+    "reviewed": false
+  },
+  "admin.publish.installCopied": {
+    "src": "c2e1052f",
+    "reviewed": false
+  },
+  "admin.publish.live": {
+    "src": "c11e833f",
+    "reviewed": false
+  },
+  "admin.publish.liveHint": {
+    "src": "afdbe9bd",
+    "reviewed": false
+  },
+  "admin.publish.copy": {
+    "src": "af74f7c5",
+    "reviewed": false
+  },
+  "admin.publish.shareInstall": {
+    "src": "0ecfe69b",
+    "reviewed": false
+  },
+  "admin.publish.inviteStudents": {
+    "src": "3b66336a",
+    "reviewed": false
+  },
+  "admin.publish.done": {
+    "src": "e9b450d1",
+    "reviewed": false
+  },
+  "admin.publish.siteLive": {
+    "src": "b858bdcb",
+    "reviewed": false
+  },
+  "admin.publish.publishSite": {
+    "src": "6eda871d",
+    "reviewed": false
+  },
+  "admin.publish.liveStatus": {
+    "src": "b2f11c25",
+    "reviewed": false
+  },
+  "admin.publish.copyLink": {
+    "src": "2f84eea5",
+    "reviewed": false
+  },
+  "admin.publish.unpublishing": {
+    "src": "0690e3bc",
+    "reviewed": false
+  },
+  "admin.publish.unpublish": {
+    "src": "1ac0a74d",
+    "reviewed": false
+  },
+  "admin.publish.hidden": {
+    "src": "1ea81066",
+    "reviewed": false
+  },
+  "admin.publish.finishFirst": {
+    "src": "7101eb9b",
+    "reviewed": false
+  },
+  "admin.publish.publishing": {
+    "src": "74f8114e",
+    "reviewed": false
+  },
+  "admin.publish.finishSteps": {
+    "src": "d840a673",
+    "reviewed": false
+  },
+  "admin.publish.publishGoLive": {
+    "src": "b4014c8b",
+    "reviewed": false
+  },
+  "admin.publish.previewLink": {
+    "src": "2561f127",
+    "reviewed": false
+  },
+  "admin.publish.pw": {
+    "src": "6e598c2d",
+    "reviewed": false
+  },
+  "admin.publish.pwIsSet": {
+    "src": "f5c14672",
+    "reviewed": false
+  },
+  "admin.publish.pwChange": {
+    "src": "8c684290",
+    "reviewed": false
+  },
+  "admin.publish.pwSet": {
+    "src": "f5c8f412",
+    "reviewed": false
+  },
+  "admin.publish.saving": {
+    "src": "56a2285c",
+    "reviewed": false
+  },
+  "admin.publish.clearing": {
+    "src": "bc7a2b58",
+    "reviewed": false
+  },
+  "admin.publish.clear": {
+    "src": "719ea396",
+    "reviewed": false
+  },
+  "admin.publish.pwHint": {
+    "src": "f42bf3f2",
+    "reviewed": false
+  },
+  "admin.publish.blockers.plan": {
+    "src": "4550f684",
+    "reviewed": false
+  },
+  "admin.publish.blockers.look": {
+    "src": "65f76cbd",
+    "reviewed": false
+  },
+  "admin.publish.blockers.first_course": {
+    "src": "33ec1221",
+    "reviewed": false
+  },
+  "admin.publish.blockers.first_event": {
+    "src": "f4f3823b",
+    "reviewed": false
+  },
+  "admin.publish.blockers.first_blog_post": {
+    "src": "80de90fb",
+    "reviewed": false
+  },
+  "admin.publish.blockers.payouts": {
+    "src": "701a6cce",
+    "reviewed": false
+  },
+  "admin.publish.blockers.payoutsTrial": {
+    "src": "01b21ebf",
+    "reviewed": false
+  },
+  "admin.publish.blockers.payoutsFreePlan": {
+    "src": "b32c7125",
+    "reviewed": false
+  },
+  "admin.publish.close": {
+    "src": "bbfa773e",
+    "reviewed": false
+  },
+  "admin.monetize.trialing": {
+    "src": "b8d41cd5",
+    "reviewed": false
+  },
+  "admin.monetize.freePlan": {
+    "src": "ec67f1f8",
+    "reviewed": false
+  },
+  "admin.monetize.noPayouts": {
+    "src": "a1573858",
+    "reviewed": false
+  },
+  "admin.paused.title": {
+    "src": "94e3d4b1",
+    "reviewed": false
+  },
+  "admin.paused.hint": {
+    "src": "146b482d",
+    "reviewed": false
+  },
+  "admin.usage.title": {
+    "src": "2c84d0ee",
+    "reviewed": false
+  },
+  "admin.usage.installed": {
+    "src": "1823711c",
+    "reviewed": false
+  },
+  "admin.usage.pwaShare": {
+    "src": "82b3ded3",
+    "reviewed": false
+  },
+  "admin.usage.webShare": {
+    "src": "e8b300e9",
+    "reviewed": false
+  },
+  "admin.usage.dayTitle": {
+    "src": "cb425df8",
+    "reviewed": false
+  },
+  "admin.usage.none": {
+    "src": "30cb0e42",
+    "reviewed": false
+  },
+  "admin.calendar.loadError": {
+    "src": "f8eec44b",
+    "reviewed": false
+  },
+  "admin.calendar.subtitle": {
+    "src": "b32cf9ca",
+    "reviewed": false
+  },
+  "admin.calendar.newSession": {
+    "src": "1746c12e",
+    "reviewed": false
+  },
+  "admin.calendar.newEmail": {
+    "src": "48c463f0",
+    "reviewed": false
+  },
+  "admin.calendar.newBlog": {
+    "src": "303fa125",
+    "reviewed": false
+  },
+  "admin.calendar.allItems": {
+    "src": "710208d7",
+    "reviewed": false
+  },
+  "admin.calendar.filter.live": {
+    "src": "928cddff",
+    "reviewed": false
+  },
+  "admin.calendar.filter.email": {
+    "src": "9ddc8b46",
+    "reviewed": false
+  },
+  "admin.calendar.filter.blog": {
+    "src": "9a088442",
+    "reviewed": false
+  },
+  "admin.calendar.month": {
+    "src": "082bc378",
+    "reviewed": false
+  },
+  "admin.calendar.week": {
+    "src": "f82be68a",
+    "reviewed": false
+  },
+  "admin.calendar.today": {
+    "src": "24345a14",
+    "reviewed": false
+  },
+  "admin.calendar.empty": {
+    "src": "b35a640f",
+    "reviewed": false
+  },
+  "admin.calendar.itemCount": {
+    "src": "f34cfa9c",
+    "reviewed": false
+  },
+  "admin.calendar.category.live": {
+    "src": "f3c3d579",
+    "reviewed": false
+  },
+  "admin.calendar.category.email": {
+    "src": "d569bbe0",
+    "reviewed": false
+  },
+  "admin.calendar.category.blog": {
+    "src": "6c8d4a5b",
+    "reviewed": false
+  },
+  "admin.calendar.status.scheduled": {
+    "src": "e891e370",
+    "reviewed": false
+  },
+  "admin.calendar.status.published": {
+    "src": "c2807535",
+    "reviewed": false
+  },
+  "admin.calendar.status.draft": {
+    "src": "0e7766b4",
+    "reviewed": false
+  },
+  "admin.calendar.status.completed": {
+    "src": "231e564d",
+    "reviewed": false
+  },
+  "admin.calendar.status.live": {
+    "src": "98aadb37",
+    "reviewed": false
+  },
+  "admin.calendar.status.ended": {
+    "src": "ba92ed73",
+    "reviewed": false
+  },
+  "admin.calendar.status.sending": {
+    "src": "16ad05bc",
+    "reviewed": false
+  },
+  "admin.calendar.status.partial": {
+    "src": "355705cf",
+    "reviewed": false
+  },
+  "admin.calendar.status.failed": {
+    "src": "5f5f8758",
+    "reviewed": false
+  },
+  "admin.calendar.statusLabel": {
+    "src": "11dc9e19",
+    "reviewed": false
+  },
+  "admin.calendar.close": {
+    "src": "bbfa773e",
+    "reviewed": false
+  },
+  "admin.calendar.manage": {
+    "src": "c0d6bfbe",
     "reviewed": false
   },
   "common.actions.save": {

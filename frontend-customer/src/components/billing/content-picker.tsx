@@ -11,7 +11,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { clientFetch } from "@/lib/api-client";
 import { formatMoney } from "@/lib/format";
 import { useTenantCurrency } from "@/lib/setup-assistant";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { dyn } from "@/i18n/dynamic";
 
 export interface SelectedItem {
   content_type: string;
@@ -32,21 +33,22 @@ export interface Product {
 }
 
 const TYPE_FILTERS = [
-  { label: "All", value: "all" },
-  { label: "Course", value: "course" },
-  { label: "Download", value: "download" },
-  { label: "Live Session", value: "live_class" },
-  { label: "Live Stream", value: "live_stream" },
-  { label: "In-Person Event", value: "onsite_event" },
+  "all",
+  "course",
+  "download",
+  "live_class",
+  "live_stream",
+  "onsite_event",
 ];
 
-const TYPE_LABEL_MAP: Record<string, string> = {
-  course: "Course",
-  download: "Download",
-  live_class: "Live Session",
-  live_stream: "Live Stream",
-  onsite_event: "In-Person Event",
-};
+/** The types a product can have; any other value is shown as it came. */
+const TYPE_LABELS = [
+  "course",
+  "download",
+  "live_class",
+  "live_stream",
+  "onsite_event",
+];
 
 const TYPE_BADGE_VARIANT: Record<
   string,
@@ -88,6 +90,7 @@ export function ContentPicker({
   products: given,
 }: ContentPickerProps) {
   const locale = useLocale();
+  const t = useTranslations("studio");
   const currency = useTenantCurrency();
   const [fetched, setFetched] = useState<Product[]>([]);
   const [loading, setLoading] = useState(!given);
@@ -105,7 +108,7 @@ export function ContentPicker({
         if (!cancelled) setFetched(data.filter((p) => p.type !== "bundle"));
       })
       .catch(() => {
-        if (!cancelled) toast.error("Failed to load content.");
+        if (!cancelled) toast.error(t("contentPicker.loadFailed"));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -113,7 +116,7 @@ export function ContentPicker({
     return () => {
       cancelled = true;
     };
-  }, [loadsOwn]);
+  }, [loadsOwn, t]);
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
@@ -170,7 +173,10 @@ export function ContentPicker({
               >
                 <span className="flex flex-col leading-tight">
                   {chip.length > 1
-                    ? `${item.title} · ${chip.length} sessions`
+                    ? t("contentPicker.series", {
+                        title: item.title,
+                        count: chip.length,
+                      })
                     : item.title}
                   {item.window_text && (
                     <span className="text-[11px] font-normal text-muted-foreground">
@@ -182,7 +188,7 @@ export function ContentPicker({
                   type="button"
                   onClick={() => removeSelected(chip)}
                   className="ml-1 rounded-full hover:text-destructive focus:outline-none"
-                  aria-label={`Remove ${item.title}`}
+                  aria-label={t("contentPicker.remove", { title: item.title })}
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -197,7 +203,7 @@ export function ContentPicker({
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search content..."
+            placeholder={t("contentPicker.search")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -205,18 +211,16 @@ export function ContentPicker({
         </div>
         <div className="flex flex-wrap gap-2">
           {TYPE_FILTERS.filter(
-            (f) =>
-              f.value !== "onsite_event" ||
-              products.some((p) => p.type === f.value),
+            (f) => f !== "onsite_event" || products.some((p) => p.type === f),
           ).map((f) => (
             <Button
-              key={f.value}
+              key={f}
               type="button"
               size="sm"
-              variant={typeFilter === f.value ? "default" : "outline"}
-              onClick={() => setTypeFilter(f.value)}
+              variant={typeFilter === f ? "default" : "outline"}
+              onClick={() => setTypeFilter(f)}
             >
-              {f.label}
+              {t(dyn(t, `contentPicker.types.${f}`))}
             </Button>
           ))}
         </div>
@@ -235,7 +239,7 @@ export function ContentPicker({
           ))
         ) : filtered.length === 0 ? (
           <p className="px-3 py-4 text-center text-sm text-muted-foreground">
-            No content found.
+            {t("contentPicker.none")}
           </p>
         ) : (
           filtered.map((product) => {
@@ -254,11 +258,13 @@ export function ContentPicker({
                   {product.title}
                 </span>
                 <Badge variant={TYPE_BADGE_VARIANT[product.type] ?? "outline"}>
-                  {TYPE_LABEL_MAP[product.type] ?? product.type}
+                  {TYPE_LABELS.includes(product.type)
+                    ? t(dyn(t, `contentPicker.types.${product.type}`))
+                    : product.type}
                 </Badge>
                 <span className="text-sm text-muted-foreground whitespace-nowrap">
                   {product.pricing_type === "subscription"
-                    ? "Members only"
+                    ? t("contentPicker.membersOnly")
                     : formatMoney(product.price, currency, locale)}
                 </span>
               </label>

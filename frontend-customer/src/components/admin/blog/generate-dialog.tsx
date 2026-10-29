@@ -31,6 +31,7 @@ interface GenerateDialogProps {
 
 export function GenerateDialog({ onClose, onGenerated }: GenerateDialogProps) {
   const t = useTranslations("admin");
+  const tc = useTranslations("common");
   const [topics, setTopics] = useState<TopicIdea[] | null>(null);
   const [selectedTopicId, setSelectedTopicId] = useState<number | null>(null);
   const [customTopic, setCustomTopic] = useState("");
@@ -219,7 +220,7 @@ export function GenerateDialog({ onClose, onGenerated }: GenerateDialogProps) {
 
               <div className="flex justify-end gap-2">
                 <Button variant="ghost" size="sm" onClick={onClose}>
-                  Cancel
+                  {tc("actions.cancel")}
                 </Button>
                 <Button
                   size="sm"

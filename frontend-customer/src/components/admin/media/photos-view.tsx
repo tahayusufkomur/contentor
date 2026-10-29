@@ -35,14 +35,15 @@ import {
 } from "@/components/admin/lightbox-modal";
 import type { Photo } from "@/types/photo";
 
+/** The order the server is asked for, with the `list.sort` label for each. */
 const SORT_OPTIONS = [
-  { label: "Newest", value: "-created_at" },
-  { label: "Oldest", value: "created_at" },
-  { label: "Name A-Z", value: "title" },
-  { label: "Name Z-A", value: "-title" },
-  { label: "Largest", value: "-file_size" },
-  { label: "Smallest", value: "file_size" },
-];
+  { key: "newest", value: "-created_at" },
+  { key: "oldest", value: "created_at" },
+  { key: "nameAsc", value: "title" },
+  { key: "nameDesc", value: "-title" },
+  { key: "largest", value: "-file_size" },
+  { key: "smallest", value: "file_size" },
+] as const;
 
 /** The photo half of the media library. `refreshSignal` changes when the
  *  page's uploader lands a photo. */
@@ -64,6 +65,7 @@ export function PhotosView({ refreshSignal }: { refreshSignal: number }) {
   const [source, setSource] = useState<"mine" | "contentor">("mine");
   const [shape, setShape] = useState<Shape>("");
   const t = useTranslations("admin.media");
+  const ta = useTranslations("admin");
 
   const fetchPage = useCallback(
     async (params: FetchPageParams): Promise<FetchPageResult<Photo>> => {
@@ -86,9 +88,9 @@ export function PhotosView({ refreshSignal }: { refreshSignal: number }) {
   );
 
   const photoFields: FieldConfig<Photo>[] = [
-    { key: "title", label: "Title", type: "text", required: true },
-    { key: "alt_text", label: "Alt Text", type: "text" },
-    { key: "tag_ids", label: "Tags", type: "tags", tagScope: "photo" },
+    { key: "title", label: t("field.title"), type: "text", required: true },
+    { key: "alt_text", label: t("field.altText"), type: "text" },
+    { key: "tag_ids", label: t("field.tags"), type: "tags", tagScope: "photo" },
   ];
 
   const { run: handleInlineUpdate, loading: saving } = useAsyncAction(
@@ -101,22 +103,22 @@ export function PhotosView({ refreshSignal }: { refreshSignal: number }) {
           tag_ids: values.tag_ids ?? [],
         }),
       });
-      toast.success("Photo updated");
+      toast.success(t("toast.photoUpdated"));
       setEditingId(null);
       browserRef.current?.refresh();
     },
-    { errorToast: "Failed to update photo" },
+    { errorToast: t("toast.photoUpdateFailed") },
   );
 
   const copyCdnUrl = (url: string) => {
     navigator.clipboard.writeText(url);
-    toast.success("CDN Link copied to clipboard!");
+    toast.success(t("toast.cdnLinkCopied"));
   };
 
   const copyEmbedCode = (url: string, title: string) => {
     const embed = `<img src="${url}" alt="${title}" class="rounded-lg max-w-full" />`;
     navigator.clipboard.writeText(embed);
-    toast.success("HTML embed code copied!");
+    toast.success(t("toast.embedCopied"));
   };
 
   return (
@@ -149,7 +151,10 @@ export function PhotosView({ refreshSignal }: { refreshSignal: number }) {
             onChange={setTagFilter}
           />
         }
-        sortOptions={SORT_OPTIONS}
+        sortOptions={SORT_OPTIONS.map((o) => ({
+          value: o.value,
+          label: ta(`list.sort.${o.key}`),
+        }))}
         defaultSort="-created_at"
         emptyIcon={ImageIcon}
         emptyMessage={t(source === "mine" ? "emptyMine" : "emptyContentor")}
@@ -161,15 +166,15 @@ export function PhotosView({ refreshSignal }: { refreshSignal: number }) {
                 clientFetch(`/api/v1/photos/${id}/`, { method: "DELETE" }),
             ),
           );
-          toast.success("Photos deleted");
+          toast.success(t("toast.photosDeleted"));
           browserRef.current?.refresh();
         }}
         listColumns={[
-          { label: "Photo", key: "photo" },
-          { label: "Title", key: "title" },
-          { label: "Size", key: "size" },
-          { label: "Date", key: "date" },
-          { label: "Actions", key: "actions" },
+          { label: t("col.photo"), key: "photo" },
+          { label: t("col.title"), key: "title" },
+          { label: t("col.size"), key: "size" },
+          { label: t("col.date"), key: "date" },
+          { label: t("col.actions"), key: "actions" },
         ]}
         renderGalleryItem={(photo) => (
           <div className="group overflow-hidden rounded-xl border bg-card shadow-sm hover:shadow-md transition-all">
@@ -179,7 +184,7 @@ export function PhotosView({ refreshSignal }: { refreshSignal: number }) {
                 onClick={() =>
                   setPreviewItem({
                     id: photo.id,
-                    title: photo.title || "Untitled Photo",
+                    title: photo.title || t("untitledPhoto"),
                     type: "photo",
                     url: photo.signed_url!,
                     s3_key: photo.s3_key,
@@ -199,7 +204,7 @@ export function PhotosView({ refreshSignal }: { refreshSignal: number }) {
                     variant="secondary"
                     className="h-8 gap-1.5 text-xs shadow-md"
                   >
-                    <Eye className="h-3.5 w-3.5" /> Lightbox
+                    <Eye className="h-3.5 w-3.5" /> {t("lightbox")}
                   </Button>
                 </div>
               </div>
@@ -210,7 +215,7 @@ export function PhotosView({ refreshSignal }: { refreshSignal: number }) {
             )}
             <div className="p-3 space-y-2">
               <div className="font-medium truncate text-sm">
-                {photo.title || "Untitled"}
+                {photo.title || t("untitled")}
                 <DemoBadge type="photos" id={photo.id} />
               </div>
               <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -222,7 +227,7 @@ export function PhotosView({ refreshSignal }: { refreshSignal: number }) {
                         type="button"
                         onClick={() => copyCdnUrl(photo.signed_url!)}
                         className="p-1 hover:text-foreground rounded"
-                        title="Copy CDN URL"
+                        title={t("tip.copyCdnUrl")}
                       >
                         <Copy className="h-3.5 w-3.5" />
                       </button>
@@ -232,7 +237,7 @@ export function PhotosView({ refreshSignal }: { refreshSignal: number }) {
                           copyEmbedCode(photo.signed_url!, photo.title)
                         }
                         className="p-1 hover:text-foreground rounded"
-                        title="Copy HTML Embed"
+                        title={t("tip.copyEmbed")}
                       >
                         <Code className="h-3.5 w-3.5" />
                       </button>
@@ -242,7 +247,7 @@ export function PhotosView({ refreshSignal }: { refreshSignal: number }) {
                     type="button"
                     onClick={() => setEditingId(photo.id)}
                     className="p-1 hover:text-foreground rounded"
-                    title="Edit Details"
+                    title={t("tip.editDetails")}
                   >
                     <Pencil className="h-3.5 w-3.5" />
                   </button>
@@ -258,7 +263,7 @@ export function PhotosView({ refreshSignal }: { refreshSignal: number }) {
               onClick={() =>
                 setPreviewItem({
                   id: photo.id,
-                  title: photo.title || "Untitled Photo",
+                  title: photo.title || t("untitledPhoto"),
                   type: "photo",
                   url: photo.signed_url!,
                   s3_key: photo.s3_key,
@@ -280,7 +285,7 @@ export function PhotosView({ refreshSignal }: { refreshSignal: number }) {
               )}
             </TableCell>
             <TableCell className="font-medium">
-              {photo.title || "Untitled"}
+              {photo.title || t("untitled")}
               <DemoBadge type="photos" id={photo.id} />
             </TableCell>
             <TableCell>{formatFileSize(photo.file_size)}</TableCell>
@@ -294,7 +299,7 @@ export function PhotosView({ refreshSignal }: { refreshSignal: number }) {
                       variant="ghost"
                       className="h-8 w-8 p-0"
                       onClick={() => copyCdnUrl(photo.signed_url!)}
-                      title="Copy CDN Link"
+                      title={t("tip.copyCdnLink")}
                     >
                       <Copy className="h-3.5 w-3.5 text-muted-foreground" />
                     </Button>
@@ -305,7 +310,7 @@ export function PhotosView({ refreshSignal }: { refreshSignal: number }) {
                       onClick={() =>
                         copyEmbedCode(photo.signed_url!, photo.title)
                       }
-                      title="Copy HTML Embed"
+                      title={t("tip.copyEmbed")}
                     >
                       <Code className="h-3.5 w-3.5 text-muted-foreground" />
                     </Button>
@@ -364,10 +369,10 @@ function PhotoDeleteButton({
     async () => {
       if (!window.confirm(t("confirmDelete", { title: photo.title }))) return;
       await clientFetch(`/api/v1/photos/${photo.id}/`, { method: "DELETE" });
-      toast.success("Photo deleted");
+      toast.success(t("toast.photoDeleted"));
       onDeleted();
     },
-    { errorToast: "Failed to delete photo" },
+    { errorToast: t("toast.photoDeleteFailed") },
   );
 
   return (

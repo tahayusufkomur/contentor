@@ -391,7 +391,9 @@
     "newCourse": "New course",
     "empty": "No page by that name.",
     "askAssistant": "Ask the assistant: “{query}”",
-    "newMessage": "New message"
+    "newMessage": "New message",
+    "navigate": "to navigate",
+    "select": "to select"
   },
   "settingsHub": {
     "title": "More settings",
@@ -684,7 +686,17 @@
     "deleted": "Deleted",
     "delete": "Delete",
     "saved": "Saved",
-    "regenerated": "Regenerated"
+    "regenerated": "Regenerated",
+    "editor": {
+      "placeholder": "Write your post…",
+      "bold": "Bold",
+      "italic": "Italic",
+      "heading2": "Heading 2",
+      "heading3": "Heading 3",
+      "bulletList": "Bullet list",
+      "link": "Link",
+      "linkUrl": "Link URL"
+    }
   },
   "inbox": {
     "title": "Inbox",
@@ -994,6 +1006,66 @@
       "failed": "{name} did not upload.",
       "refused": "Only photos and videos go here. Skipped: {names}",
       "cancel": "Cancel the upload of {name}"
+    },
+    "untitled": "Untitled",
+    "untitledPhoto": "Untitled Photo",
+    "untitledVideo": "Untitled Video",
+    "lightbox": "Lightbox",
+    "emptyVideos": "No videos yet. Upload one to get started.",
+    "uploaded": "Uploaded",
+    "noVideo": "No video",
+    "col": {
+      "photo": "Photo",
+      "title": "Title",
+      "size": "Size",
+      "date": "Date",
+      "actions": "Actions",
+      "duration": "Duration",
+      "video": "Video"
+    },
+    "field": {
+      "title": "Title",
+      "altText": "Alt Text",
+      "tags": "Tags",
+      "description": "Description"
+    },
+    "tip": {
+      "copyCdnUrl": "Copy CDN URL",
+      "copyCdnLink": "Copy CDN Link",
+      "copyEmbed": "Copy HTML Embed",
+      "copyVideoEmbed": "Copy Video Embed",
+      "editDetails": "Edit Details",
+      "makeReels": "Make reels"
+    },
+    "toast": {
+      "photoUpdated": "Photo updated",
+      "photoUpdateFailed": "Failed to update photo",
+      "cdnLinkCopied": "CDN Link copied to clipboard!",
+      "embedCopied": "HTML embed code copied!",
+      "photosDeleted": "Photos deleted",
+      "photoDeleted": "Photo deleted",
+      "photoDeleteFailed": "Failed to delete photo",
+      "videoUpdated": "Video updated",
+      "videoUpdateFailed": "Failed to update video",
+      "cdnVideoCopied": "CDN Video URL copied!",
+      "videoEmbedCopied": "HTML Video Embed code copied!",
+      "videosDeleted": "Videos deleted",
+      "videoDeleted": "Video deleted",
+      "videoDeleteFailed": "Failed to delete video"
+    },
+    "lightboxModal": {
+      "urlCopied": "CDN URL copied to clipboard!",
+      "embedCopied": "HTML embed code copied to clipboard!",
+      "types": {
+        "photo": "photo",
+        "video": "video"
+      },
+      "size": "Size: {size}",
+      "duration": "Duration: {time}",
+      "uploaded": "Uploaded: {date}",
+      "copyLink": "Copy CDN Link",
+      "copyEmbed": "Copy HTML Embed Code",
+      "close": "Close Preview"
     }
   },
   "studio": {
@@ -1931,6 +2003,86 @@
       "reports": "Reports",
       "members": "Members",
       "settings": "Settings"
+    },
+    "settings": {
+      "loadError": "Couldn't load community settings.",
+      "saved": "Saved.",
+      "saveError": "Couldn't save.",
+      "community": "Community",
+      "communityHint": "When on, students see a Community tab and can post, react and comment.",
+      "notify": "Notify students when you post",
+      "notifyHint": "Sends a push notification to members whenever you or your team posts.",
+      "welcome": "Welcome message",
+      "welcomeHint": "Shown at the top of the community feed.",
+      "welcomePlaceholder": "Welcome! Introduce yourself and be kind. 💛",
+      "saving": "Saving…",
+      "saveMessage": "Save message"
+    },
+    "modFeed": {
+      "enableFirst": "Enable the community in Settings first.",
+      "offTitle": "Community isn't turned on",
+      "offHint": "Turn on the community in the Settings tab above to start posting and moderating.",
+      "pinned": "Pinned to the top of the feed.",
+      "confirmRemovePost": "Remove this post from the community?",
+      "postRemoved": "Post removed.",
+      "confirmBan": "Ban {name} from the community? They won't be able to see or post anything.",
+      "banned": "{name} is banned.",
+      "confirmRemoveComment": "Remove this comment?",
+      "commentRemoved": "Comment removed."
+    },
+    "members": {
+      "banned": "Banned",
+      "mutedUntil": "Muted until {date}",
+      "needsApproval": "Posts need approval",
+      "active": "Active",
+      "actionFailed": "Action failed.",
+      "actions": "Member actions",
+      "unbanned": "{name} can access the community again.",
+      "unban": "Unban",
+      "confirmBan": "Ban {name}? They lose all access to the community.",
+      "bannedDone": "{name} is banned.",
+      "ban": "Ban",
+      "muteLifted": "Mute lifted.",
+      "unmute": "Unmute",
+      "muted": "{name} muted for 7 days.",
+      "mute": "Mute for 7 days",
+      "approvalOff": "Their posts publish instantly again.",
+      "approvalOn": "Their next posts will wait for your approval.",
+      "stopReview": "Stop reviewing their posts",
+      "reviewFirst": "Review their posts first",
+      "loadError": "Couldn't load members.",
+      "search": "Search members…",
+      "member": "Member",
+      "posts": "Posts",
+      "status": "Status"
+    },
+    "reports": {
+      "contentRemoved": "Content removed.",
+      "contentKept": "Content kept.",
+      "resolveError": "Couldn't resolve the report.",
+      "reasons": {
+        "spam": "Spam",
+        "inappropriate": "Inappropriate",
+        "harassment": "Harassment",
+        "other": "Other"
+      },
+      "reportedBy": "Reported by {name} · {time}",
+      "postBy": "Post by {name}",
+      "commentBy": "Comment by {name}",
+      "removing": "Removing…",
+      "remove": "Remove",
+      "keeping": "Keeping…",
+      "keep": "Keep",
+      "postApproved": "Post approved.",
+      "postRemoved": "Post removed.",
+      "updateError": "Couldn't update the post.",
+      "approving": "Approving…",
+      "approve": "Approve",
+      "loadError": "Couldn't load the queue.",
+      "allClear": "All clear",
+      "allClearHint": "No reports or posts waiting for you.",
+      "waiting": "Waiting for approval",
+      "reports": "Reports"
     }
   },
   "courses": {
@@ -1956,7 +2108,9 @@
       "nameAsc": "Name A-Z",
       "nameDesc": "Name Z-A",
       "largest": "Largest",
-      "smallest": "Smallest"
+      "smallest": "Smallest",
+      "longest": "Longest",
+      "shortest": "Shortest"
     },
     "col": {
       "title": "Title",
@@ -2066,5 +2220,235 @@
       "refunding": "Refunding…",
       "confirmRefund": "Confirm refund"
     }
+  },
+  "courseForm": {
+    "createdNoAccess": "Course created, but how students get it was not saved. {reason}",
+    "published": "Course published",
+    "savedDraft": "Course saved as a draft — add lessons, then publish",
+    "saved": "Course saved",
+    "createFailed": "Failed to create course",
+    "saveFailed": "Failed to save course",
+    "moduleAdded": "Module added",
+    "moduleAddFailed": "Failed to add module",
+    "lessonSaved": "Lesson saved",
+    "lessonSaveFailed": "Failed to save lesson",
+    "lessonAdded": "Lesson added",
+    "lessonAddFailed": "Failed to add lesson",
+    "moduleDeleted": "Module deleted",
+    "moduleDeleteFailed": "Failed to delete module",
+    "lessonDeleted": "Lesson deleted",
+    "lessonDeleteFailed": "Failed to delete lesson",
+    "settingsTitle": "Course Settings",
+    "settingsHint": "Update course details, pricing, and publishing.",
+    "title": "Title",
+    "titlePlaceholder": "e.g. Introduction to Photography",
+    "description": "Description",
+    "descriptionPlaceholder": "Describe what students will learn...",
+    "thumbnail": "Thumbnail",
+    "chooseThumbnail": "Choose thumbnail",
+    "publishNow": "Publish immediately",
+    "publishedLabel": "Published",
+    "filters": "Filters",
+    "filtersHint": "Optional categories (level, style…) students can filter your courses by.",
+    "tags": "Tags",
+    "saving": "Saving…",
+    "saveChanges": "Save Changes",
+    "curriculum": "Curriculum",
+    "curriculumCreateHint": "Add modules and lessons now — everything is created together in one step.",
+    "curriculumHint": "Organize your course into modules and lessons.",
+    "moduleTitle": "Module {n}: {title}",
+    "video": "Video",
+    "preview": "Preview",
+    "actions": "Actions",
+    "duration": "Duration",
+    "videoSelected": "Selected",
+    "noVideo": "No video",
+    "videoUploaded": "Uploaded",
+    "free": "Free",
+    "addLesson": "Add Lesson",
+    "newModuleTitle": "New module title",
+    "addModule": "Add Module",
+    "adding": "Adding…",
+    "creating": "Creating…",
+    "createCourse": "Create Course",
+    "lessonContent": "Lesson content",
+    "writeContent": "Click to write lesson content…",
+    "captions": {
+      "waiting": {
+        "label": "Captions not started",
+        "hint": "Captions start on their own within a few minutes."
+      },
+      "working": {
+        "label": "Captions in progress",
+        "hint": "Captions are being written from the video's sound. Reload the page to see when they are ready."
+      },
+      "ready": {
+        "label": "Captions ready",
+        "hint": "Students can turn on captions and read the transcript under the video."
+      },
+      "failed": {
+        "label": "Captions failed",
+        "hint": "No captions could be made from this video's sound. Replacing the video tries again."
+      }
+    },
+    "freePreview": "Free Preview",
+    "content": "Content",
+    "editLesson": "Edit Lesson",
+    "newLesson": "New Lesson",
+    "lessonTitlePlaceholder": "Lesson title"
+  },
+  "mediaBrowser": {
+    "loadError": "Could not load items. Please try again.",
+    "confirmAction": "{action} {count, plural, one {# item} other {# items}}? This cannot be undone.",
+    "allSelected": "All {count, plural, one {# item} other {# items}} selected",
+    "selected": "{count} selected",
+    "actions": "Actions",
+    "clearSelection": "Clear selection",
+    "pageSelected": "All {count, plural, one {# item} other {# items}} on this page are selected.",
+    "selectAllItems": "Select all {count, plural, one {# item} other {# items}}",
+    "deselectAll": "Deselect all",
+    "selectAll": "Select all",
+    "search": "Search..."
+  },
+  "inlineEdit": {
+    "saving": "Saving…"
+  },
+  "mediaPicker": {
+    "uploadFailed": "Upload failed. Please try again.",
+    "upload": "Upload",
+    "progress": "{percent}% uploaded"
+  },
+  "videoPicker": {
+    "choose": "Choose video",
+    "urlPlaceholder": "YouTube, Vimeo, or direct video URL",
+    "title": "Choose a video",
+    "search": "Search videos...",
+    "empty": "No videos yet.",
+    "noMatch": "No videos match your search."
+  },
+  "photoPicker": {
+    "choose": "Choose photo",
+    "selected": "Selected"
+  },
+  "filterPicker": {
+    "option": "Option",
+    "noOptions": "No options yet — add one.",
+    "newOption": "New {name} option",
+    "add": "Add",
+    "newFilterName": "New filter name (e.g. Level)",
+    "newFilter": "New filter",
+    "deleteFailed": "Failed to delete filter",
+    "deleteAria": "Delete {name} filter",
+    "confirmDeleteCourse": "Delete the \"{name}\" filter and all its options? It will be removed from every course.",
+    "confirmDeleteEvent": "Delete the \"{name}\" filter and all its options? It will be removed from every event."
+  },
+  "tagFilter": {
+    "label": "Tags:",
+    "clear": "Clear"
+  },
+  "tagInput": {
+    "remove": "Remove {name} tag",
+    "placeholder": "Add a tag…",
+    "create": "Create “{name}”"
+  },
+  "publish": {
+    "requirementsUnmet": "Finish the required setup steps before publishing.",
+    "wrong": "Something went wrong. Please try again.",
+    "confirmUnpublish": "Your site will be hidden from students until you publish again.",
+    "pwSaved": "Preview password saved",
+    "pwCleared": "Preview password cleared",
+    "linkCopied": "Link copied",
+    "installCopied": "Install-guide link copied",
+    "live": "You're live! 🎉",
+    "liveHint": "Your site is public. Share the link with your students:",
+    "copy": "Copy",
+    "shareInstall": "Share install guide",
+    "inviteStudents": "Invite your first students",
+    "done": "Done",
+    "siteLive": "Your site is live",
+    "publishSite": "Publish your site",
+    "liveStatus": "<live>● Live</live> — students can find and install your site.",
+    "copyLink": "Copy link",
+    "unpublishing": "Unpublishing…",
+    "unpublish": "Unpublish",
+    "hidden": "Your site is hidden behind a preview gate. Publish it to let students find and install it.",
+    "finishFirst": "Finish these first to publish:",
+    "publishing": "Publishing…",
+    "finishSteps": "Finish the required setup steps to publish",
+    "publishGoLive": "Publish site — go live",
+    "previewLink": "Preview link:",
+    "pw": "Preview password",
+    "pwIsSet": "Preview password — set",
+    "pwChange": "Change password",
+    "pwSet": "Set a password",
+    "saving": "Saving…",
+    "clearing": "Clearing…",
+    "clear": "Clear",
+    "pwHint": "Share the preview link + password to let others see the site before you publish.",
+    "blockers": {
+      "plan": "Choose a plan",
+      "look": "Add your logo",
+      "first_course": "Publish your first course or download",
+      "first_event": "Schedule your first live session or event",
+      "first_blog_post": "Publish your first blog post",
+      "payouts": "Connect payments to sell paid content",
+      "payoutsTrial": "Paid content waits for your plan to start — start it now, or keep it as a draft",
+      "payoutsFreePlan": "Paid content needs a plan — choose one, or keep it as a draft"
+    },
+    "close": "Close"
+  },
+  "monetize": {
+    "trialing": "Selling opens when your plan starts — you can save this as a draft. <link>Start it now</link>",
+    "freePlan": "Selling needs the Starter plan — you can save this as a draft. <link>See plans</link>",
+    "noPayouts": "Students can't purchase yet — <link>set up payouts</link> to start selling."
+  },
+  "paused": {
+    "title": "Pick a plan to open your site",
+    "hint": "Until you do, visitors see a “back soon” page. Everything you built is kept and comes back the moment you start."
+  },
+  "usage": {
+    "title": "App adoption (30 days)",
+    "installed": "students installed the app",
+    "pwaShare": "PWA {pct}%",
+    "webShare": "Web {pct}%",
+    "dayTitle": "{day}: {pwa} PWA / {web} Web",
+    "none": "No app activity yet."
+  },
+  "calendar": {
+    "loadError": "Failed to load calendar items.",
+    "subtitle": "Your sessions, emails and blog posts, by date.",
+    "newSession": "Session or event",
+    "newEmail": "Designed email",
+    "newBlog": "Blog Article",
+    "allItems": "All Items ({count})",
+    "filter": {
+      "live": "Live Events",
+      "email": "Email Broadcasts",
+      "blog": "Blog Posts"
+    },
+    "month": "Month",
+    "week": "Week",
+    "today": "Today",
+    "empty": "No scheduled content in this range. Create a live event, broadcast, or blog post to see it appear here.",
+    "itemCount": "{count, plural, one {# item} other {# items}}",
+    "category": {
+      "live": "Live Event",
+      "email": "Email Broadcast",
+      "blog": "Blog Post"
+    },
+    "status": {
+      "scheduled": "scheduled",
+      "published": "published",
+      "draft": "draft",
+      "completed": "completed",
+      "live": "live",
+      "ended": "ended",
+      "sending": "sending",
+      "partial": "partial",
+      "failed": "failed"
+    },
+    "statusLabel": "Status:",
+    "close": "Close",
+    "manage": "Manage {category}"
   }
 }

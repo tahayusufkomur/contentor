@@ -22,13 +22,10 @@ import {
 import type { CommunityPost } from "@/types/community";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useLocale, useTranslations } from "next-intl";
+import { dyn } from "@/i18n/dynamic";
 
-const REASON_LABELS: Record<string, string> = {
-  spam: "Spam",
-  inappropriate: "Inappropriate",
-  harassment: "Harassment",
-  other: "Other",
-};
+/** The reasons a member can report for; any other value is shown as it came. */
+const REASONS = ["spam", "inappropriate", "harassment", "other"];
 
 function ReportCard({
   report,
@@ -39,6 +36,7 @@ function ReportCard({
 }) {
   const locale = useLocale();
   const tc = useTranslations("common");
+  const t = useTranslations("admin.community.reports");
   const [pendingAction, setPendingAction] = useState<"remove" | "keep" | null>(
     null,
   );
@@ -46,10 +44,12 @@ function ReportCard({
     async (action: "remove" | "keep") => {
       setPendingAction(action);
       await resolveReport(report.id, action);
-      toast.success(action === "remove" ? "Content removed." : "Content kept.");
+      toast.success(
+        action === "remove" ? t("contentRemoved") : t("contentKept"),
+      );
       onAction();
     },
-    { errorToast: "Couldn't resolve the report." },
+    { errorToast: t("resolveError") },
   );
   const target = report.post ?? report.comment;
   if (!target) return null;
@@ -59,11 +59,15 @@ function ReportCard({
       <CardContent className="space-y-3 p-4">
         <div className="flex items-center gap-2 text-sm">
           <Badge variant="destructive">
-            {REASON_LABELS[report.reason] ?? report.reason}
+            {REASONS.includes(report.reason)
+              ? t(dyn(t, `reasons.${report.reason}`))
+              : report.reason}
           </Badge>
           <span className="text-muted-foreground">
-            Reported by {report.reporter.display_name} ·{" "}
-            {timeAgo(report.created_at, locale, tc)}
+            {t("reportedBy", {
+              name: report.reporter.display_name,
+              time: timeAgo(report.created_at, locale, tc),
+            })}
           </span>
         </div>
         {report.detail && (
@@ -73,8 +77,9 @@ function ReportCard({
         )}
         <div className="rounded-lg border bg-muted/40 p-3 text-sm">
           <div className="mb-1 text-xs font-medium text-muted-foreground">
-            {report.target_type === "post" ? "Post" : "Comment"} by{" "}
-            {target.author.display_name}
+            {report.target_type === "post"
+              ? t("postBy", { name: target.author.display_name })
+              : t("commentBy", { name: target.author.display_name })}
           </div>
           <Linkify text={target.body} />
         </div>
@@ -83,21 +88,21 @@ function ReportCard({
             variant="destructive"
             size="sm"
             loading={busy && pendingAction === "remove"}
-            loadingText="Removing…"
+            loadingText={t("removing")}
             disabled={busy}
             onClick={() => void act("remove")}
           >
-            Remove
+            {t("remove")}
           </Button>
           <Button
             variant="outline"
             size="sm"
             loading={busy && pendingAction === "keep"}
-            loadingText="Keeping…"
+            loadingText={t("keeping")}
             disabled={busy}
             onClick={() => void act("keep")}
           >
-            Keep
+            {t("keep")}
           </Button>
         </div>
       </CardContent>
@@ -117,6 +122,7 @@ function PendingPostCard({
 }) {
   const locale = useLocale();
   const tc = useTranslations("common");
+  const t = useTranslations("admin.community.reports");
   const [pendingAction, setPendingAction] = useState<
     "approve" | "remove" | null
   >(null);
@@ -125,14 +131,14 @@ function PendingPostCard({
       setPendingAction(action);
       if (action === "approve") {
         await approvePost(post.id);
-        toast.success("Post approved.");
+        toast.success(t("postApproved"));
       } else {
         await removePost(post.id);
-        toast.success("Post removed.");
+        toast.success(t("postRemoved"));
       }
       onAction();
     },
-    { errorToast: "Couldn't update the post." },
+    { errorToast: t("updateError") },
   );
 
   return (
@@ -148,21 +154,21 @@ function PendingPostCard({
           <Button
             size="sm"
             loading={busy && pendingAction === "approve"}
-            loadingText="Approving…"
+            loadingText={t("approving")}
             disabled={busy}
             onClick={() => void act("approve")}
           >
-            <CheckCircle2 className="mr-1.5 h-4 w-4" /> Approve
+            <CheckCircle2 className="mr-1.5 h-4 w-4" /> {t("approve")}
           </Button>
           <Button
             variant="destructive"
             size="sm"
             loading={busy && pendingAction === "remove"}
-            loadingText="Removing…"
+            loadingText={t("removing")}
             disabled={busy}
             onClick={() => void act("remove")}
           >
-            Remove
+            {t("remove")}
           </Button>
         </div>
       </CardContent>
@@ -171,13 +177,14 @@ function PendingPostCard({
 }
 
 export function ReportsQueue({ onResolved }: { onResolved: () => void }) {
+  const t = useTranslations("admin.community.reports");
   const [queue, setQueue] = useState<ModerationQueue | null>(null);
 
   const load = useCallback(() => {
     getModerationQueue()
       .then(setQueue)
-      .catch(() => toast.error("Couldn't load the queue."));
-  }, []);
+      .catch(() => toast.error(t("loadError")));
+  }, [t]);
 
   useEffect(load, [load]);
 
@@ -198,15 +205,15 @@ export function ReportsQueue({ onResolved }: { onResolved: () => void }) {
         (empty ? (
           <EmptyState
             icon={ShieldCheck}
-            title="All clear"
-            description="No reports or posts waiting for you."
+            title={t("allClear")}
+            description={t("allClearHint")}
           />
         ) : (
           <div className="space-y-4">
             {queue.pending_posts.length > 0 && (
               <div className="space-y-3">
                 <h3 className="text-sm font-medium text-muted-foreground">
-                  Waiting for approval
+                  {t("waiting")}
                 </h3>
                 {queue.pending_posts.map((post) => (
                   <PendingPostCard
@@ -220,7 +227,7 @@ export function ReportsQueue({ onResolved }: { onResolved: () => void }) {
             {queue.reports.length > 0 && (
               <div className="space-y-3">
                 <h3 className="text-sm font-medium text-muted-foreground">
-                  Reports
+                  {t("reports")}
                 </h3>
                 {queue.reports.map((report) => (
                   <ReportCard

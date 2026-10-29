@@ -511,7 +511,9 @@ export function CourseForm({
           if (accessDirty) await access.save(created.id);
         } catch (err) {
           toast.error(
-            `Course created, but how students get it was not saved. ${accessSentence(err)}`,
+            t("courseForm.createdNoAccess", {
+              reason: accessSentence(err),
+            }).trim(),
           );
           onCreated?.(created);
           navigate(`/admin/courses/${created.slug}`);
@@ -519,8 +521,8 @@ export function CourseForm({
         }
         toast.success(
           createForm.is_published
-            ? "Course published"
-            : "Course saved as a draft — add lessons, then publish",
+            ? t("courseForm.published")
+            : t("courseForm.savedDraft"),
         );
         void refreshSetupStatus();
         onCreated?.(created);
@@ -529,7 +531,7 @@ export function CourseForm({
       }
       if (!course) return;
       await saveSettings();
-      toast.success("Course saved");
+      toast.success(t("courseForm.saved"));
       void refreshSetupStatus();
     },
     {
@@ -538,7 +540,9 @@ export function CourseForm({
           accessSentence(err) ||
             saveError(
               err,
-              isCreate ? "Failed to create course" : "Failed to save course",
+              isCreate
+                ? t("courseForm.createFailed")
+                : t("courseForm.saveFailed"),
             ),
         ),
     },
@@ -553,10 +557,10 @@ export function CourseForm({
         body: JSON.stringify({ title: newModuleTitle }),
       });
       setNewModuleTitle("");
-      toast.success("Module added");
+      toast.success(t("courseForm.moduleAdded"));
       await loadCourse();
     },
-    { errorToast: "Failed to add module" },
+    { errorToast: t("courseForm.moduleAddFailed") },
   );
 
   // --- Lesson CRUD ---
@@ -576,10 +580,10 @@ export function CourseForm({
         }),
       });
       setEditingLessonId(null);
-      toast.success("Lesson saved");
+      toast.success(t("courseForm.lessonSaved"));
       await loadCourse();
     },
-    { errorToast: "Failed to save lesson" },
+    { errorToast: t("courseForm.lessonSaveFailed") },
   );
 
   const { run: handleCreateLesson, loading: savingLessonCreate } =
@@ -606,10 +610,10 @@ export function CourseForm({
           video: null,
           videoPreviewUrl: null,
         });
-        toast.success("Lesson added");
+        toast.success(t("courseForm.lessonAdded"));
         await loadCourse();
       },
-      { errorToast: "Failed to add lesson" },
+      { errorToast: t("courseForm.lessonAddFailed") },
     );
 
   // --- Create-mode local curriculum (no API calls until submit) ---
@@ -688,26 +692,24 @@ export function CourseForm({
           {/* The create page already carries the "New Course" heading. */}
           {!isCreate && (
             <CardHeader>
-              <CardTitle>Course Settings</CardTitle>
-              <CardDescription>
-                Update course details, pricing, and publishing.
-              </CardDescription>
+              <CardTitle>{t("courseForm.settingsTitle")}</CardTitle>
+              <CardDescription>{t("courseForm.settingsHint")}</CardDescription>
             </CardHeader>
           )}
           <CardContent className={isCreate ? "space-y-6 pt-6" : "space-y-6"}>
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
-                <Label htmlFor="title">Title</Label>
+                <Label htmlFor="title">{t("courseForm.title")}</Label>
                 {writing("title") && live?.working && (
                   <WorkingTag
                     specialist={live.working.specialist}
-                    label="writing"
+                    label={t("focus.writing")}
                   />
                 )}
               </div>
               <Input
                 id="title"
-                placeholder="e.g. Introduction to Photography"
+                placeholder={t("courseForm.titlePlaceholder")}
                 readOnly={writing("title")}
                 data-changed={fieldChanged("title") ? "true" : undefined}
                 className={
@@ -728,17 +730,19 @@ export function CourseForm({
             </div>
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">
+                  {t("courseForm.description")}
+                </Label>
                 {writing("description") && live?.working && (
                   <WorkingTag
                     specialist={live.working.specialist}
-                    label="writing"
+                    label={t("focus.writing")}
                   />
                 )}
               </div>
               <Textarea
                 id="description"
-                placeholder="Describe what students will learn..."
+                placeholder={t("courseForm.descriptionPlaceholder")}
                 readOnly={writing("description")}
                 data-changed={fieldChanged("description") ? "true" : undefined}
                 value={isCreate ? createForm.description : shown("description")}
@@ -769,7 +773,7 @@ export function CourseForm({
               />
             ) : (
               <div className="space-y-2">
-                <Label>Thumbnail</Label>
+                <Label>{t("courseForm.thumbnail")}</Label>
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                   <PhotoPicker
                     value={
@@ -818,7 +822,7 @@ export function CourseForm({
                         });
                       }
                     }}
-                    label="Choose thumbnail"
+                    label={t("courseForm.chooseThumbnail")}
                   />
                   {!isCreate && course && (
                     <OpenStudioButton
@@ -862,7 +866,7 @@ export function CourseForm({
                 ) : (
                   <ChevronDown className="h-4 w-4" />
                 )}
-                All details
+                {t("focus.allDetails")}
               </Button>
             )}
             {detailsShown && (
@@ -885,16 +889,17 @@ export function CourseForm({
                   }
                 />
                 <Label htmlFor="published">
-                  {isCreate ? "Publish immediately" : "Published"}
+                  {isCreate
+                    ? t("courseForm.publishNow")
+                    : t("courseForm.publishedLabel")}
                 </Label>
               </div>
             )}
             {detailsShown && (
               <div className="space-y-1.5">
-                <Label>Filters</Label>
+                <Label>{t("courseForm.filters")}</Label>
                 <p className="text-xs text-muted-foreground">
-                  Optional categories (level, style…) students can filter your
-                  courses by.
+                  {t("courseForm.filtersHint")}
                 </p>
                 <FilterPicker
                   value={filterOptionIds}
@@ -905,7 +910,7 @@ export function CourseForm({
             )}
             {detailsShown && (
               <div className="space-y-1.5">
-                <Label>Tags</Label>
+                <Label>{t("courseForm.tags")}</Label>
                 <TagInput value={tagIds} onChange={setTagIds} scope="course" />
               </div>
             )}
@@ -913,9 +918,9 @@ export function CourseForm({
               <Button
                 onClick={handleSave}
                 loading={saving}
-                loadingText="Saving…"
+                loadingText={t("courseForm.saving")}
               >
-                Save Changes
+                {t("courseForm.saveChanges")}
               </Button>
             )}
           </CardContent>
@@ -926,10 +931,9 @@ export function CourseForm({
           <>
             <Card>
               <CardHeader>
-                <CardTitle>Curriculum</CardTitle>
+                <CardTitle>{t("courseForm.curriculum")}</CardTitle>
                 <CardDescription>
-                  Add modules and lessons now — everything is created together
-                  in one step.
+                  {t("courseForm.curriculumCreateHint")}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -939,12 +943,16 @@ export function CourseForm({
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base">
-                      Module {moduleIndex + 1}: {mod.title}
+                      {t("courseForm.moduleTitle", {
+                        n: moduleIndex + 1,
+                        title: mod.title,
+                      })}
                     </CardTitle>
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary">
-                        {mod.lessons.length} lesson
-                        {mod.lessons.length !== 1 ? "s" : ""}
+                        {t("courses.lessonCount", {
+                          count: mod.lessons.length,
+                        })}
                       </Badge>
                       <Button
                         variant="ghost"
@@ -962,10 +970,12 @@ export function CourseForm({
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Title</TableHead>
-                          <TableHead>Video</TableHead>
-                          <TableHead>Preview</TableHead>
-                          <TableHead className="w-24">Actions</TableHead>
+                          <TableHead>{t("courseForm.title")}</TableHead>
+                          <TableHead>{t("courseForm.video")}</TableHead>
+                          <TableHead>{t("courseForm.preview")}</TableHead>
+                          <TableHead className="w-24">
+                            {t("courseForm.actions")}
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -981,12 +991,16 @@ export function CourseForm({
                                     lesson.video ? "success" : "secondary"
                                   }
                                 >
-                                  {lesson.video ? "Selected" : "No video"}
+                                  {lesson.video
+                                    ? t("courseForm.videoSelected")
+                                    : t("courseForm.noVideo")}
                                 </Badge>
                               </TableCell>
                               <TableCell>
                                 {lesson.is_free_preview && (
-                                  <Badge variant="outline">Free</Badge>
+                                  <Badge variant="outline">
+                                    {t("courseForm.free")}
+                                  </Badge>
                                 )}
                               </TableCell>
                               <TableCell>
@@ -1040,8 +1054,7 @@ export function CourseForm({
                                           setNewLesson(EMPTY_LESSON);
                                         }}
                                         saving={false}
-                                        heading="Edit Lesson"
-                                        saveLabel="Save"
+                                        editing
                                       />
                                     </div>
                                   </TableCell>
@@ -1080,7 +1093,7 @@ export function CourseForm({
                         setAddingLessonForModule(mod.tempId);
                       }}
                     >
-                      <Plus className="h-4 w-4" /> Add Lesson
+                      <Plus className="h-4 w-4" /> {t("courseForm.addLesson")}
                     </Button>
                   )}
                 </CardContent>
@@ -1091,7 +1104,7 @@ export function CourseForm({
               <CardContent className="p-4">
                 <div className="flex gap-2">
                   <Input
-                    placeholder="New module title"
+                    placeholder={t("courseForm.newModuleTitle")}
                     value={newModuleTitle}
                     onChange={(e) => setNewModuleTitle(e.target.value)}
                     onKeyDown={(e) => {
@@ -1099,7 +1112,7 @@ export function CourseForm({
                     }}
                   />
                   <Button className="gap-2 shrink-0" onClick={addLocalModule}>
-                    <Plus className="h-4 w-4" /> Add Module
+                    <Plus className="h-4 w-4" /> {t("courseForm.addModule")}
                   </Button>
                 </div>
               </CardContent>
@@ -1108,10 +1121,10 @@ export function CourseForm({
             <Button
               onClick={handleSave}
               loading={saving}
-              loadingText="Creating…"
+              loadingText={t("courseForm.creating")}
               disabled={!createForm.title.trim()}
             >
-              Create Course
+              {t("courseForm.createCourse")}
             </Button>
           </>
         )}
@@ -1121,9 +1134,9 @@ export function CourseForm({
           <>
             <Card>
               <CardHeader>
-                <CardTitle>Curriculum</CardTitle>
+                <CardTitle>{t("courseForm.curriculum")}</CardTitle>
                 <CardDescription>
-                  Organize your course into modules and lessons.
+                  {t("courseForm.curriculumHint")}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -1176,7 +1189,10 @@ export function CourseForm({
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex flex-wrap items-center gap-2 text-base">
                         <span>
-                          Module {mod.order}: {mod.title}
+                          {t("courseForm.moduleTitle", {
+                            n: mod.order,
+                            title: mod.title,
+                          })}
                         </span>
                         {inlineRedraft && meta?.titleTyping && (
                           <WorkingTag
@@ -1187,8 +1203,9 @@ export function CourseForm({
                       </CardTitle>
                       <div className="flex items-center gap-2">
                         <Badge variant="secondary">
-                          {mod.lessons.length} lesson
-                          {mod.lessons.length !== 1 ? "s" : ""}
+                          {t("courses.lessonCount", {
+                            count: mod.lessons.length,
+                          })}
                         </Badge>
                         <DeleteModuleButton
                           slug={slug}
@@ -1203,11 +1220,13 @@ export function CourseForm({
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Title</TableHead>
-                            <TableHead>Duration</TableHead>
-                            <TableHead>Video</TableHead>
-                            <TableHead>Preview</TableHead>
-                            <TableHead className="w-24">Actions</TableHead>
+                            <TableHead>{t("courseForm.title")}</TableHead>
+                            <TableHead>{t("courseForm.duration")}</TableHead>
+                            <TableHead>{t("courseForm.video")}</TableHead>
+                            <TableHead>{t("courseForm.preview")}</TableHead>
+                            <TableHead className="w-24">
+                              {t("courseForm.actions")}
+                            </TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -1257,8 +1276,8 @@ export function CourseForm({
                                       }
                                     >
                                       {lesson.video_url
-                                        ? "Uploaded"
-                                        : "No video"}
+                                        ? t("courseForm.videoUploaded")
+                                        : t("courseForm.noVideo")}
                                     </Badge>
                                     <CaptionsBadge
                                       status={lesson.captions_status}
@@ -1267,7 +1286,9 @@ export function CourseForm({
                                 </TableCell>
                                 <TableCell>
                                   {lesson.is_free_preview && (
-                                    <Badge variant="outline">Free</Badge>
+                                    <Badge variant="outline">
+                                      {t("courseForm.free")}
+                                    </Badge>
                                   )}
                                 </TableCell>
                                 <TableCell>
@@ -1342,7 +1363,7 @@ export function CourseForm({
                         className="gap-2"
                         onClick={() => setAddingLessonForModule(mod.id)}
                       >
-                        <Plus className="h-4 w-4" /> Add Lesson
+                        <Plus className="h-4 w-4" /> {t("courseForm.addLesson")}
                       </Button>
                     )}
                   </CardContent>
@@ -1354,7 +1375,7 @@ export function CourseForm({
               <CardContent className="p-4">
                 <div className="flex gap-2">
                   <Input
-                    placeholder="New module title"
+                    placeholder={t("courseForm.newModuleTitle")}
                     value={newModuleTitle}
                     onChange={(e) => setNewModuleTitle(e.target.value)}
                     onKeyDown={(e) => {
@@ -1365,9 +1386,9 @@ export function CourseForm({
                     className="gap-2 shrink-0"
                     onClick={handleAddModule}
                     loading={addingModule}
-                    loadingText="Adding…"
+                    loadingText={t("courseForm.adding")}
                   >
-                    <Plus className="h-4 w-4" /> Add Module
+                    <Plus className="h-4 w-4" /> {t("courseForm.addModule")}
                   </Button>
                 </div>
               </CardContent>
@@ -1391,16 +1412,17 @@ function DeleteModuleButton({
   moduleId: number;
   onDeleted: () => Promise<void>;
 }) {
+  const t = useTranslations("admin");
   const { run: handleDelete, loading } = useAsyncAction(
     async () => {
       if (!slug) return;
       await clientFetch(`/api/v1/courses/${slug}/modules/${moduleId}/`, {
         method: "DELETE",
       });
-      toast.success("Module deleted");
+      toast.success(t("courseForm.moduleDeleted"));
       await onDeleted();
     },
-    { errorToast: "Failed to delete module" },
+    { errorToast: t("courseForm.moduleDeleteFailed") },
   );
 
   return (
@@ -1425,16 +1447,17 @@ function DeleteLessonButton({
   lessonId: number;
   onDeleted: () => Promise<void>;
 }) {
+  const t = useTranslations("admin");
   const { run: handleDelete, loading } = useAsyncAction(
     async () => {
       if (!slug) return;
       await clientFetch(`/api/v1/courses/${slug}/lessons/${lessonId}/`, {
         method: "DELETE",
       });
-      toast.success("Lesson deleted");
+      toast.success(t("courseForm.lessonDeleted"));
       await onDeleted();
     },
-    { errorToast: "Failed to delete lesson" },
+    { errorToast: t("courseForm.lessonDeleteFailed") },
   );
 
   return (
@@ -1460,13 +1483,14 @@ function LessonContentField({
   onChange: (html: string) => void;
 }) {
   const editor = useRichEditor();
+  const t = useTranslations("admin");
   return (
     <button
       type="button"
       onClick={() =>
         editor?.openRichEditor({
           value,
-          title: "Lesson content",
+          title: t("courseForm.lessonContent"),
           onSave: onChange,
         })
       }
@@ -1479,7 +1503,7 @@ function LessonContentField({
         />
       ) : (
         <span className="text-muted-foreground">
-          Click to write lesson content…
+          {t("courseForm.writeContent")}
         </span>
       )}
     </button>
@@ -1512,35 +1536,24 @@ function LessonDescription({
   );
 }
 
+/** The badge colour per captions status; the words come from `courseForm.captions.<status>`. */
 const CAPTIONS = {
-  waiting: {
-    label: "Captions not started",
-    hint: "Captions start on their own within a few minutes.",
-    variant: "secondary",
-  },
-  working: {
-    label: "Captions in progress",
-    hint: "Captions are being written from the video's sound. Reload the page to see when they are ready.",
-    variant: "warning",
-  },
-  ready: {
-    label: "Captions ready",
-    hint: "Students can turn on captions and read the transcript under the video.",
-    variant: "success",
-  },
-  failed: {
-    label: "Captions failed",
-    hint: "No captions could be made from this video's sound. Replacing the video tries again.",
-    variant: "outline",
-  },
+  waiting: "secondary",
+  working: "warning",
+  ready: "success",
+  failed: "outline",
 } as const;
 
 function CaptionsBadge({ status }: { status: Lesson["captions_status"] }) {
+  const t = useTranslations("admin");
   if (!status) return null;
-  const { label, hint, variant } = CAPTIONS[status];
   return (
-    <Badge variant={variant} title={hint} className="whitespace-nowrap">
-      {label}
+    <Badge
+      variant={CAPTIONS[status]}
+      title={t(`courseForm.captions.${status}.hint`)}
+      className="whitespace-nowrap"
+    >
+      {t(`courseForm.captions.${status}.label`)}
     </Badge>
   );
 }
@@ -1558,6 +1571,8 @@ function LessonEditPanel({
   onCancel,
   saving,
 }: LessonEditPanelProps) {
+  const t = useTranslations("admin");
+  const tc = useTranslations("common");
   const [values, setValues] = useState({
     title: lesson.title,
     content_html: lesson.content_html,
@@ -1571,7 +1586,7 @@ function LessonEditPanel({
     <div className="border-t bg-muted/30 px-4 py-4 space-y-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label className="text-sm font-medium">Title</Label>
+          <Label className="text-sm font-medium">{t("courseForm.title")}</Label>
           <Input
             value={values.title}
             onChange={(e) => setValues({ ...values, title: e.target.value })}
@@ -1585,19 +1600,19 @@ function LessonEditPanel({
                 setValues({ ...values, is_free_preview: v })
               }
             />
-            <Label className="text-sm">Free Preview</Label>
+            <Label className="text-sm">{t("courseForm.freePreview")}</Label>
           </div>
         </div>
       </div>
       <div className="space-y-1.5">
-        <Label className="text-sm font-medium">Content</Label>
+        <Label className="text-sm font-medium">{t("courseForm.content")}</Label>
         <LessonContentField
           value={values.content_html}
           onChange={(html) => setValues({ ...values, content_html: html })}
         />
       </div>
       <div className="space-y-1.5">
-        <Label className="text-sm font-medium">Video</Label>
+        <Label className="text-sm font-medium">{t("courseForm.video")}</Label>
         <VideoPicker
           value={values.video}
           previewUrl={values.videoPreviewUrl}
@@ -1608,7 +1623,7 @@ function LessonEditPanel({
       </div>
       <div className="flex justify-end gap-2">
         <Button variant="ghost" size="sm" onClick={onCancel} disabled={saving}>
-          Cancel
+          {tc("actions.cancel")}
         </Button>
         <Button
           size="sm"
@@ -1619,10 +1634,10 @@ function LessonEditPanel({
             onSave(content_html === opened.current ? rest : values);
           }}
           loading={saving}
-          loadingText="Saving…"
+          loadingText={t("courseForm.saving")}
           disabled={!values.title.trim()}
         >
-          Save
+          {tc("actions.save")}
         </Button>
       </div>
     </div>
@@ -1637,8 +1652,8 @@ interface LessonCreatePanelProps {
   onSave: () => void;
   onCancel: () => void;
   saving: boolean;
-  heading?: string;
-  saveLabel?: string;
+  /** Editing a lesson already in the list, not adding a new one. */
+  editing?: boolean;
 }
 
 function LessonCreatePanel({
@@ -1647,21 +1662,24 @@ function LessonCreatePanel({
   onSave,
   onCancel,
   saving,
-  heading = "New Lesson",
-  saveLabel = "Add Lesson",
+  editing = false,
 }: LessonCreatePanelProps) {
+  const t = useTranslations("admin");
+  const tc = useTranslations("common");
   return (
     <div className="rounded-lg border bg-muted/30 px-4 py-4 space-y-4">
-      <p className="text-sm font-medium">{heading}</p>
+      <p className="text-sm font-medium">
+        {editing ? t("courseForm.editLesson") : t("courseForm.newLesson")}
+      </p>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label className="text-sm font-medium">Title</Label>
+          <Label className="text-sm font-medium">{t("courseForm.title")}</Label>
           <Input
             value={newLesson.title}
             onChange={(e) =>
               setNewLesson({ ...newLesson, title: e.target.value })
             }
-            placeholder="Lesson title"
+            placeholder={t("courseForm.lessonTitlePlaceholder")}
           />
         </div>
         <div className="flex items-end gap-3 pb-1">
@@ -1672,12 +1690,12 @@ function LessonCreatePanel({
                 setNewLesson({ ...newLesson, is_free_preview: v })
               }
             />
-            <Label className="text-sm">Free Preview</Label>
+            <Label className="text-sm">{t("courseForm.freePreview")}</Label>
           </div>
         </div>
       </div>
       <div className="space-y-1.5">
-        <Label className="text-sm font-medium">Content</Label>
+        <Label className="text-sm font-medium">{t("courseForm.content")}</Label>
         <LessonContentField
           value={newLesson.content_html}
           onChange={(html) =>
@@ -1686,7 +1704,7 @@ function LessonCreatePanel({
         />
       </div>
       <div className="space-y-1.5">
-        <Label className="text-sm font-medium">Video</Label>
+        <Label className="text-sm font-medium">{t("courseForm.video")}</Label>
         <VideoPicker
           value={newLesson.video}
           previewUrl={newLesson.videoPreviewUrl}
@@ -1701,16 +1719,18 @@ function LessonCreatePanel({
       </div>
       <div className="flex justify-end gap-2">
         <Button variant="ghost" size="sm" onClick={onCancel} disabled={saving}>
-          Cancel
+          {tc("actions.cancel")}
         </Button>
         <Button
           size="sm"
           onClick={onSave}
           loading={saving}
-          loadingText={saveLabel === "Save" ? "Saving…" : "Adding…"}
+          loadingText={
+            editing ? t("courseForm.saving") : t("courseForm.adding")
+          }
           disabled={!newLesson.title.trim()}
         >
-          {saveLabel}
+          {editing ? tc("actions.save") : t("courseForm.addLesson")}
         </Button>
       </div>
     </div>

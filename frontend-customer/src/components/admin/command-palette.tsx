@@ -227,12 +227,12 @@ export function CommandPalette({
           <div className="flex items-center gap-3">
             <span>
               <kbd className="font-mono rounded border px-1 bg-muted">↑</kbd>{" "}
-              <kbd className="font-mono rounded border px-1 bg-muted">↓</kbd> to
-              navigate
+              <kbd className="font-mono rounded border px-1 bg-muted">↓</kbd>{" "}
+              {t("palette.navigate")}
             </span>
             <span>
-              <kbd className="font-mono rounded border px-1 bg-muted">↵</kbd> to
-              select
+              <kbd className="font-mono rounded border px-1 bg-muted">↵</kbd>{" "}
+              {t("palette.select")}
             </span>
           </div>
         </div>
