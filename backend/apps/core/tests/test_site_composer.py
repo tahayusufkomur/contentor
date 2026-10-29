@@ -258,7 +258,7 @@ def catalog(monkeypatch):
         ]
         return curated_client.SearchPage(results=results, page=1, has_next=False)
 
-    def cache_remote_image(image):
+    def cache_remote_image(image, **kwargs):
         return SimpleNamespace(pk=uuid5(NAMESPACE_URL, image.asset_id))
 
     monkeypatch.setattr(sc.curated_client, "search", search)
@@ -988,7 +988,9 @@ def test_a_boxing_coach_never_gets_a_pole_dance_photo(monkeypatch):
     monkeypatch.setattr(
         sc.curated_client, "search", lambda *a, **k: curated_client.SearchPage(results=results, page=1, has_next=False)
     )
-    monkeypatch.setattr(sc.curated_cache, "cache_remote_image", lambda image: SimpleNamespace(pk=image.asset_id))
+    monkeypatch.setattr(
+        sc.curated_cache, "cache_remote_image", lambda image, **kwargs: SimpleNamespace(pk=image.asset_id)
+    )
     ctx = sc._ctx("general", "Iron Fist", "Boxing for beginners", "boxing")
     image, _ = sc._find_photo(["boxing coach"], "16:9", set(), ctx)
     assert image.asset_id == "box"  # names the subject: first
@@ -1009,7 +1011,9 @@ def test_a_peers_photo_loses_to_a_fresh_one_from_the_brief_queries(monkeypatch):
         )
 
     monkeypatch.setattr(sc.curated_client, "search", search)
-    monkeypatch.setattr(sc.curated_cache, "cache_remote_image", lambda image: SimpleNamespace(pk=image.asset_id))
+    monkeypatch.setattr(
+        sc.curated_cache, "cache_remote_image", lambda image, **kwargs: SimpleNamespace(pk=image.asset_id)
+    )
     ctx = sc._ctx("general", "Iron Fist", "Boxing for beginners", "boxing")
     peers = frozenset({"best", "other"})
 
@@ -1106,7 +1110,9 @@ def test_an_overlay_slot_never_gets_a_centered_photo_when_a_fitting_one_exists(m
         )
 
     monkeypatch.setattr(sc.curated_client, "search", search)
-    monkeypatch.setattr(sc.curated_cache, "cache_remote_image", lambda image: SimpleNamespace(pk=image.asset_id))
+    monkeypatch.setattr(
+        sc.curated_cache, "cache_remote_image", lambda image, **kwargs: SimpleNamespace(pk=image.asset_id)
+    )
     ctx = sc._ctx("general", "Iron Fist", "Boxing for beginners", "boxing")
     image, _ = sc._find_photo(["boxing"], "16:9", set(), ctx, wanted="left_third")
     assert image.asset_id == "left" and calls == ["left_third"]  # filtered server-side, pool never unfiltered
@@ -1126,7 +1132,9 @@ def test_an_overlay_slot_falls_back_to_the_unfiltered_search_and_prefers_unknown
         return curated_client.SearchPage(results=results, page=1, has_next=False)
 
     monkeypatch.setattr(sc.curated_client, "search", search)
-    monkeypatch.setattr(sc.curated_cache, "cache_remote_image", lambda image: SimpleNamespace(pk=image.asset_id))
+    monkeypatch.setattr(
+        sc.curated_cache, "cache_remote_image", lambda image, **kwargs: SimpleNamespace(pk=image.asset_id)
+    )
     ctx = sc._ctx("general", "Iron Fist", "Boxing for beginners", "boxing")
     image, _ = sc._find_photo(["boxing"], "16:9", set(), ctx, wanted="left_third")
     assert image.asset_id == "unknown"

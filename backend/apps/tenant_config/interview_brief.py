@@ -1567,19 +1567,26 @@ _STOP_WORDS = frozenset(
 )
 
 
-def subject_of(answers: dict) -> str:
+def subject_of(answers: dict, *, language: str | None = None) -> str:
     """What the coach teaches as a short visual subject ("boxing", "pole
     dance") for photo search and photo matching: their own first words, or
     the niche's when they name it ("yoga"). A niche alone would search a
-    boxing coach's photos as "fitness", and "general" as "coaching"."""
+    boxing coach's photos as "fitness", and "general" as "coaching".
+    Their words are in `language` (the site's); a search passes it so the subject comes back
+    in English, anything that is read as text leaves it out and gets their own words."""
     if focus := focus_of(answers):
         return focus["disciplines"][0]  # the one that leads; photo searches take a single subject
     niche = str(answers.get("niche") or "general").replace("_", " ")
     teaches = f"{answers.get('specialty') or ''} {answers.get('teaches') or ''}".lower()
     if niche != "general" and niche in teaches:
         return niche
-    words = [w for w in re.findall(r"[a-z]+", teaches) if w not in _STOP_WORDS]
-    return " ".join(words[:2]) or ("" if niche == "general" else niche)
+    words = [w for w in re.findall(r"[^\W\d_]+", teaches) if w not in _STOP_WORDS]
+    subject = " ".join(words[:2])
+    if subject and language:
+        from apps.core.onboarding.ai_curate import english_terms
+
+        subject = english_terms(subject, language=language)
+    return subject or ("" if niche == "general" else niche)
 
 
 # What each niche means, for Jev when the keyword table finds nothing.

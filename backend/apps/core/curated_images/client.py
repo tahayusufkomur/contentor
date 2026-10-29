@@ -432,7 +432,7 @@ def logo_query(subject: str) -> str:
     """The catalog query for logo marks about `subject` ("yoga", "yoga
     elegant"), or "" (browse) when it has none: a subject nothing is drawn for
     still gets marks to choose from. Search pages with what this returns so
-    every page of a walk agrees.
+    every page of a walk agrees. `subject` is English (see ai_curate.english_terms).
 
     The service answers "yoga logo" far better than a bare "yoga" (measured
     2026-10-12: twelve marks against none), so the word is added here.

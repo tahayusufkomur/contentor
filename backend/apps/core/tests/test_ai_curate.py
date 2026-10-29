@@ -12,7 +12,7 @@ def _row(pk, title, tags, position=0):
 
 
 def _tenant(answers, name="Glow Studio"):
-    return SimpleNamespace(wizard_state={"answers": answers}, name=name)
+    return SimpleNamespace(wizard_state={"answers": answers}, name=name, schema_name="public")
 
 
 def test_brief_from_tenant_reads_wizard_answers():
@@ -36,7 +36,7 @@ def test_brief_from_tenant_reads_wizard_answers():
 
 
 def test_brief_from_tenant_defaults_on_empty_state():
-    brief = ai_curate.CoachBrief.from_tenant(SimpleNamespace(wizard_state=None, name="X"))
+    brief = ai_curate.CoachBrief.from_tenant(SimpleNamespace(wizard_state=None, name="X", schema_name="public"))
     assert brief.niche == "general"
     assert brief.description == ""
     assert brief.followups == ()

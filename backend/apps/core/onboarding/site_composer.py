@@ -1327,7 +1327,7 @@ def _coach_data(tenant, brand) -> dict:
     subject = (
         interview_brief.say_list(focus["disciplines"])
         if focus and focus["mode"] == "equal"
-        else interview_brief.subject_of(answers)
+        else interview_brief.subject_of(answers, language=site_language(tenant))  # English: it is searched for
     )
     followups = [
         {"q": str(item.get("q") or "").strip()[:200], "a": str(item.get("a") or "").strip()[:500]}
@@ -2056,7 +2056,7 @@ def _find_photo(queries, aspect, used, ctx, pools=None, wanted=None, own=False, 
             break
     for image in candidates:
         try:
-            return image, curated_cache.cache_remote_image(image)
+            return image, curated_cache.cache_remote_image(image, translate=False)
         except curated_client.CuratedImageError:
             continue
     # Everything on topic is already placed: repeat a pool photo rather than leave
@@ -2067,7 +2067,7 @@ def _find_photo(queries, aspect, used, ctx, pools=None, wanted=None, own=False, 
             seen.update({i.asset_id: i for i in state["images"]})
     for image in _ranked(list(seen.values()), queries[0], ctx, wanted, allow_wrong=True):
         try:
-            return image, curated_cache.cache_remote_image(image)
+            return image, curated_cache.cache_remote_image(image, translate=False)
         except curated_client.CuratedImageError:
             continue
     return None, None
@@ -2084,6 +2084,7 @@ def _attach_images(tenant, page_key, blocks, entries, ctx, style_id, plan) -> li
         logger.exception("peer photos unavailable for %s", tenant.schema_name)
         avoid = frozenset()
     placed = []
+    described = []  # (image slot, its Photo, the catalog's description): alt texts to put in the site's language
     pools = {}  # (topic, orientation, placement) -> shared candidate pages for this page build
     n_all = n_rest = 0  # slots so far on this page, and those outside the hero (see _slot_topic)
     try:
@@ -2137,7 +2138,22 @@ def _attach_images(tenant, page_key, blocks, entries, ctx, style_id, plan) -> li
             hers = image.asset_id.startswith("own:")
             alt = (image.description or ("" if hers else brief.get("subject")) or "")[:200]
             target[field] = {"url": None, "photo_id": str(photo.pk), "alt": alt}
+            if alt:
+                described.append((target[field], photo, image.description))
+    _alt_in_site_language(described, ctx.get("language") or "en")
     return placed
+
+
+def _alt_in_site_language(described, language) -> None:
+    """The catalog describes photos in English: the page's alt texts, and the Photo rows made from them,
+    follow the site's language. One call for the whole page; the English stays when it fails."""
+    if language == "en" or not described:
+        return
+    alts = curated_cache.translate_descriptions([slot["alt"] for slot, _photo, _description in described], language)
+    for (slot, photo, description), alt in zip(described, alts, strict=True):
+        slot["alt"] = alt
+        if description and photo.alt_text == description:  # made from the catalog's words, not edited since
+            type(photo).objects.filter(pk=photo.pk).update(alt_text=alt)
 
 
 # ── public API ───────────────────────────────────────────────────────────────

@@ -171,7 +171,7 @@ def test_a_slot_her_photos_cannot_fill_goes_to_the_catalog(tenant, monkeypatch):
     stock = sc.curated_client.RemoteImage("box", "Boxing", "boxer wrapping hands, boxing gym", [], 1600, 900, "p", "w")
     page = sc.curated_client.SearchPage(results=[stock], page=1, has_next=False)
     monkeypatch.setattr(sc.curated_client, "search", lambda *a, **k: page)
-    monkeypatch.setattr(sc.curated_cache, "cache_remote_image", lambda image: f"photo-of-{image.asset_id}")
+    monkeypatch.setattr(sc.curated_cache, "cache_remote_image", lambda image, **kwargs: f"photo-of-{image.asset_id}")
     ctx = sc._ctx("general", "Iron Fist", "Boxing for beginners", "boxing")
 
     # Her one wide photo is already on the page: the next wide slot is the catalog's.

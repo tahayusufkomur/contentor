@@ -19,7 +19,7 @@ STATE = {
 
 
 def _tenant():
-    return SimpleNamespace(wizard_state=STATE, name="Glow", template_niche="yoga")
+    return SimpleNamespace(wizard_state=STATE, name="Glow", template_niche="yoga", schema_name="public")
 
 
 def test_coach_brief_carries_interview_facts():
@@ -37,6 +37,6 @@ def test_composer_coach_data_carries_interview_facts():
 
 def test_composer_coach_data_speaks_as_she_answered():
     several = {**STATE, "answers": {**STATE["answers"], "teachers": "several"}}
-    tenant = SimpleNamespace(wizard_state=several, name="Glow", template_niche="yoga")
+    tenant = SimpleNamespace(wizard_state=several, name="Glow", template_niche="yoga", schema_name="public")
     assert site_composer._coach_data(tenant, "Maya Laurent")["speaker"] == "we"
     assert site_composer._coach_data(_tenant(), "Maya Laurent")["speaker"] == "I"  # no answer: the guess

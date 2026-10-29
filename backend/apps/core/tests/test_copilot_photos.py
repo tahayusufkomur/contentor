@@ -18,11 +18,12 @@ pytestmark = pytest.mark.django_db
 
 
 def _tenant(niche="yoga", description="", name=""):
-    """CoachBrief.from_tenant only reads .wizard_state and .name — a stand-in
-    is enough, no tenant schema needed for these pure-pick tests."""
+    """CoachBrief.from_tenant only reads .wizard_state, .name and the schema (the site's language: public
+    means English) — a stand-in is enough, no tenant schema needed for these pure-pick tests."""
     return SimpleNamespace(
         wizard_state={"answers": {"niche": niche, "description": description}},
         name=name,
+        schema_name="public",
     )
 
 

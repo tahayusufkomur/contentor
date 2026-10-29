@@ -19,6 +19,7 @@ from django.conf import settings
 from django.core import signing
 from django.db import connection
 
+from apps.core.languages import site_language
 from apps.core.storage import build_s3_path, generate_presigned_download_url, get_s3_client, sign_if_s3_key
 
 from . import ass, covers, fonts, framing, moments
@@ -65,7 +66,13 @@ def available() -> bool:
 
 
 def options_of(reel) -> dict:
-    return {**OPTIONS, **{k: v for k, v in (reel.options or {}).items() if k in OPTIONS}}
+    opts = {**OPTIONS, **{k: v for k, v in (reel.options or {}).items() if k in OPTIONS}}
+    if "language" not in (reel.options or {}):
+        # Until she chooses (even "as spoken"), captions are in the site's language: it is who they are for.
+        spoken, site = (reel.video.captions_language or "")[:2], site_language()
+        if spoken and spoken != site and site in moments.LANGUAGES:
+            opts["language"] = site
+    return opts
 
 
 def kit() -> dict:
@@ -236,7 +243,9 @@ def end_card_of(reel, found_kit=None) -> dict:
         "site": found_kit["site"],
         "host": found_kit["host"],
         "logo": found_kit["logo"],
-        "line": opts["end_text"].strip()[:80] or END_LINES.get(language, END_LINES["en"]),
+        "line": opts["end_text"].strip()[:80]
+        or END_LINES.get(language)
+        or END_LINES.get(found_kit["language"], END_LINES["en"]),  # a language it has no line for: the site's
     }
 
 

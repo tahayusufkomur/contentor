@@ -25,6 +25,8 @@ from django.db import connection
 from django.db.models import Q
 
 from apps.core.curated_images import client as catalog
+from apps.core.curated_images.cache import translate_descriptions
+from apps.core.languages import site_language
 from apps.core.storage import generate_presigned_download_url, get_s3_client
 
 from .models import Photo
@@ -163,7 +165,7 @@ def _apply(photo, upload) -> None:
     if upload.status == "ready":
         changes = {"index_status": READY}
         if upload.description and not photo.alt_text:
-            changes["alt_text"] = upload.description[:300]
+            changes["alt_text"] = translate_descriptions([upload.description], site_language())[0][:300]
         if upload.subject_placement:
             changes["subject_placement"] = upload.subject_placement
         Photo.objects.filter(pk=photo.pk).update(**changes)

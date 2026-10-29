@@ -10,14 +10,17 @@ Spec: docs/superpowers/specs/2026-07-19-ai-touch-onboarding-design.md
 from __future__ import annotations
 
 import dataclasses
+import hashlib
 import re
 from dataclasses import dataclass
 
 from django.conf import settings
+from django.core.cache import cache
 from django_tenants.utils import schema_context
 from pydantic import BaseModel, Field
 
 from apps.core import ai as core_ai
+from apps.core.languages import site_language
 
 
 @dataclass(frozen=True)
@@ -29,6 +32,7 @@ class CoachBrief:
     goals: tuple[str, ...] = ()
     style: str = ""  # the look's style id
     brand_name: str = ""
+    language: str = "en"  # the site's: the language their words and photo titles are in
 
     @classmethod
     def from_tenant(cls, tenant) -> CoachBrief:
@@ -40,15 +44,60 @@ class CoachBrief:
             for item in ((answers.get("description_followups") or {}).get("items") or [])
             if str(item.get("q") or "").strip() and str(item.get("a") or "").strip()
         ) + tuple((f["q"], f["a"]) for f in interview_brief.composer_facts(answers))
+        language = site_language(tenant)
         return cls(
             niche=answers.get("niche") or "general",
-            subject=interview_brief.subject_of(answers),
+            subject=interview_brief.subject_of(answers, language=language),
             description=str(answers.get("description") or ""),
             followups=followups,
             goals=tuple(answers.get("goals") or ()),
             style=str(answers.get("style") or ""),
             brand_name=tenant.name or "",
+            language=language,
         )
+
+
+ENGLISH_TERMS_TTL = 30 * 24 * 3600
+_ENGLISH_TERMS_LABEL = "contentor:english-terms"
+_ENGLISH_TERMS_SYSTEM = """You turn what a creator wrote into plain English words for a stock photo search.
+
+Return 2 to 6 English words that name what a photo should show: the subject, the activity, the setting.
+Keep proper nouns. No sentences, no punctuation, no quotes."""
+
+
+class _EnglishTerms(BaseModel):
+    terms: str = ""
+
+
+def english_terms(words: str, *, language: str) -> str:
+    """`words` as English search terms. Pix4Less queries stay English (the plan's constraints), and the
+    creator's words are in the site's language; English comes back untouched without a model call.
+    One cached call otherwise; a failed call returns `words` as they were (the service translates
+    queries itself, so a search still works) and is not cached."""
+    words = " ".join((words or "").split())
+    if language == "en" or not words:
+        return words
+    key = "english-terms:" + hashlib.sha1(f"{language}\n{words}".encode(), usedforsecurity=False).hexdigest()
+    if (hit := cache.get(key)) is not None:
+        return hit
+    try:
+        parsed, _cost, _model = core_ai.structured(
+            system=_ENGLISH_TERMS_SYSTEM,
+            user=words,
+            output_model=_EnglishTerms,
+            model=settings.ONBOARDING_AI_MODEL,
+            max_tokens=200,
+            label=_ENGLISH_TERMS_LABEL,
+            effort="low",
+            language=None,
+        )
+    except core_ai.AiError:
+        return words
+    terms = " ".join(parsed.terms.split())
+    if not terms:
+        return words
+    cache.set(key, terms, ENGLISH_TERMS_TTL)
+    return terms
 
 
 def brief_block(brief: CoachBrief) -> str:
@@ -91,7 +140,8 @@ def brief_query(brief: CoachBrief, extra: str = "") -> str:
     parts = [brief.niche.replace("_", " "), brief.description]
     parts += [answer for _question, answer in brief.followups]
     parts.append(extra)
-    return " ".join(part.strip() for part in parts if part and part.strip())[:2000]
+    text = " ".join(part.strip() for part in parts if part and part.strip())[:2000]
+    return english_terms(text, language=brief.language)
 
 
 PHOTO_QUERY_MAX_WORDS = 14
@@ -115,7 +165,9 @@ def photo_query(brief: CoachBrief, extra: str = "") -> str:
     ("I will teach online - on site pole dance classes") describe a service, not
     a photograph. Niche plus the requested style is the visual signal; the
     caller widens (niche alone, then browse) when it wants more variety."""
-    words = f"{brief.subject or brief.niche.replace('_', ' ')} {extra or ''}".split()
+    # brief.subject is English already (from_tenant); `extra` is a title or a style in the site's language.
+    extra = english_terms(extra or "", language=brief.language)
+    words = f"{brief.subject or brief.niche.replace('_', ' ')} {extra}".split()
     return " ".join(words[:PHOTO_QUERY_MAX_WORDS])
 
 

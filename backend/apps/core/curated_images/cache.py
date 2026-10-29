@@ -15,11 +15,13 @@ Spec: docs/superpowers/specs/2026-08-09-curated-images-offload-design.md
 """
 
 import io
+import json
 import logging
 from urllib.parse import urlparse
 
 import requests
 from django.conf import settings
+from pydantic import BaseModel, Field
 
 from .client import CuratedImageError, RemoteImage
 
@@ -119,9 +121,52 @@ def _clean_mark(body: bytes, image: RemoteImage):
         return body, image.width, image.height
 
 
-def cache_remote_image(image: RemoteImage, *, logo: bool = False):
+_ALT_LABEL = "contentor:alt-text"  # the hub run's tag: a background run nobody waits on
+
+
+class _Translated(BaseModel):
+    texts: list[str] = Field(default_factory=list)
+
+
+_TRANSLATE_SYSTEM = """You translate short photo descriptions, used as alt text.
+
+You receive a JSON list of descriptions. Return texts: the same descriptions in the same order, one
+translation each, plain and brief like the originals. An empty description stays empty."""
+
+
+def translate_descriptions(texts: list[str], language: str) -> list[str]:
+    """The catalog describes its photos in English; the alt text a site shows follows the site's
+    `language`. One call for the whole batch, same order and length; English (or nothing to translate)
+    comes back as it is, and so does a batch the model could not translate: alt text is never worth a failure."""
+    from apps.core import ai
+
+    if language == "en" or not any(texts):
+        return list(texts)
+    try:
+        parsed, _cost, _model = ai.structured(
+            system=_TRANSLATE_SYSTEM,
+            user=json.dumps(list(texts), ensure_ascii=False),
+            output_model=_Translated,
+            model=settings.ONBOARDING_AI_MODEL,
+            max_tokens=400 + 120 * len(texts),
+            label=_ALT_LABEL,
+            effort="low",
+            language=language,
+        )
+    except ai.AiError as exc:
+        logger.warning("alt text not translated to %s: %s", language, exc)
+        return list(texts)
+    if len(parsed.texts) != len(texts):
+        logger.warning("alt text not translated to %s: %d back for %d", language, len(parsed.texts), len(texts))
+        return list(texts)
+    return [new or old for old, new in zip(texts, parsed.texts, strict=True)]
+
+
+def cache_remote_image(image: RemoteImage, *, logo: bool = False, translate: bool = True):
     """The tenant media.Photo for this catalog image, downloading it into tenant
-    storage on first use (`logo`: a mark, cleaned to a cutout on the way in).
+    storage on first use (`logo`: a mark, cleaned to a cutout on the way in; its
+    alt text is written in the site's language, unless the caller translates a
+    whole batch itself with `translate=False`).
     Callers must already be inside the tenant context.
     Function-local model import: core is SHARED_APPS, media is TENANT_APPS."""
     from apps.core.platform.uploads import _store_object
@@ -144,10 +189,15 @@ def cache_remote_image(image: RemoteImage, *, logo: bool = False):
     if logo:
         body, width, height = _clean_mark(body, image)
     _store_object(key, io.BytesIO(body), CONTENT_TYPE)
+    alt_text = image.description
+    if translate and alt_text:
+        from apps.core.languages import site_language
+
+        alt_text = translate_descriptions([alt_text], site_language())[0]
     return Photo.objects.create(
         s3_key=key,
         title=image.title,
-        alt_text=image.description,
+        alt_text=alt_text,
         content_type=CONTENT_TYPE,
         file_size=len(body),
         width=width,

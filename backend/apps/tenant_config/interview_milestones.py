@@ -687,9 +687,9 @@ def _look_photos(tenant, answers: dict) -> list[str]:
     coach sees boxing, not the yoga sample photos). The web rendition, the
     one the real site renders: the previews show a full-width hero, where the
     640 px thumbnail looked soft. The catalog's are cached for an hour."""
-    subject = brief.subject_of(answers)
     if tenant is None:
         return []
+    subject = brief.subject_of(answers, language=site_language(tenant))  # English: it is searched for
     # Her own wide photos first: the looks are previewed with the site's real pictures.
     own = _own_look_photos(answers, subject)
     if len(own) >= LOOK_PHOTOS or not subject:
@@ -818,7 +818,7 @@ def _one_hue(inks) -> bool:
     return 1 - widest_gap <= 1 / 6
 
 
-def _remote_logo_options(answers: dict, page: int) -> tuple[list[dict], bool] | None:
+def _remote_logo_options(answers: dict, page: int, language: str) -> tuple[list[dict], bool] | None:
     """One card page of catalog logo marks for what this coach teaches, and
     whether more follow; None when the catalog cannot be reached (the cards
     fall back to the local library). The catalog ranks them, so nothing is
@@ -827,7 +827,7 @@ def _remote_logo_options(answers: dict, page: int) -> tuple[list[dict], bool] | 
 
     start, per = page * LOGO_PAGE, client.MAX_PER_PAGE
     try:
-        query = client.logo_query(brief.subject_of(answers))
+        query = client.logo_query(brief.subject_of(answers, language=language))
         marks, more = [], True
         # The catalog serves 12 a page; a card page is 14.
         for upstream in range(start // per + 1, (start + LOGO_PAGE - 1) // per + 2):
@@ -859,7 +859,7 @@ def logo_cards(tenant, answers: dict, page: int = 0) -> dict:
     from apps.core.models import CuratedLogo
     from apps.core.onboarding.ai_curate import CoachBrief, shortlist
 
-    remote = _remote_logo_options(answers, page) if client.logos_available() else None
+    remote = _remote_logo_options(answers, page, site_language(tenant)) if client.logos_available() else None
     if remote is not None:
         options, more = remote
     else:
