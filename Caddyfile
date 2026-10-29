@@ -13,6 +13,11 @@
 }
 
 :80 {
+	# --- The old Turkish host: contentor.app serves Turkish at /tr now. One 301, on every path
+	# (the scheme is the public one: Caddy itself only ever sees plain HTTP) ---
+	@legacy_tr host tr.{$CONTENTOR_DOMAIN:localhost}
+	redir @legacy_tr {$FORWARDED_PROTO:http}://{$CONTENTOR_DOMAIN:localhost}/tr{uri} 301
+
 	# --- Platform API, webhooks, health — on every host ---
 	@api path /api/v1/* /api/health* /api/webhooks/* /api/schema*
 	handle @api {
