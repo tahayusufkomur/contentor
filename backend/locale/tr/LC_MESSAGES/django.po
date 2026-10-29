@@ -1811,6 +1811,31 @@ msgstr "yalnızca en son değişiklik geri alınabilir"
 msgid "nothing to update"
 msgstr "güncellenecek bir şey yok"
 
+#: apps/core/curated_images/cache.py
+#, fuzzy
+msgid "that photo could not be saved to your library"
+msgstr "o fotoğraf kitaplığına kaydedilemedi"
+
+#: apps/core/curated_images/client.py
+#, fuzzy
+msgid "the photo library is unavailable right now"
+msgstr "fotoğraf kitaplığı şu anda kullanılamıyor"
+
+#: apps/core/curated_images/client.py
+#, fuzzy
+msgid "image credits are used up for now"
+msgstr "görsel kredileri şimdilik tükendi"
+
+#: apps/core/curated_images/client.py
+#, fuzzy
+msgid "the photo library is not configured"
+msgstr "fotoğraf kitaplığı yapılandırılmamış"
+
+#: apps/core/curated_images/client.py
+#, fuzzy
+msgid "describe the image you want"
+msgstr "istediğin görseli açıkla"
+
 #: apps/core/curated_images/views.py
 #, fuzzy
 msgid "Unknown orientation."

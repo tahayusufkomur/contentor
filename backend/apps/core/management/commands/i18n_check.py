@@ -133,10 +133,23 @@ def _argument_texts(node) -> list[str]:
     return _texts(node)
 
 
+FONT_GENERIC = ("sans-serif", "serif", "monospace", "cursive")
+# a font name: quoted, or capitalised words (`Segoe UI`, `Times New Roman`); prose has lowercase words in it
+FONT_NAME = re.compile(r"""["'][^"']+["']|[A-Z][\w-]*(?: [A-Z0-9][\w-]*){0,2}""")
+
+
+def _is_font_stack(text: str) -> bool:
+    """A CSS font-family list (`Georgia, serif`): every part a font name, the last a generic family."""
+    parts = [part.strip() for part in text.split(",")]
+    return (
+        len(parts) > 1 and parts[-1] in FONT_GENERIC and all(FONT_NAME.fullmatch(p) or p in FONT_GENERIC for p in parts)
+    )
+
+
 def _counts(text: str) -> bool:
     if sum(c.isalpha() for c in text) < 2 or text.startswith("contentor:"):  # `contentor:` = a Hub AI-call label
         return False
-    if re.search(r",\s*(sans-serif|serif|monospace|cursive)$", text):  # a CSS font stack, not words
+    if _is_font_stack(text):
         return False
     # not text: UPPER_SNAKE codes, URLs, and lowercase identifiers (`not_found`, `post.not_ready`)
     return not re.fullmatch(r"[A-Z][A-Z0-9_]*|[a-z][a-z0-9_.-]*", text) and not re.match(r"https?://|/", text)

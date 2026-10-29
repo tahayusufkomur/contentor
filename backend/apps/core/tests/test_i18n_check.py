@@ -43,7 +43,10 @@ def test_ai_call_labels_are_not_counted():
 
 def test_css_font_stacks_are_not_counted():
     assert count_literals('x = {"body": "Helvetica, Arial, sans-serif", "heading": "Georgia, serif"}') == 0
+    assert count_literals('x = {"body": "Segoe UI, \'Times New Roman\', Arial, sans-serif"}') == 0
     assert count_literals('x = {"body": "Serif, sans-serifs are nice"}') == 1
+    assert count_literals('x = {"body": "Warm and calm, serif"}') == 1  # prose that ends like a font stack
+    assert count_literals('x = {"body": "Pick the one you like. Yours, serif"}') == 1
 
 
 def test_ratchet_counts_skip_tests_migrations_commands_and_admin(tmp_path):

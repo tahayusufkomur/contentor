@@ -21,3 +21,20 @@ def test_errors_follow_the_creator_language(tenant_ctx):
 
     assert response.status_code == 400
     assert response.json()["timezone"] == [translated("Unknown time zone.")]
+
+
+def test_the_fallback_draft_is_written_in_the_site_language(tenant_ctx):
+    """A creator in German, a site in Turkish: the draft is what the site's visitors read."""
+    from django.utils.translation import override
+
+    from apps.tenant_config import setup_flow
+    from apps.tenant_config.models import TenantConfig
+
+    TenantConfig.objects.all().delete()
+    TenantConfig.objects.create(brand_name="Studio", default_locale="tr")
+
+    with override("de"):
+        draft = setup_flow.fallback_draft("course", {"teaches": "yoga"})
+
+    assert draft.title == translated("Getting started with %(teaches)s") % {"teaches": "yoga"}
+    assert draft.modules[0].title == translated("Foundations")

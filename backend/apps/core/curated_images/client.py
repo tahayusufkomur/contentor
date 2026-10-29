@@ -18,6 +18,7 @@ from urllib.parse import urljoin
 import requests
 from django.conf import settings
 from django.core.cache import cache
+from django.utils.translation import gettext_lazy as _
 
 logger = logging.getLogger(__name__)
 
@@ -52,8 +53,8 @@ MAX_PER_PAGE = 12  # the service's hard page size
 # transparent background). The service never mixes the two.
 PHOTO = "photo"
 LOGO = "logo"
-UNAVAILABLE = "the photo library is unavailable right now"
-OUT_OF_CREDITS = "image credits are used up for now"
+UNAVAILABLE = _("the photo library is unavailable right now")
+OUT_OF_CREDITS = _("image credits are used up for now")
 
 # Generation (POST /v1/images/generate): the service's default model caps its
 # prompt at 451 characters, and a job ends in exactly one of these states.
@@ -162,7 +163,7 @@ def _request(
     for an allowed 404. Raises CuratedImageError for everything else. With
     ``files`` the body is multipart (``data`` its plain fields), not JSON."""
     if not available():
-        raise CuratedImageError("the photo library is not configured")
+        raise CuratedImageError(_("the photo library is not configured"))
     timeout = (_timeout()[0], read_timeout) if read_timeout else _timeout()
     base = {"X-API-Key": settings.CURATED_IMAGE_API_KEY} if files else _headers()  # requests sets the multipart type
     last_error: Exception | None = None
@@ -493,7 +494,7 @@ def generate(prompt: str, *, aspect_ratio: str = "16:9", idempotency_key: str) -
     """
     prompt = " ".join((prompt or "").split())[:GENERATION_PROMPT_MAX]
     if not prompt:
-        raise CuratedImageError("describe the image you want")
+        raise CuratedImageError(_("describe the image you want"))
     if is_fake():
         from . import fake
 

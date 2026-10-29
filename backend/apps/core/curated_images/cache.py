@@ -21,6 +21,7 @@ from urllib.parse import urlparse
 
 import requests
 from django.conf import settings
+from django.utils.translation import gettext_lazy as _
 from pydantic import BaseModel, Field
 
 from .client import CuratedImageError, RemoteImage
@@ -28,7 +29,7 @@ from .client import CuratedImageError, RemoteImage
 logger = logging.getLogger(__name__)
 
 CONTENT_TYPE = "image/webp"
-FAILED = "that photo could not be saved to your library"
+FAILED = _("that photo could not be saved to your library")
 
 
 def tenant_key_for(asset_id: str) -> str:
