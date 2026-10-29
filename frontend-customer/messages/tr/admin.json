@@ -1570,11 +1570,7 @@
         "push": "Telefon bildirimleri açık"
       },
       "preview": {
-        "caption": "Telefonda nasıl görünür",
-        "date": "9 Haziran Salı",
-        "title": "Başlığın",
-        "body": "Mesajın",
-        "now": "şimdi"
+        "caption": "Telefonda nasıl görünür"
       },
       "templateNamePrompt": "Bu şablonu adlandır:",
       "templateSaved": "Şablon kaydedildi",
@@ -1751,7 +1747,15 @@
     },
     "recurring": {
       "daily": "Her gün saat {time}",
-      "weekly": "Her {day} saat {time}",
+      "weekly": {
+        "mon": "Her Pazartesi saat {time}",
+        "tue": "Her Salı saat {time}",
+        "wed": "Her Çarşamba saat {time}",
+        "thu": "Her Perşembe saat {time}",
+        "fri": "Her Cuma saat {time}",
+        "sat": "Her Cumartesi saat {time}",
+        "sun": "Her Pazar saat {time}"
+      },
       "monthly": "Her ayın {day}. günü saat {time}",
       "loadError": "Yinelenen duyurular yüklenemedi.",
       "empty": "Henüz yinelenen duyuru yok.",
@@ -2854,11 +2858,10 @@
       "linkFallback": "bağlantı",
       "labelPlaceholder": "Etiket",
       "removeLink": "Bağlantıyı kaldır",
-      "suggest": {
-        "events": "Canlı Oturumlar",
-        "store": "Mağaza"
+      "addSuggestion": {
+        "events": "Canlı Oturumlar Ekle",
+        "store": "Mağaza Ekle"
       },
-      "addSuggestion": "{name} Ekle",
       "addLink": "Bağlantı ekle",
       "cta": "CTA butonu",
       "ctaPlaceholder": "Buton metni",

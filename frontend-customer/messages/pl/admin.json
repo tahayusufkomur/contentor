@@ -737,7 +737,7 @@
       "upgrade": "Twoje wiadomości są wysyłane z <b>{email}</b>, na który uczestnicy nie mogą odpowiedzieć. Przejdź na wyższy plan, aby zyskać własny adres i odbierać ich wiadomości e-mail prosto tutaj.",
       "choose": "Wybierz mój adres",
       "plans": "Zobacz plany",
-      "dismiss": "Odrzuć"
+      "dismiss": "Zamknij"
     }
   },
   "setup": {
@@ -1570,11 +1570,7 @@
         "push": "Mają włączone powiadomienia na telefonie"
       },
       "preview": {
-        "caption": "Jak to wygląda na telefonie",
-        "date": "Wtorek, 9 czerwca",
-        "title": "Twój tytuł",
-        "body": "Twoja wiadomość",
-        "now": "teraz"
+        "caption": "Jak to wygląda na telefonie"
       },
       "templateNamePrompt": "Nazwij ten szablon:",
       "templateSaved": "Szablon zapisany",
@@ -1587,7 +1583,7 @@
       "draftCleanup": "Wysłano, ale nie udało się usunąć wersji roboczej, z której ją przejrzano.",
       "sendError": "Nie udało się wysłać ogłoszenia",
       "send": {
-        "recurring": "Utwórz cykliczną",
+        "recurring": "Utwórz wiadomość cykliczną",
         "schedule": "Zaplanuj",
         "now": "Wyślij teraz"
       },
@@ -1751,7 +1747,15 @@
     },
     "recurring": {
       "daily": "Codziennie o {time}",
-      "weekly": "Co {day} o {time}",
+      "weekly": {
+        "mon": "W każdy poniedziałek o {time}",
+        "tue": "W każdy wtorek o {time}",
+        "wed": "W każdą środę o {time}",
+        "thu": "W każdy czwartek o {time}",
+        "fri": "W każdy piątek o {time}",
+        "sat": "W każdą sobotę o {time}",
+        "sun": "W każdą niedzielę o {time}"
+      },
       "monthly": "Co miesiąc w dniu {day} o {time}",
       "loadError": "Nie udało się załadować cyklicznych ogłoszeń.",
       "empty": "Nie ma jeszcze cyklicznych ogłoszeń.",
@@ -2709,7 +2713,7 @@
       "failure": {
         "disabled": "Projektowanie AI nie jest teraz dostępne. Spróbuj ponownie później.",
         "upgrade_required": "Niestandardowe sekcje są dostępne w płatnych planach.",
-        "quota_exhausted": "Wykorzystałeś zmiany AI na ten miesiąc. Odnowią się w przyszłym miesiącu.",
+        "quota_exhausted": "Limit zmian AI na ten miesiąc został wykorzystany. Odnowi się w przyszłym miesiącu.",
         "error": "Nie udało mi się tego zbudować. Spróbuj opisać to trochę inaczej."
       },
       "missing": "To jeszcze niemożliwe: {missing}. Zbudowałem coś najbardziej zbliżonego.",
@@ -2854,11 +2858,10 @@
       "linkFallback": "link",
       "labelPlaceholder": "Etykieta",
       "removeLink": "Usuń link",
-      "suggest": {
-        "events": "Sesje na żywo",
-        "store": "Sklep"
+      "addSuggestion": {
+        "events": "Dodaj sesje na żywo",
+        "store": "Dodaj sklep"
       },
-      "addSuggestion": "Dodaj {name}",
       "addLink": "Dodaj link",
       "cta": "Przycisk CTA",
       "ctaPlaceholder": "Tekst przycisku",

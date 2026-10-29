@@ -389,8 +389,7 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
                 }
                 className="inline-flex items-center gap-1 rounded-full border border-dashed px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
               >
-                <Plus className="h-3 w-3" />{" "}
-                {tr("addSuggestion", { name: tr(`suggest.${s.id}`) })}
+                <Plus className="h-3 w-3" /> {tr(`addSuggestion.${s.id}`)}
               </button>
             ))}
           </div>

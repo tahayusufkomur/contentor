@@ -5003,22 +5003,6 @@
     "src": "f54afed6",
     "reviewed": false
   },
-  "admin.messages.compose.preview.date": {
-    "src": "60efb5b4",
-    "reviewed": false
-  },
-  "admin.messages.compose.preview.title": {
-    "src": "d58ac0c2",
-    "reviewed": false
-  },
-  "admin.messages.compose.preview.body": {
-    "src": "f190c98e",
-    "reviewed": false
-  },
-  "admin.messages.compose.preview.now": {
-    "src": "c9bc849a",
-    "reviewed": false
-  },
   "admin.messages.compose.templateNamePrompt": {
     "src": "de7508b8",
     "reviewed": false
@@ -5607,8 +5591,32 @@
     "src": "0f0cf434",
     "reviewed": false
   },
-  "admin.messages.recurring.weekly": {
-    "src": "31867b91",
+  "admin.messages.recurring.weekly.mon": {
+    "src": "43208ab6",
+    "reviewed": false
+  },
+  "admin.messages.recurring.weekly.tue": {
+    "src": "7fc715fb",
+    "reviewed": false
+  },
+  "admin.messages.recurring.weekly.wed": {
+    "src": "25b28ee8",
+    "reviewed": false
+  },
+  "admin.messages.recurring.weekly.thu": {
+    "src": "b6f85fd8",
+    "reviewed": false
+  },
+  "admin.messages.recurring.weekly.fri": {
+    "src": "bffed185",
+    "reviewed": false
+  },
+  "admin.messages.recurring.weekly.sat": {
+    "src": "dae9c2f8",
+    "reviewed": false
+  },
+  "admin.messages.recurring.weekly.sun": {
+    "src": "5002d581",
     "reviewed": false
   },
   "admin.messages.recurring.monthly": {
@@ -9187,16 +9195,12 @@
     "src": "8d48d1f9",
     "reviewed": false
   },
-  "admin.owner.navbar.suggest.events": {
-    "src": "245bab9a",
+  "admin.owner.navbar.addSuggestion.events": {
+    "src": "52108c8b",
     "reviewed": false
   },
-  "admin.owner.navbar.suggest.store": {
-    "src": "0d8a7046",
-    "reviewed": false
-  },
-  "admin.owner.navbar.addSuggestion": {
-    "src": "3796d1b1",
+  "admin.owner.navbar.addSuggestion.store": {
+    "src": "d73c5a0e",
     "reviewed": false
   },
   "admin.owner.navbar.addLink": {

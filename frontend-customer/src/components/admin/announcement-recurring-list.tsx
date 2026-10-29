@@ -14,20 +14,19 @@ import {
   patchRecurring,
 } from "@/lib/announcements";
 import { useLocale, useTranslations } from "next-intl";
-import { weekdayNames } from "@/lib/calendar-utils";
 
-function summary(
+/** The weekdays, Monday first (Python's `weekday()`): each has its own whole
+ *  message, so a language can put the day in the case its sentence needs. */
+const WEEKDAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
+
+export function summary(
   r: RecurringAnnouncement,
-  locale: string,
   tr: ReturnType<typeof useTranslations>,
 ): string {
   const time = r.send_time?.slice(0, 5);
   if (r.frequency === "daily") return tr("daily", { time });
   if (r.frequency === "weekly")
-    return tr("weekly", {
-      day: weekdayNames(locale, "long")[r.weekday ?? 0],
-      time,
-    });
+    return tr(`weekly.${WEEKDAYS[r.weekday ?? 0]}`, { time });
   return tr("monthly", { day: r.day_of_month ?? 1, time });
 }
 
@@ -96,7 +95,7 @@ function RecurringRow({
         <div className="font-medium">{item.title}</div>
         <div className="text-xs text-muted-foreground">
           <Repeat className="mr-1 inline h-3 w-3 align-[-2px]" />
-          {summary(item, locale, tr)}
+          {summary(item, tr)}
           {item.is_active ? (
             <>
               {" "}

@@ -726,5 +726,11 @@
   },
   "footer": {
     "builtWith": "<brand>Contentor</brand> ile oluşturuldu"
+  },
+  "pushPreview": {
+    "date": "Salı, 9 Haziran",
+    "title": "Başlığın",
+    "body": "Mesajın",
+    "now": "şimdi"
   }
 }

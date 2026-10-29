@@ -1570,11 +1570,7 @@
         "push": "Handy-Benachrichtigungen an"
       },
       "preview": {
-        "caption": "So sieht es auf dem Handy aus",
-        "date": "Dienstag, 9. Juni",
-        "title": "Dein Titel",
-        "body": "Deine Nachricht",
-        "now": "jetzt"
+        "caption": "So sieht es auf dem Handy aus"
       },
       "templateNamePrompt": "Benenne diese Vorlage:",
       "templateSaved": "Vorlage gespeichert",
@@ -1751,7 +1747,15 @@
     },
     "recurring": {
       "daily": "Täglich um {time}",
-      "weekly": "Jeden {day} um {time}",
+      "weekly": {
+        "mon": "Jeden Montag um {time}",
+        "tue": "Jeden Dienstag um {time}",
+        "wed": "Jeden Mittwoch um {time}",
+        "thu": "Jeden Donnerstag um {time}",
+        "fri": "Jeden Freitag um {time}",
+        "sat": "Jeden Samstag um {time}",
+        "sun": "Jeden Sonntag um {time}"
+      },
       "monthly": "Monatlich an Tag {day} um {time}",
       "loadError": "Wiederkehrende Ankündigungen konnten nicht geladen werden.",
       "empty": "Noch keine wiederkehrenden Ankündigungen.",
@@ -2854,11 +2858,10 @@
       "linkFallback": "link",
       "labelPlaceholder": "Beschriftung",
       "removeLink": "Link entfernen",
-      "suggest": {
-        "events": "Live-Sessions",
-        "store": "Store"
+      "addSuggestion": {
+        "events": "Live-Sessions hinzufügen",
+        "store": "Shop hinzufügen"
       },
-      "addSuggestion": "{name} hinzufügen",
       "addLink": "Link hinzufügen",
       "cta": "CTA-Button",
       "ctaPlaceholder": "Button-Text",

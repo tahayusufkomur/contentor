@@ -1570,11 +1570,7 @@
         "push": "Phone notifications on"
       },
       "preview": {
-        "caption": "How it shows on a phone",
-        "date": "Tuesday, 9 June",
-        "title": "Your title",
-        "body": "Your message",
-        "now": "now"
+        "caption": "How it shows on a phone"
       },
       "templateNamePrompt": "Name this template:",
       "templateSaved": "Template saved",
@@ -1751,7 +1747,15 @@
     },
     "recurring": {
       "daily": "Daily at {time}",
-      "weekly": "Every {day} at {time}",
+      "weekly": {
+        "mon": "Every Monday at {time}",
+        "tue": "Every Tuesday at {time}",
+        "wed": "Every Wednesday at {time}",
+        "thu": "Every Thursday at {time}",
+        "fri": "Every Friday at {time}",
+        "sat": "Every Saturday at {time}",
+        "sun": "Every Sunday at {time}"
+      },
       "monthly": "Monthly on day {day} at {time}",
       "loadError": "Couldn't load recurring announcements.",
       "empty": "No recurring announcements yet.",
@@ -2854,11 +2858,10 @@
       "linkFallback": "link",
       "labelPlaceholder": "Label",
       "removeLink": "Remove link",
-      "suggest": {
-        "events": "Live Sessions",
-        "store": "Store"
+      "addSuggestion": {
+        "events": "Add Live Sessions",
+        "store": "Add Store"
       },
-      "addSuggestion": "Add {name}",
       "addLink": "Add link",
       "cta": "CTA button",
       "ctaPlaceholder": "Button text",

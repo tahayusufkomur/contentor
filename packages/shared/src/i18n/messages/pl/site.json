@@ -726,5 +726,11 @@
   },
   "footer": {
     "builtWith": "Zbudowano za pomocą <brand>Contentor</brand>"
+  },
+  "pushPreview": {
+    "date": "Wtorek, 9 czerwca",
+    "title": "Twój tytuł",
+    "body": "Twoja wiadomość",
+    "now": "teraz"
   }
 }
