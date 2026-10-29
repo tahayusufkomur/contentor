@@ -8,7 +8,6 @@ import logging
 
 from django.conf import settings
 from django.core.cache import cache
-from django.utils import translation
 from django.utils.translation import gettext_lazy as _
 from pydantic import BaseModel
 
@@ -151,6 +150,20 @@ def _items(field: str, raw: list[str]) -> list[str]:
     return list(items.values())[:MAX_ITEMS]
 
 
+def _described(result: dict) -> dict:
+    """The facts with their label and what they answer, in the language active now. Never cached: the About
+    step (the creator's language) and provisioning (English) share one cached analysis."""
+    facts = [
+        {
+            **fact,
+            "label": str(FIELD_METADATA[fact["field"]]["label"]),
+            "answers": str(FIELD_METADATA[fact["field"]]["answers"]),
+        }
+        for fact in result["facts"]
+    ]
+    return {**result, "facts": facts}
+
+
 def analyze(text: str) -> dict:
     """{"facts": [{"field", "label", "value", "items", "answers"}], "summary": str}
     for ``text``; empty on failure or when AI is disabled."""
@@ -166,9 +179,9 @@ def analyze(text: str) -> dict:
 
     # The cache first: provisioning re-reads the About step's analysis, and a
     # hub health probe that blips in between must not throw it away.
-    key = f"about-analyze:3:{translation.get_language()}:" + hashlib.sha256(clean.encode()).hexdigest()
+    key = "about-analyze:3:" + hashlib.sha256(clean.encode()).hexdigest()
     if (hit := cache.get(key)) is not None:
-        return hit
+        return _described(hit)
     if not ai_compose.compose_available():
         return empty
 
@@ -198,14 +211,11 @@ def analyze(text: str) -> dict:
         v = item.value.strip()[:200]
         if f in FIELD_METADATA and v and f not in seen:
             seen.add(f)
-            meta = FIELD_METADATA[f]
             facts.append(
                 {
                     "field": f,
-                    "label": str(meta["label"]),
                     "value": v,
                     "items": _items(f, item.items),
-                    "answers": str(meta["answers"]),
                 }
             )
 
@@ -214,4 +224,4 @@ def analyze(text: str) -> dict:
         "summary": parsed.summary.strip()[:200],
     }
     cache.set(key, result, CACHE_SECONDS)
-    return result
+    return _described(result)

@@ -1,5 +1,7 @@
 """Studio admin-kit registrations (coach SPA, tenant-schema billing models)."""
 
+from django.utils.translation import ngettext
+
 from apps.adminkit.options import ModelAdmin, admin_action
 from apps.adminkit.sites import studio_site
 from apps.core.currency import tenant_charge_currency
@@ -34,12 +36,20 @@ class SubscriptionPlanAdmin(ModelAdmin):
     )
     def deactivate(self, request, queryset):
         updated = queryset.update(is_active=False)
-        return f"Deactivated {updated} plan(s)."
+        return ngettext(
+            "Deactivated %(count)d plan.",
+            "Deactivated %(count)d plans.",
+            updated,
+        ) % {"count": updated}
 
     @admin_action(label="Activate", style="primary")
     def activate(self, request, queryset):
         updated = queryset.update(is_active=True)
-        return f"Activated {updated} plan(s)."
+        return ngettext(
+            "Activated %(count)d plan.",
+            "Activated %(count)d plans.",
+            updated,
+        ) % {"count": updated}
 
 
 @studio_site.register(Bundle)
@@ -60,12 +70,20 @@ class BundleAdmin(ModelAdmin):
     @admin_action(label="Deactivate", style="danger")
     def deactivate(self, request, queryset):
         updated = queryset.update(is_active=False)
-        return f"Deactivated {updated} bundle(s)."
+        return ngettext(
+            "Deactivated %(count)d bundle.",
+            "Deactivated %(count)d bundles.",
+            updated,
+        ) % {"count": updated}
 
     @admin_action(label="Activate", style="primary")
     def activate(self, request, queryset):
         updated = queryset.update(is_active=True)
-        return f"Activated {updated} bundle(s)."
+        return ngettext(
+            "Activated %(count)d bundle.",
+            "Activated %(count)d bundles.",
+            updated,
+        ) % {"count": updated}
 
 
 @studio_site.register(Payment)

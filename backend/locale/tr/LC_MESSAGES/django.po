@@ -78,7 +78,7 @@ msgstr "Geçersiz veya süresi dolmuş belirteç"
 #: apps/accounts/views.py
 #, fuzzy
 msgid "Token not valid for this tenant"
-msgstr "Belirteç bu kiracı için geçerli değil"
+msgstr "Belirteç bu site için geçerli değil"
 
 #: apps/accounts/views.py
 #, fuzzy
@@ -147,6 +147,34 @@ msgstr "Kurs bulunamadı."
 msgid "Access granted successfully."
 msgstr "Erişim başarıyla verildi."
 
+#: apps/billing/admin_panels.py apps/billing/tests/test_error_language.py
+#, python-format, fuzzy
+msgid "Deactivated %(count)d plan."
+msgid_plural "Deactivated %(count)d plans."
+msgstr[0] "%(count)d plan devre dışı bırakıldı."
+msgstr[1] "%(count)d plan devre dışı bırakıldı."
+
+#: apps/billing/admin_panels.py
+#, python-format, fuzzy
+msgid "Activated %(count)d plan."
+msgid_plural "Activated %(count)d plans."
+msgstr[0] "%(count)d plan etkinleştirildi."
+msgstr[1] "%(count)d plan etkinleştirildi."
+
+#: apps/billing/admin_panels.py
+#, python-format, fuzzy
+msgid "Deactivated %(count)d bundle."
+msgid_plural "Deactivated %(count)d bundles."
+msgstr[0] "%(count)d paket devre dışı bırakıldı."
+msgstr[1] "%(count)d paket devre dışı bırakıldı."
+
+#: apps/billing/admin_panels.py apps/billing/tests/test_error_language.py
+#, python-format, fuzzy
+msgid "Activated %(count)d bundle."
+msgid_plural "Activated %(count)d bundles."
+msgstr[0] "%(count)d paket etkinleştirildi."
+msgstr[1] "%(count)d paket etkinleştirildi."
+
 #: apps/billing/models/core.py
 #, fuzzy
 msgid "Add what members get first"
@@ -177,6 +205,16 @@ msgstr "En az bir öge gereklidir."
 msgid "A membership needs a price above zero."
 msgstr "Bir üyelik için sıfırın üzerinde bir fiyat gerekir."
 
+#: apps/billing/views/access.py apps/billing/ways.py
+#, fuzzy
+msgid "I could not find that item."
+msgstr "O öğeyi bulamadım."
+
+#: apps/billing/views/access.py apps/billing/ways.py
+#, fuzzy
+msgid "I could not read those settings."
+msgstr "O ayarları okuyamadım."
+
 #: apps/billing/views/bundles.py apps/courses/views.py apps/downloads/views.py
 #: apps/media/design_views.py apps/media/views.py
 #, fuzzy
@@ -206,7 +244,7 @@ msgstr "return_path göreli bir /setup yolu olmalıdır."
 msgid "No connected account yet."
 msgstr "Henüz bağlı bir hesap yok."
 
-#: apps/billing/views/payments.py
+#: apps/billing/views/payments.py apps/core/onboarding/views.py
 #, fuzzy
 msgid "Payment could not be processed. Please try again."
 msgstr "Ödeme işlenemedi. Lütfen tekrar dene."
@@ -300,6 +338,99 @@ msgid "A plan is already running; contact support to switch plans."
 msgstr ""
 "Zaten aktif bir plan var; plan değiştirmek için destek ekibiyle iletişime "
 "geç."
+
+#: apps/billing/ways.py
+#, fuzzy
+msgid "A Zoom session is free only."
+msgstr "Bir Zoom oturumu yalnızca ücretsizdir."
+
+#: apps/billing/ways.py
+#, fuzzy
+msgid "A bundle is sold once only."
+msgstr "Bir paket yalnızca tek seferlik satılır."
+
+#: apps/billing/ways.py
+#, fuzzy
+msgid "That kind of item has no ways in to set."
+msgstr "O tür bir öğenin ayarlanacak erişim yolu yoktur."
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid ""
+"The dates for %(what)s are not valid. Use whole days from 1 to %(max)d, or a"
+" calendar date."
+msgstr ""
+"%(what)s için tarihler geçerli değil. 1 ile %(max)d arasında tam gün veya "
+"bir takvim tarihi kullan."
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "Give %(what)s a span or a calendar date for each end, not both."
+msgstr ""
+"%(what)s için her bir uç için bir süre veya bir takvim tarihi ver, ikisini "
+"birden değil."
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "The dates for %(what)s close before they open."
+msgstr "%(what)s için tarihler açılmadan önce kapanıyor."
+
+#: apps/billing/ways.py
+#, fuzzy
+msgid "Add a price above 0."
+msgstr "0'ın üzerinde bir fiyat ekle."
+
+#: apps/billing/ways.py
+#, fuzzy
+msgid "I could not read which subscriptions to include."
+msgstr "Hangi aboneliklerin dahil edileceğini okuyamadım."
+
+#: apps/billing/ways.py
+#, fuzzy
+msgid "Choose at least one way in: free, sold once, or in a subscription."
+msgstr ""
+"En az bir erişim yolu seç: ücretsiz, tek seferlik satış veya bir abonelik "
+"içinde."
+
+#: apps/billing/ways.py
+#, fuzzy
+msgid "free access"
+msgstr "ücretsiz erişim"
+
+#: apps/billing/ways.py
+#, fuzzy
+msgid "the one-time sale"
+msgstr "tek seferlik satış"
+
+#: apps/billing/ways.py
+#, fuzzy
+msgid "A subscription is listed twice."
+msgstr "Bir abonelik iki kez listelenmiş."
+
+#: apps/billing/ways.py
+#, fuzzy
+msgid "One of those subscriptions no longer exists."
+msgstr "O aboneliklerden biri artık mevcut değil."
+
+#: apps/billing/ways.py
+#, fuzzy
+msgid "a subscription"
+msgstr "bir abonelik"
+
+#: apps/billing/ways.py
+#, fuzzy
+msgid "Only the owner can change a bundle's terms."
+msgstr "Bir paketin koşullarını yalnızca sahibi değiştirebilir."
+
+#: apps/billing/ways.py
+#, fuzzy
+msgid "Only the owner can change which subscriptions include this."
+msgstr "Bunu hangi aboneliklerin içereceğini yalnızca sahibi değiştirebilir."
+
+#: apps/billing/ways.py
+#, fuzzy
+msgid "Pick a subscription first, then include this in it."
+msgstr "Önce bir abonelik seç, ardından bunu ona dahil et."
 
 #: apps/blog/serializers.py
 #, fuzzy
@@ -790,7 +921,7 @@ msgstr "Belirteç gerekli"
 #: apps/core/onboarding/recovery.py apps/core/onboarding/views.py
 #, fuzzy
 msgid "Tenant not found"
-msgstr "Kiracı bulunamadı"
+msgstr "Site bulunamadı"
 
 #: apps/core/onboarding/recovery.py apps/core/onboarding/views.py
 #, fuzzy
@@ -1860,7 +1991,7 @@ msgstr "biz"
 #: apps/core/uploads/multipart.py apps/core/uploads/serializers.py
 #, fuzzy
 msgid "s3_key must be within this tenant's storage."
-msgstr "s3_key bu kiracının depolama alanında olmalıdır."
+msgstr "s3_key bu sitenin depolama alanında olmalıdır."
 
 #: apps/core/uploads/multipart.py apps/core/uploads/serializers.py
 #, fuzzy

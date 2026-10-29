@@ -356,7 +356,9 @@ def signup_checkout(request):
         )
     except ProviderError as exc:
         logger.warning("signup checkout failed slug=%s: %s", tenant.slug, exc)
-        return Response({"error": exc.code, "detail": str(exc)}, status=400)
+        return Response(
+            {"error": exc.code, "detail": _("Payment could not be processed. Please try again.")}, status=400
+        )
     logger.info("signup checkout started slug=%s", tenant.slug)
     return Response({"checkout_url": session.url, **embedded_fields(session.client_secret)})
 

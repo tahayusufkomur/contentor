@@ -14,6 +14,8 @@ from zoneinfo import ZoneInfo
 from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 
 from apps.billing.models import AccessWindow, SubscriptionPlan, SubscriptionPlanAccess
 
@@ -31,8 +33,8 @@ ALLOWED["zoom_class"] = ("free",)
 ALLOWED["bundle"] = ("buy",)
 
 _NOT_ALLOWED = {
-    "zoom_class": "A Zoom session is free only.",
-    "bundle": "A bundle is sold once only.",
+    "zoom_class": gettext_lazy("A Zoom session is free only."),
+    "bundle": gettext_lazy("A bundle is sold once only."),
 }
 _WINDOW_KEYS = ("opens_after_days", "opens_on", "closes_after_days", "closes_on")
 _MAX_DAYS = 3650
@@ -51,7 +53,7 @@ class WaysError(Exception):
 
 
 def item_for(kind: str, pk: int):
-    missing = WaysError("not_found", "I could not find that item.")
+    missing = WaysError("not_found", _("I could not find that item."))
     if kind not in KINDS:
         raise missing
     model = apps.get_model(KINDS[kind])
@@ -70,7 +72,7 @@ def kind_of(item) -> str:
     for kind, label in KINDS.items():
         if label == item._meta.label_lower:
             return kind
-    raise WaysError("not_found", "That kind of item has no ways in to set.")
+    raise WaysError("not_found", _("That kind of item has no ways in to set."))
 
 
 # ---- reading -----------------------------------------------------------------
@@ -145,7 +147,8 @@ def _clean_window(window, what: str) -> dict | None:
         return None
     bad = WaysError(
         "window",
-        f"The dates for {what} are not valid. Use whole days from 1 to {_MAX_DAYS}, or a calendar date.",
+        _("The dates for %(what)s are not valid. Use whole days from 1 to %(max)d, or a calendar date.")
+        % {"what": what, "max": _MAX_DAYS},
     )
     if not isinstance(window, dict) or set(window) - set(_WINDOW_KEYS):
         raise bad
@@ -165,14 +168,14 @@ def _clean_window(window, what: str) -> dict | None:
                 raise bad from None
         out[key] = value
     if ("opens_after_days" in out and "opens_on" in out) or ("closes_after_days" in out and "closes_on" in out):
-        raise WaysError("window", f"Give {what} a span or a calendar date for each end, not both.")
+        raise WaysError("window", _("Give %(what)s a span or a calendar date for each end, not both.") % {"what": what})
     for opens, closes in (("opens_after_days", "closes_after_days"), ("opens_on", "closes_on")):
         if (
             opens in out
             and closes in out
             and (out[closes] <= out[opens] if opens.endswith("_days") else out[closes] < out[opens])
         ):
-            raise WaysError("window", f"The dates for {what} close before they open.")
+            raise WaysError("window", _("The dates for %(what)s close before they open.") % {"what": what})
     return out or None
 
 
@@ -183,52 +186,52 @@ def _amount(raw) -> Decimal:
     except (InvalidOperation, ValueError):
         amount = None
     if amount is None or not amount.is_finite():
-        raise WaysError("price", "Add a price above 0.")
+        raise WaysError("price", _("Add a price above 0."))
     return amount
 
 
 def _clean(item, ways: dict, actor) -> dict:
     """The ways with the price as a Decimal and windows checked, or a WaysError. Writes nothing."""
     kind = kind_of(item)
-    unreadable = WaysError("no_way", "I could not read those settings.")
+    unreadable = WaysError("no_way", _("I could not read those settings."))
     if not isinstance(ways, dict):
         raise unreadable
     free, buy, plans = ways.get("free"), ways.get("buy"), ways.get("plans") or []
     if any(x is not None and not isinstance(x, dict) for x in (free, buy)):
         raise unreadable
     if not isinstance(plans, list) or not all(isinstance(p, dict) for p in plans):
-        raise WaysError("plan", "I could not read which subscriptions to include.")
+        raise WaysError("plan", _("I could not read which subscriptions to include."))
 
     for way, given in (("free", free is not None), ("buy", buy is not None), ("plans", bool(plans))):
         if given and way not in ALLOWED[kind]:
             raise WaysError("not_allowed", _NOT_ALLOWED[kind])
     if free is None and buy is None and not plans:
-        raise WaysError("no_way", "Choose at least one way in: free, sold once, or in a subscription.")
+        raise WaysError("no_way", _("Choose at least one way in: free, sold once, or in a subscription."))
 
     out = {"free": None, "buy": None, "plans": []}
     if free is not None:
-        out["free"] = {"window": _clean_window(free.get("window"), "free access")}
+        out["free"] = {"window": _clean_window(free.get("window"), _("free access"))}
     if buy is not None:
         price = _amount(buy.get("price"))
         if not 0 < price <= _MAX_PRICE:
-            raise WaysError("price", "Add a price above 0.")
-        out["buy"] = {"price": price, "window": _clean_window(buy.get("window"), "the one-time sale")}
+            raise WaysError("price", _("Add a price above 0."))
+        out["buy"] = {"price": price, "window": _clean_window(buy.get("window"), _("the one-time sale"))}
 
     ids = [p.get("plan_id") for p in plans]
     if len(set(ids)) != len(ids):
-        raise WaysError("plan", "A subscription is listed twice.")
+        raise WaysError("plan", _("A subscription is listed twice."))
     known = set(
         SubscriptionPlan.objects.filter(pk__in=[i for i in ids if isinstance(i, int)]).values_list("pk", flat=True)
     )
     if not known.issuperset(ids):
-        raise WaysError("plan", "One of those subscriptions no longer exists.")
+        raise WaysError("plan", _("One of those subscriptions no longer exists."))
     out["plans"] = [
-        {"plan_id": p["plan_id"], "window": _clean_window(p.get("window"), "a subscription")} for p in plans
+        {"plan_id": p["plan_id"], "window": _clean_window(p.get("window"), _("a subscription"))} for p in plans
     ]
 
     if actor is not None and getattr(actor, "role", None) != "owner":
         if kind == "bundle":
-            raise WaysError("owner_only", "Only the owner can change a bundle's terms.")
+            raise WaysError("owner_only", _("Only the owner can change a bundle's terms."))
         ctype = ContentType.objects.get_for_model(item)
         linked = SubscriptionPlanAccess.objects.filter(content_type=ctype, object_id=item.pk)
         was = {link.plan_id: _window_of(link) for link in linked}
@@ -236,7 +239,7 @@ def _clean(item, ways: dict, actor) -> dict:
             was = {p["plan_id"]: p["window"] for p in kept["plans"]}
         # A plan's window is live for every member, so it is the owner's too (Ruling 18).
         if was != {p["plan_id"]: p["window"] for p in out["plans"]}:
-            raise WaysError("owner_only", "Only the owner can change which subscriptions include this.")
+            raise WaysError("owner_only", _("Only the owner can change which subscriptions include this."))
     return out
 
 
@@ -318,12 +321,12 @@ def apply_shorthand(item, *, pricing_type: str | None = None, price=None, actor=
         }
     elif pricing_type == "subscription":
         if not current["plans"]:
-            raise WaysError("plan", "Pick a subscription first, then include this in it.")
+            raise WaysError("plan", _("Pick a subscription first, then include this in it."))
         ways["free"] = ways["buy"] = None
     elif price is not None:
         amount = _amount(price)
         if amount < 0:
-            raise WaysError("price", "Add a price above 0.")
+            raise WaysError("price", _("Add a price above 0."))
         if amount > 0:
             ways["buy"] = {"price": price, "window": buy_window}
         else:
@@ -441,7 +444,7 @@ def describe(ways: dict) -> str:
         groups: dict[tuple, list[str]] = {}
         for p in ways["plans"]:
             if p["plan_id"] not in names:
-                raise WaysError("plan", "One of those subscriptions no longer exists.")
+                raise WaysError("plan", _("One of those subscriptions no longer exists."))
             clauses = tuple(
                 _clauses(p.get("window"), "after {} of membership", "for {} of membership", "until {} into membership")
             )

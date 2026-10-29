@@ -1,6 +1,7 @@
 """One URL for an item's ways in: the Access section loads and saves through it."""
 
 from django.contrib.contenttypes.models import ContentType
+from django.utils.translation import gettext as _
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -54,14 +55,14 @@ def access_detail(request, kind, pk):
     """
     try:
         if kind not in ways.KINDS:
-            raise ways.WaysError("not_found", "I could not find that item.")
+            raise ways.WaysError("not_found", _("I could not find that item."))
         if request.method == "GET" and pk == 0 and request.query_params.get("choices"):
             return Response(_payload(request, kind, None))
         item = ways.item_for(kind, pk)
         if request.method == "PUT":
             new = request.data.get("ways") if isinstance(request.data, dict) else None
             if not isinstance(new, dict):
-                raise ways.WaysError("ways", "I could not read those settings.")
+                raise ways.WaysError("ways", _("I could not read those settings."))
             ways.set_ways(item, new, actor=request.user)
     except ways.WaysError as error:
         code = status.HTTP_404_NOT_FOUND if error.code == "not_found" else status.HTTP_400_BAD_REQUEST

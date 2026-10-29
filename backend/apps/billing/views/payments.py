@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 def _provider_error_response(exc, http_status=status.HTTP_400_BAD_REQUEST) -> Response:
     """Log the full provider error but return only a safe, generic detail — raw
     Stripe exception text must not reach the client."""
-    logger.warning("billing provider error (%s): %s", getattr(exc, "code", "?"), exc)
+    logger.warning("billing provider error (%s): %s", getattr(exc, "code", "?"), exc, exc_info=True)
     return Response(
         {
             "error": getattr(exc, "code", "PROVIDER_ERROR"),

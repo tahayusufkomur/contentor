@@ -26,6 +26,7 @@ from apps.billing.providers.types import ProviderError
 from apps.core.monetization import can_monetize, is_paid_active
 from apps.core.permissions import IsOwner
 
+from .payments import _provider_error_response
 from .platform import _tenant_origin
 
 logger = logging.getLogger(__name__)
@@ -91,10 +92,7 @@ def connect_onboard(request):
             account_id=account_id, refresh_url=refresh_url, return_url=return_url
         )
     except ProviderError as exc:
-        return Response(
-            {"error": exc.code, "detail": str(exc)},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+        return _provider_error_response(exc)
 
     return Response({"onboarding_url": onboarding_url}, status=status.HTTP_200_OK)
 
@@ -112,7 +110,7 @@ def connect_dashboard(request):
     try:
         url = connect.create_dashboard_link(account_id=tenant.stripe_account_id)
     except ProviderError as exc:
-        return Response({"error": exc.code, "detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        return _provider_error_response(exc)
     return Response({"dashboard_url": url}, status=status.HTTP_200_OK)
 
 

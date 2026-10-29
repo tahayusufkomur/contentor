@@ -39,6 +39,8 @@ from apps.core.models import Domain, PlatformPlan, PlatformSubscription
 from apps.core.monetization import TRIAL_PLAN_NAME, trial_days_for
 from apps.core.permissions import IsCoachOrOwner
 
+from .payments import _provider_error_response
+
 logger = logging.getLogger(__name__)
 
 
@@ -164,10 +166,7 @@ def start_checkout(request):
             plan.pk,
             exc,
         )
-        return Response(
-            {"error": exc.code, "detail": str(exc)},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+        return _provider_error_response(exc)
 
     return Response(
         {
@@ -285,7 +284,7 @@ def _apply_action(tenant, action) -> Response | None:
         updated = get_provider().update_subscription(sub, action)
     except ProviderError as exc:
         logger.warning("plan action %s failed tenant=%s: %s", action, tenant.schema_name, exc)
-        return Response({"error": exc.code, "detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        return _provider_error_response(exc)
     if updated is not None:
         # The webhook brings the same object; syncing now shows it at once.
         _handle_subscription_event({"data": {"object": updated}})

@@ -277,3 +277,47 @@ def test_analyze_keeps_its_result_when_the_ai_probe_blips():
     assert first["facts"]
     with mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=False):
         assert about_check.analyze(text) == first
+
+
+def test_analyze_in_the_creators_language_is_reused_by_provisioning_in_english():
+    """The About step runs in the creator's language, provisioning (a Celery task) in English: one model call."""
+    import uuid
+
+    from django.utils import translation
+
+    from apps.core import ai as core_ai
+    from apps.core.onboarding import about_check
+    from apps.core.tests.i18n_utils import translated
+
+    parsed = about_check.AboutAnalysis(facts=[about_check.FactItem(field="story", value="I teach yoga.")])
+    text = f"bio {uuid.uuid4()}"
+    with (
+        mock.patch("apps.core.onboarding.ai_compose.compose_available", return_value=True),
+        mock.patch("apps.core.onboarding.ai_compose.record_spend"),
+        mock.patch.object(core_ai, "structured", return_value=(parsed, 0.0, "m")) as model,
+    ):
+        with translation.override("tr"):
+            step = about_check.analyze(text)
+        with translation.override("en"):
+            provisioning = about_check.analyze(text)
+    assert model.call_count == 1
+    assert [f["value"] for f in provisioning["facts"]] == ["I teach yoga."]
+    assert step["facts"][0]["label"] == translated("Your story & background")
+    assert provisioning["facts"][0]["label"] == "Your story & background"
+
+
+def test_signup_checkout_failure_speaks_the_page_language_without_raw_provider_text(starter):
+    """Reaches a `_()` in signup_checkout (a throwaway `_` once shadowed gettext); never shows Stripe's text."""
+    from apps.billing.providers.types import ProviderError
+    from apps.core.tests.i18n_utils import translated
+
+    _verify("new-site-1a5701")
+    token = create_signup_token("iv@test.dev", "Iv", "new-site-1a5701", "global")
+    client = APIClient(HTTP_HOST="localhost")
+    client.cookies["NEXT_LOCALE"] = "tr"
+    provider = mock.Mock(name="stripe")
+    provider.create_checkout_session.side_effect = ProviderError("Stripe is not configured (STRIPE_SECRET_KEY missing)")
+    with mock.patch("apps.billing.providers.get_provider", return_value=provider):
+        resp = client.post("/api/v1/onboarding/signup/checkout/", {"token": token}, format="json")
+    assert resp.status_code == 400
+    assert resp.json()["detail"] == translated("Payment could not be processed. Please try again.")
