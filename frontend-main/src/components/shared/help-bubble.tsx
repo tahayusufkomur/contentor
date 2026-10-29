@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { stripLocale } from "@/lib/locale-href";
+import { languageHeader } from "@/lib/api/page-language";
 import {
   ArrowRight,
   MessageCircleQuestion,
@@ -149,7 +150,7 @@ async function rateAnswer(
   try {
     const res = await fetch("/api/v1/ai/rate/", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...languageHeader() },
       body: JSON.stringify({
         transcript_id: meta.transcriptId,
         rate_token: meta.rateToken,
@@ -173,7 +174,7 @@ async function streamChat(
 ): Promise<"ai" | "human"> {
   const res = await fetch("/api/v1/help/chat/", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...languageHeader() },
     credentials: "same-origin",
     body: JSON.stringify({ messages, session_id: getSessionId() }),
   });
@@ -248,7 +249,7 @@ async function fetchThread(after = 0): Promise<ThreadPayload | null> {
   try {
     const res = await fetch(
       `/api/v1/help/thread/?session=${getSessionId()}&after=${after}`,
-      { credentials: "same-origin" },
+      { credentials: "same-origin", headers: languageHeader() },
     );
     if (res.status === 404) {
       return {
@@ -270,7 +271,7 @@ async function sendHumanMessage(content: string): Promise<boolean> {
   try {
     const res = await fetch("/api/v1/help/human-message/", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...languageHeader() },
       credentials: "same-origin",
       body: JSON.stringify({ session_id: getSessionId(), content }),
     });
@@ -285,7 +286,7 @@ async function requestHuman(): Promise<boolean> {
   try {
     const res = await fetch("/api/v1/help/human-request/", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...languageHeader() },
       credentials: "same-origin",
       body: JSON.stringify({ session_id: getSessionId() }),
     });
@@ -353,7 +354,7 @@ export function HelpBubble() {
   const hydratedRef = useRef(false);
 
   useEffect(() => {
-    fetch("/api/v1/help/status/")
+    fetch("/api/v1/help/status/", { headers: languageHeader() })
       .then((res) => res.json())
       .then((data: { enabled: boolean }) => setEnabled(Boolean(data.enabled)))
       .catch(() => setEnabled(false));

@@ -11,7 +11,15 @@ type Messages = Record<string, unknown>;
 const SHARED = new Set(["site", "studio"]);
 // `studio` serves the shared creator components on /admin (English there);
 // `site` is loaded so the types match the shared files.
-const NAMESPACES = ["marketing", "pricing", "auth", "common", "site", "studio"];
+const NAMESPACES = [
+  "marketing",
+  "pricing",
+  "auth",
+  "common",
+  "dashboard",
+  "site",
+  "studio",
+];
 
 async function load(locale: string, ns: string): Promise<Messages> {
   try {

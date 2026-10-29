@@ -17,6 +17,8 @@ export interface MyTenant {
     | "failed";
   plan_name: string | null;
   domain: string;
+  /** The site's language (a locale code). */
+  language: string;
   studio_url: string;
   created_at: string;
   /** Why the coach can't delete this platform (null = they can). */

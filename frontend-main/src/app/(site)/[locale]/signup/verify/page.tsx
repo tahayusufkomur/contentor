@@ -29,6 +29,7 @@ import {
   startSignupCheckout,
 } from "@/lib/api/onboarding";
 import { ApiError } from "@/types/api";
+import { languageHeader } from "@/lib/api/page-language";
 
 type VerifyState = "verifying" | "card" | "preparing" | "expired" | "error";
 type ResumeState = "idle" | "sent" | "closed" | "failed";
@@ -104,6 +105,7 @@ export default function SignupVerifyPage() {
         try {
           const res = await fetch(`/api/v1/onboarding/status/?slug=${slug}`, {
             credentials: "same-origin",
+            headers: languageHeader(),
           });
           if (!res.ok) return;
           const data = await res.json();
@@ -141,7 +143,7 @@ export default function SignupVerifyPage() {
     resumeToken.current = proof;
     fetch("/api/v1/onboarding/signup/verify/", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...languageHeader() },
       body: JSON.stringify({ token: proof, session_id: sessionId }),
       credentials: "same-origin",
     })

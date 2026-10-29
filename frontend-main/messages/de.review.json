@@ -287,6 +287,14 @@
     "src": "2828a8ff",
     "reviewed": false
   },
+  "auth.signup.siteLanguageLabel": {
+    "src": "12f69cc8",
+    "reviewed": false
+  },
+  "auth.signup.siteLanguageHint": {
+    "src": "18c2b59c",
+    "reviewed": false
+  },
   "auth.login.title": {
     "src": "7c39b5a1",
     "reviewed": false
@@ -581,6 +589,10 @@
   },
   "common.meta.ogAlt": {
     "src": "77cfd76d",
+    "reviewed": false
+  },
+  "dashboard.language": {
+    "src": "89b86ab0",
     "reviewed": false
   },
   "marketing.hero.pill": {

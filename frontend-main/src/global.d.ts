@@ -1,5 +1,6 @@
 import type auth from "../messages/en/auth.json";
 import type common from "../messages/en/common.json";
+import type dashboard from "../messages/en/dashboard.json";
 import type marketing from "../messages/en/marketing.json";
 import type pricing from "../messages/en/pricing.json";
 import type site from "@shared/i18n/messages/en/site.json";
@@ -12,6 +13,7 @@ declare module "next-intl" {
       pricing: typeof pricing;
       auth: typeof auth;
       common: typeof common;
+      dashboard: typeof dashboard;
       site: typeof site;
       studio: typeof studio;
     };

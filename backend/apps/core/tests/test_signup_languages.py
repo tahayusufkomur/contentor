@@ -175,3 +175,10 @@ def test_my_tenants_returns_each_sites_language(restore_public):
         assert rows["lang-site-unbuilt"]["language"] == "de"
     finally:
         _drop("lang_site_built", "lang_site_unbuilt")
+
+
+def test_the_signed_in_user_carries_the_creators_language():
+    from apps.accounts.serializers import UserSerializer
+
+    user = User(email=EMAIL, name="Lang", role="coach", preferred_locale="tr")
+    assert UserSerializer(user).data["preferred_locale"] == "tr"

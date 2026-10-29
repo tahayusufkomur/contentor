@@ -10,9 +10,10 @@ import { getMyTenants, type MyTenant } from "@/lib/tenants";
 import { PublishControls } from "@/components/dashboard/publish-controls";
 import { PlatformCardDomainCta } from "@/components/dashboard/platform-card-domain-cta";
 import { DeletePlatform } from "@/components/dashboard/delete-platform";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { localizedHref } from "@/lib/locale-href";
+import { nativeName } from "@shared/i18n/locales";
 
 /** Status as a coloured dot and a word (spec 5.5). Token colours only:
  * chart-2 is the system's green, marketing-accent its brass. */
@@ -29,6 +30,7 @@ const STATUS: Record<
 
 function PlatformCard({ tenant }: { tenant: MyTenant }) {
   const locale = useLocale();
+  const t = useTranslations("dashboard");
   // Fallback: an unknown backend value must never 500 the dashboard.
   const status = STATUS[tenant.provisioning_status] ?? STATUS.pending;
   const isReady = tenant.provisioning_status === "ready" && tenant.is_active;
@@ -59,6 +61,12 @@ function PlatformCard({ tenant }: { tenant: MyTenant }) {
           Plan{" "}
           <span className="font-medium text-foreground">
             {tenant.plan_name ?? "Free"}
+          </span>
+        </span>
+        <span>
+          {t("language")}{" "}
+          <span className="font-medium text-foreground">
+            {nativeName(tenant.language)}
           </span>
         </span>
         <span className="inline-flex items-center gap-1">

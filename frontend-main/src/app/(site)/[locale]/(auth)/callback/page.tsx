@@ -6,9 +6,13 @@ import { AlertCircle } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { useLocaleNavigate } from "@/i18n/navigation";
+import { useNavigate } from "@shared/navigation/navigation-provider";
+import { resolveLocale } from "@shared/i18n/locales";
+import { localizedHref } from "@/lib/locale-href";
 
 export default function CallbackPage() {
   const navigate = useLocaleNavigate();
+  const goTo = useNavigate();
   const searchParams = useSearchParams();
   const [error, setError] = useState("");
 
@@ -32,7 +36,7 @@ export default function CallbackPage() {
             setError("Authentication failed");
             return;
           }
-          navigate("/");
+          navigate("/dashboard");
         })
         .catch(() => setError("Network error"));
       return;
@@ -50,10 +54,14 @@ export default function CallbackPage() {
           setError(data.detail || "Verification failed");
           return;
         }
-        navigate("/");
+        // A creator lands on their dashboard in their own language.
+        const { user } = await res.json();
+        goTo(
+          localizedHref("/dashboard", resolveLocale(user?.preferred_locale)),
+        );
       })
       .catch(() => setError("Network error"));
-  }, [searchParams, navigate]);
+  }, [searchParams, navigate, goTo]);
 
   if (error) {
     return (

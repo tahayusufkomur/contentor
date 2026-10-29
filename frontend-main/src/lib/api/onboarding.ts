@@ -8,6 +8,7 @@
 
 import type { CheckoutStart } from "@shared/checkout/embedded-checkout";
 import { ApiError } from "@/types/api";
+import { languageHeader } from "./page-language";
 
 export interface SeedFromTemplateResponse {
   slug: string;
@@ -19,16 +20,20 @@ export interface SeedFromTemplateResponse {
  * Logged-in coach creating an additional platform — skips the email
  * verification round-trip. The session cookie proves email ownership, so the
  * backend mints the signup token directly and we resume at `/signup/verify`.
- * The new site is named in its own /setup.
+ * The new site is named in its own /setup. `locale` is the creator's language
+ * (the page's), `siteLocale` the new site's.
  */
-export async function createPlatformAuthenticated(): Promise<{
+export async function createPlatformAuthenticated(
+  locale: string,
+  siteLocale: string,
+): Promise<{
   token: string;
 }> {
   const res = await fetch("/api/v1/onboarding/signup/authenticated/", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...languageHeader() },
     credentials: "same-origin",
-    body: "{}",
+    body: JSON.stringify({ locale, site_locale: siteLocale }),
   });
   if (!res.ok) {
     let body: unknown = { detail: "Request failed" };
@@ -49,7 +54,7 @@ export async function seedFromTemplate(
 ): Promise<SeedFromTemplateResponse> {
   const res = await fetch("/api/v1/onboarding/seed-from-template/", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...languageHeader() },
     credentials: "same-origin",
     body: JSON.stringify({ token, niche, goals }),
   });
@@ -70,7 +75,7 @@ export async function skipTemplate(
 ): Promise<SeedFromTemplateResponse> {
   const res = await fetch("/api/v1/onboarding/skip-template/", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...languageHeader() },
     credentials: "same-origin",
     body: JSON.stringify({ token }),
   });
@@ -91,7 +96,7 @@ export async function requestHandoff(
 ): Promise<{ login_url: string }> {
   const res = await fetch("/api/v1/onboarding/handoff/", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...languageHeader() },
     body: JSON.stringify({ token }),
     credentials: "same-origin",
   });
@@ -105,7 +110,7 @@ export async function startSignupCheckout(
 ): Promise<CheckoutStart> {
   const res = await fetch("/api/v1/onboarding/signup/checkout/", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...languageHeader() },
     body: JSON.stringify({ token }),
     credentials: "same-origin",
   });
@@ -117,7 +122,7 @@ export async function startSignupCheckout(
 export async function recoverSignup(token: string): Promise<void> {
   const res = await fetch("/api/v1/onboarding/wizard/recover/", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...languageHeader() },
     credentials: "same-origin",
     body: JSON.stringify({ token }),
   });

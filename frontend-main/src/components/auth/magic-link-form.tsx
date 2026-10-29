@@ -6,6 +6,7 @@ import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { languageHeader } from "@/lib/api/page-language";
 
 export function MagicLinkForm() {
   const [email, setEmail] = useState("");
@@ -18,7 +19,7 @@ export function MagicLinkForm() {
       setError("");
       const res = await fetch("/api/v1/auth/magic-link/", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...languageHeader() },
         body: JSON.stringify({ email }),
         credentials: "same-origin",
       });

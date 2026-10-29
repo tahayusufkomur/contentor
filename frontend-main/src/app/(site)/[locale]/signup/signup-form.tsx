@@ -3,13 +3,15 @@
 import { useEffect, useState } from "react";
 import { Mail } from "lucide-react";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { LocaleNavLink, useLocaleNavigate } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createPlatformAuthenticated } from "@/lib/api/onboarding";
+import { languageHeader } from "@/lib/api/page-language";
+import { siteLanguageOptions } from "@/lib/site-language";
 import { SignupFrame, SignupShell, SlideHeader } from "./signup-shell";
 
 interface SignupFormProps {
@@ -24,6 +26,45 @@ export function SignupForm({ authenticatedName }: SignupFormProps) {
   return <AnonymousSignupFlow />;
 }
 
+/** The language the new site is in (and its visitors see): the enabled languages by their own
+ * names, the page's one chosen. Alone (one language enabled) there is nothing to choose. */
+function SiteLanguageSelect({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (code: string) => void;
+}) {
+  const t = useTranslations("auth.signup");
+  const options = siteLanguageOptions(useLocale());
+  if (options.length < 2) return null;
+  return (
+    <div className="space-y-2">
+      <Label
+        htmlFor="site-language"
+        className="text-[13px] font-medium text-foreground/80"
+      >
+        {t("siteLanguageLabel")}
+      </Label>
+      <select
+        id="site-language"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring"
+      >
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+      <p className="text-[12px] text-muted-foreground">
+        {t("siteLanguageHint")}
+      </p>
+    </div>
+  );
+}
+
 /** Already-logged-in coach creating an additional platform: one tap mints the
  * signup token (no email round-trip) and moves to /signup/verify. The new site
  * is named, and its bio added, in its own /setup. */
@@ -34,12 +75,14 @@ function AuthenticatedSignupForm({
 }) {
   const t = useTranslations("auth.signup");
   const navigate = useLocaleNavigate();
+  const locale = useLocale();
+  const [siteLocale, setSiteLocale] = useState(locale);
   const [error, setError] = useState<string | null>(null);
 
   const { run: create, loading } = useAsyncAction(
     async () => {
       setError(null);
-      const { token } = await createPlatformAuthenticated();
+      const { token } = await createPlatformAuthenticated(locale, siteLocale);
       navigate(`/signup/verify?token=${encodeURIComponent(token)}`);
     },
     { onError: () => setError(t("errors.generic")) },
@@ -71,6 +114,9 @@ function AuthenticatedSignupForm({
         heading={t("authTitle")}
         subhead={t("authSubtitle", { name: authenticatedName })}
       />
+      <div className="mx-auto mt-5 max-w-[380px]">
+        <SiteLanguageSelect value={siteLocale} onChange={setSiteLocale} />
+      </div>
     </SignupShell>
   );
 }
@@ -85,12 +131,14 @@ const RESEND_COOLDOWN_SECONDS = 30; // the endpoint allows 5/min per IP
  * email link. */
 function AnonymousSignupFlow() {
   const t = useTranslations("auth.signup");
+  const locale = useLocale();
   const [step, setStep] = useState<Step>("contact");
   const [direction, setDirection] = useState(1);
   // The temporary address the first email's link creates: a resend keeps it.
   const [site, setSite] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [siteLocale, setSiteLocale] = useState(locale);
   const [error, setError] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
   const [restored, setRestored] = useState(false);
@@ -105,6 +153,7 @@ function AnonymousSignupFlow() {
         if (typeof d.site === "string") setSite(d.site);
         if (typeof d.name === "string") setName(d.name);
         if (typeof d.email === "string") setEmail(d.email);
+        if (typeof d.siteLocale === "string") setSiteLocale(d.siteLocale);
         if (d.step === "email-sent") setStep(d.step);
       }
     } catch {
@@ -117,12 +166,12 @@ function AnonymousSignupFlow() {
     try {
       sessionStorage.setItem(
         DRAFT_KEY,
-        JSON.stringify({ site, name, email, step }),
+        JSON.stringify({ site, name, email, siteLocale, step }),
       );
     } catch {
       // private mode — the draft just isn't kept
     }
-  }, [restored, site, name, email, step]);
+  }, [restored, site, name, email, siteLocale, step]);
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -136,8 +185,14 @@ function AnonymousSignupFlow() {
       setError(null);
       const res = await fetch("/api/v1/onboarding/signup/", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, site }),
+        headers: { "Content-Type": "application/json", ...languageHeader() },
+        body: JSON.stringify({
+          name,
+          email,
+          site,
+          locale,
+          site_locale: siteLocale,
+        }),
         credentials: "same-origin",
       });
       const data = await res.json();
@@ -156,8 +211,14 @@ function AnonymousSignupFlow() {
     async () => {
       const res = await fetch("/api/v1/onboarding/signup/", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, site }),
+        headers: { "Content-Type": "application/json", ...languageHeader() },
+        body: JSON.stringify({
+          name,
+          email,
+          site,
+          locale,
+          site_locale: siteLocale,
+        }),
         credentials: "same-origin",
       });
       if (!res.ok) throw new Error("resend failed");
@@ -293,6 +354,7 @@ function AnonymousSignupFlow() {
               required
             />
           </div>
+          <SiteLanguageSelect value={siteLocale} onChange={setSiteLocale} />
         </form>
       </div>
     </SignupShell>
