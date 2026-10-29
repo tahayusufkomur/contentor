@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations, useLocale } from "next-intl";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { BookOpen, ExternalLink, Pencil, Plus } from "lucide-react";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
@@ -36,31 +36,41 @@ import type { Course } from "@/types/course";
 
 export const dynamic = "force-dynamic";
 
-const SORT_OPTIONS = [
-  { label: "Newest", value: "-created_at" },
-  { label: "Oldest", value: "created_at" },
-  { label: "Name A-Z", value: "title" },
-  { label: "Name Z-A", value: "-title" },
-];
-
-const courseFields: FieldConfig<Course>[] = [
-  // Price and access live in the course's Access section: an echoed pricing type here would drop its windows.
-  { key: "title", label: "Title", type: "text", required: true },
-  { key: "is_published", label: "Published", type: "toggle" },
-  {
-    key: "thumbnail_id",
-    label: "Thumbnail",
-    type: "image",
-    previewUrlKey: "thumbnail_signed_url",
-  },
-];
-
 export default function AdminCoursesPage() {
   const locale = useLocale();
   const t = useTranslations("admin");
   const navigate = useNavigate();
   const currency = useTenantCurrency();
   const browserRef = useRef<MediaBrowserHandle>(null);
+  const sortOptions = [
+    { label: t("list.sort.newest"), value: "-created_at" },
+    { label: t("list.sort.oldest"), value: "created_at" },
+    { label: t("list.sort.nameAsc"), value: "title" },
+    { label: t("list.sort.nameDesc"), value: "-title" },
+  ];
+  const courseFields = useMemo<FieldConfig<Course>[]>(
+    () => [
+      // Price and access live in the course's Access section: an echoed pricing type here would drop its windows.
+      {
+        key: "title",
+        label: t("list.col.title"),
+        type: "text",
+        required: true,
+      },
+      {
+        key: "is_published",
+        label: t("list.status.published"),
+        type: "toggle",
+      },
+      {
+        key: "thumbnail_id",
+        label: t("courses.thumbnail"),
+        type: "image",
+        previewUrlKey: "thumbnail_signed_url",
+      },
+    ],
+    [t],
+  );
   const [editingSlug, setEditingSlug] = useState<string | null>(null);
   const [tagFilter, setTagFilter] = useState<number[]>([]);
   // The look of the kept covers on the page: their fonts are not loaded on this screen by itself.
@@ -104,7 +114,7 @@ export default function AdminCoursesPage() {
           ),
       ),
     );
-    toast.success("Courses deleted");
+    toast.success(t("courses.deleted"));
     browserRef.current?.refresh();
   }
 
@@ -118,12 +128,12 @@ export default function AdminCoursesPage() {
           ...(values.thumbnail_id ? { thumbnail: values.thumbnail_id } : {}),
         }),
       });
-      toast.success("Course updated");
+      toast.success(t("courses.updated"));
       setEditingSlug(null);
       browserRef.current?.refresh();
     },
     {
-      onError: (err) => toast.error(saveError(err, "Failed to update course")),
+      onError: (err) => toast.error(saveError(err, t("courses.updateError"))),
     },
   );
 
@@ -135,13 +145,13 @@ export default function AdminCoursesPage() {
             {t("nav.items.courses")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Manage your course catalog.
+            {t("courses.subtitle")}
           </p>
         </div>
         <Button asChild className="gap-2">
           <Link href="/admin/courses/new">
             <Plus className="h-4 w-4" />
-            New Course
+            {t("courses.new")}
           </Link>
         </Button>
       </div>
@@ -164,18 +174,18 @@ export default function AdminCoursesPage() {
             onChange={setTagFilter}
           />
         }
-        sortOptions={SORT_OPTIONS}
+        sortOptions={sortOptions}
         defaultSort="-created_at"
         emptyIcon={BookOpen}
-        emptyMessage="No courses yet. Create your first course to get started."
+        emptyMessage={t("courses.empty")}
         getItemId={(c) => c.slug}
         onDelete={handleBulkDelete}
         listColumns={[
-          { label: "Title", key: "title" },
-          { label: "Status", key: "status" },
-          { label: "Pricing", key: "pricing" },
-          { label: "Lessons", key: "lessons" },
-          { label: "Actions", key: "actions" },
+          { label: t("list.col.title"), key: "title" },
+          { label: t("list.col.status"), key: "status" },
+          { label: t("courses.col.pricing"), key: "pricing" },
+          { label: t("courses.col.lessons"), key: "lessons" },
+          { label: t("list.col.actions"), key: "actions" },
         ]}
         renderGalleryItem={(course, _selected) => (
           <Link
@@ -210,7 +220,9 @@ export default function AdminCoursesPage() {
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant={course.is_published ? "success" : "secondary"}>
-                  {course.is_published ? "Published" : "Draft"}
+                  {course.is_published
+                    ? t("list.status.published")
+                    : t("list.status.draft")}
                 </Badge>
                 <Badge
                   variant={
@@ -218,13 +230,15 @@ export default function AdminCoursesPage() {
                   }
                 >
                   {course.pricing_type === "free"
-                    ? "Free"
+                    ? t("list.pricing.free")
                     : course.pricing_type === "paid"
                       ? formatMoney(course.price, currency, locale)
-                      : "Subscription"}
+                      : t("list.pricing.subscription")}
                 </Badge>
                 <span className="text-xs text-muted-foreground">
-                  {course.lesson_count ?? 0} lessons
+                  {t("courses.lessonCount", {
+                    count: course.lesson_count ?? 0,
+                  })}
                 </span>
               </div>
             </div>
@@ -238,7 +252,9 @@ export default function AdminCoursesPage() {
             </TableCell>
             <TableCell>
               <Badge variant={course.is_published ? "success" : "secondary"}>
-                {course.is_published ? "Published" : "Draft"}
+                {course.is_published
+                  ? t("list.status.published")
+                  : t("list.status.draft")}
               </Badge>
             </TableCell>
             <TableCell>
@@ -246,10 +262,10 @@ export default function AdminCoursesPage() {
                 variant={course.pricing_type === "free" ? "outline" : "default"}
               >
                 {course.pricing_type === "free"
-                  ? "Free"
+                  ? t("list.pricing.free")
                   : course.pricing_type === "paid"
                     ? formatMoney(course.price, currency, locale)
-                    : "Subscription"}
+                    : t("list.pricing.subscription")}
               </Badge>
             </TableCell>
             <TableCell>{course.lesson_count ?? 0}</TableCell>

@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 import { normalizeDesign } from "@shared/email/editor";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 const isFilter = (f: unknown): f is RecipientFilter =>
   !!f && typeof f === "object" && "type" in f;
@@ -34,6 +34,7 @@ const isFilter = (f: unknown): f is RecipientFilter =>
 /** The last step: who gets it and when, with the email as they will see it. */
 export default function SendEmailPage() {
   const locale = useLocale();
+  const t = useTranslations("admin.messages.send");
   const { id } = useParams<{ id: string }>();
   const campaignId = Number(id);
   const navigate = useNavigate();
@@ -88,7 +89,7 @@ export default function SendEmailPage() {
   const { run: test, loading: testing } = useAsyncAction(async () => {
     await saveSubject();
     const { sent_to } = await sendTest(campaignId);
-    toast.success(`Test sent to ${sent_to}`);
+    toast.success(t("testSent", { email: sent_to }));
   });
 
   const [leaving, setLeaving] = useState(false);
@@ -101,8 +102,13 @@ export default function SendEmailPage() {
       });
       toast.success(
         scheduledIso
-          ? `Scheduled for ${new Date(scheduledIso).toLocaleString(locale, { dateStyle: "medium", timeStyle: "short" })}.`
-          : "Your email is on its way.",
+          ? t("scheduled", {
+              when: new Date(scheduledIso).toLocaleString(locale, {
+                dateStyle: "medium",
+                timeStyle: "short",
+              }),
+            })
+          : t("onItsWay"),
       );
       setLeaving(true);
       navigate("/admin/messages");
@@ -110,22 +116,18 @@ export default function SendEmailPage() {
   );
 
   function submit() {
-    if (!subject.trim()) return setProblem("Give your email a subject.");
+    if (!subject.trim()) return setProblem(t("needSubject"));
     if (filter.type === "course" && filter.course_ids.length === 0)
-      return setProblem("Choose at least one course.");
+      return setProblem(t("needCourse"));
     if (filter.type === "individual" && filter.user_ids.length === 0)
-      return setProblem("Choose at least one student.");
-    if (count === 0)
-      return setProblem(
-        "No one would get it: no student here wants email (some may have unsubscribed).",
-      );
+      return setProblem(t("needStudent"));
+    if (count === 0) return setProblem(t("nobody"));
     let scheduledIso: string | null = null;
     if (when === "later") {
       const at = new Date(scheduledAt);
       if (!scheduledAt || Number.isNaN(at.getTime()))
-        return setProblem("Pick a day and time.");
-      if (at.getTime() <= Date.now())
-        return setProblem("Pick a time in the future.");
+        return setProblem(t("needTime"));
+      if (at.getTime() <= Date.now()) return setProblem(t("needFuture"));
       scheduledIso = at.toISOString();
     }
     setProblem("");
@@ -140,13 +142,10 @@ export default function SendEmailPage() {
           className="mb-2 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to the editor
+          {t("backToEditor")}
         </NavLink>
-        <h1 className="text-2xl font-bold tracking-tight">Send your email</h1>
-        <p className="text-sm text-muted-foreground">
-          Choose who gets it and when. Each student gets their own copy, with
-          their name and an unsubscribe link.
-        </p>
+        <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       <PageState
@@ -158,7 +157,7 @@ export default function SendEmailPage() {
         <div className="grid gap-8 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
           <div className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email-subject">Subject</Label>
+              <Label htmlFor="email-subject">{t("subject")}</Label>
               <Input
                 id="email-subject"
                 value={subject}
@@ -175,16 +174,16 @@ export default function SendEmailPage() {
             />
 
             <div className="space-y-3">
-              <Label>When</Label>
+              <Label>{t("when")}</Label>
               <div
                 className="grid grid-cols-2 gap-2"
                 role="group"
-                aria-label="When"
+                aria-label={t("when")}
               >
                 {(
                   [
-                    ["now", "Send now"],
-                    ["later", "Schedule"],
+                    ["now", t("sendNow")],
+                    ["later", t("schedule")],
                   ] as const
                 ).map(([value, label]) => (
                   <button
@@ -208,7 +207,7 @@ export default function SendEmailPage() {
                   type="datetime-local"
                   value={scheduledAt}
                   onChange={(e) => setScheduledAt(e.target.value)}
-                  aria-label="Send at"
+                  aria-label={t("sendAt")}
                 />
               )}
             </div>
@@ -225,33 +224,33 @@ export default function SendEmailPage() {
                 className="flex-1"
                 onClick={submit}
                 loading={sending || leaving}
-                loadingText={when === "later" ? "Scheduling…" : "Sending…"}
+                loadingText={when === "later" ? t("scheduling") : t("sending")}
               >
                 <Send className="h-4 w-4" />
                 {when === "later"
-                  ? "Schedule"
+                  ? t("schedule")
                   : count != null
-                    ? `Send to ${count} ${count === 1 ? "student" : "students"}`
-                    : "Send"}
+                    ? t("sendTo", { count })
+                    : t("send")}
               </Button>
               <Button
                 size="lg"
                 variant="outline"
                 onClick={() => test()}
                 loading={testing}
-                loadingText="Sending…"
+                loadingText={t("sending")}
               >
-                Send me a test
+                {t("sendTest")}
               </Button>
             </div>
           </div>
 
           <div className="min-w-0 space-y-2">
-            <p className="text-sm font-medium">As your students will see it</p>
+            <p className="text-sm font-medium">{t("asStudents")}</p>
             <iframe
               srcDoc={html}
               sandbox=""
-              title="Email preview"
+              title={t("preview")}
               className="h-[75vh] w-full rounded-xl border bg-muted/30"
             />
           </div>

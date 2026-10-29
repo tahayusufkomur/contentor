@@ -25,7 +25,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 import { normalizeDesign } from "@shared/email/editor";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +46,7 @@ const RECIPIENT_STATUS_COLORS: Record<string, string> = {
 
 export default function CampaignDetailPage() {
   const locale = useLocale();
+  const t = useTranslations("admin.messages");
   const params = useParams();
   const campaignId = Number(params.id);
   const router = useRouter();
@@ -104,19 +105,14 @@ export default function CampaignDetailPage() {
 
   // Editing a scheduled email takes it off the schedule until she schedules it again.
   const { run: edit, loading: editing } = useAsyncAction(async () => {
-    if (
-      !window.confirm(
-        "Edit this email? It comes off the schedule until you schedule it again.",
-      )
-    )
-      return;
+    if (!window.confirm(t("campaign.confirmEdit"))) return;
     await updateDraft(campaignId, {});
     navigate(`/admin/messages/email/${campaignId}/edit`);
   });
   const { run: cancel, loading: cancelling } = useAsyncAction(async () => {
-    if (!window.confirm("Cancel this email? It will not be sent.")) return;
+    if (!window.confirm(t("campaign.confirmCancel"))) return;
     await cancelCampaign(campaignId);
-    toast.success("Cancelled.");
+    toast.success(t("done.cancel"));
     navigate("/admin/messages");
   });
 
@@ -126,7 +122,7 @@ export default function CampaignDetailPage() {
         href="/admin/messages"
         className="text-sm text-muted-foreground hover:underline"
       >
-        ← Back to messages
+        ← {t("back")}
       </NavLink>
 
       <PageState
@@ -156,17 +152,20 @@ export default function CampaignDetailPage() {
                   <span
                     className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[campaign.status] || ""}`}
                   >
-                    {campaign.status}
+                    {t(`status.${campaign.status}`)}
                   </span>
                   {campaign.status === "scheduled" && (
                     <div className="mt-4 flex flex-wrap items-center gap-2">
                       {campaign.scheduled_at && (
                         <p className="mr-2 text-sm text-muted-foreground">
-                          Goes out{" "}
-                          {new Date(campaign.scheduled_at).toLocaleString(
-                            locale,
-                            { dateStyle: "medium", timeStyle: "short" },
-                          )}
+                          {t("campaign.goesOut", {
+                            when: new Date(
+                              campaign.scheduled_at,
+                            ).toLocaleString(locale, {
+                              dateStyle: "medium",
+                              timeStyle: "short",
+                            }),
+                          })}
                         </p>
                       )}
                       <Button
@@ -175,7 +174,7 @@ export default function CampaignDetailPage() {
                         onClick={() => edit()}
                         loading={editing}
                       >
-                        Edit
+                        {t("campaign.edit")}
                       </Button>
                       <Button
                         size="sm"
@@ -184,7 +183,7 @@ export default function CampaignDetailPage() {
                         onClick={() => cancel()}
                         loading={cancelling}
                       >
-                        Cancel sending
+                        {t("campaign.cancelSending")}
                       </Button>
                     </div>
                   )}
@@ -192,17 +191,23 @@ export default function CampaignDetailPage() {
 
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between border-b py-2">
-                    <span className="text-muted-foreground">Template</span>
+                    <span className="text-muted-foreground">
+                      {t("campaign.template")}
+                    </span>
                     <span>{campaign.template_name || "—"}</span>
                   </div>
                   <div className="flex justify-between border-b py-2">
-                    <span className="text-muted-foreground">Sender</span>
+                    <span className="text-muted-foreground">
+                      {t("campaign.sender")}
+                    </span>
                     <span>
                       {campaign.sender_name || campaign.sender_email || "—"}
                     </span>
                   </div>
                   <div className="flex justify-between border-b py-2">
-                    <span className="text-muted-foreground">Recipients</span>
+                    <span className="text-muted-foreground">
+                      {t("campaign.recipients")}
+                    </span>
                     <span>
                       {campaign.recipient_count}
                       {campaign.recipient_summary &&
@@ -211,29 +216,41 @@ export default function CampaignDetailPage() {
                   </div>
                   {campaign.status !== "scheduled" && (
                     <div className="flex justify-between border-b py-2">
-                      <span className="text-muted-foreground">Delivered</span>
+                      <span className="text-muted-foreground">
+                        {t("campaign.delivered")}
+                      </span>
                       <span className="text-emerald-700 dark:text-emerald-400">
-                        {campaign.success_count} sent
+                        {t("campaign.sentCount", {
+                          count: campaign.success_count,
+                        })}
                       </span>
                     </div>
                   )}
                   {campaign.failure_count > 0 && (
                     <div className="flex justify-between border-b py-2">
-                      <span className="text-muted-foreground">Failed</span>
+                      <span className="text-muted-foreground">
+                        {t("receipt.failed")}
+                      </span>
                       <span className="text-destructive">
-                        {campaign.failure_count} failed
+                        {t("campaign.failedCount", {
+                          count: campaign.failure_count,
+                        })}
                       </span>
                     </div>
                   )}
                   <div className="flex justify-between border-b py-2">
-                    <span className="text-muted-foreground">Created</span>
+                    <span className="text-muted-foreground">
+                      {t("campaign.created")}
+                    </span>
                     <span>
                       {new Date(campaign.created_at).toLocaleString(locale)}
                     </span>
                   </div>
                   {campaign.sent_at && (
                     <div className="flex justify-between border-b py-2">
-                      <span className="text-muted-foreground">Completed</span>
+                      <span className="text-muted-foreground">
+                        {t("campaign.completed")}
+                      </span>
                       <span>
                         {new Date(campaign.sent_at).toLocaleString(locale)}
                       </span>
@@ -245,19 +262,19 @@ export default function CampaignDetailPage() {
               {/* Right: Email preview */}
               <div>
                 <h2 className="mb-2 text-sm font-medium text-muted-foreground">
-                  Email preview
+                  {t("campaign.preview")}
                 </h2>
                 {html ? (
                   <iframe
                     srcDoc={html}
                     sandbox=""
                     className="h-[70vh] w-full rounded-lg border"
-                    title="Email preview"
+                    title={t("campaign.preview")}
                   />
                 ) : (
                   <div className="flex h-[400px] items-center justify-center rounded-lg border bg-muted/20">
                     <p className="text-sm text-muted-foreground">
-                      Preview not available for this campaign.
+                      {t("campaign.noPreview")}
                     </p>
                   </div>
                 )}
@@ -266,21 +283,32 @@ export default function CampaignDetailPage() {
 
             {/* Recipients table */}
             <div>
-              <h2 className="mb-4 text-lg font-semibold">Recipients</h2>
+              <h2 className="mb-4 text-lg font-semibold">
+                {t("campaign.recipients")}
+              </h2>
               {recipients.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  Recipient tracking not available for campaigns sent before
-                  this update.
+                  {t("campaign.noTracking")}
                 </p>
               ) : (
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b text-left text-muted-foreground">
-                      <th className="pb-2 font-medium">Name</th>
-                      <th className="pb-2 font-medium">Email</th>
-                      <th className="pb-2 font-medium">Status</th>
-                      <th className="pb-2 font-medium">Sent At</th>
-                      <th className="pb-2 font-medium">Error</th>
+                      <th className="pb-2 font-medium">
+                        {t("campaign.colName")}
+                      </th>
+                      <th className="pb-2 font-medium">
+                        {t("campaign.colEmail")}
+                      </th>
+                      <th className="pb-2 font-medium">
+                        {t("campaign.colStatus")}
+                      </th>
+                      <th className="pb-2 font-medium">
+                        {t("campaign.colSentAt")}
+                      </th>
+                      <th className="pb-2 font-medium">
+                        {t("campaign.colError")}
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -292,7 +320,7 @@ export default function CampaignDetailPage() {
                           <span
                             className={`rounded-full px-2 py-0.5 text-xs font-medium ${RECIPIENT_STATUS_COLORS[r.status] || ""}`}
                           >
-                            {r.status}
+                            {t(`status.${r.status}`)}
                           </span>
                         </td>
                         <td className="py-2">

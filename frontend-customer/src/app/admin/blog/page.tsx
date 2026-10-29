@@ -164,7 +164,7 @@ function DeletePostButton({
     async () => {
       if (!confirm(t("blog.deleteConfirm"))) return;
       await deletePost(postId);
-      toast.success("Deleted");
+      toast.success(t("blog.deleted"));
       onDeleted();
     },
     { errorToast: t("blog.errGeneric") },
@@ -178,7 +178,7 @@ function DeletePostButton({
       loading={loading}
       onClick={() => void handleDelete()}
     >
-      Delete
+      {t("blog.delete")}
     </Button>
   );
 }

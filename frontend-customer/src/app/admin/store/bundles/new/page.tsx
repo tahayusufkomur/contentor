@@ -98,6 +98,7 @@ function BundleSlots() {
 
 function PlainNewBundle() {
   const locale = useLocale();
+  const t = useTranslations("admin.store.bundles");
   useEffect(() => {
     clearActiveCreation(0); // from the focus screen's "Fill it in myself"
   }, []);
@@ -128,7 +129,7 @@ function PlainNewBundle() {
     async () => {
       const price = parsePrice(access.ways?.buy?.price ?? "");
       if (accessProblems.length || !price) {
-        toast.error(accessProblems[0]?.text ?? "Add a price above 0.");
+        toast.error(accessProblems[0]?.text ?? t("needPrice"));
         return;
       }
       const created = await clientFetch<Bundle>("/api/v1/billing/bundles/", {
@@ -148,22 +149,20 @@ function PlainNewBundle() {
       try {
         if (accessDirty) await access.save(created.id);
       } catch (err) {
-        toast.error(
-          `Bundle created, but its terms were not saved. ${accessSentence(err)}`,
-        );
+        toast.error(t("createdTermsFailed", { reason: accessSentence(err) }));
         navigate(`/admin/store/bundles/${created.id}`);
         return;
       }
-      toast.success("Bundle created successfully.");
+      toast.success(t("created"));
       navigate("/admin/store?tab=bundles");
     },
-    { errorToast: "Failed to create bundle. Please try again." },
+    { errorToast: t("createError") },
   );
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (selectedItems.length === 0) {
-      toast.error("Please select at least one item for the bundle.");
+      toast.error(t("needItem"));
       return;
     }
     createBundle();
@@ -178,38 +177,34 @@ function PlainNewBundle() {
           </Link>
         </Button>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Create Bundle</h1>
-          <p className="text-sm text-muted-foreground">
-            Group multiple products together at a discounted price.
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight">{t("create")}</h1>
+          <p className="text-sm text-muted-foreground">{t("createSubtitle")}</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Bundle Details</CardTitle>
-            <CardDescription>
-              Basic information about your bundle.
-            </CardDescription>
+            <CardTitle>{t("details")}</CardTitle>
+            <CardDescription>{t("detailsHint")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">{t("name")}</Label>
               <Input
                 id="name"
-                placeholder="e.g. Starter Pack"
+                placeholder={t("namePlaceholder")}
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{t("description")}</Label>
               <textarea
                 id="description"
                 className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                placeholder="Describe what's included in this bundle..."
+                placeholder={t("descriptionPlaceholder")}
                 value={form.description}
                 onChange={(e) =>
                   setForm({ ...form, description: e.target.value })
@@ -217,7 +212,7 @@ function PlainNewBundle() {
               />
             </div>
             <div className="space-y-2 sm:max-w-xs">
-              <Label>Original Price (sum of items)</Label>
+              <Label>{t("originalPrice")}</Label>
               <div className="flex h-10 items-center rounded-md border border-input bg-muted px-3 text-sm text-muted-foreground">
                 {formatMoney(originalPrice, currency, locale)}
               </div>
@@ -240,10 +235,8 @@ function PlainNewBundle() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Bundle Items</CardTitle>
-            <CardDescription>
-              Select the content to include in this bundle.
-            </CardDescription>
+            <CardTitle>{t("itemsTitle")}</CardTitle>
+            <CardDescription>{t("itemsHint2")}</CardDescription>
           </CardHeader>
           <CardContent>
             <ContentPicker
@@ -256,11 +249,11 @@ function PlainNewBundle() {
         <Separator />
 
         <div className="flex gap-3">
-          <Button type="submit" loading={saving} loadingText="Creating…">
-            Create Bundle
+          <Button type="submit" loading={saving} loadingText={t("creating")}>
+            {t("create")}
           </Button>
           <Button type="button" variant="outline" asChild>
-            <Link href="/admin/store?tab=bundles">Cancel</Link>
+            <Link href="/admin/store?tab=bundles">{t("cancel")}</Link>
           </Button>
         </div>
       </form>

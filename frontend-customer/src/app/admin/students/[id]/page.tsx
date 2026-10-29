@@ -15,7 +15,8 @@ import { SkeletonList } from "@/components/ui/skeletons";
 import { clientFetch } from "@/lib/api-client";
 import { formatMoney } from "@/lib/format";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { dyn } from "@/i18n/dynamic";
 
 export const dynamic = "force-dynamic";
 
@@ -62,6 +63,8 @@ function formatDate(iso: string | null, locale: string) {
 
 export default function StudentPaymentsPage() {
   const locale = useLocale();
+  const t = useTranslations("admin.students.payments");
+  const tPay = useTranslations("admin.store.payments");
   const params = useParams();
   const studentId = params.id as string;
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -80,11 +83,11 @@ export default function StudentPaymentsPage() {
       );
     } catch (err) {
       setError(err);
-      toast.error("Could not load payment history.");
+      toast.error(t("loadError"));
     } finally {
       setLoading(false);
     }
-  }, [studentId]);
+  }, [studentId, t]);
 
   useEffect(() => {
     load();
@@ -97,10 +100,10 @@ export default function StudentPaymentsPage() {
       <div className="flex items-center gap-3">
         <Button asChild variant="ghost" size="sm">
           <Link href="/admin/students">
-            <ArrowLeft className="h-4 w-4" /> Students
+            <ArrowLeft className="h-4 w-4" /> {t("back")}
           </Link>
         </Button>
-        <h1 className="text-2xl font-bold tracking-tight">Payment history</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
       </div>
 
       <PageState
@@ -112,8 +115,8 @@ export default function StudentPaymentsPage() {
         {purchases.length === 0 ? (
           <EmptyState
             icon={RotateCcw}
-            title="No payments"
-            description="This student hasn't purchased anything yet."
+            title={t("empty")}
+            description={t("emptyHint")}
           />
         ) : (
           <div className="space-y-4">
@@ -122,12 +125,12 @@ export default function StudentPaymentsPage() {
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between gap-2">
                     <CardTitle className="text-base capitalize">
-                      {p.payment_type.replace("_", " ")} ·{" "}
+                      {t(dyn(t, `type.${p.payment_type}`))} ·{" "}
                       {formatMoney(p.amount, p.currency, locale)}
                     </CardTitle>
                     <div className="flex items-center gap-2">
                       <Badge variant={STATUS_VARIANT[p.status] ?? "secondary"}>
-                        {p.status.replace("_", " ")}
+                        {tPay(dyn(tPay, `statuses.${p.status}`))}
                       </Badge>
                       <span className="text-xs text-muted-foreground">
                         {formatDate(p.created_at, locale)}
@@ -138,7 +141,7 @@ export default function StudentPaymentsPage() {
                 <CardContent className="space-y-2">
                   {p.items.length === 0 && (
                     <p className="text-sm text-muted-foreground">
-                      Subscription charge (no line items).
+                      {t("noLineItems")}
                     </p>
                   )}
                   {p.items.map((item) => (
@@ -151,7 +154,7 @@ export default function StudentPaymentsPage() {
                             {formatMoney(item.item_price, p.currency, locale)}
                           </span>
                           {item.is_refunded ? (
-                            <Badge variant="secondary">Refunded</Badge>
+                            <Badge variant="secondary">{t("refunded")}</Badge>
                           ) : p.status === "pending" ? null : confirmItem ===
                             item.id ? (
                             <RefundConfirmActions
@@ -169,7 +172,7 @@ export default function StudentPaymentsPage() {
                               size="sm"
                               onClick={() => setConfirmItem(item.id)}
                             >
-                              Refund
+                              {t("refund")}
                             </Button>
                           )}
                         </div>
@@ -197,31 +200,32 @@ function RefundConfirmActions({
   onCancel: () => void;
   onRefunded: () => Promise<void> | void;
 }) {
+  const t = useTranslations("admin.students.payments");
   const { run: confirmRefund, loading: refunding } = useAsyncAction(
     async () => {
       await clientFetch(
         `/api/v1/billing/payments/${paymentId}/items/${itemId}/refund/`,
         { method: "POST" },
       );
-      toast.success("Item refunded.");
+      toast.success(t("itemRefunded"));
       await onRefunded();
     },
-    { errorToast: "Refund failed. Please try again." },
+    { errorToast: t("refundError") },
   );
 
   return (
     <span className="flex items-center gap-1">
       <Button variant="ghost" size="sm" onClick={onCancel} disabled={refunding}>
-        Cancel
+        {t("cancel")}
       </Button>
       <Button
         variant="destructive"
         size="sm"
         loading={refunding}
-        loadingText="Refunding…"
+        loadingText={t("refunding")}
         onClick={confirmRefund}
       >
-        Confirm refund
+        {t("confirmRefund")}
       </Button>
     </span>
   );

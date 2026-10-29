@@ -27,15 +27,6 @@ import type { DownloadFile } from "@/types/download";
 
 export const dynamic = "force-dynamic";
 
-const SORT_OPTIONS = [
-  { label: "Newest", value: "-created_at" },
-  { label: "Oldest", value: "created_at" },
-  { label: "Name A-Z", value: "title" },
-  { label: "Name Z-A", value: "-title" },
-  { label: "Largest", value: "-file_size" },
-  { label: "Smallest", value: "file_size" },
-];
-
 const ACCESS_BADGE_VARIANT: Record<string, "success" | "default" | "warning"> =
   {
     free: "success",
@@ -47,6 +38,14 @@ export default function AdminDownloadsPage() {
   const locale = useLocale();
   const t = useTranslations("admin");
   const browserRef = useRef<MediaBrowserHandle>(null);
+  const sortOptions = [
+    { label: t("list.sort.newest"), value: "-created_at" },
+    { label: t("list.sort.oldest"), value: "created_at" },
+    { label: t("list.sort.nameAsc"), value: "title" },
+    { label: t("list.sort.nameDesc"), value: "-title" },
+    { label: t("list.sort.largest"), value: "-file_size" },
+    { label: t("list.sort.smallest"), value: "file_size" },
+  ];
   const [tagFilter, setTagFilter] = useState<number[]>([]);
 
   const fetchPage = useCallback(
@@ -75,7 +74,7 @@ export default function AdminDownloadsPage() {
             {t("nav.items.downloads")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Manage downloadable files for your students.
+            {t("downloads.subtitle")}
           </p>
         </div>
         <Button asChild className="gap-2">
@@ -100,10 +99,10 @@ export default function AdminDownloadsPage() {
             onChange={setTagFilter}
           />
         }
-        sortOptions={SORT_OPTIONS}
+        sortOptions={sortOptions}
         defaultSort="-created_at"
         emptyIcon={Download}
-        emptyMessage="No files uploaded. Upload your first file to get started."
+        emptyMessage={t("downloads.empty")}
         getItemId={(dl) => dl.id}
         onDelete={async (selection) => {
           await batchedAsync(
@@ -112,16 +111,16 @@ export default function AdminDownloadsPage() {
                 clientFetch(`/api/v1/downloads/${id}/`, { method: "DELETE" }),
             ),
           );
-          toast.success("Files deleted");
+          toast.success(t("downloads.deletedMany"));
           browserRef.current?.refresh();
         }}
         listColumns={[
-          { label: "Title", key: "title" },
-          { label: "Size", key: "size" },
-          { label: "Downloads", key: "downloads" },
-          { label: "Access", key: "access" },
-          { label: "Date", key: "date" },
-          { label: "Actions", key: "actions" },
+          { label: t("list.col.title"), key: "title" },
+          { label: t("downloads.col.size"), key: "size" },
+          { label: t("downloads.col.downloads"), key: "downloads" },
+          { label: t("downloads.col.access"), key: "access" },
+          { label: t("list.col.date"), key: "date" },
+          { label: t("list.col.actions"), key: "actions" },
         ]}
         renderGalleryItem={(dl, _selected) => {
           const { icon: FileIcon, color } = getFileIcon(
@@ -159,13 +158,13 @@ export default function AdminDownloadsPage() {
                   {!dl.is_published && <DraftBadge />}
                   <Badge variant={ACCESS_BADGE_VARIANT[dl.pricing_type]}>
                     {dl.pricing_type === "free"
-                      ? "Free"
+                      ? t("list.pricing.free")
                       : dl.pricing_type === "paid"
-                        ? "Paid"
-                        : "Subscription"}
+                        ? t("list.pricing.paid")
+                        : t("list.pricing.subscription")}
                   </Badge>
                   <span className="text-xs text-muted-foreground">
-                    {dl.download_count} downloads
+                    {t("downloads.count", { count: dl.download_count })}
                   </span>
                 </div>
                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
@@ -203,10 +202,10 @@ export default function AdminDownloadsPage() {
             <TableCell>
               <Badge variant={ACCESS_BADGE_VARIANT[dl.pricing_type]}>
                 {dl.pricing_type === "free"
-                  ? "Free"
+                  ? t("list.pricing.free")
                   : dl.pricing_type === "paid"
-                    ? "Paid"
-                    : "Subscription"}
+                    ? t("list.pricing.paid")
+                    : t("list.pricing.subscription")}
               </Badge>
             </TableCell>
             <TableCell>{formatDate(dl.created_at, locale)}</TableCell>
@@ -230,17 +229,20 @@ function DownloadRowActions({
   download: DownloadFile;
   onDeleted: () => void;
 }) {
+  const t = useTranslations("admin");
   const { run: handleDelete, loading: deleting } = useAsyncAction(
     async () => {
-      if (!window.confirm(`Delete "${download.title}"? This cannot be undone.`))
+      if (
+        !window.confirm(t("downloads.confirmDelete", { title: download.title }))
+      )
         return;
       await clientFetch(`/api/v1/downloads/${download.id}/`, {
         method: "DELETE",
       });
-      toast.success("File deleted");
+      toast.success(t("downloads.deletedOne"));
       onDeleted();
     },
-    { errorToast: "Failed to delete file" },
+    { errorToast: t("downloads.deleteError") },
   );
   // `file_url` is the storage key, not an address: ask for a signed link.
   const { run: openFile, loading: opening } = useAsyncAction(
@@ -263,7 +265,7 @@ function DownloadRowActions({
         throw err;
       }
     },
-    { errorToast: "Could not open the file" },
+    { errorToast: t("downloads.openError") },
   );
 
   return (
@@ -274,13 +276,16 @@ function DownloadRowActions({
           variant="ghost"
           loading={opening}
           onClick={openFile}
-          aria-label="Open file"
+          aria-label={t("downloads.openFile")}
         >
           <ExternalLink className="h-3.5 w-3.5" />
         </Button>
       )}
       <Button asChild size="sm" variant="ghost">
-        <NavLink href={`/admin/downloads/${download.id}`} aria-label="Edit">
+        <NavLink
+          href={`/admin/downloads/${download.id}`}
+          aria-label={t("list.edit")}
+        >
           <Pencil className="h-3.5 w-3.5" />
         </NavLink>
       </Button>

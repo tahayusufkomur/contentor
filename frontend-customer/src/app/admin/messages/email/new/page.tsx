@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { ArrowLeft, FilePlus2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
@@ -14,7 +15,6 @@ import { SkeletonCardGrid } from "@/components/ui/skeletons";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  CATEGORY_LABELS,
   createDraft,
   getCatalog,
   listTemplates,
@@ -35,6 +35,7 @@ const MAX_FEATURED = 3;
  *  Old links still work: `?template=<id>` opens that template straight away,
  *  `?recipient=<id>` addresses the draft to one student, `?subject=` names it. */
 export default function NewEmailPage() {
+  const t = useTranslations("admin.messages");
   const navigate = useNavigate();
   const params = useSearchParams();
   const templateParam = Number(params.get("template")) || 0;
@@ -104,7 +105,7 @@ export default function NewEmailPage() {
   }, [templateParam, open]);
 
   if (templateParam) {
-    return <Spinner center size="lg" label="Opening your template" />;
+    return <Spinner center size="lg" label={t("newEmail.openingTemplate")} />;
   }
 
   return (
@@ -115,12 +116,13 @@ export default function NewEmailPage() {
           className="mb-2 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
-          Messages
+          {t("title")}
         </NavLink>
-        <h1 className="text-2xl font-bold tracking-tight">New email</h1>
+        <h1 className="text-2xl font-bold tracking-tight">
+          {t("newEmail.title")}
+        </h1>
         <p className="text-sm text-muted-foreground">
-          Start from one of your templates, or tell the Designer what it&apos;s
-          about. Your logo, colours and footer are already in.
+          {t("newEmail.subtitle")}
         </p>
       </div>
 
@@ -139,48 +141,50 @@ export default function NewEmailPage() {
 
         <section className="mt-8 space-y-4">
           <div className="flex items-baseline justify-between gap-3">
-            <h2 className="text-lg font-semibold">Your templates</h2>
+            <h2 className="text-lg font-semibold">
+              {t("newEmail.yourTemplates")}
+            </h2>
             <NavLink
               href="/admin/messages/email/templates"
               className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
             >
-              Manage templates
+              {t("newEmail.manageTemplates")}
             </NavLink>
           </div>
           <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {templates.map((t) => (
-              <li key={t.id}>
+            {templates.map((tpl) => (
+              <li key={tpl.id}>
                 <button
                   type="button"
                   disabled={opening !== null}
-                  onClick={() => open(`template-${t.id}`, t.id)}
+                  onClick={() => open(`template-${tpl.id}`, tpl.id)}
                   className="group w-full overflow-hidden rounded-xl border bg-card text-left transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
                 >
                   <div className="relative">
                     <EmailThumbnail
-                      html={t.preview_html || ""}
-                      title={t.name}
+                      html={tpl.preview_html || ""}
+                      title={tpl.name}
                       className="aspect-[4/5] w-full"
                     />
-                    {opening === `template-${t.id}` && (
+                    {opening === `template-${tpl.id}` && (
                       <div className="absolute inset-0 flex items-center justify-center bg-background/70">
-                        <Spinner label="Opening" />
+                        <Spinner label={t("newEmail.opening")} />
                       </div>
                     )}
                   </div>
                   <div className="flex items-center justify-between gap-2 border-t px-4 py-3">
                     <div className="min-w-0">
-                      <p className="truncate font-medium">{t.name}</p>
+                      <p className="truncate font-medium">{tpl.name}</p>
                       <p className="truncate text-xs text-muted-foreground">
-                        {t.subject || CATEGORY_LABELS[t.category]}
+                        {tpl.subject || t(`category.${tpl.category}`)}
                       </p>
                     </div>
-                    {t.source === "starter" && (
+                    {tpl.source === "starter" && (
                       <Badge
                         variant="accent"
                         className="shrink-0 whitespace-nowrap"
                       >
-                        Made for you
+                        {t("madeForYou")}
                       </Badge>
                     )}
                   </div>
@@ -195,13 +199,13 @@ export default function NewEmailPage() {
                 className="flex aspect-[4/5] w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed text-muted-foreground transition-colors hover:border-foreground/30 hover:bg-accent hover:text-foreground disabled:opacity-60"
               >
                 {opening === "blank" ? (
-                  <Spinner label="Opening" />
+                  <Spinner label={t("newEmail.opening")} />
                 ) : (
                   <FilePlus2 className="h-6 w-6" />
                 )}
-                <span className="font-medium">Blank</span>
+                <span className="font-medium">{t("newEmail.blank")}</span>
                 <span className="px-6 text-center text-xs">
-                  Your header and footer, nothing else yet.
+                  {t("newEmail.blankHint")}
                 </span>
               </button>
             </li>
@@ -223,6 +227,7 @@ function AskTheDesigner({
   base: { subject?: string; recipient_filter?: RecipientFilter };
   disabled: boolean;
 }) {
+  const t = useTranslations("admin.messages");
   const navigate = useNavigate();
   const [brief, setBrief] = useState("");
   const [refs, setRefs] = useState<string[]>([]);
@@ -263,7 +268,7 @@ function AskTheDesigner({
       toast.error(
         err instanceof Error && err.message
           ? err.message
-          : "The Designer isn't available right now.",
+          : t("designerUnavailable"),
       );
       setLeaving(true);
       navigate(`/admin/messages/email/${draft.id}/edit`);
@@ -285,25 +290,25 @@ function AskTheDesigner({
               onChange={(e) => setBrief(e.target.value)}
               rows={writing ? 3 : 1}
               maxLength={2000}
-              aria-label="Ask the Designer"
-              placeholder="Or ask the Designer: “invite my students to the new morning class, warm and short”…"
+              aria-label={t("askDesigner")}
+              placeholder={t("newEmail.designerPlaceholder")}
               className="min-h-0 resize-none"
             />
             <Button
               onClick={() => design()}
               disabled={!writing || disabled}
               loading={loading || leaving}
-              loadingText="Starting…"
+              loadingText={t("starting")}
               className="shrink-0"
             >
               <Sparkles className="h-4 w-4" />
-              Design it
+              {t("designIt")}
             </Button>
           </div>
           {writing && choices.length > 0 && (
             <div className="space-y-1.5">
               <p className="text-xs text-muted-foreground">
-                Feature (up to {MAX_FEATURED})
+                {t("newEmail.feature", { max: MAX_FEATURED })}
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {choices.map((c) => {

@@ -285,7 +285,33 @@
       "publish": "Veröffentlichen",
       "publishing": "Wird veröffentlicht…",
       "published": "Veröffentlicht. Teilnehmer können es jetzt in deinem Shop kaufen.",
-      "draftHint": "Ein Entwurf ist für Teilnehmer unsichtbar, bis du ihn veröffentlichst."
+      "draftHint": "Ein Entwurf ist für Teilnehmer unsichtbar, bis du ihn veröffentlichst.",
+      "empty": "Noch keine Bundles",
+      "emptyHint": "Erstelle ein Bundle, um Produkte zu einem reduzierten Preis zu bündeln.",
+      "itemFallback": "Artikel {id}",
+      "needPrice": "Gib einen Preis über 0 ein.",
+      "updated": "Bundle erfolgreich aktualisiert.",
+      "updateError": "Bundle konnte nicht aktualisiert werden. Bitte versuche es erneut.",
+      "publishError": "Das Bundle konnte nicht veröffentlicht werden.",
+      "needItem": "Bitte wähle mindestens einen Artikel für das Bundle aus.",
+      "edit": "Bundle bearbeiten",
+      "editSubtitle": "Aktualisiere die Details und Artikel dieses Bundles.",
+      "details": "Bundle-Details",
+      "detailsHint": "Grundlegende Informationen zu deinem Bundle.",
+      "namePlaceholder": "z. B. Starterpaket",
+      "descriptionPlaceholder": "Beschreibe, was in diesem Bundle enthalten ist...",
+      "originalPrice": "Originalpreis (Summe der Artikel)",
+      "itemsTitle": "Bundle-Artikel",
+      "itemsHint2": "Wähle die Inhalte aus, die dieses Bundle enthalten soll.",
+      "saving": "Wird gespeichert…",
+      "saveChanges": "Änderungen speichern",
+      "cancel": "Abbrechen",
+      "createdTermsFailed": "Bundle erstellt, aber die Bedingungen wurden nicht gespeichert. {reason}",
+      "created": "Bundle erfolgreich erstellt.",
+      "createError": "Bundle konnte nicht erstellt werden. Bitte versuche es erneut.",
+      "create": "Bundle erstellen",
+      "createSubtitle": "Bündle mehrere Produkte zu einem reduzierten Preis.",
+      "creating": "Wird erstellt…"
     },
     "plans": {
       "new": "Neue Mitgliedschaft",
@@ -341,6 +367,19 @@
         "refunded": "Erstattet",
         "partially_refunded": "Teilweise erstattet"
       }
+    },
+    "products": {
+      "type": "Typ",
+      "sales": "Verkäufe",
+      "empty": "Keine Produkte gefunden."
+    },
+    "productTypes": {
+      "course": "Kurs",
+      "download": "Download",
+      "live_class": "Live-Session",
+      "live_stream": "Livestream",
+      "onsite_event": "Präsenzveranstaltung",
+      "bundle": "Bundle"
     }
   },
   "plan": {
@@ -641,7 +680,11 @@
     "inlineImages": "Bilder im Text",
     "inlineAdd": "Bild hinzufügen",
     "inlineHeadingPrompt": "Unter welchem Abschnitt einfügen?",
-    "inlineNoHeadings": "Füge einige Abschnittsüberschriften (H2) hinzu, um Bilder im Text zu platzieren."
+    "inlineNoHeadings": "Füge einige Abschnittsüberschriften (H2) hinzu, um Bilder im Text zu platzieren.",
+    "deleted": "Gelöscht",
+    "delete": "Löschen",
+    "saved": "Gespeichert",
+    "regenerated": "Neu generiert"
   },
   "inbox": {
     "title": "Posteingang",
@@ -839,7 +882,13 @@
     "yourLanguageHint": "Die Sprache deines Creator-Studios und dessen, was wir dir schreiben. Die Sprache deiner Teilnehmer wird separat eingestellt.",
     "siteLanguage": "Website-Sprache",
     "siteLanguageHint": "Die Sprache, die deine Teilnehmer auf deiner Website sehen. Du kannst sie ändern, bis deine Website live geht.",
-    "siteLanguageLocked": "Deine Website ist live, daher bleibt ihre Sprache so, wie sie ist."
+    "siteLanguageLocked": "Deine Website ist live, daher bleibt ihre Sprache so, wie sie ist.",
+    "subtitle": "Konfiguriere die allgemeinen Einstellungen deiner Website.",
+    "saving": "Wird gespeichert…",
+    "saveChanges": "Änderungen speichern",
+    "timezone": "Zeitzone",
+    "timezoneHint": "Alle Veranstaltungszeiten im Kalender werden deinen Teilnehmern in dieser Zeitzone angezeigt.",
+    "currentTimezone": "Aktuelle Auswahl: {timezone}"
   },
   "subscription": {
     "title": "Abonnement",
@@ -894,8 +943,11 @@
         "live": "Live-Sessions",
         "fee": "{n} % Transaktionsgebühr auf Verkäufe",
         "aiBlog": "{n} KI-Blogbeiträge/Monat"
-      }
-    }
+      },
+      "tryAgain": "Erneut versuchen",
+      "planForSite": "{plan} für deine Website"
+    },
+    "httpError": "Fehler {status}"
   },
   "describe": {
     "course": {
@@ -1445,6 +1497,119 @@
         "body": "Deine Nachricht",
         "now": "jetzt"
       }
+    },
+    "receipt": {
+      "loadError": "Die Ankündigung konnte nicht geladen werden.",
+      "recipients": "Empfänger",
+      "pushSent": "Push gesendet",
+      "read": "Gelesen",
+      "failed": "Fehlgeschlagen",
+      "status": {
+        "all": "alle",
+        "sent": "gesendet",
+        "failed": "fehlgeschlagen",
+        "expired": "abgelaufen",
+        "none": "keine"
+      },
+      "readState": "gelesen",
+      "unreadState": "ungelesen",
+      "noRecipients": "Keine Empfänger."
+    },
+    "campaign": {
+      "confirmEdit": "Diese E-Mail bearbeiten? Sie wird aus der Planung genommen, bis du sie erneut planst.",
+      "confirmCancel": "Diese E-Mail abbrechen? Sie wird nicht gesendet.",
+      "goesOut": "Wird {when} gesendet",
+      "edit": "Bearbeiten",
+      "cancelSending": "Versand abbrechen",
+      "template": "Vorlage",
+      "sender": "Absender",
+      "recipients": "Empfänger",
+      "delivered": "Zugestellt",
+      "sentCount": "{count} gesendet",
+      "failedCount": "{count} fehlgeschlagen",
+      "created": "Erstellt",
+      "completed": "Abgeschlossen",
+      "preview": "E-Mail-Vorschau",
+      "noPreview": "Für diese Kampagne ist keine Vorschau verfügbar.",
+      "noTracking": "Für Kampagnen, die vor diesem Update gesendet wurden, ist keine Empfängerverfolgung verfügbar.",
+      "colName": "Name",
+      "colEmail": "E-Mail",
+      "colStatus": "Status",
+      "colSentAt": "Gesendet am",
+      "colError": "Fehler"
+    },
+    "send": {
+      "testSent": "Test an {email} gesendet",
+      "scheduled": "Geplant für {when}.",
+      "onItsWay": "Deine E-Mail ist unterwegs.",
+      "needSubject": "Gib deiner E-Mail einen Betreff.",
+      "needCourse": "Wähle mindestens einen Kurs aus.",
+      "needStudent": "Wähle mindestens einen Teilnehmer aus.",
+      "nobody": "Niemand würde sie erhalten: Kein Teilnehmer hier möchte E-Mails bekommen (einige haben sich vielleicht abgemeldet).",
+      "needTime": "Wähle einen Tag und eine Uhrzeit.",
+      "needFuture": "Wähle einen Zeitpunkt in der Zukunft.",
+      "backToEditor": "Zurück zum Editor",
+      "title": "Deine E-Mail senden",
+      "subtitle": "Wähle aus, wer sie wann erhält. Jeder Teilnehmer bekommt eine eigene Kopie mit seinem Namen und einem Abmeldelink.",
+      "subject": "Betreff",
+      "when": "Wann",
+      "sendNow": "Jetzt senden",
+      "schedule": "Planen",
+      "sendAt": "Senden am",
+      "scheduling": "Wird geplant…",
+      "sending": "Wird gesendet…",
+      "sendTo": "{count, plural, one {An # Teilnehmer senden} other {An # Teilnehmer senden}}",
+      "send": "Senden",
+      "sendTest": "Test an mich senden",
+      "asStudents": "So sehen es deine Teilnehmer",
+      "preview": "E-Mail-Vorschau"
+    },
+    "title": "Nachrichten",
+    "designerUnavailable": "Der Designer ist gerade nicht verfügbar.",
+    "askDesigner": "Den Designer fragen",
+    "designIt": "Gestalten",
+    "starting": "Wird gestartet…",
+    "madeForYou": "Für dich gemacht",
+    "category": {
+      "newsletter": "Newsletter",
+      "launch": "Launch",
+      "event": "Session oder Veranstaltung",
+      "note": "Persönliche Nachricht",
+      "offer": "Angebot",
+      "welcome": "Willkommen",
+      "other": "E-Mail"
+    },
+    "newEmail": {
+      "openingTemplate": "Deine Vorlage wird geöffnet",
+      "title": "Neue E-Mail",
+      "subtitle": "Starte mit einer deiner Vorlagen oder sag dem Designer, worum es geht. Dein Logo, deine Farben und deine Fußzeile sind schon drin.",
+      "yourTemplates": "Deine Vorlagen",
+      "manageTemplates": "Vorlagen verwalten",
+      "opening": "Wird geöffnet",
+      "blank": "Leer",
+      "blankHint": "Deine Kopf- und Fußzeile, sonst noch nichts.",
+      "designerPlaceholder": "Oder frag den Designer: “lade meine Teilnehmer zum neuen Morgenkurs ein, herzlich und kurz”…",
+      "feature": "Hervorheben (bis zu {max})"
+    },
+    "templates": {
+      "defaultName": "Neue Vorlage",
+      "title": "E-Mail-Vorlagen",
+      "subtitle": "Jede E-Mail, die du schreibst, basiert auf einer dieser Vorlagen. Dein Logo, deine Farben und deine Fußzeile richten sich nach deiner Marke.",
+      "creating": "Wird erstellt…",
+      "new": "Neue Vorlage",
+      "fromDesigner": "Eine neue Vorlage vom Designer",
+      "kindPrompt": "Welche Art von E-Mail willst du damit verschicken?",
+      "briefPlaceholder": "z. B. Ein monatlicher Newsletter: ein kurzer Gruß von mir, mein neuester Artikel und mein nächster Kurs.",
+      "notNow": "Nicht jetzt",
+      "empty": "Noch keine Vorlagen. Erstelle eine neue oder frag den Designer.",
+      "duplicated": "Dupliziert.",
+      "confirmDelete": "“{name}” löschen?",
+      "editNamed": "{name} bearbeiten",
+      "opening": "Wird geöffnet…",
+      "writeEmail": "E-Mail schreiben",
+      "duplicate": "Duplizieren",
+      "duplicateNamed": "{name} duplizieren",
+      "deleteNamed": "{name} löschen"
     }
   },
   "events": {
@@ -1733,7 +1898,21 @@
     "publish": "Veröffentlichen",
     "publishing": "Wird veröffentlicht…",
     "published": "Veröffentlicht. Teilnehmer finden ihn jetzt auf deiner Website.",
-    "publishError": "Der Download konnte nicht veröffentlicht werden."
+    "publishError": "Der Download konnte nicht veröffentlicht werden.",
+    "subtitle": "Verwalte Dateien zum Herunterladen für deine Teilnehmer.",
+    "empty": "Keine Dateien hochgeladen. Lade deine erste Datei hoch, um loszulegen.",
+    "deletedMany": "Dateien gelöscht",
+    "deletedOne": "Datei gelöscht",
+    "col": {
+      "size": "Größe",
+      "downloads": "Downloads",
+      "access": "Zugriff"
+    },
+    "count": "{count, plural, one {# Download} other {# Downloads}}",
+    "confirmDelete": "\"{title}\" löschen? Das kann nicht rückgängig gemacht werden.",
+    "deleteError": "Datei konnte nicht gelöscht werden",
+    "openError": "Die Datei konnte nicht geöffnet werden",
+    "openFile": "Datei öffnen"
   },
   "shell": {
     "backToStudio": "Zurück zum Creator-Studio",
@@ -1745,5 +1924,147 @@
     "signOut": "Abmelden",
     "signingOut": "Wird abgemeldet...",
     "signOutTitle": "{name} — Abmelden"
+  },
+  "community": {
+    "tabs": {
+      "feed": "Feed",
+      "reports": "Meldungen",
+      "members": "Mitglieder",
+      "settings": "Einstellungen"
+    }
+  },
+  "courses": {
+    "loadError": "Kurs konnte nicht geladen werden.",
+    "edit": "Kurs bearbeiten",
+    "new": "Neuer Kurs",
+    "thumbnail": "Vorschaubild",
+    "deleted": "Kurse gelöscht",
+    "updated": "Kurs aktualisiert",
+    "updateError": "Kurs konnte nicht aktualisiert werden",
+    "subtitle": "Verwalte deinen Kurskatalog.",
+    "empty": "Noch keine Kurse. Erstelle deinen ersten Kurs, um loszulegen.",
+    "col": {
+      "pricing": "Preisgestaltung",
+      "lessons": "Lektionen"
+    },
+    "lessonCount": "{count, plural, one {# Lektion} other {# Lektionen}}"
+  },
+  "list": {
+    "sort": {
+      "newest": "Neueste",
+      "oldest": "Älteste",
+      "nameAsc": "Name A-Z",
+      "nameDesc": "Name Z-A",
+      "largest": "Größte",
+      "smallest": "Kleinste"
+    },
+    "col": {
+      "title": "Titel",
+      "status": "Status",
+      "actions": "Aktionen",
+      "date": "Datum",
+      "name": "Name",
+      "price": "Preis",
+      "items": "Elemente"
+    },
+    "status": {
+      "published": "Veröffentlicht",
+      "draft": "Entwurf",
+      "active": "Aktiv",
+      "inactive": "Inaktiv"
+    },
+    "pricing": {
+      "free": "Kostenlos",
+      "subscription": "Abonnement",
+      "paid": "Kostenpflichtig"
+    },
+    "edit": "Bearbeiten"
+  },
+  "home": {
+    "stats": {
+      "students": "Teilnehmer",
+      "studentsHint": "Insgesamt eingeschrieben",
+      "courses": "Kurse",
+      "coursesHint": "Veröffentlicht & Entwurf",
+      "revenue": "Umsatz",
+      "revenueHint": "Gesamter Zeitraum",
+      "storage": "Speicherplatz",
+      "storageHint": "Belegt"
+    },
+    "liveEvent": "Live-Event",
+    "message": "Nachricht"
+  },
+  "payouts": {
+    "onboardError": "Das Onboarding konnte nicht gestartet werden. Bitte versuche es erneut.",
+    "dashboardError": "Das Stripe-Dashboard konnte nicht geöffnet werden.",
+    "subtitle": "Verbinde ein Stripe-Konto, um von deinen Teilnehmern bezahlt zu werden. Stripe verwaltet Bankdaten und Auszahlungen; du bleibst der Merchant of Record.",
+    "stripeTitle": "Stripe-Auszahlungen",
+    "notConnected": "Du hast noch kein Auszahlungskonto verknüpft. Verbinde dich mit Stripe, um Zahlungen für deine kostenpflichtigen Inhalte zu akzeptieren.",
+    "country": "Wo hat dein Unternehmen seinen Sitz?",
+    "countryHint": "Stripe legt dies einmalig für dein Auszahlungskonto fest; es kann später nicht mehr geändert werden.",
+    "connect": "Mit Stripe verbinden",
+    "paymentsOn": "Zahlungen werden akzeptiert",
+    "paymentsOff": "Zahlungen noch nicht aktiviert",
+    "payoutsOn": "Auszahlungen auf dein Bankkonto aktiviert",
+    "payoutsOff": "Auszahlungen noch nicht aktiviert",
+    "opening": "Wird geöffnet…",
+    "openDashboard": "Stripe-Dashboard öffnen",
+    "continueSetup": "Einrichtung fortsetzen",
+    "reviewing": "Stripe überprüft deine Angaben noch. Diese Seite aktualisiert sich automatisch, sobald du freigeschaltet wurdest.",
+    "earnings": "Einnahmen",
+    "netPayout": "Nettoauszahlung",
+    "grossSales": "Bruttoumsatz",
+    "salesCount": "{count, plural, one {# Verkauf} other {# Verkäufe}}",
+    "platformFees": "Plattformgebühren",
+    "refunded": "Erstattet",
+    "pending": "Auf dem Weg zu deiner Bank:",
+    "available": "Verfügbar:",
+    "earningsNote": "Die Nettoauszahlung ist dein Anteil nach Abzug der Plattformgebühr. Guthaben werden von Stripe auf dein Bankkonto überwiesen.",
+    "enabled": "Aktiviert",
+    "pendingBadge": "Ausstehend",
+    "trialTitle": "Auszahlungen werden freigeschaltet, sobald dein Tarif beginnt",
+    "upgradeTitle": "Upgraden, um mit dem Verkauf zu beginnen",
+    "trialBody": "In einer kostenlosen Testphase können keine Zahlungen angenommen werden. Starte deinen Tarif jetzt, um Stripe zu verbinden und zu verkaufen, oder baue dein Angebot weiter auf und verkaufe, sobald deine Testphase endet.",
+    "upgradeBody": "Um bezahlt zu werden, ist ein kostenpflichtiger Tarif mit einem aktiven Abonnement erforderlich. Im kostenlosen Tarif muss alles, was du anbietest, kostenlos sein — keine Auszahlungen, kostenpflichtigen Inhalte oder Abonnements.",
+    "startPlan": "Meinen Tarif jetzt starten",
+    "viewPlans": "Tarife ansehen",
+    "redirecting": "Weiterleitung…"
+  },
+  "students": {
+    "subtitle": "Alle, die beigetreten sind, wofür sie eingeschrieben sind und wie weit sie sind.",
+    "empty": "Keine Teilnehmer gefunden.",
+    "confirmDelete": "{count, plural, one {# Teilnehmer} other {# Teilnehmer}} löschen? Ihre Konten, Einschreibungen und der Zahlungsverlauf werden dauerhaft entfernt. Kündige zuerst alle Mitgliedschaften, für die sie bezahlen: Das Löschen stoppt die Abbuchungen nicht.",
+    "deleted": "Teilnehmer gelöscht",
+    "col": {
+      "student": "Teilnehmer",
+      "enrolled": "Eingeschriebene Kurse",
+      "progress": "Kursfortschritt",
+      "joined": "Beigetreten",
+      "active": "Zuletzt aktiv"
+    },
+    "unnamed": "Unbenannt",
+    "courseCount": "{count, plural, one {# Kurs} other {# Kurse}}",
+    "overall": "insgesamt",
+    "never": "Nie",
+    "manage": "Verwalten",
+    "payments": {
+      "loadError": "Zahlungsverlauf konnte nicht geladen werden.",
+      "back": "Teilnehmer",
+      "title": "Zahlungsverlauf",
+      "empty": "Keine Zahlungen",
+      "emptyHint": "Dieser Teilnehmer hat noch nichts gekauft.",
+      "type": {
+        "one_time": "einmalig",
+        "subscription": "Abonnement"
+      },
+      "noLineItems": "Abonnement-Abbuchung (keine Einzelposten).",
+      "refunded": "Erstattet",
+      "refund": "Erstatten",
+      "itemRefunded": "Artikel erstattet.",
+      "refundError": "Erstattung fehlgeschlagen. Bitte versuche es erneut.",
+      "cancel": "Abbrechen",
+      "refunding": "Wird erstattet…",
+      "confirmRefund": "Erstattung bestätigen"
+    }
   }
 }

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useParams } from "next/navigation";
 import { Check, Circle } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { PageState } from "@/components/ui/page-state";
@@ -13,6 +14,7 @@ import { AnnouncementDetail, getAnnouncement } from "@/lib/announcements";
 const STATUS_FILTERS = ["all", "sent", "failed", "expired", "none"] as const;
 
 export default function ReceiptPage() {
+  const t = useTranslations("admin.messages.receipt");
   const { id } = useParams<{ id: string }>();
   const [data, setData] = useState<AnnouncementDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,7 +34,7 @@ export default function ReceiptPage() {
       .catch((err) => {
         if (!cancelled) {
           setError(err);
-          toast.error("Couldn't load the announcement.");
+          toast.error(t("loadError"));
         }
       })
       .finally(() => {
@@ -41,7 +43,7 @@ export default function ReceiptPage() {
     return () => {
       cancelled = true;
     };
-  }, [id, reloadKey]);
+  }, [id, reloadKey, t]);
 
   const rows = useMemo(
     () =>
@@ -75,11 +77,11 @@ export default function ReceiptPage() {
           />
 
           <div className="grid grid-cols-4 gap-2 text-center text-sm">
-            <Stat label="Recipients" value={data.recipient_count} />
-            <Stat label="Push sent" value={data.push_sent_count} />
-            <Stat label="Read" value={readCount} />
+            <Stat label={t("recipients")} value={data.recipient_count} />
+            <Stat label={t("pushSent")} value={data.push_sent_count} />
+            <Stat label={t("read")} value={readCount} />
             <Stat
-              label="Failed"
+              label={t("failed")}
               value={
                 data.recipients.filter((r) => r.push_status === "failed").length
               }
@@ -93,7 +95,7 @@ export default function ReceiptPage() {
                 onClick={() => setStatusFilter(s)}
                 className={`rounded-full border px-2 py-1 ${statusFilter === s ? "bg-primary text-primary-foreground" : "border-border"}`}
               >
-                {s}
+                {t(`status.${s}`)}
               </button>
             ))}
           </div>
@@ -106,20 +108,22 @@ export default function ReceiptPage() {
               >
                 <span>{r.name}</span>
                 <span className="flex items-center gap-3 text-xs text-muted-foreground">
-                  <span>{r.push_status}</span>
+                  <span>{t(`status.${r.push_status}`)}</span>
                   <span className="inline-flex items-center gap-1">
                     {r.read_at ? (
                       <Check className="h-3 w-3" />
                     ) : (
                       <Circle className="h-3 w-3" />
                     )}
-                    {r.read_at ? "read" : "unread"}
+                    {r.read_at ? t("readState") : t("unreadState")}
                   </span>
                 </span>
               </div>
             ))}
             {rows.length === 0 && (
-              <div className="p-3 text-muted-foreground">No recipients.</div>
+              <div className="p-3 text-muted-foreground">
+                {t("noRecipients")}
+              </div>
             )}
           </div>
         </>

@@ -79,28 +79,32 @@ export default function AdminDashboard() {
 
   const statCards = [
     {
-      title: "Students",
+      key: "students",
+      title: t("home.stats.students"),
       value: stats.students.toLocaleString(locale),
       icon: Users,
-      description: "Total enrolled",
+      description: t("home.stats.studentsHint"),
     },
     {
-      title: "Courses",
+      key: "courses",
+      title: t("home.stats.courses"),
       value: stats.courses.toLocaleString(locale),
       icon: BookOpen,
-      description: "Published & draft",
+      description: t("home.stats.coursesHint"),
     },
     {
-      title: "Revenue",
+      key: "revenue",
+      title: t("home.stats.revenue"),
       value: formatMoney(stats.revenue, currency, locale),
       icon: DollarSign,
-      description: "All time",
+      description: t("home.stats.revenueHint"),
     },
     {
-      title: "Storage",
+      key: "storage",
+      title: t("home.stats.storage"),
       value: stats.storage_used,
       icon: HardDrive,
-      description: "Used",
+      description: t("home.stats.storageHint"),
     },
   ];
 
@@ -145,7 +149,7 @@ export default function AdminDashboard() {
           <Button asChild size="sm" className="gap-1.5">
             <NavLink href="/admin/courses/new">
               <Plus className="h-4 w-4" />
-              New Course
+              {t("courses.new")}
             </NavLink>
           </Button>
           {inProgress.map((c) => (
@@ -171,19 +175,19 @@ export default function AdminDashboard() {
           <Button asChild size="sm" variant="outline" className="gap-1.5">
             <NavLink href="/admin/live">
               <Video className="h-4 w-4" />
-              Live Event
+              {t("home.liveEvent")}
             </NavLink>
           </Button>
           <Button asChild size="sm" variant="outline" className="gap-1.5">
             <NavLink href="/admin/messages/new">
               <Mail className="h-4 w-4" />
-              Message
+              {t("home.message")}
             </NavLink>
           </Button>
           <Button asChild size="sm" variant="outline" className="gap-1.5">
             <NavLink href="/admin/blog">
               <Newspaper className="h-4 w-4" />
-              Blog
+              {t("nav.items.blog")}
             </NavLink>
           </Button>
         </div>
@@ -214,7 +218,7 @@ export default function AdminDashboard() {
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {statCards.map((stat) => (
-            <Card key={stat.title}>
+            <Card key={stat.key}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-caption font-medium text-muted-foreground">
                   {stat.title}

@@ -52,6 +52,7 @@ interface Plan {
 }
 
 function ProductTypeBadge({ type }: { type: string }) {
+  const t = useTranslations("admin.store.productTypes");
   const variantMap: Record<
     string,
     "default" | "secondary" | "outline" | "success" | "warning" | "brand"
@@ -63,17 +64,10 @@ function ProductTypeBadge({ type }: { type: string }) {
     onsite_event: "outline",
     bundle: "default",
   };
-  const labelMap: Record<string, string> = {
-    course: "Course",
-    download: "Download",
-    live_class: "Live Session",
-    live_stream: "Live Stream",
-    onsite_event: "In-Person Event",
-    bundle: "Bundle",
-  };
+  const known = type in variantMap;
   return (
     <Badge variant={variantMap[type] ?? "outline"}>
-      {labelMap[type] ?? type}
+      {known ? t(dyn(t, type)) : type}
     </Badge>
   );
 }
@@ -102,6 +96,7 @@ function TableSkeletonRows({
 
 function ProductsTab() {
   const locale = useLocale();
+  const ta = useTranslations("admin");
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
@@ -136,10 +131,18 @@ function ProductsTab() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/50">
-                <th className="px-4 py-3 text-left font-medium">Type</th>
-                <th className="px-4 py-3 text-left font-medium">Title</th>
-                <th className="px-4 py-3 text-left font-medium">Price</th>
-                <th className="px-4 py-3 text-left font-medium">Sales</th>
+                <th className="px-4 py-3 text-left font-medium">
+                  {ta("store.products.type")}
+                </th>
+                <th className="px-4 py-3 text-left font-medium">
+                  {ta("list.col.title")}
+                </th>
+                <th className="px-4 py-3 text-left font-medium">
+                  {ta("list.col.price")}
+                </th>
+                <th className="px-4 py-3 text-left font-medium">
+                  {ta("store.products.sales")}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -153,10 +156,18 @@ function ProductsTab() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-muted/50">
-              <th className="px-4 py-3 text-left font-medium">Type</th>
-              <th className="px-4 py-3 text-left font-medium">Title</th>
-              <th className="px-4 py-3 text-left font-medium">Price</th>
-              <th className="px-4 py-3 text-left font-medium">Sales</th>
+              <th className="px-4 py-3 text-left font-medium">
+                {ta("store.products.type")}
+              </th>
+              <th className="px-4 py-3 text-left font-medium">
+                {ta("list.col.title")}
+              </th>
+              <th className="px-4 py-3 text-left font-medium">
+                {ta("list.col.price")}
+              </th>
+              <th className="px-4 py-3 text-left font-medium">
+                {ta("store.products.sales")}
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -166,7 +177,7 @@ function ProductsTab() {
                   colSpan={4}
                   className="px-4 py-8 text-center text-muted-foreground"
                 >
-                  No products found.
+                  {ta("store.products.empty")}
                 </td>
               </tr>
             ) : (
@@ -180,7 +191,7 @@ function ProductsTab() {
                     {/* Hidden from students until she publishes it. */}
                     {!p.is_active && (
                       <Badge variant="outline" className="ml-2">
-                        Draft
+                        {ta("list.status.draft")}
                       </Badge>
                     )}
                   </td>
@@ -206,6 +217,7 @@ const NEW_BUNDLE = KIND_ROUTES.bundle?.newHref ?? "/admin/store/bundles/new";
 function BundlesTab() {
   const locale = useLocale();
   const t = useTranslations("admin.store.bundles");
+  const tList = useTranslations("admin.list");
   const [bundles, setBundles] = useState<BundleListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
@@ -233,11 +245,19 @@ function BundlesTab() {
   const tableHead = (
     <thead>
       <tr className="border-b bg-muted/50">
-        <th className="px-4 py-3 text-left font-medium">Name</th>
-        <th className="px-4 py-3 text-left font-medium">Price</th>
-        <th className="px-4 py-3 text-left font-medium">Items</th>
-        <th className="px-4 py-3 text-left font-medium">Status</th>
-        <th className="px-4 py-3 text-left font-medium">Actions</th>
+        <th className="px-4 py-3 text-left font-medium">{tList("col.name")}</th>
+        <th className="px-4 py-3 text-left font-medium">
+          {tList("col.price")}
+        </th>
+        <th className="px-4 py-3 text-left font-medium">
+          {tList("col.items")}
+        </th>
+        <th className="px-4 py-3 text-left font-medium">
+          {tList("col.status")}
+        </th>
+        <th className="px-4 py-3 text-left font-medium">
+          {tList("col.actions")}
+        </th>
       </tr>
     </thead>
   );
@@ -276,8 +296,8 @@ function BundlesTab() {
                   <td colSpan={5}>
                     <EmptyState
                       icon={Package}
-                      title="No bundles yet"
-                      description="Create a bundle to group products at a discounted price."
+                      title={t("empty")}
+                      description={t("emptyHint")}
                       action={{
                         label: t("new"),
                         href: NEW_BUNDLE,
@@ -298,7 +318,9 @@ function BundlesTab() {
                     <td className="px-4 py-3">
                       {b.is_published ? (
                         <Badge variant={b.is_active ? "success" : "secondary"}>
-                          {b.is_active ? "Active" : "Inactive"}
+                          {b.is_active
+                            ? tList("status.active")
+                            : tList("status.inactive")}
                         </Badge>
                       ) : (
                         <Badge variant="outline">{t("draft")}</Badge>
@@ -306,7 +328,9 @@ function BundlesTab() {
                     </td>
                     <td className="px-4 py-3">
                       <Button asChild variant="ghost" size="sm">
-                        <Link href={`/admin/store/bundles/${b.id}`}>Edit</Link>
+                        <Link href={`/admin/store/bundles/${b.id}`}>
+                          {tList("edit")}
+                        </Link>
                       </Button>
                     </td>
                   </tr>
@@ -327,6 +351,7 @@ function PlansTab() {
   const locale = useLocale();
   const t = useTranslations("admin.store.plans");
   const tPlan = useTranslations("studio.plan");
+  const tList = useTranslations("admin.list");
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
@@ -355,10 +380,16 @@ function PlansTab() {
   const tableHead = (
     <thead>
       <tr className="border-b bg-muted/50">
-        <th className="px-4 py-3 text-left font-medium">Name</th>
-        <th className="px-4 py-3 text-left font-medium">Price</th>
-        <th className="px-4 py-3 text-left font-medium">Status</th>
-        <th className="px-4 py-3 text-left font-medium">Actions</th>
+        <th className="px-4 py-3 text-left font-medium">{tList("col.name")}</th>
+        <th className="px-4 py-3 text-left font-medium">
+          {tList("col.price")}
+        </th>
+        <th className="px-4 py-3 text-left font-medium">
+          {tList("col.status")}
+        </th>
+        <th className="px-4 py-3 text-left font-medium">
+          {tList("col.actions")}
+        </th>
       </tr>
     </thead>
   );

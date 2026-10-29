@@ -35,17 +35,21 @@ export default function AdminCommunityPage() {
       <h1 className="text-lg font-semibold">{t("nav.items.communityFeed")}</h1>
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
-          <TabsTrigger value="feed">Feed</TabsTrigger>
+          <TabsTrigger value="feed">{t("community.tabs.feed")}</TabsTrigger>
           <TabsTrigger value="reports">
-            Reports
+            {t("community.tabs.reports")}
             {queueCount > 0 && (
               <Badge variant="destructive" className="ml-1.5 h-5 px-1.5">
                 {queueCount}
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="members">Members</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsTrigger value="members">
+            {t("community.tabs.members")}
+          </TabsTrigger>
+          <TabsTrigger value="settings">
+            {t("community.tabs.settings")}
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="feed" className="pt-4">
           <ModFeed />

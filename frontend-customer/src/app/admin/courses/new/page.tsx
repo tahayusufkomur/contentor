@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { CourseForm } from "@/components/admin/course-form";
@@ -39,6 +40,7 @@ export default function NewCoursePage() {
  *  it (focus mode replaces it), and her time to the create click is stamped
  *  for the comparison with focus mode. */
 function PlainNewCourse({ focusOn }: { focusOn: boolean }) {
+  const t = useTranslations("admin");
   const navigate = useNavigate();
   useEffect(() => {
     clearActiveCreation(0); // from the focus screen's "Fill it in myself"
@@ -52,7 +54,9 @@ function PlainNewCourse({ focusOn }: { focusOn: boolean }) {
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <h1 className="text-2xl font-bold tracking-tight">New Course</h1>
+        <h1 className="text-2xl font-bold tracking-tight">
+          {t("courses.new")}
+        </h1>
       </div>
 
       {!focusOn && (

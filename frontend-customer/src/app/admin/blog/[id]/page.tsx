@@ -313,7 +313,7 @@ export default function BlogEditorPage() {
     });
     // Keystrokes she typed during the round trip stay: what she has not changed takes the saved copy.
     receive(updated);
-    toast.success("Saved");
+    toast.success(t("blog.saved"));
     void refreshSetupStatus();
   };
 
@@ -359,7 +359,7 @@ export default function BlogEditorPage() {
         });
         await deletePost(fresh.id);
         setPost({ ...post, ...fresh, id: post.id, slug: post.slug });
-        toast.success("Regenerated");
+        toast.success(t("blog.regenerated"));
       } else {
         const errKey =
           res.source === "quota_exhausted"

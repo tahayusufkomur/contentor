@@ -59,17 +59,16 @@ function formatDate(dateStr: string, locale: string) {
   });
 }
 
-const SORT_OPTIONS = [
-  { label: "Newest", value: "-date_joined" },
-  { label: "Oldest", value: "date_joined" },
-  { label: "Name A-Z", value: "name" },
-  { label: "Name Z-A", value: "-name" },
-];
-
 export default function StudentsPage() {
   const locale = useLocale();
   const t = useTranslations("admin");
   const browserRef = useRef<MediaBrowserHandle>(null);
+  const sortOptions = [
+    { label: t("list.sort.newest"), value: "-date_joined" },
+    { label: t("list.sort.oldest"), value: "date_joined" },
+    { label: t("list.sort.nameAsc"), value: "name" },
+    { label: t("list.sort.nameDesc"), value: "-name" },
+  ];
   const [selectedStudent, setSelectedStudent] = useState<StudentDetail | null>(
     null,
   );
@@ -108,8 +107,7 @@ export default function StudentsPage() {
             {t("nav.items.students")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Everyone who has joined, what they are enrolled in and how far they
-            are.
+            {t("students.subtitle")}
           </p>
         </div>
       </div>
@@ -118,16 +116,14 @@ export default function StudentsPage() {
         ref={browserRef}
         persistKey="students"
         fetchPage={fetchPage}
-        sortOptions={SORT_OPTIONS}
+        sortOptions={sortOptions}
         defaultSort="-date_joined"
         galleryEnabled={false}
         emptyIcon={Users}
-        emptyMessage="No students found."
+        emptyMessage={t("students.empty")}
         getItemId={(s) => s.id}
         selectAcrossPages={false}
-        deleteConfirm={(count) =>
-          `Delete ${count} ${count === 1 ? "student" : "students"}? Their accounts, enrolments and payment history are removed for good. Cancel any membership they are paying for first: deleting does not stop the charges.`
-        }
+        deleteConfirm={(count) => t("students.confirmDelete", { count })}
         onDelete={async (selection) => {
           await batchedAsync(
             selection.ids.map(
@@ -137,16 +133,16 @@ export default function StudentsPage() {
                 }),
             ),
           );
-          toast.success("Students deleted");
+          toast.success(t("students.deleted"));
           browserRef.current?.refresh();
         }}
         listColumns={[
-          { label: "Student", key: "student" },
-          { label: "Enrolled Courses", key: "enrolled" },
-          { label: "Course Progress", key: "progress" },
-          { label: "Joined", key: "joined" },
-          { label: "Last Active", key: "active" },
-          { label: "Actions", key: "actions" },
+          { label: t("students.col.student"), key: "student" },
+          { label: t("students.col.enrolled"), key: "enrolled" },
+          { label: t("students.col.progress"), key: "progress" },
+          { label: t("students.col.joined"), key: "joined" },
+          { label: t("students.col.active"), key: "active" },
+          { label: t("list.col.actions"), key: "actions" },
         ]}
         renderListRow={(student) => (
           <>
@@ -163,7 +159,7 @@ export default function StudentsPage() {
                 </Avatar>
                 <div className="min-w-0">
                   <p className="font-semibold text-sm truncate">
-                    {student.name || "Unnamed"}
+                    {student.name || t("students.unnamed")}
                   </p>
                   <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
                     <Mail className="h-3 w-3" />
@@ -191,8 +187,7 @@ export default function StudentsPage() {
               onClick={() => setSelectedStudent(student)}
             >
               <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-                {student.enrolled_count}{" "}
-                {student.enrolled_count === 1 ? "course" : "courses"}
+                {t("students.courseCount", { count: student.enrolled_count })}
               </span>
             </TableCell>
 
@@ -207,7 +202,7 @@ export default function StudentsPage() {
                     {student.progress_percent || 0}%
                   </span>
                   <span className="text-[10px] text-muted-foreground">
-                    overall
+                    {t("students.overall")}
                   </span>
                 </div>
                 <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
@@ -226,7 +221,7 @@ export default function StudentsPage() {
             <TableCell className="text-muted-foreground text-xs">
               {student.last_login
                 ? formatDate(student.last_login, locale)
-                : "Never"}
+                : t("students.never")}
             </TableCell>
 
             <TableCell>
@@ -235,7 +230,7 @@ export default function StudentsPage() {
                 onClick={() => setSelectedStudent(student)}
                 className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
               >
-                <span>Manage</span>
+                <span>{t("students.manage")}</span>
                 <ChevronRight className="h-3.5 w-3.5" />
               </button>
             </TableCell>

@@ -285,7 +285,33 @@
       "publish": "Publish",
       "publishing": "Publishing…",
       "published": "Published. Students can buy it in your store now.",
-      "draftHint": "A draft is hidden from students until you publish it."
+      "draftHint": "A draft is hidden from students until you publish it.",
+      "empty": "No bundles yet",
+      "emptyHint": "Create a bundle to group products at a discounted price.",
+      "itemFallback": "Item {id}",
+      "needPrice": "Add a price above 0.",
+      "updated": "Bundle updated successfully.",
+      "updateError": "Failed to update bundle. Please try again.",
+      "publishError": "Could not publish the bundle.",
+      "needItem": "Please select at least one item for the bundle.",
+      "edit": "Edit Bundle",
+      "editSubtitle": "Update the details and items for this bundle.",
+      "details": "Bundle Details",
+      "detailsHint": "Basic information about your bundle.",
+      "namePlaceholder": "e.g. Starter Pack",
+      "descriptionPlaceholder": "Describe what's included in this bundle...",
+      "originalPrice": "Original Price (sum of items)",
+      "itemsTitle": "Bundle Items",
+      "itemsHint2": "Select the content to include in this bundle.",
+      "saving": "Saving…",
+      "saveChanges": "Save Changes",
+      "cancel": "Cancel",
+      "createdTermsFailed": "Bundle created, but its terms were not saved. {reason}",
+      "created": "Bundle created successfully.",
+      "createError": "Failed to create bundle. Please try again.",
+      "create": "Create Bundle",
+      "createSubtitle": "Group multiple products together at a discounted price.",
+      "creating": "Creating…"
     },
     "plans": {
       "new": "New membership",
@@ -341,6 +367,19 @@
         "refunded": "Refunded",
         "partially_refunded": "Partly refunded"
       }
+    },
+    "products": {
+      "type": "Type",
+      "sales": "Sales",
+      "empty": "No products found."
+    },
+    "productTypes": {
+      "course": "Course",
+      "download": "Download",
+      "live_class": "Live Session",
+      "live_stream": "Live Stream",
+      "onsite_event": "In-Person Event",
+      "bundle": "Bundle"
     }
   },
   "plan": {
@@ -641,7 +680,11 @@
     "inlineImages": "Inline images",
     "inlineAdd": "Add image",
     "inlineHeadingPrompt": "Insert under which section?",
-    "inlineNoHeadings": "Add some section headings (H2) to place inline images."
+    "inlineNoHeadings": "Add some section headings (H2) to place inline images.",
+    "deleted": "Deleted",
+    "delete": "Delete",
+    "saved": "Saved",
+    "regenerated": "Regenerated"
   },
   "inbox": {
     "title": "Inbox",
@@ -839,7 +882,13 @@
     "yourLanguageHint": "The language of your Creator studio and of what we write to you. Your students' language is set separately.",
     "siteLanguage": "Site language",
     "siteLanguageHint": "The language your students see on your site. You can change it until your site goes live.",
-    "siteLanguageLocked": "Your site is live, so its language stays as it is."
+    "siteLanguageLocked": "Your site is live, so its language stays as it is.",
+    "subtitle": "Configure your site's general settings.",
+    "saving": "Saving…",
+    "saveChanges": "Save Changes",
+    "timezone": "Timezone",
+    "timezoneHint": "All event times in the calendar will be displayed in this timezone for your students.",
+    "currentTimezone": "Current selection: {timezone}"
   },
   "subscription": {
     "title": "Subscription",
@@ -894,8 +943,11 @@
         "live": "Live sessions",
         "fee": "{n}% transaction fee on sales",
         "aiBlog": "{n} AI blog posts/mo"
-      }
-    }
+      },
+      "tryAgain": "Try again",
+      "planForSite": "{plan} for your site"
+    },
+    "httpError": "Error {status}"
   },
   "describe": {
     "course": {
@@ -1445,6 +1497,119 @@
         "body": "Your message",
         "now": "now"
       }
+    },
+    "receipt": {
+      "loadError": "Couldn't load the announcement.",
+      "recipients": "Recipients",
+      "pushSent": "Push sent",
+      "read": "Read",
+      "failed": "Failed",
+      "status": {
+        "all": "all",
+        "sent": "sent",
+        "failed": "failed",
+        "expired": "expired",
+        "none": "none"
+      },
+      "readState": "read",
+      "unreadState": "unread",
+      "noRecipients": "No recipients."
+    },
+    "campaign": {
+      "confirmEdit": "Edit this email? It comes off the schedule until you schedule it again.",
+      "confirmCancel": "Cancel this email? It will not be sent.",
+      "goesOut": "Goes out {when}",
+      "edit": "Edit",
+      "cancelSending": "Cancel sending",
+      "template": "Template",
+      "sender": "Sender",
+      "recipients": "Recipients",
+      "delivered": "Delivered",
+      "sentCount": "{count} sent",
+      "failedCount": "{count} failed",
+      "created": "Created",
+      "completed": "Completed",
+      "preview": "Email preview",
+      "noPreview": "Preview not available for this campaign.",
+      "noTracking": "Recipient tracking not available for campaigns sent before this update.",
+      "colName": "Name",
+      "colEmail": "Email",
+      "colStatus": "Status",
+      "colSentAt": "Sent At",
+      "colError": "Error"
+    },
+    "send": {
+      "testSent": "Test sent to {email}",
+      "scheduled": "Scheduled for {when}.",
+      "onItsWay": "Your email is on its way.",
+      "needSubject": "Give your email a subject.",
+      "needCourse": "Choose at least one course.",
+      "needStudent": "Choose at least one student.",
+      "nobody": "No one would get it: no student here wants email (some may have unsubscribed).",
+      "needTime": "Pick a day and time.",
+      "needFuture": "Pick a time in the future.",
+      "backToEditor": "Back to the editor",
+      "title": "Send your email",
+      "subtitle": "Choose who gets it and when. Each student gets their own copy, with their name and an unsubscribe link.",
+      "subject": "Subject",
+      "when": "When",
+      "sendNow": "Send now",
+      "schedule": "Schedule",
+      "sendAt": "Send at",
+      "scheduling": "Scheduling…",
+      "sending": "Sending…",
+      "sendTo": "{count, plural, one {Send to # student} other {Send to # students}}",
+      "send": "Send",
+      "sendTest": "Send me a test",
+      "asStudents": "As your students will see it",
+      "preview": "Email preview"
+    },
+    "title": "Messages",
+    "designerUnavailable": "The Designer isn't available right now.",
+    "askDesigner": "Ask the Designer",
+    "designIt": "Design it",
+    "starting": "Starting…",
+    "madeForYou": "Made for you",
+    "category": {
+      "newsletter": "Newsletter",
+      "launch": "Launch",
+      "event": "Session or event",
+      "note": "Personal note",
+      "offer": "Offer",
+      "welcome": "Welcome",
+      "other": "Email"
+    },
+    "newEmail": {
+      "openingTemplate": "Opening your template",
+      "title": "New email",
+      "subtitle": "Start from one of your templates, or tell the Designer what it's about. Your logo, colours and footer are already in.",
+      "yourTemplates": "Your templates",
+      "manageTemplates": "Manage templates",
+      "opening": "Opening",
+      "blank": "Blank",
+      "blankHint": "Your header and footer, nothing else yet.",
+      "designerPlaceholder": "Or ask the Designer: “invite my students to the new morning class, warm and short”…",
+      "feature": "Feature (up to {max})"
+    },
+    "templates": {
+      "defaultName": "New template",
+      "title": "Email templates",
+      "subtitle": "Every email you write starts from one of these. Your logo, colours and footer follow your brand.",
+      "creating": "Creating…",
+      "new": "New template",
+      "fromDesigner": "A new template from the Designer",
+      "kindPrompt": "What kind of email will you send with it?",
+      "briefPlaceholder": "e.g. A monthly newsletter: a short note from me, my latest article and my next class.",
+      "notNow": "Not now",
+      "empty": "No templates yet. Start with a new one, or ask the Designer.",
+      "duplicated": "Duplicated.",
+      "confirmDelete": "Delete “{name}”?",
+      "editNamed": "Edit {name}",
+      "opening": "Opening…",
+      "writeEmail": "Write an email",
+      "duplicate": "Duplicate",
+      "duplicateNamed": "Duplicate {name}",
+      "deleteNamed": "Delete {name}"
     }
   },
   "events": {
@@ -1733,7 +1898,21 @@
     "publish": "Publish",
     "publishing": "Publishing…",
     "published": "Published. Students can find it on your site now.",
-    "publishError": "Could not publish the download."
+    "publishError": "Could not publish the download.",
+    "subtitle": "Manage downloadable files for your students.",
+    "empty": "No files uploaded. Upload your first file to get started.",
+    "deletedMany": "Files deleted",
+    "deletedOne": "File deleted",
+    "col": {
+      "size": "Size",
+      "downloads": "Downloads",
+      "access": "Access"
+    },
+    "count": "{count, plural, one {# download} other {# downloads}}",
+    "confirmDelete": "Delete \"{title}\"? This cannot be undone.",
+    "deleteError": "Failed to delete file",
+    "openError": "Could not open the file",
+    "openFile": "Open file"
   },
   "shell": {
     "backToStudio": "Back to Creator studio",
@@ -1745,5 +1924,147 @@
     "signOut": "Sign out",
     "signingOut": "Signing out...",
     "signOutTitle": "{name} — Sign out"
+  },
+  "community": {
+    "tabs": {
+      "feed": "Feed",
+      "reports": "Reports",
+      "members": "Members",
+      "settings": "Settings"
+    }
+  },
+  "courses": {
+    "loadError": "Failed to load course.",
+    "edit": "Edit Course",
+    "new": "New Course",
+    "thumbnail": "Thumbnail",
+    "deleted": "Courses deleted",
+    "updated": "Course updated",
+    "updateError": "Failed to update course",
+    "subtitle": "Manage your course catalog.",
+    "empty": "No courses yet. Create your first course to get started.",
+    "col": {
+      "pricing": "Pricing",
+      "lessons": "Lessons"
+    },
+    "lessonCount": "{count, plural, one {# lesson} other {# lessons}}"
+  },
+  "list": {
+    "sort": {
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "nameAsc": "Name A-Z",
+      "nameDesc": "Name Z-A",
+      "largest": "Largest",
+      "smallest": "Smallest"
+    },
+    "col": {
+      "title": "Title",
+      "status": "Status",
+      "actions": "Actions",
+      "date": "Date",
+      "name": "Name",
+      "price": "Price",
+      "items": "Items"
+    },
+    "status": {
+      "published": "Published",
+      "draft": "Draft",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "pricing": {
+      "free": "Free",
+      "subscription": "Subscription",
+      "paid": "Paid"
+    },
+    "edit": "Edit"
+  },
+  "home": {
+    "stats": {
+      "students": "Students",
+      "studentsHint": "Total enrolled",
+      "courses": "Courses",
+      "coursesHint": "Published & draft",
+      "revenue": "Revenue",
+      "revenueHint": "All time",
+      "storage": "Storage",
+      "storageHint": "Used"
+    },
+    "liveEvent": "Live Event",
+    "message": "Message"
+  },
+  "payouts": {
+    "onboardError": "Could not start onboarding. Please try again.",
+    "dashboardError": "Could not open the Stripe dashboard.",
+    "subtitle": "Connect a Stripe account to get paid by your students. Stripe handles bank details and payouts; you remain the merchant of record.",
+    "stripeTitle": "Stripe payouts",
+    "notConnected": "You haven't connected a payout account yet. Connect with Stripe to start accepting payments for your paid content.",
+    "country": "Where is your business based?",
+    "countryHint": "Stripe sets this once for your payout account; it can't be changed later.",
+    "connect": "Connect with Stripe",
+    "paymentsOn": "Accepting payments",
+    "paymentsOff": "Payments not yet enabled",
+    "payoutsOn": "Payouts to your bank enabled",
+    "payoutsOff": "Payouts not yet enabled",
+    "opening": "Opening…",
+    "openDashboard": "Open Stripe dashboard",
+    "continueSetup": "Continue setup",
+    "reviewing": "Stripe is still reviewing your details. This page updates automatically once you're approved.",
+    "earnings": "Earnings",
+    "netPayout": "Net payout",
+    "grossSales": "Gross sales",
+    "salesCount": "{count, plural, one {# sale} other {# sales}}",
+    "platformFees": "Platform fees",
+    "refunded": "Refunded",
+    "pending": "On the way to your bank:",
+    "available": "Available:",
+    "earningsNote": "Net payout is your share after the platform fee. Balances are settled by Stripe to your bank.",
+    "enabled": "Enabled",
+    "pendingBadge": "Pending",
+    "trialTitle": "Payouts open when your plan starts",
+    "upgradeTitle": "Upgrade to start selling",
+    "trialBody": "A free trial can’t take payments. Start your plan now to connect Stripe and sell, or keep building and sell once your trial ends.",
+    "upgradeBody": "Getting paid requires a paid plan with an active subscription. On the free plan everything you offer must be free — no payouts, paid content, or subscriptions.",
+    "startPlan": "Start my plan now",
+    "viewPlans": "View plans",
+    "redirecting": "Redirecting…"
+  },
+  "students": {
+    "subtitle": "Everyone who has joined, what they are enrolled in and how far they are.",
+    "empty": "No students found.",
+    "confirmDelete": "Delete {count, plural, one {# student} other {# students}}? Their accounts, enrolments and payment history are removed for good. Cancel any membership they are paying for first: deleting does not stop the charges.",
+    "deleted": "Students deleted",
+    "col": {
+      "student": "Student",
+      "enrolled": "Enrolled Courses",
+      "progress": "Course Progress",
+      "joined": "Joined",
+      "active": "Last Active"
+    },
+    "unnamed": "Unnamed",
+    "courseCount": "{count, plural, one {# course} other {# courses}}",
+    "overall": "overall",
+    "never": "Never",
+    "manage": "Manage",
+    "payments": {
+      "loadError": "Could not load payment history.",
+      "back": "Students",
+      "title": "Payment history",
+      "empty": "No payments",
+      "emptyHint": "This student hasn't purchased anything yet.",
+      "type": {
+        "one_time": "one time",
+        "subscription": "subscription"
+      },
+      "noLineItems": "Subscription charge (no line items).",
+      "refunded": "Refunded",
+      "refund": "Refund",
+      "itemRefunded": "Item refunded.",
+      "refundError": "Refund failed. Please try again.",
+      "cancel": "Cancel",
+      "refunding": "Refunding…",
+      "confirmRefund": "Confirm refund"
+    }
   }
 }

@@ -195,7 +195,7 @@ export default function EditBundlePage() {
       return {
         content_type: normalizedType,
         object_id: item.object_id,
-        title: product?.title ?? `Item ${item.object_id}`,
+        title: product?.title ?? t("itemFallback", { id: item.object_id }),
         price: product?.price ?? "0",
       };
     });
@@ -394,7 +394,7 @@ export default function EditBundlePage() {
     async () => {
       const price = parsePrice(access.ways?.buy?.price ?? "");
       if (accessProblems.length || !price) {
-        toast.error(accessProblems[0]?.text ?? "Add a price above 0.");
+        toast.error(accessProblems[0]?.text ?? t("needPrice"));
         return;
       }
       await clientFetch<Bundle>(`/api/v1/billing/bundles/${id}/`, {
@@ -410,14 +410,11 @@ export default function EditBundlePage() {
         }),
       });
       if (accessDirty) await access.save(bundleId);
-      toast.success("Bundle updated successfully.");
+      toast.success(t("updated"));
       navigate(BACK);
     },
     {
-      onError: (err) =>
-        toast.error(
-          accessSentence(err) || "Failed to update bundle. Please try again.",
-        ),
+      onError: (err) => toast.error(accessSentence(err) || t("updateError")),
     },
   );
 
@@ -440,8 +437,7 @@ export default function EditBundlePage() {
       toast.success(t("published"));
     },
     {
-      onError: (err) =>
-        toast.error(accessSentence(err) || "Could not publish the bundle."),
+      onError: (err) => toast.error(accessSentence(err) || t("publishError")),
     },
   );
 
@@ -449,7 +445,7 @@ export default function EditBundlePage() {
     e.preventDefault();
     if (focusing) return; // the guide's finish, and Save & leave
     if (selectedItems.length === 0) {
-      toast.error("Please select at least one item for the bundle.");
+      toast.error(t("needItem"));
       return;
     }
     handleSave();
@@ -466,7 +462,7 @@ export default function EditBundlePage() {
           </Button>
           <div className="flex-1">
             <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
-              Edit Bundle
+              {t("edit")}
               {!loading && !saved.published && (
                 <Badge variant="outline">{t("draft")}</Badge>
               )}
@@ -474,7 +470,7 @@ export default function EditBundlePage() {
             <p className="text-sm text-muted-foreground">
               {!loading && !saved.published
                 ? t("draftHint")
-                : "Update the details and items for this bundle."}
+                : t("editSubtitle")}
             </p>
           </div>
           {!loading &&
@@ -503,16 +499,14 @@ export default function EditBundlePage() {
         >
           <Card>
             <CardHeader>
-              <CardTitle>Bundle Details</CardTitle>
-              <CardDescription>
-                Basic information about your bundle.
-              </CardDescription>
+              <CardTitle>{t("details")}</CardTitle>
+              <CardDescription>{t("detailsHint")}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Label htmlFor="name">Name</Label>
+                    <Label htmlFor="name">{t("name")}</Label>
                     {writing("name") && live?.working && (
                       <WorkingTag
                         specialist={live.working.specialist}
@@ -522,7 +516,7 @@ export default function EditBundlePage() {
                   </div>
                   <Input
                     id="name"
-                    placeholder="e.g. Starter Pack"
+                    placeholder={t("namePlaceholder")}
                     value={shown("name")}
                     readOnly={writing("name")}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -531,7 +525,7 @@ export default function EditBundlePage() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Label htmlFor="description">Description</Label>
+                    <Label htmlFor="description">{t("description")}</Label>
                     {writing("description") && live?.working && (
                       <WorkingTag
                         specialist={live.working.specialist}
@@ -542,7 +536,7 @@ export default function EditBundlePage() {
                   <textarea
                     id="description"
                     className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    placeholder="Describe what's included in this bundle..."
+                    placeholder={t("descriptionPlaceholder")}
                     value={shown("description")}
                     readOnly={writing("description")}
                     onChange={(e) =>
@@ -551,7 +545,7 @@ export default function EditBundlePage() {
                   />
                 </div>
                 <div className="space-y-2 sm:max-w-xs">
-                  <Label>Original Price (sum of items)</Label>
+                  <Label>{t("originalPrice")}</Label>
                   <div className="flex h-10 items-center rounded-md border border-input bg-muted px-3 text-sm text-muted-foreground">
                     {formatMoney(originalPrice, currency, locale)}
                   </div>
@@ -577,10 +571,8 @@ export default function EditBundlePage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Bundle Items</CardTitle>
-              <CardDescription>
-                Select the content to include in this bundle.
-              </CardDescription>
+              <CardTitle>{t("itemsTitle")}</CardTitle>
+              <CardDescription>{t("itemsHint2")}</CardDescription>
             </CardHeader>
             <CardContent>
               <ContentPicker
@@ -599,13 +591,13 @@ export default function EditBundlePage() {
               <Button
                 type="submit"
                 loading={saving}
-                loadingText="Saving…"
+                loadingText={t("saving")}
                 disabled={loading}
               >
-                Save Changes
+                {t("saveChanges")}
               </Button>
               <Button type="button" variant="outline" asChild>
-                <NavLink href={BACK}>Cancel</NavLink>
+                <NavLink href={BACK}>{t("cancel")}</NavLink>
               </Button>
             </div>
           </>

@@ -95,7 +95,7 @@ export function SubscriptionTile({
       } catch (err) {
         if (cancelled) return null;
         if (err instanceof ApiError) {
-          setError(`Error ${err.status}`);
+          setError(t("httpError", { status: err.status }));
         } else {
           setError(t("error"));
         }

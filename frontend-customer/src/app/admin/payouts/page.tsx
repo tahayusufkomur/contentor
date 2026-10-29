@@ -33,6 +33,7 @@ interface ConnectStatus {
 }
 
 export default function PayoutsPage() {
+  const locale = useLocale();
   const t = useTranslations("admin");
   const searchParams = useSearchParams();
   // Stripe redirects back with ?connect=return after onboarding; refresh live
@@ -67,7 +68,9 @@ export default function PayoutsPage() {
   const country = pickedCountry ?? status?.default_country ?? "US";
   const countryName = (code: string) => {
     try {
-      return new Intl.DisplayNames(["en"], { type: "region" }).of(code) ?? code;
+      return (
+        new Intl.DisplayNames([locale], { type: "region" }).of(code) ?? code
+      );
     } catch {
       return code;
     }
@@ -81,7 +84,7 @@ export default function PayoutsPage() {
       );
       window.location.href = onboarding_url;
     },
-    { errorToast: "Could not start onboarding. Please try again." },
+    { errorToast: t("payouts.onboardError") },
   );
 
   const { run: openDashboard, loading: openingDashboard } = useAsyncAction(
@@ -91,7 +94,7 @@ export default function PayoutsPage() {
       );
       window.open(dashboard_url, "_blank", "noopener");
     },
-    { errorToast: "Could not open the Stripe dashboard." },
+    { errorToast: t("payouts.dashboardError") },
   );
 
   return (
@@ -100,10 +103,7 @@ export default function PayoutsPage() {
         <h1 className="text-2xl font-bold tracking-tight">
           {t("nav.items.payouts")}
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Connect a Stripe account to get paid by your students. Stripe handles
-          bank details and payouts; you remain the merchant of record.
-        </p>
+        <p className="text-sm text-muted-foreground">{t("payouts.subtitle")}</p>
       </div>
 
       <PageState
@@ -130,23 +130,21 @@ export default function PayoutsPage() {
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Wallet className="h-5 w-5 text-muted-foreground" />
-                <CardTitle>Stripe payouts</CardTitle>
+                <CardTitle>{t("payouts.stripeTitle")}</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="space-y-5">
               {!status.connected ? (
                 <>
                   <p className="text-sm text-muted-foreground">
-                    You haven&apos;t connected a payout account yet. Connect
-                    with Stripe to start accepting payments for your paid
-                    content.
+                    {t("payouts.notConnected")}
                   </p>
                   <div className="space-y-1">
                     <label
                       htmlFor="payout-country"
                       className="text-sm font-medium"
                     >
-                      Where is your business based?
+                      {t("payouts.country")}
                     </label>
                     <select
                       id="payout-country"
@@ -161,18 +159,17 @@ export default function PayoutsPage() {
                       ))}
                     </select>
                     <p className="text-xs text-muted-foreground">
-                      Stripe sets this once for your payout account; it
-                      can&apos;t be changed later.
+                      {t("payouts.countryHint")}
                     </p>
                   </div>
                   <Button
                     onClick={startOnboarding}
                     loading={onboarding}
-                    loadingText="Redirecting…"
+                    loadingText={t("payouts.redirecting")}
                     className="gap-2"
                   >
                     <ExternalLink className="h-4 w-4" />
-                    Connect with Stripe
+                    {t("payouts.connect")}
                   </Button>
                 </>
               ) : (
@@ -180,13 +177,13 @@ export default function PayoutsPage() {
                   <div className="space-y-3">
                     <StatusRow
                       ok={status.charges_enabled}
-                      okLabel="Accepting payments"
-                      pendingLabel="Payments not yet enabled"
+                      okLabel={t("payouts.paymentsOn")}
+                      pendingLabel={t("payouts.paymentsOff")}
                     />
                     <StatusRow
                       ok={status.payouts_enabled}
-                      okLabel="Payouts to your bank enabled"
-                      pendingLabel="Payouts not yet enabled"
+                      okLabel={t("payouts.payoutsOn")}
+                      pendingLabel={t("payouts.payoutsOff")}
                     />
                   </div>
                   <Separator />
@@ -196,28 +193,27 @@ export default function PayoutsPage() {
                         variant="outline"
                         onClick={openDashboard}
                         loading={openingDashboard}
-                        loadingText="Opening…"
+                        loadingText={t("payouts.opening")}
                         className="gap-2"
                       >
                         <ExternalLink className="h-4 w-4" />
-                        Open Stripe dashboard
+                        {t("payouts.openDashboard")}
                       </Button>
                     ) : (
                       <Button
                         onClick={startOnboarding}
                         loading={onboarding}
-                        loadingText="Redirecting…"
+                        loadingText={t("payouts.redirecting")}
                         className="gap-2"
                       >
                         <ExternalLink className="h-4 w-4" />
-                        Continue setup
+                        {t("payouts.continueSetup")}
                       </Button>
                     )}
                   </div>
                   {!status.charges_enabled && (
                     <p className="text-xs text-muted-foreground">
-                      Stripe is still reviewing your details. This page updates
-                      automatically once you&apos;re approved.
+                      {t("payouts.reviewing")}
                     </p>
                   )}
                 </>
@@ -258,6 +254,7 @@ function money(amount: string | number, currency: string, locale: string) {
 
 function EarningsCard() {
   const locale = useLocale();
+  const t = useTranslations("admin.payouts");
   const [data, setData] = useState<Earnings | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -278,25 +275,25 @@ function EarningsCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Earnings</CardTitle>
+        <CardTitle>{t("earnings")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <Stat
-            label="Net payout"
+            label={t("netPayout")}
             value={money(data.net_payout, cur, locale)}
           />
           <Stat
-            label="Gross sales"
+            label={t("grossSales")}
             value={money(data.gross_sales, cur, locale)}
-            sub={`${data.sales_count} sales`}
+            sub={t("salesCount", { count: data.sales_count })}
           />
           <Stat
-            label="Platform fees"
+            label={t("platformFees")}
             value={money(data.platform_fees, cur, locale)}
           />
           <Stat
-            label="Refunded"
+            label={t("refunded")}
             value={money(data.refunded_total, cur, locale)}
           />
         </div>
@@ -305,13 +302,13 @@ function EarningsCard() {
             <Separator />
             <div className="flex flex-wrap gap-6 text-sm">
               <span className="text-muted-foreground">
-                On the way to your bank:{" "}
+                {t("pending")}{" "}
                 <span className="font-medium text-foreground">
                   {money((pending ?? 0) / 100, cur, locale)}
                 </span>
               </span>
               <span className="text-muted-foreground">
-                Available:{" "}
+                {t("available")}{" "}
                 <span className="font-medium text-foreground">
                   {money((available ?? 0) / 100, cur, locale)}
                 </span>
@@ -319,10 +316,7 @@ function EarningsCard() {
             </div>
           </>
         )}
-        <p className="text-xs text-muted-foreground">
-          Net payout is your share after the platform fee. Balances are settled
-          by Stripe to your bank.
-        </p>
+        <p className="text-xs text-muted-foreground">{t("earningsNote")}</p>
       </CardContent>
     </Card>
   );
@@ -355,6 +349,7 @@ function StatusRow({
   okLabel: string;
   pendingLabel: string;
 }) {
+  const t = useTranslations("admin.payouts");
   return (
     <div className="flex items-center gap-2 text-sm">
       {ok ? (
@@ -366,13 +361,14 @@ function StatusRow({
         {ok ? okLabel : pendingLabel}
       </span>
       <Badge variant={ok ? "success" : "secondary"} className="ml-auto">
-        {ok ? "Enabled" : "Pending"}
+        {ok ? t("enabled") : t("pendingBadge")}
       </Badge>
     </div>
   );
 }
 
 function UpgradeGate() {
+  const t = useTranslations("admin.payouts");
   // On a trial the plan is there already: payouts open when it starts.
   const trialing = useEntitlements().entitlements?.trialing;
   return (
@@ -381,22 +377,18 @@ function UpgradeGate() {
         <div className="flex items-center gap-2">
           <Lock className="h-5 w-5 text-muted-foreground" />
           <CardTitle>
-            {trialing
-              ? "Payouts open when your plan starts"
-              : "Upgrade to start selling"}
+            {trialing ? t("trialTitle") : t("upgradeTitle")}
           </CardTitle>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          {trialing
-            ? "A free trial can’t take payments. Start your plan now to connect Stripe and sell, or keep building and sell once your trial ends."
-            : "Getting paid requires a paid plan with an active subscription. On the free plan everything you offer must be free — no payouts, paid content, or subscriptions."}
+          {trialing ? t("trialBody") : t("upgradeBody")}
         </p>
         <Button asChild className="gap-2">
           <Link href="/admin/billing">
             <Wallet className="h-4 w-4" />
-            {trialing ? "Start my plan now" : "View plans"}
+            {trialing ? t("startPlan") : t("viewPlans")}
           </Link>
         </Button>
       </CardContent>

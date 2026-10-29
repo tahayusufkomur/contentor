@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { ArrowLeft, Copy, Plus, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -12,7 +13,6 @@ import { PageState } from "@/components/ui/page-state";
 import { SkeletonCardGrid } from "@/components/ui/skeletons";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  CATEGORY_LABELS,
   createDraft,
   createTemplate,
   deleteTemplate,
@@ -29,6 +29,7 @@ export const dynamic = "force-dynamic";
 
 /** Her email templates: the ones made for her at setup, the Designer's, and her own. */
 export default function EmailTemplatesPage() {
+  const t = useTranslations("admin.messages");
   const navigate = useNavigate();
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,7 +54,7 @@ export default function EmailTemplatesPage() {
 
   const { run: newTemplate, loading: creating } = useAsyncAction(async () => {
     const template = await createTemplate({
-      name: "New template",
+      name: t("templates.defaultName"),
       design: blankDesign(),
     });
     navigate(`/admin/messages/email/templates/${template.id}`);
@@ -61,7 +62,7 @@ export default function EmailTemplatesPage() {
 
   const { run: design, loading: designing } = useAsyncAction(async () => {
     const template = await createTemplate({
-      name: "New template",
+      name: t("templates.defaultName"),
       design: blankDesign(),
     });
     try {
@@ -75,7 +76,7 @@ export default function EmailTemplatesPage() {
       toast.error(
         err instanceof Error && err.message
           ? err.message
-          : "The Designer isn't available right now.",
+          : t("designerUnavailable"),
       );
       navigate(`/admin/messages/email/templates/${template.id}`);
     }
@@ -89,16 +90,15 @@ export default function EmailTemplatesPage() {
           className="mb-2 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
-          Messages
+          {t("title")}
         </NavLink>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">
-              Email templates
+              {t("templates.title")}
             </h1>
             <p className="text-sm text-muted-foreground">
-              Every email you write starts from one of these. Your logo, colours
-              and footer follow your brand.
+              {t("templates.subtitle")}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -109,16 +109,16 @@ export default function EmailTemplatesPage() {
               aria-expanded={asking}
             >
               <Sparkles className="h-4 w-4" />
-              Ask the Designer
+              {t("askDesigner")}
             </Button>
             <Button
               className="gap-2"
               onClick={() => newTemplate()}
               loading={creating}
-              loadingText="Creating…"
+              loadingText={t("templates.creating")}
             >
               <Plus className="h-4 w-4" />
-              New template
+              {t("templates.new")}
             </Button>
           </div>
         </div>
@@ -127,9 +127,9 @@ export default function EmailTemplatesPage() {
       {asking && (
         <section className="space-y-3 rounded-2xl border bg-card p-5">
           <div>
-            <h2 className="font-semibold">A new template from the Designer</h2>
+            <h2 className="font-semibold">{t("templates.fromDesigner")}</h2>
             <p className="text-sm text-muted-foreground">
-              What kind of email will you send with it?
+              {t("templates.kindPrompt")}
             </p>
           </div>
           <Textarea
@@ -138,20 +138,20 @@ export default function EmailTemplatesPage() {
             onChange={(e) => setBrief(e.target.value)}
             rows={3}
             maxLength={2000}
-            placeholder="e.g. A monthly newsletter: a short note from me, my latest article and my next class."
+            placeholder={t("templates.briefPlaceholder")}
           />
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setAsking(false)}>
-              Not now
+              {t("templates.notNow")}
             </Button>
             <Button
               onClick={() => design()}
               disabled={!brief.trim()}
               loading={designing}
-              loadingText="Starting…"
+              loadingText={t("starting")}
             >
               <Sparkles className="h-4 w-4" />
-              Design it
+              {t("designIt")}
             </Button>
           </div>
         </section>
@@ -168,17 +168,17 @@ export default function EmailTemplatesPage() {
       >
         {templates.length === 0 ? (
           <p className="py-16 text-center text-sm text-muted-foreground">
-            No templates yet. Start with a new one, or ask the Designer.
+            {t("templates.empty")}
           </p>
         ) : (
           <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {templates.map((t) => (
+            {templates.map((tpl) => (
               <TemplateCard
-                key={t.id}
-                template={t}
+                key={tpl.id}
+                template={tpl}
                 onChanged={load}
                 onRemoved={() =>
-                  setTemplates((cur) => cur.filter((x) => x.id !== t.id))
+                  setTemplates((cur) => cur.filter((x) => x.id !== tpl.id))
                 }
               />
             ))}
@@ -198,6 +198,7 @@ function TemplateCard({
   onChanged: () => void;
   onRemoved: () => void;
 }) {
+  const t = useTranslations("admin.messages");
   const navigate = useNavigate();
   const editHref = `/admin/messages/email/templates/${template.id}`;
 
@@ -207,13 +208,14 @@ function TemplateCard({
   });
   const { run: duplicate, loading: duplicating } = useAsyncAction(async () => {
     await duplicateTemplate(template.id);
-    toast.success("Duplicated.");
+    toast.success(t("templates.duplicated"));
     onChanged();
   });
   const { run: remove, loading: removing } = useAsyncAction(async () => {
-    if (!window.confirm(`Delete “${template.name}”?`)) return;
+    if (!window.confirm(t("templates.confirmDelete", { name: template.name })))
+      return;
     await deleteTemplate(template.id);
-    toast.success("Deleted.");
+    toast.success(t("done.delete"));
     onRemoved();
   });
 
@@ -222,7 +224,7 @@ function TemplateCard({
       <NavLink
         href={editHref}
         className="block"
-        aria-label={`Edit ${template.name}`}
+        aria-label={t("templates.editNamed", { name: template.name })}
       >
         <EmailThumbnail
           html={template.preview_html || ""}
@@ -235,13 +237,13 @@ function TemplateCard({
           <div className="min-w-0">
             <p className="truncate font-medium">{template.name}</p>
             <p className="truncate text-xs text-muted-foreground">
-              {CATEGORY_LABELS[template.category]}
+              {t(`category.${template.category}`)}
               {template.subject ? ` · ${template.subject}` : ""}
             </p>
           </div>
           {template.source === "starter" && (
             <Badge variant="accent" className="shrink-0 whitespace-nowrap">
-              Made for you
+              {t("madeForYou")}
             </Badge>
           )}
         </div>
@@ -250,12 +252,12 @@ function TemplateCard({
             size="sm"
             onClick={() => write()}
             loading={writing}
-            loadingText="Opening…"
+            loadingText={t("templates.opening")}
           >
-            Write an email
+            {t("templates.writeEmail")}
           </Button>
           <Button asChild size="sm" variant="outline">
-            <NavLink href={editHref}>Edit</NavLink>
+            <NavLink href={editHref}>{t("campaign.edit")}</NavLink>
           </Button>
           <div className="ml-auto flex">
             <Button
@@ -264,8 +266,10 @@ function TemplateCard({
               className="size-8 text-muted-foreground"
               onClick={() => duplicate()}
               loading={duplicating}
-              title="Duplicate"
-              aria-label={`Duplicate ${template.name}`}
+              title={t("templates.duplicate")}
+              aria-label={t("templates.duplicateNamed", {
+                name: template.name,
+              })}
             >
               <Copy className="h-4 w-4" />
             </Button>
@@ -275,8 +279,8 @@ function TemplateCard({
               className="size-8 text-muted-foreground hover:text-destructive"
               onClick={() => remove()}
               loading={removing}
-              title="Delete"
-              aria-label={`Delete ${template.name}`}
+              title={t("action.delete")}
+              aria-label={t("templates.deleteNamed", { name: template.name })}
             >
               <Trash2 className="h-4 w-4" />
             </Button>

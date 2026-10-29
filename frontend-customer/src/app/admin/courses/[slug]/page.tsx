@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,7 @@ const COURSE_CHANGES = new Set([
 ]);
 
 export default function AdminCourseDetailPage() {
+  const t = useTranslations("admin");
   const params = useParams<{ slug: string }>();
   const [course, setCourse] = useState<CourseDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -55,7 +57,7 @@ export default function AdminCourseDetailPage() {
       .catch((err) => {
         if (!cancelled) {
           console.error(err);
-          toast.error("Failed to load course.");
+          toast.error(t("courses.loadError"));
           setError(err);
         }
       })
@@ -65,7 +67,7 @@ export default function AdminCourseDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [params.slug, reloadKey]);
+  }, [params.slug, reloadKey, t]);
 
   // Background refresh after CourseForm saves a module/lesson — updates the
   // header (title, published badge) in place without re-showing the skeleton.
@@ -165,12 +167,14 @@ export default function AdminCourseDetailPage() {
               </Button>
               <div className="flex-1">
                 <h1 className="text-2xl font-bold tracking-tight">
-                  Edit Course
+                  {t("courses.edit")}
                 </h1>
                 <p className="text-sm text-muted-foreground">{course.title}</p>
               </div>
               <Badge variant={course.is_published ? "success" : "secondary"}>
-                {course.is_published ? "Published" : "Draft"}
+                {course.is_published
+                  ? t("list.status.published")
+                  : t("list.status.draft")}
               </Badge>
             </div>
           )}

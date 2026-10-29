@@ -285,7 +285,33 @@
       "publish": "Yayınla",
       "publishing": "Yayınlanıyor…",
       "published": "Yayınlandı. Öğrenciler artık mağazandan satın alabilir.",
-      "draftHint": "Taslak, sen yayınlayana kadar öğrencilerden gizli kalır."
+      "draftHint": "Taslak, sen yayınlayana kadar öğrencilerden gizli kalır.",
+      "empty": "Henüz paket yok",
+      "emptyHint": "Ürünleri indirimli bir fiyata gruplandırmak için bir paket oluştur.",
+      "itemFallback": "Öğe {id}",
+      "needPrice": "0'ın üzerinde bir fiyat ekle.",
+      "updated": "Paket başarıyla güncellendi.",
+      "updateError": "Paket güncellenemedi. Lütfen tekrar dene.",
+      "publishError": "Paket yayınlanamadı.",
+      "needItem": "Lütfen paket için en az bir öğe seç.",
+      "edit": "Paketi Düzenle",
+      "editSubtitle": "Bu paketin ayrıntılarını ve öğelerini güncelle.",
+      "details": "Paket Ayrıntıları",
+      "detailsHint": "Paketin hakkında temel bilgiler.",
+      "namePlaceholder": "örn. Başlangıç Paketi",
+      "descriptionPlaceholder": "Bu pakete nelerin dahil olduğunu açıkla...",
+      "originalPrice": "Orijinal Fiyat (öğelerin toplamı)",
+      "itemsTitle": "Paket Öğeleri",
+      "itemsHint2": "Bu pakete dahil edilecek içeriği seç.",
+      "saving": "Kaydediliyor…",
+      "saveChanges": "Değişiklikleri Kaydet",
+      "cancel": "İptal",
+      "createdTermsFailed": "Paket oluşturuldu ancak koşulları kaydedilmedi. {reason}",
+      "created": "Paket başarıyla oluşturuldu.",
+      "createError": "Paket oluşturulamadı. Lütfen tekrar dene.",
+      "create": "Paket Oluştur",
+      "createSubtitle": "Birden fazla ürünü indirimli bir fiyata bir araya getir.",
+      "creating": "Oluşturuluyor…"
     },
     "plans": {
       "new": "Yeni üyelik",
@@ -341,6 +367,19 @@
         "refunded": "İade edildi",
         "partially_refunded": "Kısmen iade edildi"
       }
+    },
+    "products": {
+      "type": "Tür",
+      "sales": "Satışlar",
+      "empty": "Ürün bulunamadı."
+    },
+    "productTypes": {
+      "course": "Kurs",
+      "download": "İndirilebilir Dosya",
+      "live_class": "Canlı Oturum",
+      "live_stream": "Canlı Yayın",
+      "onsite_event": "Yüz Yüze Etkinlik",
+      "bundle": "Paket"
     }
   },
   "plan": {
@@ -641,7 +680,11 @@
     "inlineImages": "Metin içi görseller",
     "inlineAdd": "Görsel ekle",
     "inlineHeadingPrompt": "Hangi bölümün altına eklensin?",
-    "inlineNoHeadings": "Metin içi görsel yerleştirmek için birkaç bölüm başlığı (H2) ekle."
+    "inlineNoHeadings": "Metin içi görsel yerleştirmek için birkaç bölüm başlığı (H2) ekle.",
+    "deleted": "Silindi",
+    "delete": "Sil",
+    "saved": "Kaydedildi",
+    "regenerated": "Yeniden Oluşturuldu"
   },
   "inbox": {
     "title": "Gelen kutusu",
@@ -839,7 +882,13 @@
     "yourLanguageHint": "Creator stüdyonun ve sana yazdıklarımızın dili. Öğrencilerinin dili ayrı olarak ayarlanır.",
     "siteLanguage": "Site dili",
     "siteLanguageHint": "Öğrencilerinin sitende gördüğü dil. Siten yayına geçene kadar bunu değiştirebilirsin.",
-    "siteLanguageLocked": "Siten yayında, bu yüzden dili olduğu gibi kalır."
+    "siteLanguageLocked": "Siten yayında, bu yüzden dili olduğu gibi kalır.",
+    "subtitle": "Sitenin genel ayarlarını yapılandır.",
+    "saving": "Kaydediliyor…",
+    "saveChanges": "Değişiklikleri Kaydet",
+    "timezone": "Saat Dilimi",
+    "timezoneHint": "Takvimdeki tüm etkinlik saatleri öğrencilerin için bu saat diliminde gösterilecek.",
+    "currentTimezone": "Mevcut seçim: {timezone}"
   },
   "subscription": {
     "title": "Abonelik",
@@ -894,8 +943,11 @@
         "live": "Canlı oturumlar",
         "fee": "Satışlarda %{n} işlem ücreti",
         "aiBlog": "Ayda {n} yapay zekâ blog yazısı"
-      }
-    }
+      },
+      "tryAgain": "Tekrar dene",
+      "planForSite": "Siten için {plan}"
+    },
+    "httpError": "Hata {status}"
   },
   "describe": {
     "course": {
@@ -1445,6 +1497,119 @@
         "body": "Mesajın",
         "now": "şimdi"
       }
+    },
+    "receipt": {
+      "loadError": "Duyuru yüklenemedi.",
+      "recipients": "Alıcılar",
+      "pushSent": "Anlık bildirim gönderildi",
+      "read": "Okundu",
+      "failed": "Başarısız",
+      "status": {
+        "all": "tümü",
+        "sent": "gönderildi",
+        "failed": "başarısız",
+        "expired": "süresi doldu",
+        "none": "yok"
+      },
+      "readState": "okundu",
+      "unreadState": "okunmadı",
+      "noRecipients": "Alıcı yok."
+    },
+    "campaign": {
+      "confirmEdit": "Bu e-postayı düzenlemek istiyor musun? Tekrar zamanlayana kadar programdan kaldırılır.",
+      "confirmCancel": "Bu e-postayı iptal etmek istiyor musun? Gönderilmeyecek.",
+      "goesOut": "{when} gönderilecek",
+      "edit": "Düzenle",
+      "cancelSending": "Gönderimi iptal et",
+      "template": "Şablon",
+      "sender": "Gönderen",
+      "recipients": "Alıcılar",
+      "delivered": "Teslim edildi",
+      "sentCount": "{count} gönderildi",
+      "failedCount": "{count} başarısız",
+      "created": "Oluşturuldu",
+      "completed": "Tamamlandı",
+      "preview": "E-posta önizlemesi",
+      "noPreview": "Bu kampanya için önizleme mevcut değil.",
+      "noTracking": "Bu güncellemeden önce gönderilen kampanyalar için alıcı takibi mevcut değil.",
+      "colName": "Ad",
+      "colEmail": "E-posta",
+      "colStatus": "Durum",
+      "colSentAt": "Gönderilme Tarihi",
+      "colError": "Hata"
+    },
+    "send": {
+      "testSent": "{email} adresine test gönderildi",
+      "scheduled": "{when} için zamanlandı.",
+      "onItsWay": "E-postan yola çıktı.",
+      "needSubject": "E-postana bir konu belirle.",
+      "needCourse": "En az bir kurs seç.",
+      "needStudent": "En az bir öğrenci seç.",
+      "nobody": "Kimse almayacak: buradaki hiçbir öğrenci e-posta almak istemiyor (bazıları abonelikten çıkmış olabilir).",
+      "needTime": "Bir gün ve saat seç.",
+      "needFuture": "Gelecekteki bir zamanı seç.",
+      "backToEditor": "Editöre geri dön",
+      "title": "E-postanı gönder",
+      "subtitle": "Kimin ne zaman alacağını seç. Her öğrenci, kendi adını ve bir abonelikten çıkma bağlantısını içeren kendi kopyasını alır.",
+      "subject": "Konu",
+      "when": "Ne zaman",
+      "sendNow": "Şimdi gönder",
+      "schedule": "Zamanla",
+      "sendAt": "Şu zamanda gönder",
+      "scheduling": "Zamanlanıyor…",
+      "sending": "Gönderiliyor…",
+      "sendTo": "{count, plural, one {# öğrenciye gönder} other {# öğrenciye gönder}}",
+      "send": "Gönder",
+      "sendTest": "Bana bir test gönder",
+      "asStudents": "Öğrencilerinin göreceği gibi",
+      "preview": "E-posta önizlemesi"
+    },
+    "title": "Mesajlar",
+    "designerUnavailable": "Tasarımcı şu anda kullanılamıyor.",
+    "askDesigner": "Tasarımcıya sor",
+    "designIt": "Tasarla",
+    "starting": "Başlatılıyor…",
+    "madeForYou": "Senin için hazırlandı",
+    "category": {
+      "newsletter": "Bülten",
+      "launch": "Lansman",
+      "event": "Oturum veya etkinlik",
+      "note": "Kişisel not",
+      "offer": "Teklif",
+      "welcome": "Karşılama",
+      "other": "E-posta"
+    },
+    "newEmail": {
+      "openingTemplate": "Şablonun açılıyor",
+      "title": "Yeni e-posta",
+      "subtitle": "Şablonlarından biriyle başla veya Tasarımcı'ya ne hakkında olduğunu söyle. Logon, renklerin ve alt bilgin zaten eklendi.",
+      "yourTemplates": "Şablonların",
+      "manageTemplates": "Şablonları yönet",
+      "opening": "Açılıyor",
+      "blank": "Boş",
+      "blankHint": "Üst bilgin ve alt bilgin, henüz başka bir şey yok.",
+      "designerPlaceholder": "Veya Tasarımcı'ya sor: “öğrencilerimi yeni sabah dersine davet et, samimi ve kısa olsun”…",
+      "feature": "Öne çıkar (en fazla {max})"
+    },
+    "templates": {
+      "defaultName": "Yeni şablon",
+      "title": "E-posta şablonları",
+      "subtitle": "Yazdığın her e-posta bunlardan biriyle başlar. Logon, renklerin ve alt bilgin markana uyum sağlar.",
+      "creating": "Oluşturuluyor…",
+      "new": "Yeni şablon",
+      "fromDesigner": "Tasarımcı'dan yeni bir şablon",
+      "kindPrompt": "Bununla ne tür bir e-posta göndereceksin?",
+      "briefPlaceholder": "Örn. Aylık bir bülten: benden kısa bir not, en son makalem ve bir sonraki dersim.",
+      "notNow": "Şimdi değil",
+      "empty": "Henüz şablon yok. Yeni bir tanesiyle başla veya Tasarımcı'ya sor.",
+      "duplicated": "Çoğaltıldı.",
+      "confirmDelete": "“{name}” silinsin mi?",
+      "editNamed": "{name} düzenle",
+      "opening": "Açılıyor…",
+      "writeEmail": "Bir e-posta yaz",
+      "duplicate": "Çoğalt",
+      "duplicateNamed": "{name} çoğalt",
+      "deleteNamed": "{name} sil"
     }
   },
   "events": {
@@ -1733,7 +1898,21 @@
     "publish": "Yayınla",
     "publishing": "Yayınlanıyor…",
     "published": "Yayınlandı. Öğrenciler artık onu sitende bulabilir.",
-    "publishError": "İndirilebilir dosya yayınlanamadı."
+    "publishError": "İndirilebilir dosya yayınlanamadı.",
+    "subtitle": "Öğrencilerin için indirilebilir dosyaları yönet.",
+    "empty": "Hiç dosya yüklenmedi. Başlamak için ilk dosyanı yükle.",
+    "deletedMany": "Dosyalar silindi",
+    "deletedOne": "Dosya silindi",
+    "col": {
+      "size": "Boyut",
+      "downloads": "İndirmeler",
+      "access": "Erişim"
+    },
+    "count": "{count, plural, one {# indirilebilir dosya} other {# indirilebilir dosya}}",
+    "confirmDelete": "\"{title}\" silinsin mi? Bu işlem geri alınamaz.",
+    "deleteError": "Dosya silinemedi",
+    "openError": "Dosya açılamadı",
+    "openFile": "Dosyayı aç"
   },
   "shell": {
     "backToStudio": "Creator stüdyosuna dön",
@@ -1745,5 +1924,147 @@
     "signOut": "Çıkış yap",
     "signingOut": "Çıkış yapılıyor...",
     "signOutTitle": "{name} — Çıkış yap"
+  },
+  "community": {
+    "tabs": {
+      "feed": "Akış",
+      "reports": "Raporlar",
+      "members": "Üyeler",
+      "settings": "Ayarlar"
+    }
+  },
+  "courses": {
+    "loadError": "Kurs yüklenemedi.",
+    "edit": "Kursu Düzenle",
+    "new": "Yeni Kurs",
+    "thumbnail": "Küçük Resim",
+    "deleted": "Kurslar silindi",
+    "updated": "Kurs güncellendi",
+    "updateError": "Kurs güncellenemedi",
+    "subtitle": "Kurs kataloğunu yönet.",
+    "empty": "Henüz kurs yok. Başlamak için ilk kursunu oluştur.",
+    "col": {
+      "pricing": "Fiyatlandırma",
+      "lessons": "Dersler"
+    },
+    "lessonCount": "{count, plural, one {# ders} other {# ders}}"
+  },
+  "list": {
+    "sort": {
+      "newest": "En Yeni",
+      "oldest": "En Eski",
+      "nameAsc": "Ad A-Z",
+      "nameDesc": "Ad Z-A",
+      "largest": "En Büyük",
+      "smallest": "En Küçük"
+    },
+    "col": {
+      "title": "Başlık",
+      "status": "Durum",
+      "actions": "İşlemler",
+      "date": "Tarih",
+      "name": "Ad",
+      "price": "Fiyat",
+      "items": "Ögeler"
+    },
+    "status": {
+      "published": "Yayında",
+      "draft": "Taslak",
+      "active": "Aktif",
+      "inactive": "Pasif"
+    },
+    "pricing": {
+      "free": "Ücretsiz",
+      "subscription": "Abonelik",
+      "paid": "Ücretli"
+    },
+    "edit": "Düzenle"
+  },
+  "home": {
+    "stats": {
+      "students": "Öğrenciler",
+      "studentsHint": "Toplam kayıtlı",
+      "courses": "Kurslar",
+      "coursesHint": "Yayında & taslak",
+      "revenue": "Gelir",
+      "revenueHint": "Tüm zamanlar",
+      "storage": "Depolama",
+      "storageHint": "Kullanılan"
+    },
+    "liveEvent": "Canlı Etkinlik",
+    "message": "Mesaj"
+  },
+  "payouts": {
+    "onboardError": "İlk katılım başlatılamadı. Lütfen tekrar dene.",
+    "dashboardError": "Stripe paneli açılamadı.",
+    "subtitle": "Öğrencilerinden ödeme almak için bir Stripe hesabı bağla. Stripe banka bilgilerini ve ödemeleri yönetir; sen kayıtlı satıcı olarak kalırsın.",
+    "stripeTitle": "Stripe ödemeleri",
+    "notConnected": "Henüz bir ödeme hesabı bağlamadın. Ücretli içeriklerin için ödeme almaya başlamak üzere Stripe ile bağlan.",
+    "country": "İşletmen nerede bulunuyor?",
+    "countryHint": "Stripe bunu ödeme hesabın için bir kez belirler; daha sonra değiştirilemez.",
+    "connect": "Stripe ile bağlan",
+    "paymentsOn": "Ödemeler kabul ediliyor",
+    "paymentsOff": "Ödemeler henüz etkinleştirilmedi",
+    "payoutsOn": "Bankana yapılan ödemeler etkinleştirildi",
+    "payoutsOff": "Ödemeler henüz etkinleştirilmedi",
+    "opening": "Açılıyor…",
+    "openDashboard": "Stripe panelini aç",
+    "continueSetup": "Kuruluma devam et",
+    "reviewing": "Stripe hâlâ bilgilerini inceliyor. Onaylandığında bu sayfa otomatik olarak güncellenir.",
+    "earnings": "Kazançlar",
+    "netPayout": "Net ödeme",
+    "grossSales": "Brüt satışlar",
+    "salesCount": "{count, plural, one {# satış} other {# satış}}",
+    "platformFees": "Platform ücretleri",
+    "refunded": "İade edilen",
+    "pending": "Bankana aktarılıyor:",
+    "available": "Kullanılabilir:",
+    "earningsNote": "Net ödeme, platform ücretinden sonraki payındır. Bakiyeler Stripe tarafından bankana aktarılır.",
+    "enabled": "Etkin",
+    "pendingBadge": "Beklemede",
+    "trialTitle": "Ödemeler planın başladığında açılır",
+    "upgradeTitle": "Satış yapmaya başlamak için yükselt",
+    "trialBody": "Ücretsiz denemede ödeme alınamaz. Stripe'ı bağlamak ve satış yapmak için planını şimdi başlat veya geliştirmeye devam edip denemen bittiğinde satış yap.",
+    "upgradeBody": "Ödeme almak için aktif aboneliği olan ücretli bir plan gerekir. Ücretsiz planda sunduğun her şey ücretsiz olmalıdır — ödeme, ücretli içerik veya abonelik yok.",
+    "startPlan": "Planımı şimdi başlat",
+    "viewPlans": "Planları görüntüle",
+    "redirecting": "Yönlendiriliyor…"
+  },
+  "students": {
+    "subtitle": "Katılan herkes, nelere kayıtlı oldukları ve ne kadar ilerledikleri.",
+    "empty": "Öğrenci bulunamadı.",
+    "confirmDelete": "{count, plural, one {# öğrenci} other {# öğrenci}} silinsin mi? Hesapları, kayıtları ve ödeme geçmişleri kalıcı olarak kaldırılır. Önce ücretini ödedikleri üyelikleri iptal et: silmek, ücretlendirmeleri durdurmaz.",
+    "deleted": "Öğrenciler silindi",
+    "col": {
+      "student": "Öğrenci",
+      "enrolled": "Kayıtlı Kurslar",
+      "progress": "Kurs İlerlemesi",
+      "joined": "Katıldı",
+      "active": "Son Aktif"
+    },
+    "unnamed": "İsimsiz",
+    "courseCount": "{count, plural, one {# kurs} other {# kurs}}",
+    "overall": "genel",
+    "never": "Hiçbir zaman",
+    "manage": "Yönet",
+    "payments": {
+      "loadError": "Ödeme geçmişi yüklenemedi.",
+      "back": "Öğrenciler",
+      "title": "Ödeme geçmişi",
+      "empty": "Ödeme yok",
+      "emptyHint": "Bu öğrenci henüz hiçbir şey satın almadı.",
+      "type": {
+        "one_time": "tek seferlik",
+        "subscription": "abonelik"
+      },
+      "noLineItems": "Abonelik ücreti (satır kalemi yok).",
+      "refunded": "İade edildi",
+      "refund": "İade et",
+      "itemRefunded": "Öğe iade edildi.",
+      "refundError": "İade başarısız oldu. Lütfen tekrar dene.",
+      "cancel": "İptal",
+      "refunding": "İade ediliyor…",
+      "confirmRefund": "İadeyi onayla"
+    }
   }
 }

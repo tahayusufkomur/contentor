@@ -55,6 +55,7 @@ export function ChangePlanCard() {
   const locale = useLocale();
   const t = useTranslations("admin.subscription.changePlan");
   const tRoot = useTranslations("admin.subscription");
+  const tPlan = useTranslations("studio.plan");
   const [subscription, setSubscription] =
     useState<PlatformSubscriptionState | null>(null);
   const [plans, setPlans] = useState<PlatformPlanSummary[] | null>(null);
@@ -120,7 +121,7 @@ export function ChangePlanCard() {
             size="sm"
             onClick={() => setReloadKey((k) => k + 1)}
           >
-            Try again
+            {t("tryAgain")}
           </Button>
         </CardContent>
       </Card>
@@ -196,7 +197,9 @@ export function ChangePlanCard() {
                           locale,
                         )}
                       </span>
-                      <span className="text-sm text-muted-foreground">/mo</span>
+                      <span className="text-sm text-muted-foreground">
+                        {tPlan("perMonth")}
+                      </span>
                     </div>
                     {trial?.plan_id === plan.id && (
                       <p className="mt-2 text-sm text-muted-foreground">
@@ -333,6 +336,7 @@ function UpgradeButton({
   errorLabel: string;
   setActionError: (message: string | null) => void;
 }) {
+  const t = useTranslations("admin.subscription.changePlan");
   const [session, setSession] = useState<
     (CheckoutStart & { client_secret: string }) | null
   >(null);
@@ -355,7 +359,7 @@ function UpgradeButton({
           onClose={() => setSession(null)}
           aside={
             <CoachPlanAside
-              title={`${formatPlanName(plan.name)} for your site`}
+              title={t("planForSite", { plan: formatPlanName(plan.name) })}
               plan={terms}
             />
           }

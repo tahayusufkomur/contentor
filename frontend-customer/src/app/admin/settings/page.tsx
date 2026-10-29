@@ -86,17 +86,17 @@ export default function SettingsPage() {
             {t("nav.items.settings")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Configure your site&apos;s general settings.
+            {t("settings.subtitle")}
           </p>
         </div>
         <Button
           onClick={handleSave}
           loading={saving}
-          loadingText="Saving…"
+          loadingText={t("settings.saving")}
           className="gap-2"
         >
           <Save className="h-4 w-4" />
-          Save Changes
+          {t("settings.saveChanges")}
         </Button>
       </div>
 
@@ -106,16 +106,13 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Globe className="h-5 w-5" />
-                Timezone
+                {t("settings.timezone")}
               </CardTitle>
-              <CardDescription>
-                All event times in the calendar will be displayed in this
-                timezone for your students.
-              </CardDescription>
+              <CardDescription>{t("settings.timezoneHint")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="timezone">Timezone</Label>
+                <Label htmlFor="timezone">{t("settings.timezone")}</Label>
                 <Select
                   value={config.timezone || "UTC"}
                   onValueChange={(timezone) =>
@@ -135,7 +132,9 @@ export default function SettingsPage() {
                 </Select>
                 <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                   <Clock className="h-3 w-3" />
-                  Current selection: {config.timezone || "UTC"}
+                  {t("settings.currentTimezone", {
+                    timezone: config.timezone || "UTC",
+                  })}
                 </p>
               </div>
             </CardContent>
