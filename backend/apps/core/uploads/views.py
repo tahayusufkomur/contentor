@@ -1,10 +1,12 @@
 import uuid
 
+from django.utils import translation
 from django.utils.translation import gettext as _
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
+from apps.core.languages import site_language
 from apps.core.permissions import IsCoachOrOwner
 from apps.core.storage import build_s3_path, generate_presigned_upload_url
 
@@ -138,9 +140,11 @@ def complete(request):
         from apps.core.storage import generate_presigned_download_url
         from apps.media.models import Photo
 
+        with translation.override(site_language()):  # stored, and shown to visitors as alt text
+            title = _("Branding")
         photo = Photo.objects.create(
             s3_key=s3_key,
-            title=_("Branding"),
+            title=title,
             content_type=data.get("content_type", ""),
             file_size=data.get("file_size", 0),
         )

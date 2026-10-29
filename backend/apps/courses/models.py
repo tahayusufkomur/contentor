@@ -2,6 +2,7 @@ from django.conf import settings
 from django.db import models
 from django.db.models import F, Q
 from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 
 from apps.core.slugs import slugify
 
@@ -18,9 +19,12 @@ def publish_gap(empty: int, total: int) -> str | None:
             "a course goes live once every lesson has a video, or text you wrote or edited, and it has no lessons yet"
         )
     if empty:
-        return _(
+        return ngettext(
             "a course goes live once every lesson has a video, or text you wrote or edited, "
-            "and %(empty)s of its %(total)s lessons have none yet"
+            "and %(empty)s of its %(total)s lessons have none yet",
+            "a course goes live once every lesson has a video, or text you wrote or edited, "
+            "and %(empty)s of its %(total)s lessons have none yet",
+            empty,
         ) % {"empty": empty, "total": total}
     return None
 

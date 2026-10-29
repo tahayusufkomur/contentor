@@ -1539,14 +1539,21 @@ msgstr ""
 "geschrieben oder bearbeitet hast, und er hat noch keine Lektionen"
 
 #: apps/courses/models.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "a course goes live once every lesson has a video, or text you wrote or "
 "edited, and %(empty)s of its %(total)s lessons have none yet"
-msgstr ""
+msgid_plural ""
+"a course goes live once every lesson has a video, or text you wrote or "
+"edited, and %(empty)s of its %(total)s lessons have none yet"
+msgstr[0] ""
 "ein Kurs geht live, sobald jede Lektion ein Video oder Text hat, den du "
-"geschrieben oder bearbeitet hast, und %(empty)s seiner %(total)s Lektionen "
-"haben noch keines davon"
+"geschrieben oder bearbeitet hast, und %(empty)s seiner %(total)s "
+"Lektionen hat noch keines davon"
+msgstr[1] ""
+"ein Kurs geht live, sobald jede Lektion ein Video oder Text hat, den du "
+"geschrieben oder bearbeitet hast, und %(empty)s seiner %(total)s "
+"Lektionen haben noch keines davon"
 
 #: apps/courses/serializers.py
 #, fuzzy
@@ -1843,12 +1850,12 @@ msgstr "Gib an, ob die Testphase ein- oder ausgeschaltet ist."
 #: apps/live/series.py
 #, fuzzy
 msgid ""
-"A free trial needs a paid class with at least two sessions still to come "
-"(Zoom sessions are always free)."
+"A free trial needs a paid recurring live session with at least two sessions "
+"still to come (Zoom sessions are always free)."
 msgstr ""
-"Eine kostenlose Testphase erfordert einen kostenpflichtigen Kurs mit "
-"mindestens zwei noch bevorstehenden Sessions (Zoom-Sessions sind immer "
-"kostenlos)."
+"Ein kostenloser Testzeitraum erfordert eine kostenpflichtige, wiederkehrende"
+" Live-Session mit mindestens zwei noch bevorstehenden Sessions (Zoom-"
+"Sessions sind immer kostenlos)."
 
 #: apps/live/views.py
 #, fuzzy
@@ -1867,9 +1874,10 @@ msgid "Failed to connect to video service."
 msgstr "Verbindung zum Videodienst fehlgeschlagen."
 
 #: apps/live/views.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Cannot start a class with status '%(status)s'."
-msgstr "Eine Live-Session mit dem Status '%(status)s' kann nicht gestartet werden."
+msgstr ""
+"Eine Live-Session mit dem Status '%(status)s' kann nicht gestartet werden."
 
 #: apps/live/views.py
 #, fuzzy
@@ -1887,7 +1895,7 @@ msgid "You do not have access to this live session."
 msgstr "Du hast keinen Zugriff auf diese Live-Session."
 
 #: apps/live/views.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Cannot start a stream with status '%(status)s'."
 msgstr "Ein Stream mit dem Status '%(status)s' kann nicht gestartet werden."
 
@@ -1927,7 +1935,7 @@ msgid "the design could not be drawn as a file right now"
 msgstr "das Design konnte gerade nicht als Datei gezeichnet werden"
 
 #: apps/media/design_recipe.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(field)s must be a palette role or a #rrggbb colour."
 msgstr "%(field)s muss eine Palettenrolle oder eine #rrggbb-Farbe sein."
 
@@ -1937,27 +1945,29 @@ msgid "photo.id must be one of your photos."
 msgstr "photo.id muss eines deiner Fotos sein."
 
 #: apps/media/design_recipe.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(field)s must be a frame with x, y, w and h."
 msgstr "%(field)s muss ein Rahmen mit x, y, w und h sein."
 
 #: apps/media/design_recipe.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(field)s must be a number."
 msgstr "%(field)s muss eine Zahl sein."
 
 #: apps/media/design_recipe.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "extras holds at most %(max)s layers."
-msgstr "Extras enthält höchstens %(max)s Ebenen."
+msgid_plural "extras holds at most %(max)s layers."
+msgstr[0] "Extras enthält höchstens %(max)s Ebenen."
+msgstr[1] "Extras enthält höchstens %(max)s Ebenen."
 
 #: apps/media/design_recipe.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(field)s must be an object."
 msgstr "%(field)s muss ein Objekt sein."
 
 #: apps/media/design_recipe.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "%(field)s.id must be unique, 1-24 of a-z, 0-9 or -, and not the name of a "
 "part."
@@ -1966,7 +1976,7 @@ msgstr ""
 "darf kein Name eines Teils sein."
 
 #: apps/media/design_recipe.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(field)s.text must be a web address."
 msgstr "%(field)s.text muss eine Webadresse sein."
 

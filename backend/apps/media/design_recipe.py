@@ -15,6 +15,7 @@ import uuid
 from collections.abc import Callable
 
 from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 from rest_framework import serializers
 
 from apps.tenant_config.logo_recipe import _HEX_RE, _enum, _num
@@ -198,7 +199,10 @@ def _part_style(value, field):
 def _extras(value):
     items = value if isinstance(value, list) else []
     if len(items) > MAX_EXTRAS:
-        raise serializers.ValidationError(_("extras holds at most %(max)s layers.") % {"max": MAX_EXTRAS})
+        raise serializers.ValidationError(
+            ngettext("extras holds at most %(max)s layers.", "extras holds at most %(max)s layers.", MAX_EXTRAS)
+            % {"max": MAX_EXTRAS}
+        )
     extras, seen = [], set()
     for index, raw in enumerate(items):
         field = f"extras[{index}]"

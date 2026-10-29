@@ -111,7 +111,7 @@ def set_trial(row, on: bool):
             if not trial_state(row)["available"]:
                 raise TrialError(
                     _(
-                        "A free trial needs a paid class with at least two sessions still to come "
+                        "A free trial needs a paid recurring live session with at least two sessions still to come "
                         "(Zoom sessions are always free)."
                     )
                 )

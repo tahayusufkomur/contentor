@@ -1520,11 +1520,18 @@ msgstr ""
 "olduğunda yayına girer ve henüz hiç dersi yok"
 
 #: apps/courses/models.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "a course goes live once every lesson has a video, or text you wrote or "
 "edited, and %(empty)s of its %(total)s lessons have none yet"
-msgstr ""
+msgid_plural ""
+"a course goes live once every lesson has a video, or text you wrote or "
+"edited, and %(empty)s of its %(total)s lessons have none yet"
+msgstr[0] ""
+"bir kurs her dersinde bir video veya yazdığın ya da düzenlediğin bir metin "
+"olduğunda yayına girer ve %(total)s dersinden %(empty)s tanesinde henüz "
+"hiçbiri yok"
+msgstr[1] ""
 "bir kurs her dersinde bir video veya yazdığın ya da düzenlediğin bir metin "
 "olduğunda yayına girer ve %(total)s dersinden %(empty)s tanesinde henüz "
 "hiçbiri yok"
@@ -1818,11 +1825,12 @@ msgstr "Denemenin açık mı kapalı mı olduğunu belirt."
 #: apps/live/series.py
 #, fuzzy
 msgid ""
-"A free trial needs a paid class with at least two sessions still to come "
-"(Zoom sessions are always free)."
+"A free trial needs a paid recurring live session with at least two sessions "
+"still to come (Zoom sessions are always free)."
 msgstr ""
-"Ücretsiz deneme için henüz gerçekleşecek en az iki oturumu olan ücretli bir "
-"ders gerekir (Zoom oturumları her zaman ücretsizdir)."
+"Ücretsiz bir deneme, yapılacak en az iki oturumu daha olan ücretli ve "
+"tekrarlayan bir canlı oturum gerektirir (Zoom oturumları her zaman "
+"ücretsizdir)."
 
 #: apps/live/views.py
 #, fuzzy
@@ -1840,7 +1848,7 @@ msgid "Failed to connect to video service."
 msgstr "Video servisine bağlanılamadı."
 
 #: apps/live/views.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Cannot start a class with status '%(status)s'."
 msgstr "'%(status)s' durumundaki bir canlı oturum başlatılamaz."
 
@@ -1860,7 +1868,7 @@ msgid "You do not have access to this live session."
 msgstr "Bu canlı oturuma erişimin yok."
 
 #: apps/live/views.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Cannot start a stream with status '%(status)s'."
 msgstr "'%(status)s' durumundaki bir yayın başlatılamaz."
 
@@ -1900,7 +1908,7 @@ msgid "the design could not be drawn as a file right now"
 msgstr "tasarım şu anda bir dosya olarak çizilemedi"
 
 #: apps/media/design_recipe.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(field)s must be a palette role or a #rrggbb colour."
 msgstr "%(field)s bir palet rolü veya bir #rrggbb rengi olmalıdır."
 
@@ -1910,27 +1918,29 @@ msgid "photo.id must be one of your photos."
 msgstr "photo.id fotoğraflarından biri olmalıdır."
 
 #: apps/media/design_recipe.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(field)s must be a frame with x, y, w and h."
 msgstr "%(field)s; x, y, w ve h içeren bir çerçeve olmalıdır."
 
 #: apps/media/design_recipe.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(field)s must be a number."
 msgstr "%(field)s bir sayı olmalıdır."
 
 #: apps/media/design_recipe.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "extras holds at most %(max)s layers."
-msgstr "extras en fazla %(max)s katman içerebilir."
+msgid_plural "extras holds at most %(max)s layers."
+msgstr[0] "extras en fazla %(max)s katman içerebilir."
+msgstr[1] "extras en fazla %(max)s katman içerebilir."
 
 #: apps/media/design_recipe.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(field)s must be an object."
 msgstr "%(field)s bir nesne olmalıdır."
 
 #: apps/media/design_recipe.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "%(field)s.id must be unique, 1-24 of a-z, 0-9 or -, and not the name of a "
 "part."
@@ -1939,7 +1949,7 @@ msgstr ""
 "oluşmalı ve bir parçanın adı olmamalıdır."
 
 #: apps/media/design_recipe.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(field)s.text must be a web address."
 msgstr "%(field)s.text bir web adresi olmalıdır."
 
