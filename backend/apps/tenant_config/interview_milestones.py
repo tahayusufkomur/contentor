@@ -759,6 +759,11 @@ def style_cards(answers: dict, tenant=None) -> dict:
     }
 
 
+def _tone_word(tone: str) -> str:
+    """A tone ("warm") as the creator reads it mid-sentence: the tone tile's translation, lower-cased."""
+    return brief.lc(brief.render_marked(tone.capitalize()))
+
+
 def style_reason(style: dict | None, niche: str, tones: list[str], answers: dict) -> str:
     """Why this look is the pick, in the coach's own words ("Made for dance
     coaches, and it sounds playful")."""
@@ -769,13 +774,16 @@ def style_reason(style: dict | None, niche: str, tones: list[str], answers: dict
     matched = [t for t in tones if t in sections.tones_of_style(style)]
     focus = brief.focus_of(answers)
     subject = brief.say_list(focus["disciplines"]) if focus and focus["mode"] == "equal" else brief.subject_of(answers)
-    parts = []
-    if {niche, *brief.also_niches(answers)} & set(style.get("niches") or []) and subject:
-        parts.append(f"made for {subject} creators")
-    if matched:
-        parts.append(f"it sounds {' and '.join(matched)}")
-    text = ", and ".join(parts)
-    return f"{text[:1].upper()}{text[1:]}." if text else ""
+    made = bool({niche, *brief.also_niches(answers)} & set(style.get("niches") or []) and subject)
+    tones_said = brief.list_phrase(_tone_word(t) for t in matched)
+    if made and matched:
+        return gettext("Made for %(subject)s creators, and it sounds %(tones)s.") % {
+            "subject": subject,
+            "tones": tones_said,
+        }
+    if made:
+        return gettext("Made for %(subject)s creators.") % {"subject": subject}
+    return gettext("It sounds %(tones)s.") % {"tones": tones_said} if matched else ""
 
 
 def _lower_after_commas(text: str) -> str:
@@ -1059,8 +1067,8 @@ def set_cover(tenant, kind: str, asset_id: str) -> dict:
 
 
 CALENDAR_VIEWS = (
-    ("month", "Month grid", "The whole month at a glance, with a day panel."),
-    ("agenda", "Agenda list", "Upcoming sessions in a simple list, day by day."),
+    ("month", gettext_lazy("Month grid"), gettext_lazy("The whole month at a glance, with a day panel.")),
+    ("agenda", gettext_lazy("Agenda list"), gettext_lazy("Upcoming sessions in a simple list, day by day.")),
 )
 
 
@@ -1070,7 +1078,7 @@ CALENDAR_IDS = {v for v, _, _ in CALENDAR_VIEWS}
 def calendar_cards() -> dict:
     return {
         "kind": "calendar",
-        "options": [{"value": v, "label": label, "detail": detail} for v, label, detail in CALENDAR_VIEWS],
+        "options": [{"value": v, "label": str(label), "detail": str(detail)} for v, label, detail in CALENDAR_VIEWS],
     }
 
 
@@ -1078,32 +1086,57 @@ def calendar_cards() -> dict:
 # tenant_config.serializers (_NAVBAR_LAYOUTS, _FOOTER_LAYOUTS) and the
 # public header / footer components.
 NAVBAR_LAYOUTS = (
-    ("classic", "Classic", "Your name on the left, the menu in the middle, sign-in on the right.", ("warm", "expert")),
-    ("centered", "Centered", "Your name above the menu, both in the middle.", ("calm", "sensual")),
-    ("split", "Split", "The menu on both sides of your name.", ("confident", "expert")),
-    ("minimal", "Minimal", "Just your name and a menu button.", ("calm", "sexy")),
-    ("pill", "Floating pill", "A rounded bar that floats over the page as you scroll.", ("energetic", "playful")),
+    (
+        "classic",
+        gettext_lazy("Classic"),
+        gettext_lazy("Your name on the left, the menu in the middle, sign-in on the right."),
+        ("warm", "expert"),
+    ),
+    (
+        "centered",
+        gettext_lazy("Centered"),
+        gettext_lazy("Your name above the menu, both in the middle."),
+        ("calm", "sensual"),
+    ),
+    ("split", gettext_lazy("Split"), gettext_lazy("The menu on both sides of your name."), ("confident", "expert")),
+    ("minimal", gettext_lazy("Minimal"), gettext_lazy("Just your name and a menu button."), ("calm", "sexy")),
+    (
+        "pill",
+        gettext_lazy("Floating pill"),
+        gettext_lazy("A rounded bar that floats over the page as you scroll."),
+        ("energetic", "playful"),
+    ),
 )
 FOOTER_LAYOUTS = (
-    ("simple", "One line", "Your name, the menu and your social links in a single row.", ("calm", "expert", "sexy")),
+    (
+        "simple",
+        gettext_lazy("One line"),
+        gettext_lazy("Your name, the menu and your social links in a single row."),
+        ("calm", "expert", "sexy"),
+    ),
     (
         "columns",
-        "Columns",
-        "Your name and a line about you, the menu and your socials side by side.",
+        gettext_lazy("Columns"),
+        gettext_lazy("Your name and a line about you, the menu and your socials side by side."),
         ("warm", "confident"),
     ),
-    ("centered", "Centered", "Everything stacked in the middle of the page.", ("sensual", "playful")),
-    ("minimal", "Minimal", "Just your name and the year.", ("energetic",)),
+    (
+        "centered",
+        gettext_lazy("Centered"),
+        gettext_lazy("Everything stacked in the middle of the page."),
+        ("sensual", "playful"),
+    ),
+    ("minimal", gettext_lazy("Minimal"), gettext_lazy("Just your name and the year."), ("energetic",)),
 )
 CHROME = {"navbar_layout": NAVBAR_LAYOUTS, "footer_layout": FOOTER_LAYOUTS}
 # How her mark sits in the header, as navbar_config's logo_layout and
 # show_brand_name (public-header.tsx): asked on the header screen, only of a
 # coach who has a mark.
 LOGO_LAYOUTS = (
-    ("horizontal", "Beside your name", {"logo_layout": "horizontal", "show_brand_name": True}),
-    ("stacked", "Above your name", {"logo_layout": "stacked", "show_brand_name": True}),
-    ("mark_only", "Mark only", {"logo_layout": "horizontal", "show_brand_name": False}),
-    ("name_only", "Name only", {"logo_layout": "name_only", "show_brand_name": True}),
+    ("horizontal", gettext_lazy("Beside your name"), {"logo_layout": "horizontal", "show_brand_name": True}),
+    ("stacked", gettext_lazy("Above your name"), {"logo_layout": "stacked", "show_brand_name": True}),
+    ("mark_only", gettext_lazy("Mark only"), {"logo_layout": "horizontal", "show_brand_name": False}),
+    ("name_only", gettext_lazy("Name only"), {"logo_layout": "name_only", "show_brand_name": True}),
 )
 LOGO_LAYOUT_CONFIG = {value: config for value, _, config in LOGO_LAYOUTS}
 
@@ -1118,8 +1151,8 @@ def chrome_pick(field_id: str, answers: dict) -> tuple[str, str]:
     for value, _label, _detail, suits in CHROME[field_id]:
         if matched := [t for t in tones if t in suits]:
             if style and not answers.get("tone"):
-                return value, f"Matched to your {style['label']} look."
-            return value, f"It suits a site that sounds {matched[0]}."
+                return value, gettext("Matched to your %(look)s look.") % {"look": style["label"]}
+            return value, gettext("It suits a site that sounds %(tone)s.") % {"tone": _tone_word(matched[0])}
     return CHROME[field_id][0][0], ""
 
 
@@ -1146,7 +1179,7 @@ def chrome_cards(tenant, answers: dict, field_id: str) -> dict:
             "logo_mark": mark_for_key(key) if key else None,
             "logo_url": generate_presigned_download_url(key) if key else sign_if_s3_key(cfg.logo_url),
             "logo_layout": layout if nav.get("show_brand_name") else "mark_only",
-            "logo_layouts": [{"value": value, "label": label} for value, label, _ in LOGO_LAYOUTS],
+            "logo_layouts": [{"value": value, "label": str(label)} for value, label, _ in LOGO_LAYOUTS],
         }
     return {
         **logo,
@@ -1154,8 +1187,8 @@ def chrome_cards(tenant, answers: dict, field_id: str) -> dict:
         "options": [
             {
                 "value": value,
-                "label": label,
-                "detail": detail,
+                "label": str(label),
+                "detail": str(detail),
                 **({"recommended": True, "reason": reason} if value == pick else {}),
             }
             for value, label, detail, _ in CHROME[field_id]
@@ -1186,18 +1219,23 @@ def chrome_cards(tenant, answers: dict, field_id: str) -> dict:
 # What the photos question asks for, in the shapes the site's sections crop to.
 PHOTO_SHOTS = {
     "portrait": (
-        "Upright",
+        gettext_lazy("Upright"),
         "4:5",
-        "Most of your site: the opening photo, your story, the photo wall.",
-        "You at work or practising, a portrait where we see your face, your students, your space.",
+        gettext_lazy("Most of your site: the opening photo, your story, the photo wall."),
+        gettext_lazy("You at work or practising, a portrait where we see your face, your students, your space."),
     ),
     "landscape": (
-        "Wide",
+        gettext_lazy("Wide"),
         "16:9",
-        "Banners between sections, and the covers of your courses and sessions.",
-        "A wide view of a class or your space, with room around the subject.",
+        gettext_lazy("Banners between sections, and the covers of your courses and sessions."),
+        gettext_lazy("A wide view of a class or your space, with room around the subject."),
     ),
-    "square": ("Square", "1:1", "Small accents beside the opening photo.", "A detail: hands, tools, a close-up."),
+    "square": (
+        gettext_lazy("Square"),
+        "1:1",
+        gettext_lazy("Small accents beside the opening photo."),
+        gettext_lazy("A detail: hands, tools, a close-up."),
+    ),
 }
 MAX_OWN_PHOTOS = 40
 
@@ -1227,7 +1265,14 @@ def photo_guide() -> list[dict]:
         for _name, aspect, many in slots:
             counts[orientation_of(aspect)] += many
     return [
-        {"shape": shape, "label": label, "aspect": aspect, "count": counts[shape], "use": use, "shoot": shoot}
+        {
+            "shape": shape,
+            "label": str(label),
+            "aspect": aspect,
+            "count": counts[shape],
+            "use": str(use),
+            "shoot": str(shoot),
+        }
         for shape, (label, aspect, use, shoot) in sorted(PHOTO_SHOTS.items(), key=lambda kv: -counts[kv[0]])
     ]
 
@@ -1443,6 +1488,7 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
             raise ChoiceError("invalid_value")
         # A label that is no tile is a membership of her own: its name is its key.
         known = {t["label"]: t["id"] for t in brief.membership_tiles(answers)}
+        known |= {brief.tx(label): key for label, key in known.items()}  # the tile as the creator reads it
         prices = {}
         for label, raw in picked.items():
             name = re.sub(r"\s+", " ", str(label)).strip()

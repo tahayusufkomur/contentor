@@ -528,7 +528,7 @@ function Flow({
       const now = step.schedule
         ? draft.ticked?.length && draft.schedule
           ? scheduleSummary(
-              draft.ticked[0] === "One-time" ? "once" : "recurring",
+              draft.ticked[0] === step.options[1] ? "once" : "recurring",
               draft.schedule,
               locale,
             )

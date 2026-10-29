@@ -17,8 +17,8 @@ from itertools import zip_longest
 
 from django.db import transaction
 from django.utils import timezone
+from django.utils.translation import get_language, gettext, gettext_lazy, gettext_noop
 from django.utils.translation import gettext as render_marked
-from django.utils.translation import gettext_noop
 
 DELEGATE = "__delegate__"
 SKIP = "__skip__"
@@ -92,15 +92,15 @@ _PAYMENT_WORDS = (
 # The currencies a coach can charge in (core.constants.CURRENCY_CHOICES): the
 # tile's label, the sign prices carry, and the words that name it.
 CURRENCIES = {
-    "USD": ("US Dollar ($)", "$", r"\busd\b|dollar|\$"),
-    "EUR": ("Euro (€)", "€", r"\beur\b|euro|€"),
+    "USD": (gettext_noop("US Dollar ($)"), "$", r"\busd\b|dollar|\$"),
+    "EUR": (gettext_noop("Euro (€)"), "€", r"\beur\b|euro|€"),
 }
 # Who students learn from: the tile, and how her site speaks ("more teachers
 # later" is still one creator today).
 TEACHERS = {
-    "solo": ("Just me", "I"),
-    "solo_for_now": ("Just me for now, more teachers later", "I"),
-    "several": ("Several teachers", "we"),
+    "solo": (gettext_noop("Just me"), "I"),
+    "solo_for_now": (gettext_noop("Just me for now, more teachers later"), "I"),
+    "several": (gettext_noop("Several teachers"), "we"),
 }
 # The coach's own words for each, in the order they are tried.
 _TEACHER_WORDS = (
@@ -110,10 +110,10 @@ _TEACHER_WORDS = (
 )
 # Sections a coach can skip, and what the skip button says.
 SKIP_LABELS = {
-    "course": "No course for now",
-    "event": "No live session for now",
-    "onsite": "No in-person event for now",
-    "post": "No article for now",
+    "course": gettext_lazy("No course for now"),
+    "event": gettext_lazy("No live session for now"),
+    "onsite": gettext_lazy("No in-person event for now"),
+    "post": gettext_lazy("No article for now"),
 }
 TONES = ("warm", "energetic", "calm", "expert", "playful", "confident", "sensual", "sexy")
 # Words a coach uses for a tone instead of its name (regexes; each maps to one tone).
@@ -130,94 +130,94 @@ TONE_SYNONYMS = {
 # ("" = any other), so no niche gets another niche's words.
 TONE_HINTS = {
     "": (
-        "Come as you are. We'll take it slow.",
-        "Let's go. Today counts.",
-        "Breathe in. There's no rush here.",
-        "Years of experience, shared plainly.",
-        "Let's have some fun with this.",
-        "Know your worth, and let it show.",
-        "Slow down. Savour every detail.",
-        "Bold, bright and hard to forget.",
+        gettext_lazy("Come as you are. We'll take it slow."),
+        gettext_lazy("Let's go. Today counts."),
+        gettext_lazy("Breathe in. There's no rush here."),
+        gettext_lazy("Years of experience, shared plainly."),
+        gettext_lazy("Let's have some fun with this."),
+        gettext_lazy("Know your worth, and let it show."),
+        gettext_lazy("Slow down. Savour every detail."),
+        gettext_lazy("Bold, bright and hard to forget."),
     ),
     "Yoga": (
-        "Come as you are. Your mat is a safe place.",
-        "Move, breathe and feel the heat rise.",
-        "Slow breath, steady body, quiet mind.",
-        "Years of practice, taught with clear cues.",
-        "Let's find your flow, one silly pose at a time.",
-        "Own your practice, one pose at a time.",
-        "Soft light, slow breath, body awake.",
-        "Strong, graceful and a little bit daring.",
+        gettext_lazy("Come as you are. Your mat is a safe place."),
+        gettext_lazy("Move, breathe and feel the heat rise."),
+        gettext_lazy("Slow breath, steady body, quiet mind."),
+        gettext_lazy("Years of practice, taught with clear cues."),
+        gettext_lazy("Let's find your flow, one silly pose at a time."),
+        gettext_lazy("Own your practice, one pose at a time."),
+        gettext_lazy("Soft light, slow breath, body awake."),
+        gettext_lazy("Strong, graceful and a little bit daring."),
     ),
     "Pilates": (
-        "Strong core, kind pace, every body welcome.",
-        "Sculpt, lengthen and feel the burn.",
-        "Controlled movement, long lines, calm breath.",
-        "Precise form, taught the way it's built.",
-        "Tiny moves, big results. Let's have fun with it.",
-        "Strong core, sure posture, no apologies.",
-        "Long, fluid lines and mindful movement.",
-        "Sleek, strong and beautifully controlled.",
+        gettext_lazy("Strong core, kind pace, every body welcome."),
+        gettext_lazy("Sculpt, lengthen and feel the burn."),
+        gettext_lazy("Controlled movement, long lines, calm breath."),
+        gettext_lazy("Precise form, taught the way it's built."),
+        gettext_lazy("Tiny moves, big results. Let's have fun with it."),
+        gettext_lazy("Strong core, sure posture, no apologies."),
+        gettext_lazy("Long, fluid lines and mindful movement."),
+        gettext_lazy("Sleek, strong and beautifully controlled."),
     ),
     "Fitness coaching": (
-        "Strength for real life, at your own pace.",
-        "Let's go. Today's session counts.",
-        "Steady progress, no crash, no burnout.",
-        "Programmes built on what actually works.",
-        "Sweat, laugh, repeat. Your new favourite hour.",
-        "Commit to yourself and watch it show.",
-        "Feel strong, move well, enjoy your body.",
-        "Bold, sculpted, and built to turn heads.",
+        gettext_lazy("Strength for real life, at your own pace."),
+        gettext_lazy("Let's go. Today's session counts."),
+        gettext_lazy("Steady progress, no crash, no burnout."),
+        gettext_lazy("Programmes built on what actually works."),
+        gettext_lazy("Sweat, laugh, repeat. Your new favourite hour."),
+        gettext_lazy("Commit to yourself and watch it show."),
+        gettext_lazy("Feel strong, move well, enjoy your body."),
+        gettext_lazy("Bold, sculpted, and built to turn heads."),
     ),
     "Dance": (
-        "Dance like nobody's judging. Nobody is.",
-        "Turn up the music and move.",
-        "Gentle rhythm, easy steps, no pressure.",
-        "Years on the floor, taught step by step.",
-        "Shake it out. Spins and smiles welcome.",
-        "Walk in, own the floor, own the moment.",
-        "Slow hips, close music, pure feeling.",
-        "Sizzling moves and plenty of attitude.",
+        gettext_lazy("Dance like nobody's judging. Nobody is."),
+        gettext_lazy("Turn up the music and move."),
+        gettext_lazy("Gentle rhythm, easy steps, no pressure."),
+        gettext_lazy("Years on the floor, taught step by step."),
+        gettext_lazy("Shake it out. Spins and smiles welcome."),
+        gettext_lazy("Walk in, own the floor, own the moment."),
+        gettext_lazy("Slow hips, close music, pure feeling."),
+        gettext_lazy("Sizzling moves and plenty of attitude."),
     ),
     "Meditation": (
-        "Rest here. There's nothing to fix.",
-        "Reset your mind in ten minutes flat.",
-        "Breathe in. The room goes quiet.",
-        "Practices rooted in years of experience.",
-        "Your brain needs a nap. Let's give it one.",
-        "Trust the calm you already have.",
-        "Warm, slow and deeply comforting.",
-        "Quiet magnetism that stays with you.",
+        gettext_lazy("Rest here. There's nothing to fix."),
+        gettext_lazy("Reset your mind in ten minutes flat."),
+        gettext_lazy("Breathe in. The room goes quiet."),
+        gettext_lazy("Practices rooted in years of experience."),
+        gettext_lazy("Your brain needs a nap. Let's give it one."),
+        gettext_lazy("Trust the calm you already have."),
+        gettext_lazy("Warm, slow and deeply comforting."),
+        gettext_lazy("Quiet magnetism that stays with you."),
     ),
     "Nutrition": (
-        "Good food, no guilt, no strict rules.",
-        "Fuel up with simple, delicious meals.",
-        "Eat well, sleep well, feel steady.",
-        "Evidence-based plans, explained plainly.",
-        "Real food that tastes like a treat.",
-        "Eat boldly, feel great, skip the diet talk.",
-        "Food as a pleasure, savoured slowly.",
-        "Glow from the inside, one good meal at a time.",
+        gettext_lazy("Good food, no guilt, no strict rules."),
+        gettext_lazy("Fuel up with simple, delicious meals."),
+        gettext_lazy("Eat well, sleep well, feel steady."),
+        gettext_lazy("Evidence-based plans, explained plainly."),
+        gettext_lazy("Real food that tastes like a treat."),
+        gettext_lazy("Eat boldly, feel great, skip the diet talk."),
+        gettext_lazy("Food as a pleasure, savoured slowly."),
+        gettext_lazy("Glow from the inside, one good meal at a time."),
     ),
     "Life coaching": (
-        "You've got this. Let's find the next step.",
-        "Stop waiting. Start the change today.",
-        "Clear thinking, one honest question at a time.",
-        "Proven tools for the big decisions.",
-        "Dream big, then let's make it happen.",
-        "Stand tall and make the call.",
-        "Honest, warm and a little bit intimate.",
-        "Bold, magnetic and unapologetically you.",
+        gettext_lazy("You've got this. Let's find the next step."),
+        gettext_lazy("Stop waiting. Start the change today."),
+        gettext_lazy("Clear thinking, one honest question at a time."),
+        gettext_lazy("Proven tools for the big decisions."),
+        gettext_lazy("Dream big, then let's make it happen."),
+        gettext_lazy("Stand tall and make the call."),
+        gettext_lazy("Honest, warm and a little bit intimate."),
+        gettext_lazy("Bold, magnetic and unapologetically you."),
     ),
     "Business coaching": (
-        "Your business, built with people you trust.",
-        "Grow faster and stop the guesswork.",
-        "Clear plans, steady decisions, no panic.",
-        "Strategy from years in the trenches.",
-        "Serious results, and a bit of fun along the way.",
-        "Decisive advice, backed by real results.",
-        "Thoughtful, unhurried and quietly stylish.",
-        "Sharp, bold and impossible to forget.",
+        gettext_lazy("Your business, built with people you trust."),
+        gettext_lazy("Grow faster and stop the guesswork."),
+        gettext_lazy("Clear plans, steady decisions, no panic."),
+        gettext_lazy("Strategy from years in the trenches."),
+        gettext_lazy("Serious results, and a bit of fun along the way."),
+        gettext_lazy("Decisive advice, backed by real results."),
+        gettext_lazy("Thoughtful, unhurried and quietly stylish."),
+        gettext_lazy("Sharp, bold and impossible to forget."),
     ),
 }
 # The memberships a coach can offer, any number of them, each built on what
@@ -399,7 +399,7 @@ def tier_price(answers: dict, tier_id: str) -> float:
 def membership_prices(answers: dict) -> dict[str, float]:
     """Every membership on the tiles, by label, at her price: the price fields
     under them."""
-    return {m["label"]: tier_price(answers, m["id"]) for m in membership_tiles(answers)}
+    return {tx(m["label"]): tier_price(answers, m["id"]) for m in membership_tiles(answers)}
 
 
 def default_tier(answers: dict) -> str:
@@ -414,20 +414,38 @@ def default_tier(answers: dict) -> str:
 # price: the price is asked only when it is sold on its own. The answer is a
 # list of BUY, membership keys and FREE.
 BUY, FREE = "buy", "free"
-FREE_ACCESS = "Free for everyone"
-ACCESS_WHY = (
+FREE_ACCESS = gettext_noop("Free for everyone")
+ACCESS_WHY = gettext_lazy(
     "Tick every way in: on its own, in a membership, or both. Everything you make later has this same Access section."
 )
 # What each way in means, under its tile: the access settings, taught once.
-BUY_DETAIL = "Sold on its own. Later you can add a time limit, like 90 days."
-MEMBER_DETAIL = "Members get it while their membership runs, and lose it if they cancel."
-FREE_DETAIL = "Anyone with a free account. A good first taste of your work."
+BUY_DETAIL = gettext_lazy("Sold on its own. Later you can add a time limit, like 90 days.")
+MEMBER_DETAIL = gettext_lazy("Members get it while their membership runs, and lose it if they cancel.")
+FREE_DETAIL = gettext_lazy("Anyone with a free account. A good first taste of your work.")
 # section: (the answer that sells it on its own, how its price reads, the
 # payment way that sells it, the answer holding its price, the topic answer)
 ACCESS = {
-    "course": ("Anyone who buys the course", "paid once", "course", "course_price", "course_topic"),
-    "event": ("Anyone who pays per session", "a session", "event", "event_price", "live_topic"),
-    "onsite": ("Anyone who pays per event", "an event", "event", "onsite_price", "onsite_topic"),
+    "course": (
+        gettext_noop("Anyone who buys the course"),
+        gettext_lazy("%(price)s paid once"),
+        "course",
+        "course_price",
+        "course_topic",
+    ),
+    "event": (
+        gettext_noop("Anyone who pays per session"),
+        gettext_lazy("%(price)s a session"),
+        "event",
+        "event_price",
+        "live_topic",
+    ),
+    "onsite": (
+        gettext_noop("Anyone who pays per event"),
+        gettext_lazy("%(price)s an event"),
+        "event",
+        "onsite_price",
+        "onsite_topic",
+    ),
 }
 
 
@@ -439,12 +457,18 @@ def access_options(answers: dict, kind: str) -> list[tuple[str, str, str, str]]:
     rows = []
     if way in (answers.get("payments") or []):
         price = answers.get(price_key)
-        rows.append((BUY, label, "ticket", f"{money(price)} {per}" if price else "You set the price next"))
+        hint = str(per) % {"price": money(price)} if price else gettext("You set the price next")
+        rows.append((BUY, label, "ticket", hint))
     rows += [
-        (m["id"], m["label"], m["icon"], f"Included for members, {money(tier_price(answers, m['id']))} a month")
+        (
+            m["id"],
+            m["label"],
+            m["icon"],
+            gettext("Included for members, %(price)s a month") % {"price": money(tier_price(answers, m["id"]))},
+        )
         for m in memberships_of(answers)
     ]
-    return [*rows, (FREE, FREE_ACCESS, "gift", "No payment, open to all")]
+    return [*rows, (FREE, FREE_ACCESS, "gift", gettext("No payment, open to all"))]
 
 
 def default_access(answers: dict, kind: str) -> list[str]:
@@ -614,71 +638,99 @@ _NICHE_WORDS = (
 # the tile away ("Bella Belly Dance" opens on the kinds of dance). Labels are
 # unique across tiles: a pick of them alone tells which tile it belongs to.
 SPECIALTIES = {
-    "Yoga": (
+    gettext_noop("Yoga"): (
         r"yoga",
         (
-            "Vinyasa yoga",
-            "Hatha yoga",
-            "Yin yoga",
-            "Ashtanga yoga",
-            "Kundalini yoga",
-            "Prenatal yoga",
-            "Face yoga",
-            "Power yoga",
+            gettext_noop("Vinyasa yoga"),
+            gettext_noop("Hatha yoga"),
+            gettext_noop("Yin yoga"),
+            gettext_noop("Ashtanga yoga"),
+            gettext_noop("Kundalini yoga"),
+            gettext_noop("Prenatal yoga"),
+            gettext_noop("Face yoga"),
+            gettext_noop("Power yoga"),
         ),
     ),
-    "Pilates": (
+    gettext_noop("Pilates"): (
         r"pilates|reformer|barre",
-        ("Mat pilates", "Reformer pilates", "Clinical pilates", "Prenatal pilates", "Wall pilates", "Barre"),
+        (
+            gettext_noop("Mat pilates"),
+            gettext_noop("Reformer pilates"),
+            gettext_noop("Clinical pilates"),
+            gettext_noop("Prenatal pilates"),
+            gettext_noop("Wall pilates"),
+            gettext_noop("Barre"),
+        ),
     ),
-    "Fitness coaching": (
+    gettext_noop("Fitness coaching"): (
         r"fitness|\bfit\b|\bgym|strength|\bbox|crossfit|\bhiit|bootcamp|personal train",
         (
-            "Strength training",
-            "HIIT",
-            "Running",
-            "Boxing",
-            "Weight loss training",
-            "Calisthenics",
-            "Mobility",
-            "Pre & postnatal fitness",
+            gettext_noop("Strength training"),
+            gettext_noop("HIIT"),
+            gettext_noop("Running"),
+            gettext_noop("Boxing"),
+            gettext_noop("Weight loss training"),
+            gettext_noop("Calisthenics"),
+            gettext_noop("Mobility"),
+            gettext_noop("Pre & postnatal fitness"),
         ),
     ),
-    "Dance": (
+    gettext_noop("Dance"): (
         r"danc|ballet|salsa|bachata|tango|belly|hip[- ]?hop|zumba|\bpole\b",
         (
-            "Belly dance",
-            "Hip hop",
-            "Salsa & bachata",
-            "Ballet",
-            "Contemporary",
-            "Pole dance",
-            "Latin & ballroom",
-            "Zumba",
+            gettext_noop("Belly dance"),
+            gettext_noop("Hip hop"),
+            gettext_noop("Salsa & bachata"),
+            gettext_noop("Ballet"),
+            gettext_noop("Contemporary"),
+            gettext_noop("Pole dance"),
+            gettext_noop("Latin & ballroom"),
+            gettext_noop("Zumba"),
         ),
     ),
-    "Meditation": (
+    gettext_noop("Meditation"): (
         r"meditat|mindful|breath",
-        ("Mindfulness", "Breathwork", "Guided meditation", "Sound healing", "Yoga nidra", "Sleep & relaxation"),
+        (
+            gettext_noop("Mindfulness"),
+            gettext_noop("Breathwork"),
+            gettext_noop("Guided meditation"),
+            gettext_noop("Sound healing"),
+            gettext_noop("Yoga nidra"),
+            gettext_noop("Sleep & relaxation"),
+        ),
     ),
-    "Nutrition": (
+    gettext_noop("Nutrition"): (
         r"nutri|diet|\bmeal|\bfood",
         (
-            "Healthy weight loss",
-            "Sports nutrition",
-            "Plant-based eating",
-            "Gut health",
-            "Meal planning",
-            "Hormone health",
+            gettext_noop("Healthy weight loss"),
+            gettext_noop("Sports nutrition"),
+            gettext_noop("Plant-based eating"),
+            gettext_noop("Gut health"),
+            gettext_noop("Meal planning"),
+            gettext_noop("Hormone health"),
         ),
     ),
-    "Life coaching": (
+    gettext_noop("Life coaching"): (
         r"life coach|mindset|confiden",
-        ("Confidence", "Career change", "Relationships", "Mindset", "Stress & burnout", "Purpose & direction"),
+        (
+            gettext_noop("Confidence"),
+            gettext_noop("Career change"),
+            gettext_noop("Relationships"),
+            gettext_noop("Mindset"),
+            gettext_noop("Stress & burnout"),
+            gettext_noop("Purpose & direction"),
+        ),
     ),
-    "Business coaching": (
+    gettext_noop("Business coaching"): (
         r"business|consult|leadership|\bgrowth",
-        ("Starting a business", "Marketing", "Sales", "Leadership", "Productivity", "Personal branding"),
+        (
+            gettext_noop("Starting a business"),
+            gettext_noop("Marketing"),
+            gettext_noop("Sales"),
+            gettext_noop("Leadership"),
+            gettext_noop("Productivity"),
+            gettext_noop("Personal branding"),
+        ),
     ),
 }
 
@@ -715,6 +767,53 @@ def say_list(items) -> str:
     """ "a", "a and b", "a, b and c"."""
     items = [str(i) for i in items if str(i).strip()]
     return " and ".join(items) if len(items) < 3 else f"{', '.join(items[:-1])} and {items[-1]}"
+
+
+def list_phrase(items) -> str:
+    """say_list() in the ACTIVE language, for copy a person reads ("a, b and c"); say_list stays English for prompts."""
+    items = [str(i) for i in items if str(i).strip()]
+    if len(items) < 3:
+        return (
+            gettext("%(first)s and %(second)s") % {"first": items[0], "second": items[1]}
+            if len(items) == 2
+            else "".join(items)
+        )
+    return gettext("%(items)s and %(last)s") % {"items": ", ".join(items[:-1]), "last": items[-1]}
+
+
+def lc(text: str) -> str:
+    """Lower-case a name mid-sentence for display; Turkish keeps its dotted and dotless i."""
+    text = str(text)
+    if (get_language() or "").startswith("tr"):
+        text = text.replace("I", "ı").replace("İ", "i")
+    return text.lower()
+
+
+def _known_names() -> dict[str, str]:
+    """The tile and kind names of the first questions by lower-case English text (the identity values)."""
+    names = [*SPECIALTIES, *(k for _, kinds in SPECIALTIES.values() for k in kinds)]
+    return {n.lower(): n for n in names}
+
+
+def name_shown(name: str) -> str:
+    """A tile or kind name in the middle of a sentence ("yoga" for "Yoga"): ours is translated, hers stays hers."""
+    known = _known_names().get(name.lower())
+    return lc(render_marked(known)) if known else name
+
+
+def tx(option: str) -> str:
+    """What a creator reads on an option's tile. The English text is the option's identity (matched in code, stored
+    in answers); this is only its display, in the active language. A text that is not ours (a tile the model wrote,
+    her own membership) comes back as it is."""
+    option = str(option)
+    if match := re.fullmatch(r"Mostly (.+)", option):
+        return gettext("Mostly %(name)s") % {"name": name_shown(match[1])}
+    if match := re.fullmatch(r"Only (.+)", option):
+        return gettext("Only %(kind)s") % {"kind": name_shown(match[1])}
+    if match := re.fullmatch(r"(.+) and more", option):
+        known = _known_names().get(match[1].lower())
+        return gettext("%(kind)s and more") % {"kind": render_marked(known) if known else match[1]}
+    return render_marked(option)  # the msgid is marked where the option is written (gettext_noop)
 
 
 def brand_subject(brand) -> str | None:
@@ -812,13 +911,13 @@ class Field:
     help: Help | None = None  # explains the question's unclear terms in place (see Help)
 
 
-SCHEDULE_WHY = (
+SCHEDULE_WHY = gettext_lazy(
     "Run it once, or every week on the days and times you choose, like Mondays and Wednesdays at 9:00"
     " and Saturdays at 10:00."
 )
 ACCESS_HELP = Help(
-    'What does "who can open it" mean?',
-    "Anything you make can be free, sold on its own, part of a membership, or several of these at once.",
+    gettext_lazy('What does "who can open it" mean?'),
+    gettext_lazy("Anything you make can be free, sold on its own, part of a membership, or several of these at once."),
     picture="access",
 )
 
@@ -828,50 +927,54 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "bio",
         "Their bio",
-        "Let's start with you. Tell me about yourself and your work.",
+        gettext_lazy("Let's start with you. Tell me about yourself and your work."),
         kind="bio",
-        why="Add a bio, a CV or your old About page. I read it once and tick what it answers in the questions"
-        " ahead, so you only check them. You can also skip this and answer as we go.",
+        why=gettext_lazy(
+            "Add a bio, a CV or your old About page. I read it once and tick what it answers in the questions"
+            " ahead, so you only check them. You can also skip this and answer as we go."
+        ),
     ),
     # Her site's name, and with it its address (core.onboarding.site_name).
     Field(
         "site_name",
         "Their site's name",
-        "What's your site called?",
+        gettext_lazy("What's your site called?"),
         kind="name",
         # The screen shows the address it makes, and that her own domain can come later.
-        why="It's the name your students see, and it makes your web address.",
+        why=gettext_lazy("It's the name your students see, and it makes your web address."),
     ),
     Field(
         "teaches",
         "What they offer",
-        "What do you offer?",
+        gettext_lazy("What do you offer?"),
         # Eight tiles, before any AI turn; typing covers the rest.
         (
-            "Yoga",
-            "Pilates",
-            "Fitness coaching",
-            "Dance",
-            "Meditation",
-            "Nutrition",
-            "Life coaching",
-            "Business coaching",
+            gettext_noop("Yoga"),
+            gettext_noop("Pilates"),
+            gettext_noop("Fitness coaching"),
+            gettext_noop("Dance"),
+            gettext_noop("Meditation"),
+            gettext_noop("Nutrition"),
+            gettext_noop("Life coaching"),
+            gettext_noop("Business coaching"),
         ),
         icons=("flower-2", "person-standing", "dumbbell", "music", "brain", "salad", "compass", "briefcase"),
         multi=True,
         custom=True,
         help=Help(
-            "Who's on my team?",
-            "Your site comes with a small team. They build your pages, take care of payments and help new"
-            " students find you, so you can spend your time making great content. You'll meet each of them"
-            " as we set up your site.",
+            gettext_lazy("Who's on my team?"),
+            gettext_lazy(
+                "Your site comes with a small team. They build your pages, take care of payments and help new"
+                " students find you, so you can spend your time making great content. You'll meet each of them"
+                " as we set up your site."
+            ),
             picture="team",
         ),
     ),
     Field(
         "specialty",
         "Their specialty",
-        "Which kinds do you offer?",  # asked only after a broad tile; options from specialties_for()
+        gettext_lazy("Which kinds do you offer?"),  # asked only after a broad tile; options from specialties_for()
         kind="specialty",
         multi=True,
         custom=True,
@@ -880,13 +983,17 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "discipline_focus",
         "Their main focus",
-        "Are these equally important, or is one your main focus?",  # interview.default_question names hers
+        gettext_lazy(
+            "Are these equally important, or is one your main focus?"
+        ),  # interview.default_question names hers
         kind="focus",
-        why="Your home page follows it: the look, the headline and the first photos.",
+        why=gettext_lazy("Your home page follows it: the look, the headline and the first photos."),
         help=Help(
-            "What changes if I pick one?",
-            "Your main focus opens your home page, with its look, headline and first photos. The others still show"
-            " up, a little further down. If you say they're equal, each one gets the same room.",
+            gettext_lazy("What changes if I pick one?"),
+            gettext_lazy(
+                "Your main focus opens your home page, with its look, headline and first photos. The others still show"
+                " up, a little further down. If you say they're equal, each one gets the same room."
+            ),
         ),
     ),
     # Asked early: her photos are described in the background while she answers
@@ -894,22 +1001,32 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "photos",
         "Their own photos",
-        "Do you have photos of your own for your site?",
+        gettext_lazy("Do you have photos of your own for your site?"),
         kind="photos",  # the screen takes the uploads; the answer is "own" or "stock"
-        why="Your own photos make the site yours. Without them I pick photos that fit what you do."
-        " Either way you can swap any photo later.",
+        why=gettext_lazy(
+            "Your own photos make the site yours. Without them I pick photos that fit what you do."
+            " Either way you can swap any photo later."
+        ),
         help=Help(
-            "How is my site built?",
-            "Every answer goes into your pages: Home, About, Contact and FAQ. I start building as soon as I know"
-            " enough, and you can change anything later.",
+            gettext_lazy("How is my site built?"),
+            gettext_lazy(
+                "Every answer goes into your pages: Home, About, Contact and FAQ. I start building as soon as I know"
+                " enough, and you can change anything later."
+            ),
             picture="site",
         ),
     ),
     Field(
         "audience",
         "Who they work with",
-        "Who are the students you love working with most?",
-        ("Complete beginners", "Busy professionals", "People coming back after an injury", "Parents", "Older adults"),
+        gettext_lazy("Who are the students you love working with most?"),
+        (
+            gettext_noop("Complete beginners"),
+            gettext_noop("Busy professionals"),
+            gettext_noop("People coming back after an injury"),
+            gettext_noop("Parents"),
+            gettext_noop("Older adults"),
+        ),
         multi=True,
         custom=True,
         icons=("sprout", "briefcase", "heart-pulse", "baby", "glasses"),
@@ -918,16 +1035,16 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "outcome",
         "What students get",
-        "What changes for a student after working with you?",
+        gettext_lazy("What changes for a student after working with you?"),
         (
-            "More confidence",
-            "Less stress",
-            "More energy",
-            "A routine that sticks",
-            "Visible progress",
-            "New skills",
-            "A clear direction",
-            "Feeling supported",
+            gettext_noop("More confidence"),
+            gettext_noop("Less stress"),
+            gettext_noop("More energy"),
+            gettext_noop("A routine that sticks"),
+            gettext_noop("Visible progress"),
+            gettext_noop("New skills"),
+            gettext_noop("A clear direction"),
+            gettext_noop("Feeling supported"),
         ),
         multi=True,
         custom=True,
@@ -936,51 +1053,59 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "offers",
         "How they work",
-        "How will you work with your students?",
-        ("Digital content", "Live online sessions", "In-person sessions", "Articles", "Community"),
+        gettext_lazy("How will you work with your students?"),
+        (
+            gettext_noop("Digital content"),
+            gettext_noop("Live online sessions"),
+            gettext_noop("In-person sessions"),
+            gettext_noop("Articles"),
+            gettext_noop("Community"),
+        ),
         kind="offers",
-        why="Pick as many as fit. This decides which pages I build and what I ask you next.",
+        why=gettext_lazy("Pick as many as fit. This decides which pages I build and what I ask you next."),
         multi=True,
         icons=("book-open", "video", "map-pin", "newspaper", "users"),
         details=(
-            "Pre-recorded courses and downloads students buy once and use at their own pace.",
-            "Group classes or 1-1 calls students join from home, with you live.",
-            "Classes, workshops or retreats at your own place.",
-            "A blog that brings new students in from search and keeps them reading.",
-            "A members' space where your students talk, share and stay motivated.",
+            gettext_lazy("Pre-recorded courses and downloads students buy once and use at their own pace."),
+            gettext_lazy("Group classes or 1-1 calls students join from home, with you live."),
+            gettext_lazy("Classes, workshops or retreats at your own place."),
+            gettext_lazy("A blog that brings new students in from search and keeps them reading."),
+            gettext_lazy("A members' space where your students talk, share and stay motivated."),
         ),
     ),
     # Before the pitch, which starts the home page: every page says "I" or "we" from it.
     Field(
         "teachers",
         "Who students learn from",
-        "Who will your students learn from?",
+        gettext_lazy("Who will your students learn from?"),
         tuple(label for label, _ in TEACHERS.values()),
         kind="teachers",
-        why='Your site speaks as "I" or "we" to match.',
+        why=gettext_lazy('Your site speaks as "I" or "we" to match.'),
         icons=("user-round", "sprout", "users"),
     ),
     Field(
         "pitch",
         "One-line pitch",
-        "If someone asked what you do, what would you say in one sentence?",
-        why="It's the first thing new visitors read on your home page. Articles and your social accounts bring more"
-        " people to it.",
-        help=Help(example="{brand}: calm, strong and simple, for people with busy lives."),
+        gettext_lazy("If someone asked what you do, what would you say in one sentence?"),
+        why=gettext_lazy(
+            "It's the first thing new visitors read on your home page. Articles and your social accounts bring more"
+            " people to it."
+        ),
+        help=Help(example=gettext_lazy("{brand}: calm, strong and simple, for people with busy lives.")),
     ),
     Field(
         "difference",
         "What makes their approach theirs",
-        "What do you do differently from other creators?",
+        gettext_lazy("What do you do differently from other creators?"),
         (
-            "Small groups",
-            "Personal attention",
-            "A gentle pace",
-            "My own method",
-            "Real-life results",
-            "Fits a busy life",
-            "Plenty of humour",
-            "Whole-person approach",
+            gettext_noop("Small groups"),
+            gettext_noop("Personal attention"),
+            gettext_noop("A gentle pace"),
+            gettext_noop("My own method"),
+            gettext_noop("Real-life results"),
+            gettext_noop("Fits a busy life"),
+            gettext_noop("Plenty of humour"),
+            gettext_noop("Whole-person approach"),
         ),
         multi=True,
         custom=True,
@@ -990,8 +1115,17 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "tone",
         "How the site should sound",
-        "How should your site sound?",
-        ("Warm", "Energetic", "Calm", "Expert", "Playful", "Confident", "Sensual", "Sexy"),
+        gettext_lazy("How should your site sound?"),
+        (
+            gettext_noop("Warm"),
+            gettext_noop("Energetic"),
+            gettext_noop("Calm"),
+            gettext_noop("Expert"),
+            gettext_noop("Playful"),
+            gettext_noop("Confident"),
+            gettext_noop("Sensual"),
+            gettext_noop("Sexy"),
+        ),
         kind="tone",
         multi=True,
         delegable=True,
@@ -1001,14 +1135,16 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "site_style",
         "Site style",
-        "Which look feels most like you?",
+        gettext_lazy("Which look feels most like you?"),
         kind="style",
         delegable=True,
-        why="A look is how your whole site feels. You can change it any time, and your words stay put.",
+        why=gettext_lazy("A look is how your whole site feels. You can change it any time, and your words stay put."),
         help=Help(
-            "What does a look change?",
-            "It sets the fonts, the colours and the layout of every page, in light and dark."
-            " Your logo sits on top of it.",
+            gettext_lazy("What does a look change?"),
+            gettext_lazy(
+                "It sets the fonts, the colours and the layout of every page, in light and dark."
+                " Your logo sits on top of it."
+            ),
             picture="look",
         ),
     ),
@@ -1016,14 +1152,14 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "story",
         "Their story",
-        "How did you get into this?",
+        gettext_lazy("How did you get into this?"),
         (
-            "I first got into this when…",
-            "It changed my life when…",
-            "I started because…",
-            "Friends kept asking me to…",
-            "I was struggling with… until",
-            "My career took a turn when…",
+            gettext_noop("I first got into this when…"),
+            gettext_noop("It changed my life when…"),
+            gettext_noop("I started because…"),
+            gettext_noop("Friends kept asking me to…"),
+            gettext_noop("I was struggling with… until"),
+            gettext_noop("My career took a turn when…"),
         ),
         multi=True,
         custom=True,
@@ -1033,71 +1169,84 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "credentials",
         "Training and experience",
-        "Any training, certifications or years of experience you'd like visitors to know about?",
+        gettext_lazy("Any training, certifications or years of experience you'd like visitors to know about?"),
         (
-            "I trained in…",
-            "I'm certified in…",
-            "I've been doing this for…",
-            "I studied at…",
-            "I've worked with…",
-            "I'm a member of…",
+            gettext_noop("I trained in…"),
+            gettext_noop("I'm certified in…"),
+            gettext_noop("I've been doing this for…"),
+            gettext_noop("I studied at…"),
+            gettext_noop("I've worked with…"),
+            gettext_noop("I'm a member of…"),
         ),
         multi=True,
         custom=True,
         starter=True,
         icons=("graduation-cap", "badge-check", "hourglass", "school", "users", "shield"),
     ),
-    Field("site_logo", "Logo", "Pick a logo to start with. You can change it any time.", kind="logo", delegable=True),
+    Field(
+        "site_logo",
+        "Logo",
+        gettext_lazy("Pick a logo to start with. You can change it any time."),
+        kind="logo",
+        delegable=True,
+    ),
     # Asked once, here: no later question (class times, prices) asks again.
     Field(
         "timezone",
         "Their time zone",
-        "Which time zone are you in?",
+        gettext_lazy("Which time zone are you in?"),
         kind="timezone",  # the screen is a picker, opened on the browser's own zone
-        why="Session times and your calendar follow it.",
+        why=gettext_lazy("Session times and your calendar follow it."),
     ),
     Field(
         "currency",
         "The currency they charge in",
-        "Which currency do you charge in?",
+        gettext_lazy("Which currency do you charge in?"),
         tuple(label for label, _, _ in CURRENCIES.values()),
         kind="currency",
-        why="Every price on your site is in it. It is fixed once you buy a plan or take a payment.",
+        why=gettext_lazy("Every price on your site is in it. It is fixed once you buy a plan or take a payment."),
         icons=("badge-dollar-sign", "coins"),
     ),
     Field(
         "payments",
         "How students pay",
-        "How will students pay you?",
-        ("One-time course purchases", "Monthly membership", "Pay per session or event", "Free for now"),
+        gettext_lazy("How will students pay you?"),
+        (
+            gettext_noop("One-time course purchases"),
+            gettext_noop("Monthly membership"),
+            gettext_noop("Pay per session or event"),
+            gettext_noop("Free for now"),
+        ),
         kind="payments",
-        why="Free stays free. You can change prices any time.",
+        why=gettext_lazy("Free stays free. You can change prices any time."),
         help=Help(
-            "How can students pay?",
-            "Most creators mix the ways. Here's what three students might pay over three months.",
+            gettext_lazy("How can students pay?"),
+            gettext_lazy("Most creators mix the ways. Here's what three students might pay over three months."),
             picture="pay",
         ),
         multi=True,
         alone="Free for now",
         icons=("book-open", "repeat", "ticket", "gift"),
         hints=(
-            "Students buy each course once",
-            "One monthly price for everything",
-            "Students pay for each live session",
-            "Everything free now, prices later",
+            gettext_lazy("Students buy each course once"),
+            gettext_lazy("One monthly price for everything"),
+            gettext_lazy("Students pay for each live session"),
+            gettext_lazy("Everything free now, prices later"),
         ),
     ),
     Field(
         "memberships",
         "Memberships offered",
-        "A membership can cover everything, or one thing you offer. Which ones fit your students?",
+        gettext_lazy("A membership can cover everything, or one thing you offer. Which ones fit your students?"),
         kind="memberships",  # options come from membership_tiles()
-        why="A membership is a monthly pass: students pay one price a month and get what it covers while they pay."
-        " One can cover everything you offer, or a few can each cover one thing.",
+        why=gettext_lazy(
+            "A membership is a monthly pass: students pay one price a month and get what it covers while they pay."
+            " One can cover everything you offer, or a few can each cover one thing."
+        ),
         help=Help(
-            "How do memberships work?",
-            "Each one is its own monthly subscription. You choose what each one unlocks as we build.",
-            "The Club, $19 a month, covers every live session.",
+            gettext_lazy("How do memberships work?"),
+            gettext_lazy("Each one is its own monthly subscription. You choose what each one unlocks as we build."),
+            gettext_lazy("The Club, $19 a month, covers every live session."),
             picture="membership",
         ),
         multi=True,
@@ -1108,23 +1257,25 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "course_topic",
         "First course topic",
-        "Let's build your first course. What should it cover?",
+        gettext_lazy("Let's build your first course. What should it cover?"),
         needs=("course",),
         group="course",
         delegable=True,
-        why="A course is your know-how, recorded once. Students buy it, follow it at their own pace and keep it."
-        " I draft the outline; you record the videos.",
+        why=gettext_lazy(
+            "A course is your know-how, recorded once. Students buy it, follow it at their own pace and keep it."
+            " I draft the outline; you record the videos."
+        ),
         help=Help(
-            "How does a course work?",
-            "It's made of modules, like weeks or chapters, and lessons: the videos inside them.",
-            "A 4-week beginner course for $49.",
+            gettext_lazy("How does a course work?"),
+            gettext_lazy("It's made of modules, like weeks or chapters, and lessons: the videos inside them."),
+            gettext_lazy("A 4-week beginner course for $49."),
             picture="course",
         ),
     ),
     Field(
         "course_access",
         "Who can take the first course",
-        "Who can take this course?",
+        gettext_lazy("Who can take this course?"),
         kind="access",  # options come from access_options(): buying it, each membership, or free
         needs=("course",),
         pays=("course", "membership"),
@@ -1138,8 +1289,17 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "course_price",
         "First course price",
-        "What should the course cost?",
-        ("19", "29", "39", "49", "79", "99", "149", "199"),
+        gettext_lazy("What should the course cost?"),
+        (
+            gettext_noop("19"),
+            gettext_noop("29"),
+            gettext_noop("39"),
+            gettext_noop("49"),
+            gettext_noop("79"),
+            gettext_noop("99"),
+            gettext_noop("149"),
+            gettext_noop("199"),
+        ),
         kind="price",
         pays=("course",),
         needs=("course",),
@@ -1149,7 +1309,7 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "course_review",
         "First course",
-        "Here's your first course. Happy with it?",
+        gettext_lazy("Here's your first course. Happy with it?"),
         kind="course",
         needs=("course",),
         group="course",
@@ -1157,27 +1317,27 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "live_topic",
         "Live session topic",
-        "Let's set up your first live session. What should it focus on?",
+        gettext_lazy("Let's set up your first live session. What should it focus on?"),
         needs=("live",),
         group="event",
         delegable=True,
-        why="A live session happens at a set time: a group class or a 1-1 call.",
+        why=gettext_lazy("A live session happens at a set time: a group class or a 1-1 call."),
         help=Help(
-            "How do live sessions work?",
-            "Students sign up on your site and join the video call from it.",
-            "A Tuesday evening class for complete beginners.",
+            gettext_lazy("How do live sessions work?"),
+            gettext_lazy("Students sign up on your site and join the video call from it."),
+            gettext_lazy("A Tuesday evening class for complete beginners."),
             picture="live",
         ),
     ),
     Field(
         "live_when",
         "Live session schedule",
-        "When does your first live session run?",
-        ("Recurring", "One-time"),
+        gettext_lazy("When does your first live session run?"),
+        (gettext_noop("Recurring"), gettext_noop("One-time")),
         kind="schedule",  # the tile picks weekly or one-time; the picker sends the dates
         needs=("live",),
         icons=("repeat", "calendar"),
-        hints=("Set days and times, week after week", "A single session on one date"),
+        hints=(gettext_lazy("Set days and times, week after week"), gettext_lazy("A single session on one date")),
         group="event",
         delegable=True,
         why=SCHEDULE_WHY,
@@ -1185,7 +1345,7 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "event_access",
         "Who can join the live session",
-        "Who can join this live session?",
+        gettext_lazy("Who can join this live session?"),
         kind="access",  # options come from access_options(): buying it, each membership, or free
         needs=("live",),
         pays=("event", "membership"),
@@ -1199,8 +1359,17 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "event_price",
         "Price per live session",
-        "What should one live session cost?",
-        ("5", "10", "15", "20", "25", "35", "50", "75"),
+        gettext_lazy("What should one live session cost?"),
+        (
+            gettext_noop("5"),
+            gettext_noop("10"),
+            gettext_noop("15"),
+            gettext_noop("20"),
+            gettext_noop("25"),
+            gettext_noop("35"),
+            gettext_noop("50"),
+            gettext_noop("75"),
+        ),
         kind="price",
         needs=("live",),
         pays=("event",),
@@ -1210,7 +1379,7 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "event_review",
         "First live session",
-        "Here's your first live session. Happy with it?",
+        gettext_lazy("Here's your first live session. Happy with it?"),
         kind="event",
         needs=("live",),
         group="event",
@@ -1219,22 +1388,24 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "onsite_topic",
         "In-person event topic",
-        "Let's set up your first in-person event. What should it focus on?",
+        gettext_lazy("Let's set up your first in-person event. What should it focus on?"),
         needs=("onsite",),
         group="onsite",
         delegable=True,
-        why="An in-person event lives on your site too: students see the place and the times, and sign up online.",
-        help=Help(example="A weekend workshop at your usual place."),
+        why=gettext_lazy(
+            "An in-person event lives on your site too: students see the place and the times, and sign up online."
+        ),
+        help=Help(example=gettext_lazy("A weekend workshop at your usual place.")),
     ),
     Field(
         "onsite_when",
         "In-person event schedule",
-        "When does your first in-person event take place?",
-        ("Recurring", "One-time"),
+        gettext_lazy("When does your first in-person event take place?"),
+        (gettext_noop("Recurring"), gettext_noop("One-time")),
         kind="schedule",
         needs=("onsite",),
         icons=("repeat", "calendar"),
-        hints=("Set days and times, week after week", "A single session on one date"),
+        hints=(gettext_lazy("Set days and times, week after week"), gettext_lazy("A single session on one date")),
         group="onsite",
         delegable=True,
         why=SCHEDULE_WHY,
@@ -1242,16 +1413,16 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "location",
         "Where the in-person event happens",
-        "Where does your in-person event take place?",
+        gettext_lazy("Where does your in-person event take place?"),
         kind="address",  # two boxes: the place, and its street address
         needs=("onsite",),
         group="onsite",
-        why="The place shows on your site. The street address goes only to students who can attend.",
+        why=gettext_lazy("The place shows on your site. The street address goes only to students who can attend."),
     ),
     Field(
         "onsite_access",
         "Who can come to the in-person event",
-        "Who can come to this in-person event?",
+        gettext_lazy("Who can come to this in-person event?"),
         kind="access",  # options come from access_options(): buying it, each membership, or free
         needs=("onsite",),
         pays=("event", "membership"),
@@ -1265,8 +1436,17 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "onsite_price",
         "Price per in-person event",
-        "What should one in-person event cost?",
-        ("5", "10", "15", "20", "25", "35", "50", "75"),
+        gettext_lazy("What should one in-person event cost?"),
+        (
+            gettext_noop("5"),
+            gettext_noop("10"),
+            gettext_noop("15"),
+            gettext_noop("20"),
+            gettext_noop("25"),
+            gettext_noop("35"),
+            gettext_noop("50"),
+            gettext_noop("75"),
+        ),
         kind="price",
         needs=("onsite",),
         pays=("event",),
@@ -1276,7 +1456,7 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "onsite_review",
         "First in-person event",
-        "Here's your first in-person event. Happy with it?",
+        gettext_lazy("Here's your first in-person event. Happy with it?"),
         kind="event",
         needs=("onsite",),
         group="onsite",
@@ -1286,7 +1466,7 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "calendar_view",
         "Calendar layout",
-        "How should your calendar look?",
+        gettext_lazy("How should your calendar look?"),
         kind="calendar",
         needs=("live", "onsite"),
         group="calendar",
@@ -1295,7 +1475,7 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "article_topic",
         "First article topic",
-        "What should your first article be about?",
+        gettext_lazy("What should your first article be about?"),
         needs=("articles",),
         group="post",
         delegable=True,
@@ -1303,8 +1483,16 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "socials",
         "Social accounts",
-        "Which social accounts should students find you on?",
-        ("Instagram", "YouTube", "TikTok", "Facebook", "X", "LinkedIn", "No social accounts yet"),
+        gettext_lazy("Which social accounts should students find you on?"),
+        (
+            gettext_noop("Instagram"),
+            gettext_noop("YouTube"),
+            gettext_noop("TikTok"),
+            gettext_noop("Facebook"),
+            gettext_noop("X"),
+            gettext_noop("LinkedIn"),
+            gettext_noop("No social accounts yet"),
+        ),
         kind="socials",  # tiles pick the networks; the picker takes each handle or link
         multi=True,
         alone="No social accounts yet",
@@ -1313,16 +1501,24 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "contact",
         "How students reach them",
-        "How should students get in touch with you?",
-        ("Email", "Instagram", "WhatsApp", "Phone", "Contact form"),
+        gettext_lazy("How should students get in touch with you?"),
+        (
+            gettext_noop("Email"),
+            gettext_noop("Instagram"),
+            gettext_noop("WhatsApp"),
+            gettext_noop("Phone"),
+            gettext_noop("Contact form"),
+        ),
         kind="contact",
         multi=True,
         icons=("mail", "instagram", "message-circle", "phone", "pen-line"),
-        why="Messages from your site land in your inbox, and session reminders go out on their own.",
+        why=gettext_lazy("Messages from your site land in your inbox, and session reminders go out on their own."),
         help=Help(
-            "What happens when a student writes to me?",
-            "Their message lands in your inbox in your control panel, and you reply from there. If you run a community,"
-            " that's also where your students talk to each other.",
+            gettext_lazy("What happens when a student writes to me?"),
+            gettext_lazy(
+                "Their message lands in your inbox in your control panel, and you reply from there. If you run a"
+                " community, that's also where your students talk to each other."
+            ),
             picture="inbox",
         ),
     ),
@@ -1330,21 +1526,23 @@ FIELDS: tuple[Field, ...] = (
     Field(
         "email_style",
         "Email style",
-        "How should your emails to students look?",
+        gettext_lazy("How should your emails to students look?"),
         kind="email",  # the cards are the email engine's renders (notifications.transactional.previews)
         delegable=True,
-        why="Sign-in links, receipts, session reminders and your announcements all go out in it.",
+        why=gettext_lazy("Sign-in links, receipts, session reminders and your announcements all go out in it."),
     ),
     # The site's chrome comes last: by now every page and link it carries is known.
     Field(
         "navbar_layout",
         "Header layout",
-        "How should the top of every page look?",
+        gettext_lazy("How should the top of every page look?"),
         kind="navbar",
         delegable=True,
-        why="Your pages are set, so each card shows your own menu.",
+        why=gettext_lazy("Your pages are set, so each card shows your own menu."),
     ),
-    Field("footer_layout", "Footer layout", "And the bottom of every page?", kind="footer", delegable=True),
+    Field(
+        "footer_layout", "Footer layout", gettext_lazy("And the bottom of every page?"), kind="footer", delegable=True
+    ),
 )
 FIELD_BY_ID = {f.id: f for f in FIELDS}
 # Fields that ride in `description`, or are applied as config, not as copy facts.
@@ -1443,7 +1641,10 @@ def currency_note() -> str:
     """The line under a price question: which currency its prices are in."""
     from apps.core.currency import tenant_charge_currency
 
-    return f"Prices are in {tenant_charge_currency().upper()} ({currency_sign()}), the currency you picked."
+    return gettext("Prices are in %(currency)s (%(sign)s), the currency you picked.") % {
+        "currency": tenant_charge_currency().upper(),
+        "sign": currency_sign(),
+    }
 
 
 def money(amount) -> str:
@@ -1464,7 +1665,7 @@ def parse_timezone(raw) -> str | None:
     )
 
 
-NO_SOCIALS = "No social accounts yet"
+NO_SOCIALS = gettext_noop("No social accounts yet")
 # id: (name, profile URL for a bare handle, host pattern). The first match wins.
 SOCIALS = {
     "instagram": ("Instagram", "https://instagram.com/{}", r"instagram\.com"),
@@ -1633,7 +1834,7 @@ def niche_for(text) -> str:
 # ticked first), and subject_of() then named that niche as the topic of every hero line and photo
 # search. recommended_style(niche) chose the look, the composer's _HEADLINES / _ctx / photo queries
 # followed the topic. Now she says which leads (discipline_focus); focus_of() is what the composer reads.
-FOCUS_EQUAL = "They're equal"
+FOCUS_EQUAL = gettext_noop("They're equal")
 MAX_FOCUS = 7  # "They're equal" and one tile each fit the eight tiles a question shows
 
 
@@ -1839,7 +2040,7 @@ def tone_hints_for(answers: dict) -> tuple[str, ...]:
     fallback of the broad tile they teach (see TONE_HINTS)."""
     if len(written := answers.get("tone_hints") or ()) == len(FIELD_BY_ID["tone"].options):
         return tuple(written)
-    return TONE_HINTS.get(_tile_of(answers.get("teaches")) or "", TONE_HINTS[""])
+    return tuple(str(h) for h in TONE_HINTS.get(_tile_of(answers.get("teaches")) or "", TONE_HINTS[""]))
 
 
 def options_for(
@@ -1876,8 +2077,8 @@ def options_for(
             (FOCUS_EQUAL, *(f"Mostly {_lower_first(n)}" for n in names)),
             ("layers", *(icon_of.get(_tile_of(n) or "", "sparkles") for n in names)),
             (
-                "Each gets the same room on your site",
-                *(f"{n[:1].upper()}{n[1:]} leads; the rest support it" for n in names),
+                gettext("Each gets the same room on your site"),
+                *(gettext("%(name)s leads; the rest support it") % {"name": f"{n[:1].upper()}{n[1:]}"} for n in names),
             ),
         )
     if field.kind == "memberships":
@@ -1885,7 +2086,7 @@ def options_for(
         return (
             tuple(t["label"] for t in tiers),
             tuple(t["icon"] for t in tiers),
-            tuple(f"{money(tier_price(answers, t['id']))} a month" for t in tiers),
+            tuple(gettext("%(price)s a month") % {"price": money(tier_price(answers, t["id"]))} for t in tiers),
         )
     if field.kind == "access":
         rows = access_options(answers, field.group)
@@ -1894,7 +2095,8 @@ def options_for(
         zip(
             field.options,
             field.icons or ("",) * len(field.options),
-            (tone_hints_for(answers) if field.id == "tone" else field.hints) or ("",) * len(field.options),
+            tuple(str(h) for h in (tone_hints_for(answers) if field.id == "tone" else field.hints))
+            or ("",) * len(field.options),
             strict=False,
         )
     )
@@ -1913,14 +2115,25 @@ def options_for(
     return options, icons if field.icons else (), hints if field.hints else ()
 
 
+def english_picks(text: str, field: Field, answers: dict, brand: str = "") -> str:
+    """Tiles a creator tapped, as the English options they stand for: the screen shows ``tx(option)`` and sends it
+    back as typed text, while code matches and stores the English identity. Text that is no tile stays as it is."""
+    by_shown = {tx(o).lower(): o for o in options_for(field, answers, brand)[0]}
+    whole = by_shown.get(text.strip().lower())
+    if whole:
+        return whole
+    parts = [p.strip() for p in text.split(",") if p.strip()]
+    return ", ".join(by_shown.get(p.lower(), p) for p in parts)
+
+
 def details_for(field: Field, answers: dict) -> dict[str, str]:
     """One description per option, shown once it is picked."""
     if field.kind == "memberships":
-        return {t["label"]: t["blurb"] for t in membership_tiles(answers)}
+        return {tx(t["label"]): tier_text(t)["blurb"] for t in membership_tiles(answers)}
     if field.kind == "access":
         detail = {BUY: BUY_DETAIL, FREE: FREE_DETAIL}
-        return {label: detail.get(i, MEMBER_DETAIL) for i, label, *_ in access_options(answers, field.group)}
-    return dict(zip(field.options, field.details, strict=False)) if field.details else {}
+        return {tx(label): str(detail.get(i, MEMBER_DETAIL)) for i, label, *_ in access_options(answers, field.group)}
+    return {tx(o): str(d) for o, d in zip(field.options, field.details, strict=False)} if field.details else {}
 
 
 def help_of(field: Field, brand: str = "") -> dict | None:
@@ -1929,8 +2142,9 @@ def help_of(field: Field, brand: str = "") -> dict | None:
     if field.help is None:
         return None
     sign = currency_sign()
-    example = field.help.example.replace("$", sign).replace("{brand}", brand or "Your studio")
-    return {**asdict(field.help), "example": example, "sign": sign}
+    shown = {k: str(v) for k, v in asdict(field.help).items()}
+    example = shown["example"].replace("$", sign).replace("{brand}", brand or gettext("Your studio"))
+    return {**shown, "example": example, "sign": sign}
 
 
 def is_settled(answers: dict, field_id: str) -> bool:

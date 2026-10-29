@@ -269,7 +269,7 @@ export const mockSetupFlowApi: SetupFlowApi = {
     const guide = liveGuide();
     if (isReview(guide.cards) || isPhotos(guide.cards)) return undefined;
     if (guide.schedule)
-      return { ticked: ["Recurring"], schedule: defaultSchedule() };
+      return { ticked: [guide.options[0]], schedule: defaultSchedule() };
     if (guide.cards) {
       const o = guide.cards.options.find(
         (o) => o.label.toLowerCase() === said.text.trim().toLowerCase(),

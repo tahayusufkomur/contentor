@@ -164,7 +164,9 @@ export function QuestionScreen({
     !!draft.prices ||
     !!draft.details;
   // A schedule question: the tile picks weekly or one-time, the picker the dates.
-  const mode: ScheduleMode = ticked[0] === "One-time" ? "once" : "recurring";
+  // (The tiles show in the creator's language: One-time is the second, whatever it reads.)
+  const mode: ScheduleMode =
+    ticked[0] === step.options[1] ? "once" : "recurring";
   const sched = step.schedule
     ? (draft.schedule ?? defaultSchedule(mode))
     : null;

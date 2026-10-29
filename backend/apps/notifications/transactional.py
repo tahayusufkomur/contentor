@@ -20,16 +20,24 @@ from django.db import connection, transaction
 from django.utils.formats import date_format, number_format
 from django.utils.html import escape
 from django.utils.translation import gettext as _
-from django.utils.translation import ngettext
+from django.utils.translation import gettext_lazy, ngettext
 
 from apps.core.languages import in_site_language, site_language, site_language_context
 
 logger = logging.getLogger(__name__)
 
 STYLES = (
-    ("letter", "Letter", "Quiet and personal, like a note from you. Your name on top, words first."),
-    ("branded", "Branded", "Your mark on top over a band of your colour, the message on a clean card."),
-    ("bold", "Bold", "Big headline on your colour, a full-width button. Hard to miss."),
+    (
+        "letter",
+        gettext_lazy("Letter"),
+        gettext_lazy("Quiet and personal, like a note from you. Your name on top, words first."),
+    ),
+    (
+        "branded",
+        gettext_lazy("Branded"),
+        gettext_lazy("Your mark on top over a band of your colour, the message on a clean card."),
+    ),
+    ("bold", gettext_lazy("Bold"), gettext_lazy("Big headline on your colour, a full-width button. Hard to miss.")),
 )
 STYLE_IDS = {s for s, _, _ in STYLES}
 DEFAULT_STYLE = "branded"
@@ -435,17 +443,14 @@ def previews(tenant) -> list[dict]:
     key = f"tx-previews:{tenant.schema_name}:{site_language()}:{hashlib.sha256(inputs.encode()).hexdigest()}"
     cached = cache.get(key)
     if cached is None:
-        cached = [
-            {
-                "value": sid,
-                "label": label,
-                "detail": detail,
-                "html": render(sample, tenant, style=sid, cfg=cfg, picture=picture, offer=offer),
-            }
-            for sid, label, detail in STYLES
-        ]
+        # The html is the site's language and is cached; the labels are the creator's and are added after.
+        cached = {
+            sid: render(sample, tenant, style=sid, cfg=cfg, picture=picture, offer=offer) for sid, _l, _d in STYLES
+        }
         cache.set(key, cached, PREVIEW_SECONDS)
-    return cached
+    return [
+        {"value": sid, "label": str(label), "detail": str(detail), "html": cached[sid]} for sid, label, detail in STYLES
+    ]
 
 
 def here() -> tuple[str, str]:

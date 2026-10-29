@@ -19,6 +19,7 @@ from django.core.cache import cache
 from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 from pydantic import BaseModel
 
 from apps.core.languages import in_site_language
@@ -41,18 +42,30 @@ from .setup_items import (
 logger = logging.getLogger(__name__)
 
 STEP_COPY = {
-    "course": ("Your first course", "Tell us what you want to create — we'll draft the outline, price and cover."),
-    "event": ("Your first live session", "Pick a topic and we'll schedule a session students can join."),
-    "post": ("Your first article", "A short post that shows visitors how you think and who you help."),
-    "page:home": ("Home page", "The first thing visitors see."),
-    "page:about": ("About page", "Your story, in your own words."),
-    "page:courses": ("Courses page", "Where students browse what you offer."),
-    "page:pricing": ("Pricing page", "Your membership plans, side by side."),
-    "page:faq": ("FAQ page", "Answers to what students ask before they join."),
-    "page:contact": ("Contact page", "How students reach you."),
-    "page:events": ("Events page", "Your upcoming sessions and events, online and in person."),
-    "payouts": ("Get paid", "Connect Stripe so your sales reach your bank account."),
-    "launch": ("Go live", "Publish your site — or keep it private a little longer."),
+    "course": (
+        gettext_lazy("Your first course"),
+        gettext_lazy("Tell us what you want to create — we'll draft the outline, price and cover."),
+    ),
+    "event": (
+        gettext_lazy("Your first live session"),
+        gettext_lazy("Pick a topic and we'll schedule a session students can join."),
+    ),
+    "post": (
+        gettext_lazy("Your first article"),
+        gettext_lazy("A short post that shows visitors how you think and who you help."),
+    ),
+    "page:home": (gettext_lazy("Home page"), gettext_lazy("The first thing visitors see.")),
+    "page:about": (gettext_lazy("About page"), gettext_lazy("Your story, in your own words.")),
+    "page:courses": (gettext_lazy("Courses page"), gettext_lazy("Where students browse what you offer.")),
+    "page:pricing": (gettext_lazy("Pricing page"), gettext_lazy("Your membership plans, side by side.")),
+    "page:faq": (gettext_lazy("FAQ page"), gettext_lazy("Answers to what students ask before they join.")),
+    "page:contact": (gettext_lazy("Contact page"), gettext_lazy("How students reach you.")),
+    "page:events": (
+        gettext_lazy("Events page"),
+        gettext_lazy("Your upcoming sessions and events, online and in person."),
+    ),
+    "payouts": (gettext_lazy("Get paid"), gettext_lazy("Connect Stripe so your sales reach your bank account.")),
+    "launch": (gettext_lazy("Go live"), gettext_lazy("Publish your site — or keep it private a little longer.")),
 }
 PAGE_PATHS = {
     "home": "/",
@@ -109,7 +122,7 @@ def applicable_steps(tenant) -> list[dict]:
     steps = []
     for step_id, kind, optional in rows:
         title, subtitle = STEP_COPY[step_id]
-        step = {"id": step_id, "kind": kind, "title": title, "subtitle": subtitle, "optional": optional}
+        step = {"id": step_id, "kind": kind, "title": str(title), "subtitle": str(subtitle), "optional": optional}
         if kind == "page":
             step["page_key"] = step_id.removeprefix("page:")
         steps.append(step)

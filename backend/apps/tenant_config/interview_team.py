@@ -2,6 +2,10 @@
 setup and the one thing to do next. Code-owned copy; a clause whose data is
 missing is dropped, and no line promises more than the platform does today."""
 
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext as render_marked
+from django.utils.translation import gettext_noop, ngettext
+
 from apps.core.copilot import team
 from apps.core.monetization import can_monetize
 
@@ -11,14 +15,19 @@ from .interview_golive import _PAGE_LABELS
 from .interview_milestones import membership_plan_ids
 
 # How each contact way reads in a sentence (the options of the contact question).
-_WAYS = {"Email": "email", "Phone": "phone", "Contact form": "contact form"}
+# (the English text is the way's identity; its sentence word is translated where it is read.)
+_WAYS = {
+    "Email": gettext_noop("email"),
+    "Phone": gettext_noop("phone"),
+    "Contact form": gettext_noop("contact form"),
+}
 
 
 def _ways(answers: dict) -> list[str]:
     raw = answers.get("contact") or ""
     text = "; ".join(raw) if isinstance(raw, list) else str(raw)
     field = brief.FIELD_BY_ID["contact"]
-    return [_WAYS.get(way, way) for way in field.options if way in text]
+    return [render_marked(_WAYS[way]) if way in _WAYS else way for way in field.options if way in text]
 
 
 def handoff(tenant, answers: dict, flow: dict, *, sells: bool = False) -> list[dict]:
@@ -37,53 +46,64 @@ def handoff(tenant, answers: dict, flow: dict, *, sells: bool = False) -> list[d
         .values_list("name", flat=True)
     )
     builds = flow.get("page_builds") or {}
-    pages = [label for key, label in _PAGE_LABELS.items() if (builds.get(key) or {}).get("status") == "ready"]
+    pages = [str(label) for key, label in _PAGE_LABELS.items() if (builds.get(key) or {}).get("status") == "ready"]
     look = brief.is_settled(answers, "site_style")
     ways = _ways(answers)
     made = [t for t in (course, klass) if t]
 
     if pages:
-        built = f"Built your {brief.say_list(pages)} {'pages' if len(pages) > 1 else 'page'}"
-        designer = built + (" and your look." if look else ".")
+        names = {"names": brief.list_phrase(pages)}
+        if look:
+            designer = (
+                ngettext(
+                    "Built your %(names)s page and your look.", "Built your %(names)s pages and your look.", len(pages)
+                )
+                % names
+            )
+        else:
+            designer = ngettext("Built your %(names)s page.", "Built your %(names)s pages.", len(pages)) % names
     else:
-        designer = "Set your look." if look else "Looks after your site."
+        designer = _("Set your look.") if look else _("Looks after your site.")
 
     lines = {
-        "designer": (designer, "Ask me to change any page, any time."),
+        "designer": (designer, _("Ask me to change any page, any time.")),
         "content": (
-            f"Drafted {brief.say_list(made)}." if made else "Ready when you want to make your first course or session.",
-            f"Next: record the first lesson of {course}."
+            _("Drafted %(made)s.") % {"made": brief.list_phrase(made)}
+            if made
+            else _("Ready when you want to make your first course or session."),
+            _("Next: record the first lesson of %(course)s.") % {"course": course}
             if course
-            else f"Next: check the date and time of {klass}."
+            else _("Next: check the date and time of %(class)s.") % {"class": klass}
             if klass
-            else "Tell me what you'd like to make first.",
+            else _("Tell me what you'd like to make first."),
         ),
         "marketing": (
-            f"{'Wrote' if post_live else 'Drafted'} your first article, {post}."
+            (_("Wrote your first article, %(post)s.") if post_live else _("Drafted your first article, %(post)s."))
+            % {"post": post}
             if post
-            else "Ready to help new students find you.",
-            f"Next: share {post} with your students."
+            else _("Ready to help new students find you."),
+            _("Next: share %(post)s with your students.") % {"post": post}
             if post and post_live
-            else f"Next: publish {post} when you're happy with it."
+            else _("Next: publish %(post)s when you're happy with it.") % {"post": post}
             if post
-            else "Next: share your site where your students are.",
+            else _("Next: share your site where your students are."),
         ),
         "community": (
-            f"Set up how students reach you: {brief.say_list(ways)}."
+            _("Set up how students reach you: %(ways)s.") % {"ways": brief.list_phrase(ways)}
             if ways
-            else "Looks after how students reach you.",
-            "Messages from students land in your inbox.",
+            else _("Looks after how students reach you."),
+            _("Messages from students land in your inbox."),
         ),
         "finance": (
-            f"Set up {brief.say_list(plans)}."
+            _("Set up %(plans)s.") % {"plans": brief.list_phrase(plans)}
             if plans
-            else "Set your first prices."
+            else _("Set your first prices.")
             if sells
-            else "Kept everything free for now.",
-            "Next: connect payouts so you can get paid."
+            else _("Kept everything free for now."),
+            _("Next: connect payouts so you can get paid.")
             if sells and not can_monetize(tenant)
-            else "You can change any price in its Access section.",
+            else _("You can change any price in its Access section."),
         ),
-        "assistant": ("Ran your setup.", "Not sure who to ask? Ask me."),
+        "assistant": (_("Ran your setup."), _("Not sure who to ask? Ask me.")),
     }
     return [{"key": key, "did": lines[key][0], "next": lines[key][1]} for key in team.KEYS]

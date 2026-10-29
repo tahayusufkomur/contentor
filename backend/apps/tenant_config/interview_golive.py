@@ -8,6 +8,7 @@ import logging
 from contextlib import suppress
 
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy, ngettext
 
 from apps.core.models import PlatformSubscription
 from apps.core.monetization import can_monetize, is_paid_active, trial_days_for
@@ -122,13 +123,13 @@ def golive_state(tenant) -> dict:
 
 
 _PAGE_LABELS = {
-    "home": "Home",
-    "about": "About",
-    "courses": "Courses",
-    "events": "Events",
-    "pricing": "Pricing",
-    "faq": "FAQ",
-    "contact": "Contact",
+    "home": gettext_lazy("Home"),
+    "about": gettext_lazy("About"),
+    "courses": gettext_lazy("Courses"),
+    "events": gettext_lazy("Events"),
+    "pricing": gettext_lazy("Pricing"),
+    "faq": gettext_lazy("FAQ"),
+    "contact": gettext_lazy("Contact"),
 }
 
 
@@ -145,35 +146,38 @@ def _summary(tenant, answers, flow) -> list[dict]:
 
     lines = []
     builds = flow.get("page_builds") or {}
-    if pages := [label for key, label in _PAGE_LABELS.items() if key in builds]:
+    if pages := [str(label) for key, label in _PAGE_LABELS.items() if key in builds]:
         lines.append({"label": _("Pages"), "value": ", ".join(pages)})
     drafts = flow.get("drafts") or {}
     course = Course.objects.filter(pk=drafts["course"]).first() if drafts.get("course") else None
     if course:
-        price = {"paid": _money(course.price, tenant), "subscription": "members only"}.get(course.pricing_type, "free")
+        price = {"paid": _money(course.price, tenant), "subscription": _("members only")}.get(
+            course.pricing_type, _("free")
+        )
         lines.append({"label": _("First course"), "value": f"{course.title} ({price})"})
     plans = SubscriptionPlan.objects.filter(pk__in=membership_plan_ids(flow), is_active=True)
     if plans:
-        value = ", ".join(f"{p.name} ({_money(p.price, tenant)} a month)" for p in plans)
+        value = ", ".join(
+            _("%(name)s (%(price)s a month)") % {"name": p.name, "price": _money(p.price, tenant)} for p in plans
+        )
         lines.append({"label": _("Memberships"), "value": value})
     offers = set(answers.get("offers") or [])
     runs = False
     for offer, label, when_id, price_id, key in (
-        ("live", "Live sessions", "live_when", "event_price", "event"),
-        ("onsite", "In-person events", "onsite_when", "onsite_price", "onsite"),
+        ("live", _("Live sessions"), "live_when", "event_price", "event"),
+        ("onsite", _("In-person events"), "onsite_when", "onsite_price", "onsite"),
     ):
         if offer in offers and brief.is_settled(answers, when_id):
-            when = str(answers.get(when_id) or "times to suit your students")
+            when = str(answers.get(when_id) or _("times to suit your students"))
             # The drafted class says how it is opened: sold per class, to members only, or free.
             row = _draft_row(flow, key)
             price = answers.get(price_id) if row is None or row.pricing_type == "paid" else None
-            how = ", members only" if row is not None and row.pricing_type == "subscription" else ""
-            lines.append(
-                {"label": label, "value": f"{when}{how}" + (f", {_money(price, tenant)} each" if price else "")}
-            )
+            how = _(", members only") if row is not None and row.pricing_type == "subscription" else ""
+            each = _(", %(price)s each") % {"price": _money(price, tenant)} if price else ""
+            lines.append({"label": label, "value": f"{when}{how}{each}"})
             runs = True
     if runs and answers.get("calendar_nav") != "no":
-        lines.append({"label": _("Calendar"), "value": "A month grid, linked in your menu"})
+        lines.append({"label": _("Calendar"), "value": _("A month grid, linked in your menu")})
     return lines
 
 
@@ -193,12 +197,15 @@ def _held_lines(held, flow) -> list[str]:
 
     out = []
     if title := Course.objects.filter(pk=_held_course(flow)).values_list("title", flat=True).first():
-        out.append(f"Your course \u201c{title}\u201d")
+        out.append(_("Your course \u201c%(title)s\u201d") % {"title": title})
     plans = SubscriptionPlan.objects.filter(pk__in=membership_plan_ids(flow) if held.get("plans") else [])
     if names := list(plans.values_list("name", flat=True)):
-        out.append(f"Your {'membership' if len(names) == 1 else 'memberships'}: {', '.join(names)}")
+        out.append(
+            ngettext("Your membership: %(names)s", "Your memberships: %(names)s", len(names))
+            % {"names": ", ".join(names)}
+        )
     if any(k in held for k in _CLASSES):
-        out.append("Your sessions and events")
+        out.append(_("Your sessions and events"))
     return out
 
 

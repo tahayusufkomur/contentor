@@ -11,6 +11,7 @@ import time
 from django.conf import settings
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 from pydantic import BaseModel
 
 from . import interview_brief as brief
@@ -19,8 +20,8 @@ from .models import TenantConfig
 logger = logging.getLogger(__name__)
 
 MESSAGE_MAX = 2000
-BIO_TURN_TEXT = "I shared my bio."
-BIO_UNREAD = (
+BIO_TURN_TEXT = gettext_lazy("I shared my bio.")
+BIO_UNREAD = gettext_lazy(
     "I couldn't pick anything out of that just now. Add a little more about what you do and try again,"
     " or skip this for now."
 )
@@ -35,22 +36,22 @@ MAX_OPTIONS = 8
 # "answered"; the last few turns are enough for the flow of the talk. All 80
 # made late turns about twice as slow (audit 2026-10-09: ~7 s to ~15 s).
 CONTEXT_TURNS = 8
-OPENING_ACK = (
+OPENING_ACK = gettext_lazy(
     "Hi. This takes about 18 minutes, and your site builds while we talk. Tap an answer, type, or use the mic."
     " Tell me a lot at once and I'll skip what you've covered. Nothing is final, and you can change anything later."
 )
-READY_QUESTION = "Your site is ready. Take a look around, then go live when you're happy."
+READY_QUESTION = gettext_lazy("Your site is ready. Take a look around, then go live when you're happy.")
 # What the guide says about work a turn just started. Code-owned: instant,
 # and it never announces work that did not start.
 STARTED = {
-    "page:home": "your home page",
-    "page:about": "your About page",
-    "page:contact": "your Contact page",
-    "page:faq": "your FAQ page",
-    "draft:course": "a first draft of your course",
-    "draft:event": "your first live session",
-    "draft:onsite": "your first in-person event",
-    "draft:post": "your first article",
+    "page:home": gettext_lazy("your home page"),
+    "page:about": gettext_lazy("your About page"),
+    "page:contact": gettext_lazy("your Contact page"),
+    "page:faq": gettext_lazy("your FAQ page"),
+    "draft:course": gettext_lazy("a first draft of your course"),
+    "draft:event": gettext_lazy("your first live session"),
+    "draft:onsite": gettext_lazy("your first in-person event"),
+    "draft:post": gettext_lazy("your first article"),
 }
 
 # Who does each kind of started work (keys of team.NAMES); pages are the designer's.
@@ -186,8 +187,8 @@ GUIDE_KEYS = (
     "photos",
 )
 REVIEW_KINDS = ("course", "event")
-REDRAFT_ACK = "On it. I'm redrafting it with your changes; it takes about a minute."
-COVER_ACK = "Here's another cover. Happy with it?"
+REDRAFT_ACK = gettext_lazy("On it. I'm redrafting it with your changes; it takes about a minute.")
+COVER_ACK = gettext_lazy("Here's another cover. Happy with it?")
 
 
 def guide_for(
@@ -195,8 +196,8 @@ def guide_for(
 ) -> dict:
     if field is None:
         return {
-            "ack": ack[:300],
-            "question": READY_QUESTION,
+            "ack": str(ack)[:300],
+            "question": str(READY_QUESTION),
             "options": [],
             "field": None,
             "can_delegate": False,
@@ -225,12 +226,15 @@ def guide_for(
     # against; hinted fields keep their pre-written options so each hint matches its tile.
     fixed = options is None or field.kind in brief.FIXED_KINDS or bool(field.hints)
     own, own_icons, own_hints = brief.options_for(field, answers or {}, brand)
-    chosen = [str(o)[:60] for o in (own if fixed else options)][:MAX_OPTIONS]
+    english = [str(o)[:60] for o in (own if fixed else options)][:MAX_OPTIONS]
+    # The English text is each tile's identity (matched in code, stored in answers); the creator reads it in
+    # their language, and run_turn maps what they tap back (brief.english_picks).
+    chosen = [brief.tx(o) for o in english]
     names = own_icons if fixed else [str(i) for i in (icons or [])]
     return {
-        "ack": ack[:300],
+        "ack": str(ack)[:300],
         # A review screen keeps its own words: it shows a draft, not a question.
-        "question": (
+        "question": str(
             field.question if field.kind in REVIEW_KINDS else question or default_question(field, answers, brand)
         )[:300],
         "options": chosen,
@@ -243,11 +247,11 @@ def guide_for(
         ),
         # The coach can add options of her own: a blank tile at the end of the several picks.
         "custom": field.custom,
-        "alone": field.alone if field.alone in chosen else None,
+        "alone": brief.tx(field.alone) if field.alone in english else None,
         "icons": {o: i for o, i in zip(chosen, names, strict=False) if i in brief.ICONS},
         "hints": dict(zip(chosen, own_hints, strict=False)) if fixed else {},
         # Each section (course, online class, in-person event, article) can be skipped on its own.
-        "skip": brief.SKIP_LABELS.get(field.group),
+        "skip": str(brief.SKIP_LABELS[field.group]) if field.group in brief.SKIP_LABELS else None,
         "details": brief.details_for(field, answers or {}) if fixed else {},
         # What the question builds, previewed beside its answers.
         "builder": builder_of(field),
@@ -257,7 +261,7 @@ def guide_for(
         # Tiles are sentence starters: picked as cards and finished inline in them.
         "starter": field.starter,
         # One line under the question: why it matters (a price: its currency).
-        "why": field.why or (brief.currency_note() if field.kind == "price" else ""),
+        "why": str(field.why) or (brief.currency_note() if field.kind == "price" else ""),
         # What its ⓘ opens, and the example under it.
         "help": brief.help_of(field, brand),
         # The ways ticked take their details (an email address, a number).
@@ -267,7 +271,11 @@ def guide_for(
         "prefill": {},
         "prefill_text": None,
         # The ways in start ticked the way a "pick for me" would set them: one tap to agree.
-        "prefill_options": brief.access_labels(answers or {}, field.group) if field.kind == "access" else [],
+        "prefill_options": (
+            [brief.tx(label) for label in brief.access_labels(answers or {}, field.group)]
+            if field.kind == "access"
+            else []
+        ),
         # The answer is a time zone, picked from the browser's list.
         "timezone": field.kind == "timezone",
         # The screen takes her own photos (uploaded there) or leaves them to the guide.
@@ -279,23 +287,29 @@ def default_question(field: brief.Field, answers, brand="") -> str:
     """The pre-written question, naming the niche where the screen shows its kinds."""
     if field.kind == "specialty":
         if base := (answers or {}).get("specialty_base"):
-            return f"What else do you offer besides {base.lower()}?"
+            return _("What else do you offer besides %(kind)s?") % {"kind": brief.name_shown(base.lower())}
         tiles = str((answers or {}).get("teaches") or "").split(",")
-        return f"Which kinds of {brief.say_list(t.strip().lower() for t in tiles)} do you offer?"
+        return _("Which kinds of %(tiles)s do you offer?") % {
+            "tiles": brief.list_phrase(brief.name_shown(t.strip().lower()) for t in tiles)
+        }
     if field.kind == "focus":
-        return f"Are {brief.disciplines_said(answers or {})} equally important, or is one your main focus?"
+        return _("Are %(names)s equally important, or is one your main focus?") % {
+            "names": brief.list_phrase(brief.name_shown(n.lower()) for n in brief.disciplines_of(answers or {}))
+        }
     if field.id == "teaches" and (bio := (answers or {}).get("bio_teaches")):
         # Her bio settles what the name only hints at; a name that says
         # something else is asked about first, before anything builds on it.
         if named := brief.teaching_conflict(brand, bio):
-            said = brief.say_list(b.lower() for b in bio)
-            return f"Your bio is about {said}, but your studio name says {named.lower()}. What do you offer?"
-        return "What do you offer? I ticked what your bio says."
+            return _("Your bio is about %(said)s, but your studio name says %(named)s. What do you offer?") % {
+                "said": brief.list_phrase(brief.name_shown(b.lower()) for b in bio),
+                "named": brief.name_shown(named.lower()),
+            }
+        return _("What do you offer? I ticked what your bio says.")
     if field.id == "teaches" and (named := brief.kind_of_brand(brand)):
-        return f"Do you only offer {named[1].lower()}?"
+        return _("Do you only offer %(kind)s?") % {"kind": brief.name_shown(named[1].lower())}
     if field.id == "teaches" and (tile := brief.tile_of_brand(brand)):
-        return f"Which kinds of {tile.lower()} do you offer?"
-    return field.question
+        return _("Which kinds of %(tile)s do you offer?") % {"tile": brief.name_shown(tile.lower())}
+    return str(field.question)
 
 
 def brand_of(tenant) -> str:
@@ -322,24 +336,34 @@ def started_note(fired: list[str]) -> tuple[str, str | None]:
             by_owner.setdefault(STARTED_BY.get(k, "designer"), []).append(STARTED[k])
     if not by_owner:
         return "", None
-    clauses = [f"your {NAMES[o]} on {brief.say_list(things)}" for o, things in by_owner.items()]
+    clauses = [
+        _("your %(role)s on %(things)s") % {"role": NAMES[o], "things": brief.list_phrase(str(t) for t in things)}
+        for o, things in by_owner.items()
+    ]
     owner = next(iter(by_owner)) if len(by_owner) == 1 else None
     if "page:home" in fired:
         return (
-            f"I have enough to start building, so your team is on it: {brief.say_list(clauses)}. "
-            "Bear with me, it takes about a minute. Let's keep going while they build.",
+            _(
+                "I have enough to start building, so your team is on it: %(clauses)s. "
+                "Bear with me, it takes about a minute. Let's keep going while they build."
+            )
+            % {"clauses": brief.list_phrase(clauses)},
             owner,
         )
     if owner:
-        return f"Your {NAMES[owner]} is starting on {brief.say_list(by_owner[owner])} now.", owner
-    return f"Your team is starting now: {brief.say_list(clauses)}.", None
+        return (
+            _("Your %(role)s is starting on %(things)s now.")
+            % {"role": NAMES[owner], "things": brief.list_phrase(str(t) for t in by_owner[owner])},
+            owner,
+        )
+    return _("Your team is starting now: %(clauses)s.") % {"clauses": brief.list_phrase(clauses)}, None
 
 
 def redraft_ack(request: str) -> str:
     """What the guide says about a change asked for on a review screen."""
     from . import interview_milestones as milestones
 
-    return COVER_ACK if milestones.redraft_scope(request) == "photo" else REDRAFT_ACK
+    return str(COVER_ACK if milestones.redraft_scope(request) == "photo" else REDRAFT_ACK)
 
 
 def _next_field(missing: list[brief.Field], turn: InterviewTurn | None, answers=None) -> brief.Field | None:
@@ -418,37 +442,37 @@ def _code_owned(field: brief.Field | None) -> bool:
 
 # What the guide calls each question when it says it noted an answer.
 NOTED_NAMES = {
-    "teaches": "what you offer",
-    "specialty": "your specialty",
-    "discipline_focus": "your main focus",
-    "audience": "who you work with",
-    "outcome": "what students get",
-    "offers": "how you work",
-    "teachers": "who students learn from",
-    "pitch": "your one-liner",
-    "difference": "what sets you apart",
-    "tone": "your tone",
-    "story": "your story",
-    "credentials": "your training",
-    "timezone": "your time zone",
-    "currency": "your currency",
-    "payments": "how students pay",
-    "course_topic": "your course topic",
-    "course_price": "your course price",
-    "course_access": "who can take your course",
-    "live_topic": "your live session topic",
-    "event_price": "your live session price",
-    "event_access": "who can join your live session",
-    "onsite_topic": "your in-person event topic",
-    "onsite_price": "your in-person event price",
-    "onsite_access": "who can come to your in-person event",
-    "article_topic": "your article topic",
-    "socials": "your social accounts",
-    "contact": "how students reach you",
-    "location": "where you work",
-    "navbar_layout": "your header",
-    "email_style": "your email style",
-    "footer_layout": "your footer",
+    "teaches": gettext_lazy("what you offer"),
+    "specialty": gettext_lazy("your specialty"),
+    "discipline_focus": gettext_lazy("your main focus"),
+    "audience": gettext_lazy("who you work with"),
+    "outcome": gettext_lazy("what students get"),
+    "offers": gettext_lazy("how you work"),
+    "teachers": gettext_lazy("who students learn from"),
+    "pitch": gettext_lazy("your one-liner"),
+    "difference": gettext_lazy("what sets you apart"),
+    "tone": gettext_lazy("your tone"),
+    "story": gettext_lazy("your story"),
+    "credentials": gettext_lazy("your training"),
+    "timezone": gettext_lazy("your time zone"),
+    "currency": gettext_lazy("your currency"),
+    "payments": gettext_lazy("how students pay"),
+    "course_topic": gettext_lazy("your course topic"),
+    "course_price": gettext_lazy("your course price"),
+    "course_access": gettext_lazy("who can take your course"),
+    "live_topic": gettext_lazy("your live session topic"),
+    "event_price": gettext_lazy("your live session price"),
+    "event_access": gettext_lazy("who can join your live session"),
+    "onsite_topic": gettext_lazy("your in-person event topic"),
+    "onsite_price": gettext_lazy("your in-person event price"),
+    "onsite_access": gettext_lazy("who can come to your in-person event"),
+    "article_topic": gettext_lazy("your article topic"),
+    "socials": gettext_lazy("your social accounts"),
+    "contact": gettext_lazy("how students reach you"),
+    "location": gettext_lazy("where you work"),
+    "navbar_layout": gettext_lazy("your header"),
+    "email_style": gettext_lazy("your email style"),
+    "footer_layout": gettext_lazy("your footer"),
 }
 
 
@@ -457,7 +481,7 @@ def noted(before: dict, after: dict, answering) -> list[str]:
     coach sees them (a story that also filled the training used to go by
     unmentioned)."""
     return [
-        name
+        str(name)
         for field_id, name in NOTED_NAMES.items()
         if field_id != answering
         and after.get(field_id) not in (None, "", [])
@@ -468,12 +492,12 @@ def noted(before: dict, after: dict, answering) -> list[str]:
 def bio_ack(tenant, value) -> str:
     """What a shared bio said, by code: the questions it ticks answers on."""
     prefills = (tenant.wizard_state or {}).get("about_prefills") or {}
-    found = [name for field_id, name in NOTED_NAMES.items() if field_id in prefills]  # in the order she is asked
+    found = [str(name) for field_id, name in NOTED_NAMES.items() if field_id in prefills]  # in the order she is asked
     if value != brief.BIO_SHARED or not found:
         return ""
-    return (
-        f"Thanks. From your bio I noted {brief.say_list(found)}. I ticked them in the questions ahead for you to check."
-    )
+    return _("Thanks. From your bio I noted %(found)s. I ticked them in the questions ahead for you to check.") % {
+        "found": brief.list_phrase(found)
+    }
 
 
 def prefill_for(field_id, answers) -> dict:
@@ -513,30 +537,37 @@ def picked_note(tenant, field_id) -> str:
         cfg = TenantConfig.objects.first()
         look = sections.style(cfg.style) if cfg else None
         return (
-            f"I picked the {look.get('label') or cfg.style} look for you. You can change it any time." if look else ""
+            _("I picked the %(look)s look for you. You can change it any time.")
+            % {"look": look.get("label") or cfg.style}
+            if look
+            else ""
         )
     if field_id == "site_logo":
-        return "I put your name in as the logo for now. You can pick a mark any time."
+        return _("I put your name in as the logo for now. You can pick a mark any time.")
     if field_id == "calendar_view":
-        return "I picked the month grid for your calendar. You can change it any time."
+        return _("I picked the month grid for your calendar. You can change it any time.")
     if field_id == "email_style":
-        return "I picked the Branded style for your emails: your logo on top, a band of your colour beneath."
+        return _("I picked the Branded style for your emails: your logo on top, a band of your colour beneath.")
     if field_id in milestones.CHROME:
         picked = milestones.chrome_pick(field_id, brief.answers_of(tenant))[0]
-        label = next(label for value, label, *_ in milestones.CHROME[field_id] if value == picked)
-        part = "header" if field_id == "navbar_layout" else "footer"
-        return f"I picked the {label} {part} for you. You can change it any time."
+        label = str(next(label for value, label, *_ in milestones.CHROME[field_id] if value == picked))
+        if field_id == "navbar_layout":
+            return _("I picked the %(label)s header for you. You can change it any time.") % {"label": label}
+        return _("I picked the %(label)s footer for you. You can change it any time.") % {"label": label}
     if field_id == "memberships":
         tier = brief.TIER_BY_ID[brief.default_tier(brief.answers_of(tenant))]
-        return f"I set up the {tier['label']} for you. You can change it any time."
+        return _("I set up the %(tier)s for you. You can change it any time.") % {"tier": brief.tx(tier["label"])}
     if (field := brief.FIELD_BY_ID.get(field_id or "")) and field.kind == "access":
-        ways = brief.access_labels(brief.answers_of(tenant), field.group)
-        return f"I opened it to: {', '.join(ways)}. You can change it any time."
+        ways = [brief.tx(w) for w in brief.access_labels(brief.answers_of(tenant), field.group)]
+        return _("I opened it to: %(ways)s. You can change it any time.") % {"ways": ", ".join(ways)}
     if field_id == "tone":
-        return "I'll match the tone to what you've told me. You can change it any time."
+        return _("I'll match the tone to what you've told me. You can change it any time.")
     if field_id in ("course_price", "event_price", "onsite_price"):
         price = flow.DEFAULT_COURSE_PRICE if field_id == "course_price" else flow.DEFAULT_EVENT_PRICE
-        return f"I'll start it at {price:g} {tenant_charge_currency(tenant).upper()}. You can change it any time."
+        return _("I'll start it at %(price)s %(currency)s. You can change it any time.") % {
+            "price": f"{price:g}",
+            "currency": tenant_charge_currency(tenant).upper(),
+        }
     return ""
 
 
@@ -642,11 +673,14 @@ def run_turn(
     # Picked tiles come first; a note the coach typed with them sits on the
     # lines after (the frontend's withNote).
     picks = text.partition("\n")[0]
+    # The tiles show in her language; code matches and stores their English identity.
+    asked_field = brief.FIELD_BY_ID.get(answering or "")
+    english = brief.english_picks(picks, asked_field, answers, brand) if asked_field and not choice else picks
     # A tapped tile of code's own ("Face yoga and more", "Monthly membership")
     # is applied by code, like a card: the model would paraphrase it.
-    tapped = bool(text and not choice and not review and _is_tapped(picks, answering, answers, brand))
+    tapped = bool(text and not choice and not review and _is_tapped(english, answering, answers, brand))
     if tapped:
-        brief.apply_fact(answers, answering, picks)
+        brief.apply_fact(answers, answering, english)
     milestones.apply_currency(tenant, answers.get("currency"))
     # A pure pick (a card, an approval, a skip, tiles with no note; "you decide"
     # only where code decides) that leads to a code-owned question needs no
@@ -673,7 +707,7 @@ def run_turn(
         # No AI: the answer is to the question on screen. A fixed list reads
         # only the tiles, never the note ("maybe a membership later").
         fixed = getattr(brief.FIELD_BY_ID.get(answering), "kind", "") in brief.FIXED_KINDS
-        brief.apply_fact(answers, answering, picks if fixed else text)
+        brief.apply_fact(answers, answering, english if fixed else text)
     if turn and len(turn.tone_hints) == len(brief.FIELD_BY_ID["tone"].options):
         answers["tone_hints"] = [h.strip()[:80] for h in turn.tone_hints]
     brief.save_answers(tenant, answers, base=base)
@@ -869,7 +903,7 @@ def _refresh_turn(turn: dict, answers: dict, brand: str) -> dict:
     if turn.get("role") != "guide" or field is None:
         return turn
     # Code-owned copy: a transcript older than it, or than an edit of it, still reads the current words.
-    turn = {**turn, "help": brief.help_of(field, brand), **({"why": field.why} if field.why else {})}
+    turn = {**turn, "help": brief.help_of(field, brand), **({"why": str(field.why)} if field.why else {})}
     if field.id == "location":
         return {**turn, "prefill": prefill_for("location", answers)}
     if field.kind not in ("price", "memberships", "access", "focus"):

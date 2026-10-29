@@ -812,7 +812,7 @@ msgstr "asla kapanmaz"
 msgid "Free %(window)s"
 msgstr "Ücretsiz %(window)s"
 
-#: apps/billing/ways.py
+#: apps/billing/ways.py apps/tenant_config/interview_brief.py
 #, fuzzy
 msgid "Free for everyone"
 msgstr "Herkese ücretsiz"
@@ -1600,7 +1600,7 @@ msgstr "Sitenin arama açıklamasını güncelle"
 msgid "This is the text Google shows under your site name."
 msgstr "Bu, Google'ın site adının altında gösterdiği metindir."
 
-#: apps/core/copilot/engine.py
+#: apps/core/copilot/engine.py apps/tenant_config/interview_golive.py
 #, fuzzy
 msgid "free"
 msgstr "ücretsiz"
@@ -2074,6 +2074,7 @@ msgid "Add it later"
 msgstr "Daha sonra ekle"
 
 #: apps/core/focus/kinds/membership.py apps/email_campaigns/catalog.py
+#: apps/tenant_config/interview_brief.py
 #, fuzzy, python-format
 msgid "%(price)s a month"
 msgstr "ayda %(price)s"
@@ -2295,12 +2296,14 @@ msgid "AI copy style across all pages"
 msgstr "Tüm sayfalardaki yapay zeka metin stili"
 
 #: apps/core/onboarding/compose.py apps/core/onboarding/site_composer.py
-#: apps/core/tasks.py apps/tenant_config/interview_milestones.py
+#: apps/core/tasks.py apps/tenant_config/interview_golive.py
+#: apps/tenant_config/interview_milestones.py
 #, fuzzy
 msgid "Courses"
 msgstr "Kurslar"
 
 #: apps/core/onboarding/compose.py apps/core/tasks.py
+#: apps/tenant_config/interview_golive.py
 #: apps/tenant_config/interview_milestones.py
 #, fuzzy
 msgid "Events"
@@ -2312,6 +2315,7 @@ msgid "Store"
 msgstr "Mağaza"
 
 #: apps/core/onboarding/compose.py apps/core/onboarding/site_composer.py
+#: apps/tenant_config/interview_golive.py
 #: apps/tenant_config/interview_milestones.py
 #, fuzzy
 msgid "Pricing"
@@ -2319,13 +2323,15 @@ msgstr "Fiyatlandırma"
 
 #: apps/core/onboarding/compose.py apps/core/onboarding/site_composer.py
 #: apps/core/tasks.py apps/tenant_config/defaults.py
+#: apps/tenant_config/interview_golive.py
 #: apps/tenant_config/interview_milestones.py
 #, fuzzy
 msgid "About"
 msgstr "Hakkında"
 
 #: apps/core/onboarding/compose.py apps/core/onboarding/site_composer.py
-#: apps/core/tasks.py apps/tenant_config/interview_milestones.py
+#: apps/core/tasks.py apps/tenant_config/interview_golive.py
+#: apps/tenant_config/interview_milestones.py
 #, fuzzy
 msgid "FAQ"
 msgstr "SSS"
@@ -3346,6 +3352,7 @@ msgid "Tell us where you are and we will help you take the first step."
 msgstr "Nerede olduğunu bize anlat, ilk adımı atmana yardımcı olalım."
 
 #: apps/core/onboarding/site_composer.py
+#: apps/tenant_config/interview_golive.py
 #: apps/tenant_config/interview_milestones.py
 #, fuzzy
 msgid "Contact"
@@ -3965,7 +3972,7 @@ msgstr[1] "her %(count)d ayda bir %(price)s"
 msgid "Membership"
 msgstr "Üyelik"
 
-#: apps/email_campaigns/catalog.py
+#: apps/email_campaigns/catalog.py apps/tenant_config/interview_golive.py
 #, fuzzy
 msgid "Home"
 msgstr "Ana sayfa"
@@ -4857,6 +4864,42 @@ msgstr ""
 "teşekkürler!</p>"
 
 #: apps/notifications/transactional.py
+#, fuzzy
+msgid "Letter"
+msgstr "Mektup"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid ""
+"Quiet and personal, like a note from you. Your name on top, words first."
+msgstr ""
+"Sakin ve kişisel, senden gelen bir not gibi. En üstte adın, önce kelimeler."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Branded"
+msgstr "Markalı"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid ""
+"Your mark on top over a band of your colour, the message on a clean card."
+msgstr ""
+"En üstte kendi renginde bir şerit üzerinde markan, temiz bir kartta mesaj."
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Bold"
+msgstr "Cesur"
+
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Big headline on your colour, a full-width button. Hard to miss."
+msgstr ""
+"Renginin üzerinde büyük bir başlık, tam genişlikte bir buton. Gözden "
+"kaçırması zor."
+
+#: apps/notifications/transactional.py
 #, fuzzy, python-format
 msgid "%(price)s / month"
 msgstr "%(price)s / ay"
@@ -5558,8 +5601,791 @@ msgstr "Oturum ayır"
 
 #: apps/tenant_config/interview.py
 #, fuzzy
+msgid "I shared my bio."
+msgstr "Biyografimi paylaştım."
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid ""
+"I couldn't pick anything out of that just now. Add a little more about what "
+"you do and try again, or skip this for now."
+msgstr ""
+"Az önce bundan bir şey çıkaramadım. Neler yaptığından biraz daha bahsedip "
+"tekrar dene ya da şimdilik bunu atla."
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid ""
+"Hi. This takes about 18 minutes, and your site builds while we talk. Tap an "
+"answer, type, or use the mic. Tell me a lot at once and I'll skip what "
+"you've covered. Nothing is final, and you can change anything later."
+msgstr ""
+"Merhaba. Bu yaklaşık 18 dakika sürer ve biz konuşurken siten oluşturulur. "
+"Bir yanıta dokun, yaz veya mikrofonu kullan. Tek seferde çok şey anlatırsan "
+"bahsettiğin kısımları atlarım. Hiçbir şey kesin değildir ve daha sonra her "
+"şeyi değiştirebilirsin."
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid ""
+"Your site is ready. Take a look around, then go live when you're happy."
+msgstr "Siten hazır. Etrafa bir göz at, içine sindiğinde yayına geç."
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "your home page"
+msgstr "ana sayfan"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "your About page"
+msgstr "Hakkında sayfan"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "your Contact page"
+msgstr "İletişim sayfan"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "your FAQ page"
+msgstr "SSS sayfan"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "a first draft of your course"
+msgstr "kursunun ilk taslağı"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "your first live session"
+msgstr "ilk canlı oturumun"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "your first in-person event"
+msgstr "ilk yüz yüze etkinliğin"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "your first article"
+msgstr "ilk makalen"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "On it. I'm redrafting it with your changes; it takes about a minute."
+msgstr ""
+"Hemen ilgileniyorum. Değişikliklerinle yeniden hazırlıyorum; yaklaşık bir "
+"dakika sürer."
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "Here's another cover. Happy with it?"
+msgstr "İşte başka bir kapak. Beğendin mi?"
+
+#: apps/tenant_config/interview.py
+#, fuzzy, python-format
+msgid "What else do you offer besides %(kind)s?"
+msgstr "%(kind)s dışında başka neler sunuyorsun?"
+
+#: apps/tenant_config/interview.py
+#, fuzzy, python-format
+msgid "Which kinds of %(tiles)s do you offer?"
+msgstr "Hangi %(tiles)s türlerini sunuyorsun?"
+
+#: apps/tenant_config/interview.py
+#, fuzzy, python-format
+msgid "Are %(names)s equally important, or is one your main focus?"
+msgstr "%(names)s eşit derecede mi önemli, yoksa biri ana odağın mı?"
+
+#: apps/tenant_config/interview.py
+#, fuzzy, python-format
+msgid ""
+"Your bio is about %(said)s, but your studio name says %(named)s. What do you"
+" offer?"
+msgstr ""
+"Biyografin %(said)s hakkında ama stüdyo adın %(named)s diyor. Neler "
+"sunuyorsun?"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "What do you offer? I ticked what your bio says."
+msgstr "Neler sunuyorsun? Biyografinde yazılanları işaretledim."
+
+#: apps/tenant_config/interview.py
+#, fuzzy, python-format
+msgid "Do you only offer %(kind)s?"
+msgstr "Yalnızca %(kind)s mı sunuyorsun?"
+
+#: apps/tenant_config/interview.py
+#, fuzzy, python-format
+msgid "Which kinds of %(tile)s do you offer?"
+msgstr "Hangi %(tile)s türlerini sunuyorsun?"
+
+#: apps/tenant_config/interview.py
+#, fuzzy, python-format
+msgid "your %(role)s on %(things)s"
+msgstr "%(things)s üzerinde %(role)s"
+
+#: apps/tenant_config/interview.py
+#, fuzzy, python-format
+msgid ""
+"I have enough to start building, so your team is on it: %(clauses)s. Bear "
+"with me, it takes about a minute. Let's keep going while they build."
+msgstr ""
+"Hazırlamaya başlamak için yeterli bilgim var, bu yüzden ekibin işe koyuldu: "
+"%(clauses)s. Biraz bekle, yaklaşık bir dakika sürer. Onlar hazırlarken biz "
+"devam edelim."
+
+#: apps/tenant_config/interview.py
+#, fuzzy, python-format
+msgid "Your %(role)s is starting on %(things)s now."
+msgstr "%(role)s şu anda %(things)s üzerinde çalışmaya başlıyor."
+
+#: apps/tenant_config/interview.py
+#, fuzzy, python-format
+msgid "Your team is starting now: %(clauses)s."
+msgstr "Ekibin şu anda başlıyor: %(clauses)s."
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "what you offer"
+msgstr "neler sunduğun"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "your specialty"
+msgstr "uzmanlık alanın"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "your main focus"
+msgstr "ana odağın"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "who you work with"
+msgstr "kimlerle çalıştığın"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "what students get"
+msgstr "öğrencilerin ne elde edeceği"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "how you work"
+msgstr "nasıl çalıştığın"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "who students learn from"
+msgstr "öğrencilerin kimden öğreneceği"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "your one-liner"
+msgstr "tek cümlelik özetin"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "what sets you apart"
+msgstr "seni neyin farklı kıldığı"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "your tone"
+msgstr "tonun"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "your story"
+msgstr "hikayen"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "your training"
+msgstr "eğitimin"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "your time zone"
+msgstr "saat dilimin"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "your currency"
+msgstr "para birimin"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "how students pay"
+msgstr "öğrencilerin nasıl ödeme yapacağı"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "your course topic"
+msgstr "kursunun konusu"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "your course price"
+msgstr "kursunun fiyatı"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "who can take your course"
+msgstr "kursunu kimlerin alabileceği"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "your live session topic"
+msgstr "canlı oturumunun konusu"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "your live session price"
+msgstr "canlı oturumunun fiyatı"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "who can join your live session"
+msgstr "canlı oturumuna kimlerin katılabileceği"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "your in-person event topic"
+msgstr "yüz yüze etkinliğinin konusu"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "your in-person event price"
+msgstr "yüz yüze etkinliğinin fiyatı"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "who can come to your in-person event"
+msgstr "yüz yüze etkinliğine kimlerin gelebileceği"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "your article topic"
+msgstr "makalenin konusu"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "your social accounts"
+msgstr "sosyal medya hesapların"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "how students reach you"
+msgstr "öğrencilerin sana nasıl ulaşacağı"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "where you work"
+msgstr "nerede çalıştığın"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "your header"
+msgstr "üst bilgin"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "your email style"
+msgstr "e-posta stilin"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "your footer"
+msgstr "alt bilgin"
+
+#: apps/tenant_config/interview.py
+#, fuzzy, python-format
+msgid ""
+"Thanks. From your bio I noted %(found)s. I ticked them in the questions "
+"ahead for you to check."
+msgstr ""
+"Teşekkürler. Biyografinden %(found)s not ettim. Kontrol etmen için ilerideki"
+" sorularda onları işaretledim."
+
+#: apps/tenant_config/interview.py
+#, fuzzy, python-format
+msgid "I picked the %(look)s look for you. You can change it any time."
+msgstr ""
+"Senin için %(look)s görünümünü seçtim. İstediğin zaman değiştirebilirsin."
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "I put your name in as the logo for now. You can pick a mark any time."
+msgstr ""
+"Şimdilik logo olarak adını ekledim. İstediğin zaman bir simge seçebilirsin."
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "I picked the month grid for your calendar. You can change it any time."
+msgstr ""
+"Takvimin için ay ızgarasını seçtim. İstediğin zaman değiştirebilirsin."
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid ""
+"I picked the Branded style for your emails: your logo on top, a band of your"
+" colour beneath."
+msgstr ""
+"E-postaların için Markalı stili seçtim: üstte logon, altında renginden bir "
+"şerit."
+
+#: apps/tenant_config/interview.py
+#, fuzzy, python-format
+msgid "I picked the %(label)s header for you. You can change it any time."
+msgstr ""
+"Senin için %(label)s üst bilgisini seçtim. İstediğin zaman "
+"değiştirebilirsin."
+
+#: apps/tenant_config/interview.py
+#, fuzzy, python-format
+msgid "I picked the %(label)s footer for you. You can change it any time."
+msgstr ""
+"Senin için %(label)s alt bilgisini seçtim. İstediğin zaman "
+"değiştirebilirsin."
+
+#: apps/tenant_config/interview.py
+#, fuzzy, python-format
+msgid "I set up the %(tier)s for you. You can change it any time."
+msgstr "Senin için %(tier)s ayarladım. İstediğin zaman değiştirebilirsin."
+
+#: apps/tenant_config/interview.py
+#, fuzzy, python-format
+msgid "I opened it to: %(ways)s. You can change it any time."
+msgstr "Şunlara açtım: %(ways)s. İstediğin zaman değiştirebilirsin."
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid ""
+"I'll match the tone to what you've told me. You can change it any time."
+msgstr ""
+"Tonu bana anlattıklarına göre ayarlayacağım. İstediğin zaman "
+"değiştirebilirsin."
+
+#: apps/tenant_config/interview.py
+#, fuzzy, python-format
+msgid "I'll start it at %(price)s %(currency)s. You can change it any time."
+msgstr ""
+"%(price)s %(currency)s olarak başlatacağım. İstediğin zaman "
+"değiştirebilirsin."
+
+#: apps/tenant_config/interview.py
+#, fuzzy
 msgid "I couldn't make that change just now. Ask again in a moment."
 msgstr "Bu değişikliği şu anda yapamadım. Birazdan tekrar sor."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "US Dollar ($)"
+msgstr "ABD Doları ($)"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Euro (€)"
+msgstr "Euro (€)"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Just me"
+msgstr "Sadece ben"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Just me for now, more teachers later"
+msgstr "Şimdilik sadece ben, daha sonra daha fazla eğitmen"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Several teachers"
+msgstr "Birkaç eğitmen"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "No course for now"
+msgstr "Şimdilik kurs yok"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "No live session for now"
+msgstr "Şimdilik canlı oturum yok"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "No in-person event for now"
+msgstr "Şimdilik yüz yüze etkinlik yok"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "No article for now"
+msgstr "Şimdilik makale yok"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Come as you are. We'll take it slow."
+msgstr "Olduğun gibi gel. Ağırdan alacağız."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Let's go. Today counts."
+msgstr "Hadi başlayalım. Bugün önemli."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Breathe in. There's no rush here."
+msgstr "Nefes al. Burada acele yok."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Years of experience, shared plainly."
+msgstr "Yılların deneyimi, yalın bir dille paylaşılıyor."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Let's have some fun with this."
+msgstr "Hadi bununla biraz eğlenelim."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Know your worth, and let it show."
+msgstr "Değerini bil ve bunu göster."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Slow down. Savour every detail."
+msgstr "Yavaşla. Her ayrıntının tadını çıkar."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Bold, bright and hard to forget."
+msgstr "Cesur, parlak ve unutulması zor."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Come as you are. Your mat is a safe place."
+msgstr "Olduğun gibi gel. Matın güvenli bir yer."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Move, breathe and feel the heat rise."
+msgstr "Hareket et, nefes al ve sıcaklığın yükseldiğini hisset."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Slow breath, steady body, quiet mind."
+msgstr "Yavaş nefes, dengeli beden, sakin zihin."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Years of practice, taught with clear cues."
+msgstr "Yılların pratiği, net yönergelerle öğretiliyor."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Let's find your flow, one silly pose at a time."
+msgstr "Her seferinde eğlenceli bir duruşla kendi akışını bulalım."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Own your practice, one pose at a time."
+msgstr "Her seferinde tek bir duruşla pratiğini sahiplen."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Soft light, slow breath, body awake."
+msgstr "Yumuşak ışık, yavaş nefes, uyanık beden."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Strong, graceful and a little bit daring."
+msgstr "Güçlü, zarif ve biraz cesur."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Strong core, kind pace, every body welcome."
+msgstr "Güçlü merkez, nazik tempo, her bedene açık."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Sculpt, lengthen and feel the burn."
+msgstr "Şekillen, uza ve yanmayı hisset."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Controlled movement, long lines, calm breath."
+msgstr "Kontrollü hareket, uzun hatlar, sakin nefes."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Precise form, taught the way it's built."
+msgstr "Hassas form, inşa edildiği gibi öğretiliyor."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Tiny moves, big results. Let's have fun with it."
+msgstr "Küçük hareketler, büyük sonuçlar. Hadi biraz eğlenelim."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Strong core, sure posture, no apologies."
+msgstr "Güçlü merkez, kendinden emin duruş, özür dilemek yok."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Long, fluid lines and mindful movement."
+msgstr "Uzun, akıcı hatlar ve bilinçli hareket."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Sleek, strong and beautifully controlled."
+msgstr "Zarif, güçlü ve harika şekilde kontrollü."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Strength for real life, at your own pace."
+msgstr "Kendi temponda, gerçek hayata uygun güç."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Let's go. Today's session counts."
+msgstr "Hadi başlayalım. Bugünkü oturum önemli."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Steady progress, no crash, no burnout."
+msgstr "İstikrarlı ilerleme; çöküş yok, tükenmişlik yok."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Programmes built on what actually works."
+msgstr "Gerçekten işe yarayanlar üzerine inşa edilmiş programlar."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Sweat, laugh, repeat. Your new favourite hour."
+msgstr "Terle, gül, tekrar et. Yeni favori saatin."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Commit to yourself and watch it show."
+msgstr "Kendine bağlı kal ve etkisini gör."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Feel strong, move well, enjoy your body."
+msgstr "Güçlü hisset, iyi hareket et, bedeninin tadını çıkar."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Bold, sculpted, and built to turn heads."
+msgstr "Cesur, şekilli ve dikkatleri üzerine çekecek yapıda."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Dance like nobody's judging. Nobody is."
+msgstr "Kimse seni yargılamıyormuş gibi dans et. Zaten kimse yargılamıyor."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Turn up the music and move."
+msgstr "Müziğin sesini aç ve hareket et."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Gentle rhythm, easy steps, no pressure."
+msgstr "Yumuşak ritim, kolay adımlar, baskı yok."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Years on the floor, taught step by step."
+msgstr "Pistte geçen yıllar, adım adım öğretiliyor."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Shake it out. Spins and smiles welcome."
+msgstr "Silkelen. Dönüşler ve gülümsemeler serbest."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Walk in, own the floor, own the moment."
+msgstr "İçeri gir, piste hâkim ol, anı sahiplen."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Slow hips, close music, pure feeling."
+msgstr "Yavaş kalçalar, yakın müzik, saf his."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Sizzling moves and plenty of attitude."
+msgstr "Ateşli hareketler ve bolca tavır."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Rest here. There's nothing to fix."
+msgstr "Burada dinlen. Düzeltilecek hiçbir şey yok."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Reset your mind in ten minutes flat."
+msgstr "Zihnini tam on dakikada sıfırla."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Breathe in. The room goes quiet."
+msgstr "Nefes al. Oda sessizleşiyor."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Practices rooted in years of experience."
+msgstr "Yılların deneyimine dayanan pratikler."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Your brain needs a nap. Let's give it one."
+msgstr "Beyninin biraz kestirmeye ihtiyacı var. Hadi ona bunu verelim."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Trust the calm you already have."
+msgstr "Zaten sahip olduğun sakinliğe güven."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Warm, slow and deeply comforting."
+msgstr "Sıcak, yavaş ve derinden rahatlatıcı."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Quiet magnetism that stays with you."
+msgstr "Seninle kalan sessiz bir çekim."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Good food, no guilt, no strict rules."
+msgstr "İyi yemek, suçluluk yok, katı kurallar yok."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Fuel up with simple, delicious meals."
+msgstr "Basit, lezzetli yemeklerle enerjini topla."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Eat well, sleep well, feel steady."
+msgstr "İyi ye, iyi uyu, dengede hisset."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Evidence-based plans, explained plainly."
+msgstr "Kanıta dayalı planlar, sade bir dille açıklanmış."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Real food that tastes like a treat."
+msgstr "Ödül tadında gerçek yemekler."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Eat boldly, feel great, skip the diet talk."
+msgstr "Cesurca ye, harika hisset, diyet muhabbetlerini bir kenara bırak."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Food as a pleasure, savoured slowly."
+msgstr "Tadına yavaşça varılan bir zevk olarak yemek."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Glow from the inside, one good meal at a time."
+msgstr "Her iyi öğünle içten dışa ışılda."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "You've got this. Let's find the next step."
+msgstr "Bunu yapabilirsin. Hadi bir sonraki adımı bulalım."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Stop waiting. Start the change today."
+msgstr "Beklemeyi bırak. Değişimi bugün başlat."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Clear thinking, one honest question at a time."
+msgstr "Her defasında dürüst bir soruyla berrak düşünce."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Proven tools for the big decisions."
+msgstr "Büyük kararlar için kanıtlanmış araçlar."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Dream big, then let's make it happen."
+msgstr "Büyük hayaller kur, sonra bunu gerçeğe dönüştürelim."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Stand tall and make the call."
+msgstr "Dik dur ve kararını ver."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Honest, warm and a little bit intimate."
+msgstr "Dürüst, sıcak ve biraz da samimi."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Bold, magnetic and unapologetically you."
+msgstr "Cesur, çekici ve tavizsizce sen."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Your business, built with people you trust."
+msgstr "Güvendiğin insanlarla kurduğun işin."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Grow faster and stop the guesswork."
+msgstr "Daha hızlı büyü ve tahmin yürütmeyi bırak."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Clear plans, steady decisions, no panic."
+msgstr "Net planlar, sağlam kararlar, panik yok."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Strategy from years in the trenches."
+msgstr "Sahada geçen yıllardan gelen strateji."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Serious results, and a bit of fun along the way."
+msgstr "Ciddi sonuçlar ve yol boyunca biraz da eğlence."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Decisive advice, backed by real results."
+msgstr "Gerçek sonuçlarla desteklenen kararlı tavsiyeler."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Thoughtful, unhurried and quietly stylish."
+msgstr "Düşünceli, telaşsız ve sakin bir şıklıkta."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Sharp, bold and impossible to forget."
+msgstr "Keskin, cesur ve unutulması imkânsız."
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
@@ -5656,6 +6482,1455 @@ msgstr "Üye topluluğu, üyelere özel makaleler"
 msgid "Everything I offer"
 msgstr "Sunduğum her şey"
 
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid ""
+"Tick every way in: on its own, in a membership, or both. Everything you make"
+" later has this same Access section."
+msgstr ""
+"Tüm erişim yollarını işaretle: tek başına, bir üyelik dahilinde veya her "
+"ikisi birden. Daha sonra oluşturacağın her şey aynı bu Erişim bölümüne sahip"
+" olacak."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Sold on its own. Later you can add a time limit, like 90 days."
+msgstr ""
+"Tek başına satılır. Daha sonra 90 gün gibi bir süre sınırı ekleyebilirsin."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid ""
+"Members get it while their membership runs, and lose it if they cancel."
+msgstr ""
+"Üyeler, üyelikleri devam ettiği sürece buna erişebilir ve iptal ettiklerinde"
+" erişimi kaybederler."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Anyone with a free account. A good first taste of your work."
+msgstr "Ücretsiz hesabı olan herkes. Çalışmaların için iyi bir ilk tadımlık."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Anyone who buys the course"
+msgstr "Kursu satın alan herkes"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy, python-format
+msgid "%(price)s paid once"
+msgstr "Tek seferde ödenen %(price)s"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Anyone who pays per session"
+msgstr "Oturum başına ödeme yapan herkes"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy, python-format
+msgid "%(price)s a session"
+msgstr "Oturum başına %(price)s"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Anyone who pays per event"
+msgstr "Etkinlik başına ödeme yapan herkes"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy, python-format
+msgid "%(price)s an event"
+msgstr "Etkinlik başına %(price)s"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "You set the price next"
+msgstr "Fiyatı bir sonraki adımda belirlersin"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy, python-format
+msgid "Included for members, %(price)s a month"
+msgstr "Üyeler için dahil, ayda %(price)s"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "No payment, open to all"
+msgstr "Ödeme yok, herkese açık"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Yoga"
+msgstr "Yoga"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Vinyasa yoga"
+msgstr "Vinyasa yoga"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Hatha yoga"
+msgstr "Hatha yoga"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Yin yoga"
+msgstr "Yin yoga"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Ashtanga yoga"
+msgstr "Ashtanga yoga"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Kundalini yoga"
+msgstr "Kundalini yoga"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Prenatal yoga"
+msgstr "Hamile yogası"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Face yoga"
+msgstr "Yüz yogası"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Power yoga"
+msgstr "Power yoga"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Pilates"
+msgstr "Pilates"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Mat pilates"
+msgstr "Mat pilates"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Reformer pilates"
+msgstr "Reformer pilates"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Clinical pilates"
+msgstr "Klinik pilates"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Prenatal pilates"
+msgstr "Hamile pilatesi"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Wall pilates"
+msgstr "Duvar pilatesi"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Barre"
+msgstr "Barre"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Fitness coaching"
+msgstr "Fitness koçluğu"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Strength training"
+msgstr "Kuvvet antrenmanı"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "HIIT"
+msgstr "HIIT"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Running"
+msgstr "Koşu"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Boxing"
+msgstr "Boks"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Weight loss training"
+msgstr "Kilo verme antrenmanı"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Calisthenics"
+msgstr "Kalistenik"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Mobility"
+msgstr "Mobilite"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Pre & postnatal fitness"
+msgstr "Doğum öncesi & sonrası fitness"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Dance"
+msgstr "Dans"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Belly dance"
+msgstr "Oryantal dans"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Hip hop"
+msgstr "Hip hop"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Salsa & bachata"
+msgstr "Salsa & bachata"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Ballet"
+msgstr "Bale"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Contemporary"
+msgstr "Çağdaş dans"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Pole dance"
+msgstr "Pole dans"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Latin & ballroom"
+msgstr "Latin & salon dansları"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Zumba"
+msgstr "Zumba"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Meditation"
+msgstr "Meditasyon"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Mindfulness"
+msgstr "Farkındalık"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Breathwork"
+msgstr "Nefes çalışması"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Guided meditation"
+msgstr "Rehberli meditasyon"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Sound healing"
+msgstr "Sesle şifa"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Yoga nidra"
+msgstr "Yoga nidra"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Sleep & relaxation"
+msgstr "Uyku & rahatlama"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Nutrition"
+msgstr "Beslenme"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Healthy weight loss"
+msgstr "Sağlıklı kilo verme"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Sports nutrition"
+msgstr "Sporcu beslenmesi"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Plant-based eating"
+msgstr "Bitkisel beslenme"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Gut health"
+msgstr "Bağırsak sağlığı"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Meal planning"
+msgstr "Öğün planlama"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Hormone health"
+msgstr "Hormon sağlığı"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Life coaching"
+msgstr "Yaşam koçluğu"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Confidence"
+msgstr "Özgüven"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Career change"
+msgstr "Kariyer değişikliği"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Relationships"
+msgstr "İlişkiler"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Mindset"
+msgstr "Zihniyet"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Stress & burnout"
+msgstr "Stres & tükenmişlik"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Purpose & direction"
+msgstr "Amaç & yön"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Business coaching"
+msgstr "İş koçluğu"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Starting a business"
+msgstr "İş kurma"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Marketing"
+msgstr "Pazarlama"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Sales"
+msgstr "Satış"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Leadership"
+msgstr "Liderlik"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Productivity"
+msgstr "Üretkenlik"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Personal branding"
+msgstr "Kişisel markalaşma"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy, python-format
+msgid "%(first)s and %(second)s"
+msgstr "%(first)s ve %(second)s"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy, python-format
+msgid "%(items)s and %(last)s"
+msgstr "%(items)s ve %(last)s"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy, python-format
+msgid "Mostly %(name)s"
+msgstr "Çoğunlukla %(name)s"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy, python-format
+msgid "Only %(kind)s"
+msgstr "Yalnızca %(kind)s"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy, python-format
+msgid "%(kind)s and more"
+msgstr "%(kind)s ve daha fazlası"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid ""
+"Run it once, or every week on the days and times you choose, like Mondays "
+"and Wednesdays at 9:00 and Saturdays at 10:00."
+msgstr ""
+"Bir kez veya Pazartesi ve Çarşamba günleri 9:00'da, Cumartesi günleri "
+"10:00'da olduğu gibi seçtiğin gün ve saatlerde her hafta düzenle."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "What does \"who can open it\" mean?"
+msgstr "\"Kimler açabilir\" ne anlama geliyor?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid ""
+"Anything you make can be free, sold on its own, part of a membership, or "
+"several of these at once."
+msgstr ""
+"Ürettiğin her şey ücretsiz olabilir, tek başına satılabilir, bir üyeliğin "
+"parçası olabilir veya aynı anda bunlardan birkaçı olabilir."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Let's start with you. Tell me about yourself and your work."
+msgstr "Seninle başlayalım. Bana kendinden ve çalışmalarından bahset."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid ""
+"Add a bio, a CV or your old About page. I read it once and tick what it "
+"answers in the questions ahead, so you only check them. You can also skip "
+"this and answer as we go."
+msgstr ""
+"Bir biyografi, özgeçmiş veya eski Hakkında sayfanı ekle. Onu bir kez okuyup "
+"ilerideki sorularda yanıtladığı kısımları işaretlerim, böylece sen sadece "
+"onları kontrol edersin. Ayrıca bunu atlayıp ilerledikçe de "
+"yanıtlayabilirsin."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "What's your site called?"
+msgstr "Sitenin adı ne?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "It's the name your students see, and it makes your web address."
+msgstr "Öğrencilerinin gördüğü isimdir ve web adresini oluşturur."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "What do you offer?"
+msgstr "Neler sunuyorsun?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Who's on my team?"
+msgstr "Ekibimde kimler var?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid ""
+"Your site comes with a small team. They build your pages, take care of "
+"payments and help new students find you, so you can spend your time making "
+"great content. You'll meet each of them as we set up your site."
+msgstr ""
+"Siten küçük bir ekiple birlikte gelir. Sen vaktini harika içerikler üretmeye"
+" ayırabil diye sayfalarını oluştururlar, ödemelerle ilgilenirler ve yeni "
+"öğrencilerin seni bulmasına yardımcı olurlar. Siteni kurarken her biriyle "
+"tanışacaksın."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Which kinds do you offer?"
+msgstr "Hangi türleri sunuyorsun?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Are these equally important, or is one your main focus?"
+msgstr "Bunlar eşit derecede mi önemli, yoksa biri ana odağın mı?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid ""
+"Your home page follows it: the look, the headline and the first photos."
+msgstr "Ana sayfan bunu takip eder: görünüm, başlık ve ilk fotoğraflar."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "What changes if I pick one?"
+msgstr "Birini seçersem ne değişir?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid ""
+"Your main focus opens your home page, with its look, headline and first "
+"photos. The others still show up, a little further down. If you say they're "
+"equal, each one gets the same room."
+msgstr ""
+"Ana odağın; görünümü, başlığı ve ilk fotoğraflarıyla ana sayfanın açılışını "
+"yapar. Diğerleri ise biraz daha aşağıda yine görünür. Eşit olduklarını "
+"söylersen her birine aynı yer ayrılır."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Do you have photos of your own for your site?"
+msgstr "Siten için kendine ait fotoğrafların var mı?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid ""
+"Your own photos make the site yours. Without them I pick photos that fit "
+"what you do. Either way you can swap any photo later."
+msgstr ""
+"Kendi fotoğrafların siteyi sana özel kılar. Onlar olmadan, yaptığın işe "
+"uygun fotoğraflar seçerim. Her iki durumda da daha sonra herhangi bir "
+"fotoğrafı değiştirebilirsin."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "How is my site built?"
+msgstr "Sitem nasıl oluşturuluyor?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid ""
+"Every answer goes into your pages: Home, About, Contact and FAQ. I start "
+"building as soon as I know enough, and you can change anything later."
+msgstr ""
+"Her yanıt sayfalarında yer alır: Ana Sayfa, Hakkında, İletişim ve SSS. "
+"Yeterli bilgiye sahip olur olmaz oluşturmaya başlarım ve daha sonra her şeyi"
+" değiştirebilirsin."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Who are the students you love working with most?"
+msgstr "Birlikte çalışmayı en çok sevdiğin öğrenciler kimler?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Complete beginners"
+msgstr "Tamamen yeni başlayanlar"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Busy professionals"
+msgstr "Yoğun çalışan profesyoneller"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "People coming back after an injury"
+msgstr "Bir sakatlık sonrası geri dönenler"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Parents"
+msgstr "Ebeveynler"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Older adults"
+msgstr "İleri yaştaki yetişkinler"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "What changes for a student after working with you?"
+msgstr "Seninle çalıştıktan sonra bir öğrenci için neler değişir?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "More confidence"
+msgstr "Daha fazla özgüven"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Less stress"
+msgstr "Daha az stres"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "More energy"
+msgstr "Daha fazla enerji"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "A routine that sticks"
+msgstr "Kalıcı bir rutin"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Visible progress"
+msgstr "Gözle görülür ilerleme"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "New skills"
+msgstr "Yeni beceriler"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "A clear direction"
+msgstr "Net bir yön"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Feeling supported"
+msgstr "Desteklendiğini hissetme"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "How will you work with your students?"
+msgstr "Öğrencilerinle nasıl çalışacaksın?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Digital content"
+msgstr "Dijital içerik"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Live online sessions"
+msgstr "Canlı çevrim içi oturumlar"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "In-person sessions"
+msgstr "Yüz yüze oturumlar"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Articles"
+msgstr "Makaleler"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Community"
+msgstr "Topluluk"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid ""
+"Pick as many as fit. This decides which pages I build and what I ask you "
+"next."
+msgstr ""
+"Uygun olanların tümünü seç. Bu, hangi sayfaları oluşturacağımı ve sana "
+"bundan sonra ne soracağımı belirler."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid ""
+"Pre-recorded courses and downloads students buy once and use at their own "
+"pace."
+msgstr ""
+"Öğrencilerin bir kez satın alıp kendi hızlarında kullandığı önceden "
+"kaydedilmiş kurslar ve indirilebilir dosyalar."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Group classes or 1-1 calls students join from home, with you live."
+msgstr ""
+"Öğrencilerin evden katıldığı, seninle canlı yapılan grup dersleri veya bire "
+"bir görüşmeler."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Classes, workshops or retreats at your own place."
+msgstr "Kendi yerinde dersler, atölyeler veya inzivalar."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "A blog that brings new students in from search and keeps them reading."
+msgstr ""
+"Aramalardan yeni öğrenciler çeken ve onların okumaya devam etmesini sağlayan"
+" bir blog."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "A members' space where your students talk, share and stay motivated."
+msgstr ""
+"Öğrencilerinin konuştuğu, paylaştığı ve motivasyonunu koruduğu üyelere özel "
+"bir alan."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Who will your students learn from?"
+msgstr "Öğrencilerin kimden öğrenecek?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Your site speaks as \"I\" or \"we\" to match."
+msgstr "Siten buna uyum sağlamak için \"ben\" veya \"biz\" diliyle konuşur."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "If someone asked what you do, what would you say in one sentence?"
+msgstr "Biri ne yaptığını sorsaydı tek bir cümlede ne derdin?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid ""
+"It's the first thing new visitors read on your home page. Articles and your "
+"social accounts bring more people to it."
+msgstr ""
+"Bu, yeni ziyaretçilerin ana sayfanda okuduğu ilk şeydir. Makaleler ve sosyal"
+" hesapların buraya daha fazla kişi çeker."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy, python-brace-format
+msgid "{brand}: calm, strong and simple, for people with busy lives."
+msgstr "{brand}: sakin, güçlü ve sade, yoğun hayatları olan insanlar için."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "What do you do differently from other creators?"
+msgstr "Diğer içerik üreticilerinden farklı olarak ne yapıyorsun?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Small groups"
+msgstr "Küçük gruplar"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Personal attention"
+msgstr "Kişisel ilgi"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "A gentle pace"
+msgstr "Sakin bir tempo"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "My own method"
+msgstr "Kendi yöntemim"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Real-life results"
+msgstr "Gerçek hayattan sonuçlar"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Fits a busy life"
+msgstr "Yoğun bir hayata uyar"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Plenty of humour"
+msgstr "Bolca mizah"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Whole-person approach"
+msgstr "Bütüncül yaklaşım"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "How should your site sound?"
+msgstr "Siten kulağa nasıl gelmeli?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Warm"
+msgstr "Sıcak"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Energetic"
+msgstr "Enerjik"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Calm"
+msgstr "Sakin"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Expert"
+msgstr "Uzman"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Playful"
+msgstr "Eğlenceli"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Confident"
+msgstr "Kendinden emin"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Sensual"
+msgstr "Tensel"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Sexy"
+msgstr "Seksi"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Which look feels most like you?"
+msgstr "Hangi görünüm seni en çok yansıtıyor?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid ""
+"A look is how your whole site feels. You can change it any time, and your "
+"words stay put."
+msgstr ""
+"Görünüm, tüm sitenin nasıl hissettirdiğidir. İstediğin zaman "
+"değiştirebilirsin ve yazdıkların yerinde kalır."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "What does a look change?"
+msgstr "Görünüm neleri değiştirir?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid ""
+"It sets the fonts, the colours and the layout of every page, in light and "
+"dark. Your logo sits on top of it."
+msgstr ""
+"Açık ve koyu modda her sayfanın yazı tiplerini, renklerini ve düzenini "
+"belirler. Logon bunun üzerinde yer alır."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "How did you get into this?"
+msgstr "Bu işe nasıl başladın?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "I first got into this when…"
+msgstr "Bu işe ilk başladığımda…"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "It changed my life when…"
+msgstr "Hayatımın değiştiği an…"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "I started because…"
+msgstr "Başladım çünkü…"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Friends kept asking me to…"
+msgstr "Arkadaşlarım sürekli benden şunu istiyordu…"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "I was struggling with… until"
+msgstr "Şununla mücadele ediyordum… ta ki"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "My career took a turn when…"
+msgstr "Kariyerimin dönüm noktası…"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid ""
+"Any training, certifications or years of experience you'd like visitors to "
+"know about?"
+msgstr ""
+"Ziyaretçilerin bilmesini istediğin herhangi bir eğitim, sertifika veya "
+"deneyim yılı var mı?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "I trained in…"
+msgstr "Eğitim aldığım alan…"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "I'm certified in…"
+msgstr "Sertifika aldığım alan…"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "I've been doing this for…"
+msgstr "Bu işteki deneyimim…"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "I studied at…"
+msgstr "Eğitim aldığım kurum…"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "I've worked with…"
+msgstr "Birlikte çalıştıklarım…"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "I'm a member of…"
+msgstr "Şunun üyesiyim…"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Pick a logo to start with. You can change it any time."
+msgstr "Başlamak için bir logo seç. İstediğin zaman değiştirebilirsin."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Which time zone are you in?"
+msgstr "Hangi saat dilimindesin?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Session times and your calendar follow it."
+msgstr "Oturum saatleri ve takvimin buna uyar."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Which currency do you charge in?"
+msgstr "Hangi para birimiyle ödeme alıyorsun?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid ""
+"Every price on your site is in it. It is fixed once you buy a plan or take a"
+" payment."
+msgstr ""
+"Sitendeki tüm fiyatlar bu birimdedir. Bir plan satın aldığında veya bir "
+"ödeme aldığında sabitlenir."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "How will students pay you?"
+msgstr "Öğrenciler sana nasıl ödeme yapacak?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "One-time course purchases"
+msgstr "Tek seferlik kurs satın alımları"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Monthly membership"
+msgstr "Aylık üyelik"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Pay per session or event"
+msgstr "Oturum veya etkinlik başına ödeme"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Free for now"
+msgstr "Şimdilik ücretsiz"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Free stays free. You can change prices any time."
+msgstr ""
+"Ücretsiz olan ücretsiz kalır. Fiyatları istediğin zaman değiştirebilirsin."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "How can students pay?"
+msgstr "Öğrenciler nasıl ödeme yapabilir?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid ""
+"Most creators mix the ways. Here's what three students might pay over three "
+"months."
+msgstr ""
+"Çoğu içerik üreticisi yöntemleri bir arada kullanır. İşte üç öğrencinin üç "
+"ay boyunca ödeyebileceği tutarlar."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Students buy each course once"
+msgstr "Öğrenciler her kursu bir kez satın alır"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "One monthly price for everything"
+msgstr "Her şey için tek bir aylık fiyat"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Students pay for each live session"
+msgstr "Öğrenciler her canlı oturum için ödeme yapar"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Everything free now, prices later"
+msgstr "Şimdi her şey ücretsiz, fiyatlar daha sonra"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid ""
+"A membership can cover everything, or one thing you offer. Which ones fit "
+"your students?"
+msgstr ""
+"Bir üyelik sunduğun her şeyi kapsayabilir veya sunduğun tek bir şeyi. "
+"Hangileri öğrencilerine uygun?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid ""
+"A membership is a monthly pass: students pay one price a month and get what "
+"it covers while they pay. One can cover everything you offer, or a few can "
+"each cover one thing."
+msgstr ""
+"Bir üyelik aylık bir geçiş kartıdır: öğrenciler ayda tek bir fiyat öder ve "
+"ödeme yaptıkları sürece kapsadığı şeylerden yararlanır. Biri sunduğun her "
+"şeyi kapsayabilir veya birkaçı ayrı ayrı tek bir şeyi kapsayabilir."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "How do memberships work?"
+msgstr "Üyelikler nasıl çalışır?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid ""
+"Each one is its own monthly subscription. You choose what each one unlocks "
+"as we build."
+msgstr ""
+"Her biri kendi içinde aylık bir aboneliktir. Birlikte oluştururken her "
+"birinin nelerin kilidini açacağını sen seçersin."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "The Club, $19 a month, covers every live session."
+msgstr "The Club, ayda $19, her canlı oturumu kapsar."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Let's build your first course. What should it cover?"
+msgstr "İlk kursunu oluşturalım. Neleri kapsamalı?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid ""
+"A course is your know-how, recorded once. Students buy it, follow it at "
+"their own pace and keep it. I draft the outline; you record the videos."
+msgstr ""
+"Bir kurs, bir kez kaydedilmiş uzmanlığındır. Öğrenciler satın alır, kendi "
+"hızlarında takip eder ve saklar. Taslağı ben hazırlarım; videoları sen "
+"kaydedersin."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "How does a course work?"
+msgstr "Bir kurs nasıl çalışır?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid ""
+"It's made of modules, like weeks or chapters, and lessons: the videos inside"
+" them."
+msgstr ""
+"Haftalar veya bölümler gibi modüllerden ve derslerden oluşur: içlerindeki "
+"videolar."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "A 4-week beginner course for $49."
+msgstr "$49 karşılığında 4 haftalık bir başlangıç kursu."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Who can take this course?"
+msgstr "Bu kursa kimler katılabilir?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "What should the course cost?"
+msgstr "Kursun ücreti ne kadar olmalı?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "19"
+msgstr "19"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "29"
+msgstr "29"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "39"
+msgstr "39"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "49"
+msgstr "49"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "79"
+msgstr "79"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "99"
+msgstr "99"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "149"
+msgstr "149"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "199"
+msgstr "199"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Here's your first course. Happy with it?"
+msgstr "İşte ilk kursun. Beğendin mi?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Let's set up your first live session. What should it focus on?"
+msgstr "İlk canlı oturumunu ayarlayalım. Neye odaklanmalı?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "A live session happens at a set time: a group class or a 1-1 call."
+msgstr ""
+"Canlı oturum belirli bir saatte yapılır: bir grup dersi ya da birebir "
+"görüşme."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "How do live sessions work?"
+msgstr "Canlı oturumlar nasıl işler?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Students sign up on your site and join the video call from it."
+msgstr "Öğrenciler sitende kaydolur ve görüntülü görüşmeye oradan katılır."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "A Tuesday evening class for complete beginners."
+msgstr "Yeni başlayanlar için salı akşamı dersi."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "When does your first live session run?"
+msgstr "İlk canlı oturumun ne zaman?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Recurring"
+msgstr "Tekrarlanan"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "One-time"
+msgstr "Tek seferlik"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Set days and times, week after week"
+msgstr "Her hafta belirli gün ve saatlerde"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "A single session on one date"
+msgstr "Tek bir tarihte tek oturum"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Who can join this live session?"
+msgstr "Bu canlı oturuma kimler katılabilir?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "What should one live session cost?"
+msgstr "Bir canlı oturumun ücreti ne kadar olsun?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "5"
+msgstr "5"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "10"
+msgstr "10"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "15"
+msgstr "15"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "20"
+msgstr "20"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "25"
+msgstr "25"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "35"
+msgstr "35"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "50"
+msgstr "50"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "75"
+msgstr "75"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Here's your first live session. Happy with it?"
+msgstr "İşte ilk canlı oturumun. Beğendin mi?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Let's set up your first in-person event. What should it focus on?"
+msgstr "Haydi ilk yüz yüze etkinliğini oluşturalım. Konusu ne olsun?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid ""
+"An in-person event lives on your site too: students see the place and the "
+"times, and sign up online."
+msgstr ""
+"Yüz yüze etkinlik de sitende yer alır: öğrenciler yeri ve saatleri görür, "
+"çevrimiçi kaydolur."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "A weekend workshop at your usual place."
+msgstr "Her zamanki yerinde bir hafta sonu atölyesi."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "When does your first in-person event take place?"
+msgstr "İlk yüz yüze etkinliğin ne zaman?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Where does your in-person event take place?"
+msgstr "Yüz yüze etkinliğin nerede yapılacak?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid ""
+"The place shows on your site. The street address goes only to students who "
+"can attend."
+msgstr ""
+"Yer sitende görünür. Açık adres yalnızca katılabilecek öğrencilere "
+"gönderilir."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Who can come to this in-person event?"
+msgstr "Bu yüz yüze etkinliğe kimler gelebilir?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "What should one in-person event cost?"
+msgstr "Bir yüz yüze etkinliğin ücreti ne kadar olsun?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Here's your first in-person event. Happy with it?"
+msgstr "İşte ilk yüz yüze etkinliğin. Beğendin mi?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "How should your calendar look?"
+msgstr "Takviminin görünümü nasıl olsun?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "What should your first article be about?"
+msgstr "İlk makalen ne hakkında olsun?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Which social accounts should students find you on?"
+msgstr "Öğrenciler seni hangi sosyal medya hesaplarında bulsun?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Instagram"
+msgstr "Instagram"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "YouTube"
+msgstr "YouTube"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "TikTok"
+msgstr "TikTok"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Facebook"
+msgstr "Facebook"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "X"
+msgstr "X"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "LinkedIn"
+msgstr "LinkedIn"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "No social accounts yet"
+msgstr "Henüz sosyal medya hesabı yok"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "How should students get in touch with you?"
+msgstr "Öğrenciler seninle nasıl iletişime geçsin?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Email"
+msgstr "E-posta"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "WhatsApp"
+msgstr "WhatsApp"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Phone"
+msgstr "Telefon"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Contact form"
+msgstr "İletişim formu"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid ""
+"Messages from your site land in your inbox, and session reminders go out on "
+"their own."
+msgstr ""
+"Sitendeki mesajlar gelen kutuna düşer, oturum hatırlatmaları da "
+"kendiliğinden gönderilir."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "What happens when a student writes to me?"
+msgstr "Bir öğrenci bana yazdığında ne olur?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid ""
+"Their message lands in your inbox in your control panel, and you reply from "
+"there. If you run a community, that's also where your students talk to each "
+"other."
+msgstr ""
+"Mesajı kontrol panelindeki gelen kutuna düşer, sen de oradan yanıtlarsın. "
+"Bir topluluk yönetiyorsan öğrencilerin de orada birbiriyle konuşur."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "How should your emails to students look?"
+msgstr "Öğrencilere gönderdiğin e-postalar nasıl görünsün?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid ""
+"Sign-in links, receipts, session reminders and your announcements all go out"
+" in it."
+msgstr ""
+"Giriş bağlantıları, makbuzlar, oturum hatırlatmaları ve duyuruların hep bu "
+"görünümle gönderilir."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "How should the top of every page look?"
+msgstr "Her sayfanın üst kısmı nasıl görünsün?"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Your pages are set, so each card shows your own menu."
+msgstr "Sayfaların hazır, bu yüzden her kartta kendi menün görünüyor."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "And the bottom of every page?"
+msgstr "Peki her sayfanın alt kısmı?"
+
+#: apps/tenant_config/interview_brief.py
+#, python-format, fuzzy
+msgid "Prices are in %(currency)s (%(sign)s), the currency you picked."
+msgstr ""
+"Fiyatlar, seçtiğin para birimi olan %(currency)s (%(sign)s) cinsinden."
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "They're equal"
+msgstr "Hepsi eşit"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Each gets the same room on your site"
+msgstr "Sitende her birine aynı yer ayrılır"
+
+#: apps/tenant_config/interview_brief.py
+#, python-format, fuzzy
+msgid "%(name)s leads; the rest support it"
+msgstr "%(name)s öne çıkar; diğerleri onu destekler"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Your studio"
+msgstr "Stüdyon"
+
 #: apps/tenant_config/interview_golive.py
 #, fuzzy
 msgid "Start your free trial"
@@ -5671,7 +7946,7 @@ msgstr "Bir plan seç"
 msgid "Connect payouts with Stripe"
 msgstr "Ödemeleri Stripe ile bağla"
 
-#: apps/tenant_config/interview_golive.py
+#: apps/tenant_config/interview_golive.py apps/tenant_config/setup_flow.py
 #, fuzzy
 msgid "Go live"
 msgstr "Yayına geç"
@@ -5683,8 +7958,18 @@ msgstr "Sayfalar"
 
 #: apps/tenant_config/interview_golive.py
 #, fuzzy
+msgid "members only"
+msgstr "yalnızca üyelere"
+
+#: apps/tenant_config/interview_golive.py
+#, fuzzy
 msgid "First course"
 msgstr "İlk kurs"
+
+#: apps/tenant_config/interview_golive.py
+#, python-format, fuzzy
+msgid "%(name)s (%(price)s a month)"
+msgstr "%(name)s (aylık %(price)s)"
 
 #: apps/tenant_config/interview_golive.py
 #, fuzzy
@@ -5692,10 +7977,57 @@ msgid "Memberships"
 msgstr "Üyelikler"
 
 #: apps/tenant_config/interview_golive.py
+#, fuzzy
+msgid "Live sessions"
+msgstr "Canlı oturumlar"
+
+#: apps/tenant_config/interview_golive.py
+#, fuzzy
+msgid "In-person events"
+msgstr "Yüz yüze etkinlikler"
+
+#: apps/tenant_config/interview_golive.py
+#, fuzzy
+msgid "times to suit your students"
+msgstr "öğrencilerine uygun saatlerde"
+
+#: apps/tenant_config/interview_golive.py
+#, fuzzy
+msgid ", members only"
+msgstr ", yalnızca üyelere"
+
+#: apps/tenant_config/interview_golive.py
+#, python-format, fuzzy
+msgid ", %(price)s each"
+msgstr ", her biri %(price)s"
+
+#: apps/tenant_config/interview_golive.py
 #: apps/tenant_config/interview_milestones.py
 #, fuzzy
 msgid "Calendar"
 msgstr "Takvim"
+
+#: apps/tenant_config/interview_golive.py
+#, fuzzy
+msgid "A month grid, linked in your menu"
+msgstr "Menünden ulaşılan bir aylık takvim"
+
+#: apps/tenant_config/interview_golive.py
+#, python-format, fuzzy
+msgid "Your course “%(title)s”"
+msgstr "“%(title)s” kursun"
+
+#: apps/tenant_config/interview_golive.py
+#, python-format, fuzzy
+msgid "Your membership: %(names)s"
+msgid_plural "Your memberships: %(names)s"
+msgstr[0] "Üyeliklerin: %(names)s"
+msgstr[1] "Üyeliklerin: %(names)s"
+
+#: apps/tenant_config/interview_golive.py
+#, fuzzy
+msgid "Your sessions and events"
+msgstr "Oturumların ve etkinliklerin"
 
 #: apps/tenant_config/interview_milestones.py
 #, fuzzy
@@ -5716,6 +8048,354 @@ msgstr "İstediğin zaman iptal et."
 #, fuzzy, python-format
 msgid "%(perks)s, for %(teaches)s."
 msgstr "%(perks)s, %(teaches)s için."
+
+#: apps/tenant_config/interview_milestones.py
+#, python-format, fuzzy
+msgid "Made for %(subject)s creators, and it sounds %(tones)s."
+msgstr ""
+"%(subject)s içerik üreticileri için hazırlandı ve %(tones)s bir tonu var."
+
+#: apps/tenant_config/interview_milestones.py
+#, python-format, fuzzy
+msgid "Made for %(subject)s creators."
+msgstr "%(subject)s içerik üreticileri için hazırlandı."
+
+#: apps/tenant_config/interview_milestones.py
+#, python-format, fuzzy
+msgid "It sounds %(tones)s."
+msgstr "%(tones)s bir tonu var."
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Month grid"
+msgstr "Aylık takvim"
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "The whole month at a glance, with a day panel."
+msgstr "Tüm ay tek bakışta, gün paneliyle birlikte."
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Agenda list"
+msgstr "Ajanda listesi"
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Upcoming sessions in a simple list, day by day."
+msgstr "Yaklaşan oturumlar gün gün, basit bir listede."
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Classic"
+msgstr "Klasik"
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Your name on the left, the menu in the middle, sign-in on the right."
+msgstr "Adın solda, menü ortada, giriş yap düğmesi sağda."
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Centered"
+msgstr "Ortalanmış"
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Your name above the menu, both in the middle."
+msgstr "Adın menünün üstünde, ikisi de ortada."
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Split"
+msgstr "Bölünmüş"
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "The menu on both sides of your name."
+msgstr "Menü adının her iki yanında."
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Minimal"
+msgstr "Minimal"
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Just your name and a menu button."
+msgstr "Sadece adın ve bir menü butonu."
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Floating pill"
+msgstr "Kayan kapsül"
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "A rounded bar that floats over the page as you scroll."
+msgstr "Sayfayı kaydırdıkça sayfa üzerinde kayan yuvarlatılmış bir çubuk."
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "One line"
+msgstr "Tek satır"
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Your name, the menu and your social links in a single row."
+msgstr "Adın, menü ve sosyal medya bağlantıların tek bir sırada."
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Columns"
+msgstr "Sütunlar"
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid ""
+"Your name and a line about you, the menu and your socials side by side."
+msgstr "Adın ve hakkında bir satır, menü ve sosyal medya hesapların yan yana."
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Everything stacked in the middle of the page."
+msgstr "Her şey sayfanın ortasında alt alta dizilmiş."
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Just your name and the year."
+msgstr "Sadece adın ve yıl."
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Beside your name"
+msgstr "Adının yanında"
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Above your name"
+msgstr "Adının üstünde"
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Mark only"
+msgstr "Yalnızca simge"
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Name only"
+msgstr "Yalnızca ad"
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy, python-format
+msgid "Matched to your %(look)s look."
+msgstr "%(look)s görünümünle eşleştirildi."
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy, python-format
+msgid "It suits a site that sounds %(tone)s."
+msgstr "Kulağa %(tone)s gelen bir siteye çok yakışır."
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Upright"
+msgstr "Dikey"
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Most of your site: the opening photo, your story, the photo wall."
+msgstr "Sitenin büyük kısmı: açılış fotoğrafı, hikayen, fotoğraf duvarı."
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid ""
+"You at work or practising, a portrait where we see your face, your students,"
+" your space."
+msgstr ""
+"Çalışırken veya pratik yaparken sen, yüzünün göründüğü bir portre, "
+"öğrencilerin, alanın."
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Wide"
+msgstr "Yatay"
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Banners between sections, and the covers of your courses and sessions."
+msgstr ""
+"Bölümler arasındaki banner'lar ile kurslarının ve oturumlarının kapakları."
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "A wide view of a class or your space, with room around the subject."
+msgstr ""
+"Bir sınıfın veya alanının, konunun etrafında boşluk bırakan geniş bir "
+"görüntüsü."
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Square"
+msgstr "Kare"
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Small accents beside the opening photo."
+msgstr "Açılış fotoğrafının yanındaki küçük vurgular."
+
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "A detail: hands, tools, a close-up."
+msgstr "Bir detay: eller, aletler, yakın bir çekim."
+
+#: apps/tenant_config/interview_team.py
+#, fuzzy
+msgid "email"
+msgstr "e-posta"
+
+#: apps/tenant_config/interview_team.py
+#, fuzzy
+msgid "phone"
+msgstr "telefon"
+
+#: apps/tenant_config/interview_team.py
+#, fuzzy
+msgid "contact form"
+msgstr "iletişim formu"
+
+#: apps/tenant_config/interview_team.py
+#, fuzzy, python-format
+msgid "Built your %(names)s page and your look."
+msgid_plural "Built your %(names)s pages and your look."
+msgstr[0] "%(names)s sayfanı ve görünümünü oluşturdu."
+msgstr[1] "%(names)s sayfalarını ve görünümünü oluşturdu."
+
+#: apps/tenant_config/interview_team.py
+#, fuzzy, python-format
+msgid "Built your %(names)s page."
+msgid_plural "Built your %(names)s pages."
+msgstr[0] "%(names)s sayfanı oluşturdu."
+msgstr[1] "%(names)s sayfalarını oluşturdu."
+
+#: apps/tenant_config/interview_team.py
+#, fuzzy
+msgid "Set your look."
+msgstr "Görünümünü belirledi."
+
+#: apps/tenant_config/interview_team.py
+#, fuzzy
+msgid "Looks after your site."
+msgstr "Sitene göz kulak olur."
+
+#: apps/tenant_config/interview_team.py
+#, fuzzy
+msgid "Ask me to change any page, any time."
+msgstr "İstediğin zaman benden herhangi bir sayfayı değiştirmemi iste."
+
+#: apps/tenant_config/interview_team.py
+#, fuzzy, python-format
+msgid "Drafted %(made)s."
+msgstr "%(made)s taslağını hazırladı."
+
+#: apps/tenant_config/interview_team.py
+#, fuzzy
+msgid "Ready when you want to make your first course or session."
+msgstr "İlk kursunu veya oturumunu oluşturmak istediğinde hazır."
+
+#: apps/tenant_config/interview_team.py
+#, fuzzy, python-format
+msgid "Next: record the first lesson of %(course)s."
+msgstr "Sırada: %(course)s kursunun ilk dersini kaydet."
+
+#: apps/tenant_config/interview_team.py
+#, fuzzy, python-format
+msgid "Next: check the date and time of %(class)s."
+msgstr "Sırada: %(class)s tarihini ve saatini kontrol et."
+
+#: apps/tenant_config/interview_team.py
+#, fuzzy
+msgid "Tell me what you'd like to make first."
+msgstr "İlk olarak ne oluşturmak istediğini bana söyle."
+
+#: apps/tenant_config/interview_team.py
+#, fuzzy, python-format
+msgid "Wrote your first article, %(post)s."
+msgstr "İlk makaleni yazdım, %(post)s."
+
+#: apps/tenant_config/interview_team.py
+#, fuzzy, python-format
+msgid "Drafted your first article, %(post)s."
+msgstr "İlk makalenin taslağını hazırladım, %(post)s."
+
+#: apps/tenant_config/interview_team.py
+#, fuzzy
+msgid "Ready to help new students find you."
+msgstr "Yeni öğrencilerin seni bulmasına yardımcı olmaya hazır."
+
+#: apps/tenant_config/interview_team.py
+#, fuzzy, python-format
+msgid "Next: share %(post)s with your students."
+msgstr "Sırada: %(post)s içeriğini öğrencilerinle paylaş."
+
+#: apps/tenant_config/interview_team.py
+#, fuzzy, python-format
+msgid "Next: publish %(post)s when you're happy with it."
+msgstr "Sırada: içine sindiğinde %(post)s içeriğini yayınla."
+
+#: apps/tenant_config/interview_team.py
+#, fuzzy
+msgid "Next: share your site where your students are."
+msgstr "Sırada: siteni öğrencilerinin olduğu yerlerde paylaş."
+
+#: apps/tenant_config/interview_team.py
+#, fuzzy, python-format
+msgid "Set up how students reach you: %(ways)s."
+msgstr "Öğrencilerin sana nasıl ulaşacağını ayarladım: %(ways)s."
+
+#: apps/tenant_config/interview_team.py
+#, fuzzy
+msgid "Looks after how students reach you."
+msgstr "Öğrencilerin sana nasıl ulaşacağıyla ilgilenir."
+
+#: apps/tenant_config/interview_team.py
+#, fuzzy
+msgid "Messages from students land in your inbox."
+msgstr "Öğrencilerden gelen mesajlar gelen kutuna düşer."
+
+#: apps/tenant_config/interview_team.py
+#, fuzzy, python-format
+msgid "Set up %(plans)s."
+msgstr "%(plans)s ayarladım."
+
+#: apps/tenant_config/interview_team.py
+#, fuzzy
+msgid "Set your first prices."
+msgstr "İlk fiyatlarını belirledim."
+
+#: apps/tenant_config/interview_team.py
+#, fuzzy
+msgid "Kept everything free for now."
+msgstr "Şimdilik her şeyi ücretsiz tuttum."
+
+#: apps/tenant_config/interview_team.py
+#, fuzzy
+msgid "Next: connect payouts so you can get paid."
+msgstr "Sırada: ödeme alabilmek için ödemeleri bağla."
+
+#: apps/tenant_config/interview_team.py
+#, fuzzy
+msgid "You can change any price in its Access section."
+msgstr "Herhangi bir fiyatı ilgili Erişim bölümünden değiştirebilirsin."
+
+#: apps/tenant_config/interview_team.py
+#, fuzzy
+msgid "Ran your setup."
+msgstr "Kurulumunu gerçekleştirdim."
+
+#: apps/tenant_config/interview_team.py
+#, fuzzy
+msgid "Not sure who to ask? Ask me."
+msgstr "Kime soracağından emin değil misin? Bana sor."
 
 #: apps/tenant_config/logo_recipe.py
 #, fuzzy, python-format
@@ -5771,6 +8451,126 @@ msgstr "page_templates bir liste olmalıdır."
 #, fuzzy
 msgid "logo_recipe must be an object."
 msgstr "logo_recipe bir nesne olmalıdır."
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid "Your first course"
+msgstr "İlk kursun"
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid ""
+"Tell us what you want to create — we'll draft the outline, price and cover."
+msgstr ""
+"Ne oluşturmak istediğini bize söyle — ana hatları, fiyatı ve kapağı biz "
+"hazırlayalım."
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid "Your first live session"
+msgstr "İlk canlı oturumun"
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid "Pick a topic and we'll schedule a session students can join."
+msgstr "Bir konu seç, öğrencilerin katılabileceği bir oturum planlayalım."
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid "Your first article"
+msgstr "İlk makalen"
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid "A short post that shows visitors how you think and who you help."
+msgstr ""
+"Ziyaretçilere nasıl düşündüğünü ve kimlere yardımcı olduğunu gösteren kısa "
+"bir yazı."
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid "Home page"
+msgstr "Ana sayfa"
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid "The first thing visitors see."
+msgstr "Ziyaretçilerin gördüğü ilk şey."
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid "About page"
+msgstr "Hakkında sayfası"
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid "Your story, in your own words."
+msgstr "Senin hikayen, kendi kelimelerinle."
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid "Courses page"
+msgstr "Kurslar sayfası"
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid "Where students browse what you offer."
+msgstr "Öğrencilerin neler sunduğuna göz attığı yer."
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid "Pricing page"
+msgstr "Fiyatlandırma sayfası"
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid "Your membership plans, side by side."
+msgstr "Üyelik planların, yan yana."
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid "FAQ page"
+msgstr "SSS sayfası"
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid "Answers to what students ask before they join."
+msgstr "Öğrencilerin katılmadan önce sorduğu soruların yanıtları."
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid "Contact page"
+msgstr "İletişim sayfası"
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid "How students reach you."
+msgstr "Öğrencilerin sana nasıl ulaşacağı."
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid "Events page"
+msgstr "Etkinlikler sayfası"
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid "Your upcoming sessions and events, online and in person."
+msgstr "Yaklaşan oturumların ve etkinliklerin, çevrim içi ve yüz yüze."
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid "Get paid"
+msgstr "Ödeme al"
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid "Connect Stripe so your sales reach your bank account."
+msgstr "Satışlarının banka hesabına ulaşması için Stripe'ı bağla."
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid "Publish your site — or keep it private a little longer."
+msgstr "Siteni yayınla — ya da biraz daha gizli tut."
 
 #: apps/tenant_config/setup_flow.py
 #, fuzzy
