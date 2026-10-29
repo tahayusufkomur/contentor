@@ -21,6 +21,7 @@ import polib
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
+from django.core.management.commands import makemessages
 from pydantic import BaseModel
 
 from apps.core import ai, languages
@@ -128,8 +129,15 @@ def _in_backend_dir(name: str, **options):
         os.chdir(previous)
 
 
+class _Makemessages(makemessages.Command):
+    # msgmerge pre-fills a new msgid from a similar old one and flags it fuzzy, but when the old one is itself
+    # a fuzzy draft it writes no `#| msgid` line, so the guess looks like a finished draft. A changed or new
+    # English text arrives empty instead, and gets drafted.
+    msgmerge_options = [*makemessages.Command.msgmerge_options, "--no-fuzzy-matching"]
+
+
 def _makemessages(langs):
-    _in_backend_dir("makemessages", locale=langs, add_location="file", no_obsolete=True)
+    _in_backend_dir(_Makemessages(), locale=langs, add_location="file", no_obsolete=True)
 
 
 def _compile(langs):

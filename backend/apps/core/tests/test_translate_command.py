@@ -1,5 +1,7 @@
 import io
 import json
+import shutil
+import subprocess
 from decimal import Decimal
 
 import polib
@@ -225,3 +227,31 @@ def test_import_refuses_blank_and_broken_rows_but_takes_the_rest(locale, tmp_pat
     assert "fuzzy" in entries["%(count)d item"].flags  # two forms of three: refused
     assert entries["Done"].msgstr == "Zrobione" and "fuzzy" not in entries["Done"].flags
     assert "'backend:Save'" in err.getvalue() and locale == [["pl"]]
+
+
+@pytest.mark.skipif(shutil.which("msgmerge") is None, reason="gettext tools missing")
+def test_a_msgmerge_guess_from_a_fuzzy_draft_is_drafted_not_kept(calls, locale, tmp_path, monkeypatch):
+    """msgmerge writes no `#| msgid` when the entry it matches is itself a fuzzy draft; run with its
+    stock options "See all courses" keeps the neighbour's text as if it were a finished draft."""
+    path = _write(
+        tmp_path,
+        "tr",
+        polib.POEntry(msgid="See all sessions", msgstr="Tüm oturumları gör", flags=["fuzzy"]),
+        polib.POEntry(msgid="I also teach %(also)s.", msgstr="Ben de %(also)s öğretirim.", flags=["fuzzy"]),
+    )
+    pot = polib.POFile()
+    pot.metadata = {"Content-Type": "text/plain; charset=UTF-8"}
+    pot.append(polib.POEntry(msgid="See all courses", msgstr=""))
+    pot.append(polib.POEntry(msgid="We also teach %(also)s.", msgstr=""))
+    pot.save(str(tmp_path / "django.pot"))
+
+    def merge(langs):  # what makemessages does for each language, with the options translate gives it
+        args = [shutil.which("msgmerge"), *cmd._Makemessages.msgmerge_options, str(path), str(tmp_path / "django.pot")]
+        subprocess.run(args, check=True)  # noqa: S603  # fixed arguments from this test
+
+    monkeypatch.setattr(cmd, "_makemessages", merge)
+    call_command("translate", po=True, to="tr", stderr=io.StringIO())
+    entries = _read(path)
+    assert entries["See all courses"].msgstr == "[x] See all courses"
+    assert entries["We also teach %(also)s."].msgstr == "[x] We also teach %(also)s."
+    assert all("fuzzy" in e.flags for e in entries.values())
