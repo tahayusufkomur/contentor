@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { buttonVariants } from "@/components/ui/button";
-import { NavLink } from "@/components/ui/nav-link";
+import { LocaleNavLink } from "@/i18n/navigation";
 import { FOUNDING_PERKS } from "@/lib/landing";
 import { cn } from "@/lib/utils";
 
@@ -57,7 +57,7 @@ export async function FounderChapter() {
             ))}
           </ul>
           <div className="mt-8 flex flex-wrap items-center gap-4">
-            <NavLink
+            <LocaleNavLink
               href="/signup"
               className={cn(
                 buttonVariants({ size: "lg" }),
@@ -65,7 +65,7 @@ export async function FounderChapter() {
               )}
             >
               {t("offer.cta")}
-            </NavLink>
+            </LocaleNavLink>
             <p className="text-caption text-muted-foreground">
               {t("offer.note")}
             </p>

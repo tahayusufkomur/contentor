@@ -11,6 +11,9 @@
     "dashboard": "Panel",
     "myPlatforms": "Platformlarım"
   },
+  "language": {
+    "label": "Dil"
+  },
   "footer": {
     "tagline": "İçerik üreticilerinin uzmanlıklarından gelir elde etmesini sağlayan platform.",
     "product": "Ürün",

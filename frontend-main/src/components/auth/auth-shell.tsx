@@ -1,4 +1,4 @@
-import { NavLink } from "@/components/ui/nav-link";
+import { LocaleNavLink } from "@/i18n/navigation";
 import { Wordmark } from "@/components/shared/logo-mark";
 
 interface AuthShellProps {
@@ -48,20 +48,20 @@ export function AuthShell({
             className="absolute inset-0 h-full w-full object-cover"
           />
         )}
-        <NavLink
+        <LocaleNavLink
           href="/"
           className="absolute left-8 top-8 inline-flex rounded-full bg-background px-3.5 py-1.5"
         >
           <Wordmark className="text-xl" />
-        </NavLink>
+        </LocaleNavLink>
       </aside>
 
       <main className="flex items-center justify-center px-6 py-12 lg:px-12">
         <div className="w-full max-w-[420px]">
           <div className="mb-10 flex justify-center lg:hidden">
-            <NavLink href="/">
+            <LocaleNavLink href="/">
               <Wordmark className="text-xl" />
-            </NavLink>
+            </LocaleNavLink>
           </div>
 
           <div className="text-center">

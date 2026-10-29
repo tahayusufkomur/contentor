@@ -1,25 +1,55 @@
 import { getRequestConfig } from "next-intl/server";
+import {
+  mergeMessages,
+  missingFallback,
+  resolveLocale,
+} from "@shared/i18n/locales";
 
-import { defaultLocale } from "./config";
+type Messages = Record<string, unknown>;
 
-export default getRequestConfig(async () => {
-  const locale = defaultLocale;
+// Messages that live in packages/shared are read from there, the rest here.
+const SHARED = new Set(["site", "studio"]);
+// `studio` serves the shared creator components on /admin (English there);
+// `site` is loaded so the types match the shared files.
+const NAMESPACES = ["marketing", "pricing", "auth", "common", "site", "studio"];
 
-  // Load namespaces in parallel. `studio` serves the shared creator components
-  // on /admin (English there); `site` is loaded so the types match the shared files.
-  const [marketing, pricing, auth, common, site, studio] = await Promise.all([
-    import(`../../messages/${locale}/marketing.json`).then((m) => m.default),
-    import(`../../messages/${locale}/pricing.json`).then((m) => m.default),
-    import(`../../messages/${locale}/auth.json`).then((m) => m.default),
-    import(`../../messages/${locale}/common.json`).then((m) => m.default),
-    import(`@shared/i18n/messages/${locale}/site.json`).then((m) => m.default),
-    import(`@shared/i18n/messages/${locale}/studio.json`).then(
-      (m) => m.default,
-    ),
-  ]);
+async function load(locale: string, ns: string): Promise<Messages> {
+  try {
+    return SHARED.has(ns)
+      ? (await import(`@shared/i18n/messages/${locale}/${ns}.json`)).default
+      : (await import(`../../messages/${locale}/${ns}.json`)).default;
+  } catch (e) {
+    // A language with no file for this namespace yet shows English. Anything
+    // else (bad JSON, a broken alias, English itself missing) must be loud.
+    if (locale !== "en" && (e as { code?: string }).code === "MODULE_NOT_FOUND")
+      return {};
+    throw e;
+  }
+}
+
+export default getRequestConfig(async ({ requestLocale }) => {
+  // The middleware says which language the address asked for. /admin is outside
+  // it, so it has none and stays English.
+  const locale = resolveLocale(await requestLocale);
+
+  const entries = await Promise.all(
+    NAMESPACES.map(async (ns) => {
+      const en = await load("en", ns);
+      return [
+        ns,
+        locale === "en" ? en : mergeMessages(en, await load(locale, ns)),
+      ] as const;
+    }),
+  );
+  const messages = Object.fromEntries(entries);
 
   return {
     locale,
-    messages: { marketing, pricing, auth, common, site, studio },
+    messages,
+    // Already English-filled, so only a key English lacks too gets here.
+    getMessageFallback: (e) => missingFallback(locale, messages, e),
+    onError: (err) => {
+      if (err.code !== "MISSING_MESSAGE") console.error(err);
+    },
   };
 });

@@ -2,7 +2,7 @@ import { Check, ChevronDown, Minus } from "lucide-react";
 import { getTranslations, getLocale } from "next-intl/server";
 
 import { Button } from "@/components/ui/button";
-import { NavLink } from "@/components/ui/nav-link";
+import { LocaleNavLink } from "@/i18n/navigation";
 import { PlatformHeader } from "@/components/shared/platform-header";
 import { PlatformFooter } from "@/components/shared/platform-footer";
 import { formatPlanPrice } from "@shared/lib/format-plan-price";
@@ -280,7 +280,7 @@ export default async function PricingPage() {
               size="xl"
               className="mt-8 rounded-full"
             >
-              <NavLink href="/signup">{t("cta2.button")}</NavLink>
+              <LocaleNavLink href="/signup">{t("cta2.button")}</LocaleNavLink>
             </Button>
             <p className="mt-4 text-caption text-muted-foreground">
               {t("cta2.trustNote")}

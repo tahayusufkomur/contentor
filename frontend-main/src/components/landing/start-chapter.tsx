@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { getTranslations, getLocale } from "next-intl/server";
 import { FaqSection } from "@/components/landing/faq-section";
 import { FinalCtaSection } from "@/components/landing/final-cta-section";
-import { NavLink } from "@/components/ui/nav-link";
+import { LocaleNavLink } from "@/i18n/navigation";
 import { teaserRows } from "@/lib/plans";
 import { fetchPlans } from "@/lib/plans-server";
 
@@ -49,12 +49,12 @@ async function PricingTeaser({ live = true }: { live?: boolean }) {
           </div>
         ))}
       </div>
-      <NavLink
+      <LocaleNavLink
         href="/pricing"
         className="mt-6 inline-block text-body text-marketing-accent hover:underline"
       >
         {t("cta")}
-      </NavLink>
+      </LocaleNavLink>
     </section>
   );
 }

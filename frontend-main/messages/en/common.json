@@ -11,6 +11,9 @@
     "dashboard": "Dashboard",
     "myPlatforms": "My platforms"
   },
+  "language": {
+    "label": "Language"
+  },
   "footer": {
     "tagline": "The platform for content creators to monetize their expertise.",
     "product": "Product",

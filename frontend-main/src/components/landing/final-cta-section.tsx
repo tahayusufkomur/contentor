@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { NavLink } from "@/components/ui/nav-link";
+import { LocaleNavLink } from "@/i18n/navigation";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -16,7 +16,7 @@ export async function FinalCtaSection() {
         <p className="mx-auto mt-4 max-w-[560px] text-body-lg text-muted-foreground">
           {t("text")}
         </p>
-        <NavLink
+        <LocaleNavLink
           href="/signup"
           className={cn(
             buttonVariants({ size: "lg" }),
@@ -24,7 +24,7 @@ export async function FinalCtaSection() {
           )}
         >
           {t("button")}
-        </NavLink>
+        </LocaleNavLink>
         <p className="mt-4 text-caption text-muted-foreground">{t("note")}</p>
       </div>
     </section>

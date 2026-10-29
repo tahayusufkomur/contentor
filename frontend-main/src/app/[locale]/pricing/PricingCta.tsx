@@ -10,7 +10,7 @@ import {
   type CheckoutStart,
   type PlanTerms,
 } from "@shared/checkout/embedded-checkout";
-import { useNavigate } from "@shared/navigation/navigation-provider";
+import { useLocaleNavigate } from "@/i18n/navigation";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { startCheckout } from "@/lib/api/billing-platform";
 import { ApiError } from "@/types/api";
@@ -47,7 +47,7 @@ export function PricingCta({
   className,
 }: PricingCtaProps) {
   const t = useTranslations("pricing");
-  const navigate = useNavigate();
+  const navigate = useLocaleNavigate();
   const [error, setError] = useState<string | null>(null);
   const [session, setSession] = useState<
     (CheckoutStart & { client_secret: string }) | null

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { stripLocale } from "@/lib/locale-href";
 import {
   ArrowRight,
   MessageCircleQuestion,
@@ -407,7 +408,10 @@ export function HelpBubble() {
     };
   }, [open, mode, humanRequested]);
 
-  if (!enabled || HIDDEN_PREFIXES.some((p) => pathname.startsWith(p))) {
+  if (
+    !enabled ||
+    HIDDEN_PREFIXES.some((p) => stripLocale(pathname).startsWith(p))
+  ) {
     return null;
   }
 

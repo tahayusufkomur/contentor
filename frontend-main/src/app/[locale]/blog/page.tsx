@@ -1,6 +1,6 @@
 import { PlatformHeader } from "@/components/shared/platform-header";
 import { PlatformFooter } from "@/components/shared/platform-footer";
-import { NavLink } from "@/components/ui/nav-link";
+import { LocaleNavLink } from "@/i18n/navigation";
 import { BlogCover } from "@/components/blog/blog-cover";
 import { getAuthUser } from "@/lib/auth";
 import { fetchPlatformPosts } from "@/lib/platform-blog";
@@ -41,7 +41,7 @@ export default async function PlatformBlogIndexPage() {
         )}
 
         {latest && (
-          <NavLink
+          <LocaleNavLink
             href={`/blog/${latest.slug}`}
             className="group mx-auto mt-6 block max-w-media px-6"
           >
@@ -60,14 +60,17 @@ export default async function PlatformBlogIndexPage() {
                 {latest.excerpt}
               </p>
             </div>
-          </NavLink>
+          </LocaleNavLink>
         )}
 
         {rest.length > 0 && (
           <ul className="mx-auto mt-20 grid max-w-media gap-x-6 gap-y-14 px-6 md:mt-28 md:grid-cols-3">
             {rest.map((post) => (
               <li key={post.slug}>
-                <NavLink href={`/blog/${post.slug}`} className="group block">
+                <LocaleNavLink
+                  href={`/blog/${post.slug}`}
+                  className="group block"
+                >
                   <BlogCover post={post} />
                   <time
                     className="mt-5 block text-caption text-muted-foreground"
@@ -81,7 +84,7 @@ export default async function PlatformBlogIndexPage() {
                   <p className="mt-2 text-body text-muted-foreground">
                     {post.excerpt}
                   </p>
-                </NavLink>
+                </LocaleNavLink>
               </li>
             ))}
           </ul>

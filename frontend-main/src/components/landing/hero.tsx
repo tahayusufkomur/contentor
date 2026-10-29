@@ -3,7 +3,7 @@ import { ArrowRight, Check, Sparkle } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { ROLE_ICONS } from "@/components/landing/role-icons";
 import { buttonVariants } from "@/components/ui/button";
-import { NavLink } from "@/components/ui/nav-link";
+import { LocaleNavLink } from "@/i18n/navigation";
 import { HERO_PHOTO, TEAM_ROLES } from "@/lib/landing";
 import { media } from "@/lib/media";
 import { cn } from "@/lib/utils";
@@ -69,12 +69,12 @@ export async function Hero() {
           {t("lead")}
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <NavLink
+          <LocaleNavLink
             href="/signup"
             className={cn(buttonVariants({ size: "lg" }), "rounded-full px-7")}
           >
             {t("cta")}
-          </NavLink>
+          </LocaleNavLink>
           <a
             href="#team"
             className={cn(

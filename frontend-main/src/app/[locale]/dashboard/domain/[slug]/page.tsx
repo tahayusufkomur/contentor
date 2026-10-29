@@ -1,5 +1,7 @@
 import { notFound, redirect } from "next/navigation";
+import { getLocale } from "next-intl/server";
 import { getAuthUser } from "@/lib/auth";
+import { localizedHref } from "@/lib/locale-href";
 import { getMyTenants } from "@/lib/tenants";
 import { DomainWizard } from "./wizard";
 
@@ -9,7 +11,7 @@ export default async function DomainWizardPage({
   params: { slug: string };
 }) {
   const user = await getAuthUser();
-  if (!user) redirect("/login");
+  if (!user) redirect(localizedHref("/login", await getLocale()));
   const tenants = await getMyTenants();
   const tenant = tenants.find((t) => t.slug === params.slug);
   if (!tenant) notFound();

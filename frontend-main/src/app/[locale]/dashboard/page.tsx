@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { ArrowUpRight, Clock, Globe2, Plus, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { NavLink } from "@/components/ui/nav-link";
+import { LocaleNavLink } from "@/i18n/navigation";
 import { PlatformHeader } from "@/components/shared/platform-header";
 import { PlatformFooter } from "@/components/shared/platform-footer";
 import { Monogram } from "@/components/shared/logo-mark";
@@ -11,6 +11,8 @@ import { PublishControls } from "@/components/dashboard/publish-controls";
 import { PlatformCardDomainCta } from "@/components/dashboard/platform-card-domain-cta";
 import { DeletePlatform } from "@/components/dashboard/delete-platform";
 import { useLocale } from "next-intl";
+import { getLocale } from "next-intl/server";
+import { localizedHref } from "@/lib/locale-href";
 
 /** Status as a coloured dot and a word (spec 5.5). Token colours only:
  * chart-2 is the system's green, marketing-accent its brass. */
@@ -128,10 +130,10 @@ function EmptyState() {
         size="lg"
         className="mt-7 gap-2 rounded-full"
       >
-        <NavLink href="/signup">
+        <LocaleNavLink href="/signup">
           <Plus className="size-4" />
           New platform
-        </NavLink>
+        </LocaleNavLink>
       </Button>
     </div>
   );
@@ -139,7 +141,7 @@ function EmptyState() {
 
 export default async function DashboardPage() {
   const user = await getAuthUser();
-  if (!user) redirect("/login");
+  if (!user) redirect(localizedHref("/login", await getLocale()));
   // Superadmins live in /admin — keep this surface coach-only.
   if (user.is_superuser) redirect("/admin");
 
@@ -169,10 +171,10 @@ export default async function DashboardPage() {
               size="lg"
               className="gap-2 rounded-full"
             >
-              <NavLink href="/signup">
+              <LocaleNavLink href="/signup">
                 <Plus className="size-4" />
                 New platform
-              </NavLink>
+              </LocaleNavLink>
             </Button>
           )}
         </div>

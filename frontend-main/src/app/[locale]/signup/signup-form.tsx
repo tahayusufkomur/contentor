@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { Mail } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
-import { useNavigate } from "@shared/navigation/navigation-provider";
+import { LocaleNavLink, useLocaleNavigate } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,7 +33,7 @@ function AuthenticatedSignupForm({
   authenticatedName: string;
 }) {
   const t = useTranslations("auth.signup");
-  const navigate = useNavigate();
+  const navigate = useLocaleNavigate();
   const [error, setError] = useState<string | null>(null);
 
   const { run: create, loading } = useAsyncAction(
@@ -217,12 +216,12 @@ function AnonymousSignupFlow() {
   const signInLink = (
     <p className="text-center text-[13px] text-muted-foreground">
       {t("alreadyHaveAccount")}{" "}
-      <Link
+      <LocaleNavLink
         href="/login"
         className="font-medium text-foreground underline-offset-4 hover:underline"
       >
         {t("signIn")}
-      </Link>
+      </LocaleNavLink>
     </p>
   );
 

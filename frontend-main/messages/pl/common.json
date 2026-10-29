@@ -11,6 +11,9 @@
     "dashboard": "Panel",
     "myPlatforms": "Moje platformy"
   },
+  "language": {
+    "label": "Język"
+  },
   "footer": {
     "tagline": "Platforma, na której twórcy treści zarabiają na swojej wiedzy.",
     "product": "Produkt",

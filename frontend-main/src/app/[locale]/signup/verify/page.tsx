@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
-import type auth from "../../../../messages/en/auth.json";
+import type auth from "../../../../../messages/en/auth.json";
 import {
   AlertCircle,
   CheckCircle2,
@@ -20,6 +20,7 @@ import {
 } from "@shared/checkout/embedded-checkout";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { LocaleNavLink } from "@/i18n/navigation";
 import { SignupFrame } from "../signup-shell";
 import { formatPlanName, formatPlanPrice } from "@shared/lib/format-plan-price";
 import {
@@ -303,7 +304,7 @@ export default function SignupVerifyPage() {
           </StateIcon>
           {resumeState === "closed" && (
             <Button asChild size="lg" className="mt-7 w-full">
-              <a href="/login">{r("closedCta")}</a>
+              <LocaleNavLink href="/login">{r("closedCta")}</LocaleNavLink>
             </Button>
           )}
         </SignupFrame>
@@ -326,7 +327,7 @@ export default function SignupVerifyPage() {
         </StateIcon>
         {resumeState === "failed" ? (
           <Button asChild variant="outline" size="lg" className="mt-7 w-full">
-            <a href="/signup">{r("startOver")}</a>
+            <LocaleNavLink href="/signup">{r("startOver")}</LocaleNavLink>
           </Button>
         ) : (
           <Button
@@ -355,7 +356,7 @@ export default function SignupVerifyPage() {
         <AlertCircle className="h-6 w-6" />
       </StateIcon>
       <Button asChild variant="outline" size="lg" className="mt-7 w-full">
-        <a href="/signup">{t("verify.tryAgain")}</a>
+        <LocaleNavLink href="/signup">{t("verify.tryAgain")}</LocaleNavLink>
       </Button>
     </SignupFrame>
   );

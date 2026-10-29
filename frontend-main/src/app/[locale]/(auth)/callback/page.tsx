@@ -5,10 +5,10 @@ import { useSearchParams } from "next/navigation";
 import { AlertCircle } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { AuthShell } from "@/components/auth/auth-shell";
-import { useNavigate } from "@shared/navigation/navigation-provider";
+import { useLocaleNavigate } from "@/i18n/navigation";
 
 export default function CallbackPage() {
-  const navigate = useNavigate();
+  const navigate = useLocaleNavigate();
   const searchParams = useSearchParams();
   const [error, setError] = useState("");
 

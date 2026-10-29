@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { NavLink } from "@/components/ui/nav-link";
-import { useNavigate } from "@shared/navigation/navigation-provider";
+import { LocaleNavLink, useLocaleNavigate } from "@/i18n/navigation";
 import { LogOut, Menu, User as UserIcon, X } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { LanguageSwitcher } from "@/components/shared/language-switcher";
 import { Wordmark } from "@/components/shared/logo-mark";
 import { ThemeToggle } from "@shared/ui/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -14,20 +14,20 @@ import type { User } from "@/types/auth";
 
 function Logo() {
   return (
-    <NavLink
+    <LocaleNavLink
       href="/"
       className="flex items-center select-none"
       aria-label="Contentor"
     >
       <Wordmark className="text-xl" />
-    </NavLink>
+    </LocaleNavLink>
   );
 }
 
 /** The one marketing bar, sticky on every page. */
 export function PlatformHeader({ user }: { user?: User | null }) {
   const router = useRouter();
-  const navigate = useNavigate();
+  const navigate = useLocaleNavigate();
   const t = useTranslations("common.nav");
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -62,41 +62,42 @@ export function PlatformHeader({ user }: { user?: User | null }) {
         <Logo />
 
         <nav className="hidden items-center gap-7 md:flex">
-          <NavLink
+          <LocaleNavLink
             href="/#team"
             className="nav-link text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             {t("howItWorks")}
-          </NavLink>
-          <NavLink
+          </LocaleNavLink>
+          <LocaleNavLink
             href="/#for"
             className="nav-link text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             {t("whoFor")}
-          </NavLink>
-          <NavLink
+          </LocaleNavLink>
+          <LocaleNavLink
             href="/pricing"
             className="nav-link text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             {t("pricing")}
-          </NavLink>
-          <NavLink
+          </LocaleNavLink>
+          <LocaleNavLink
             href="/blog"
             className="nav-link text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             {t("blog")}
-          </NavLink>
+          </LocaleNavLink>
           {user && (
-            <NavLink
+            <LocaleNavLink
               href={user.is_superuser ? "/admin" : "/dashboard"}
               className="nav-link text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               {user.is_superuser ? t("dashboard") : t("myPlatforms")}
-            </NavLink>
+            </LocaleNavLink>
           )}
         </nav>
 
         <div className="flex items-center gap-1">
+          <LanguageSwitcher compact className="hidden md:block" />
           <ThemeToggle compact className="shrink-0 text-muted-foreground" />
           <div className="hidden items-center gap-2 md:flex">
             {user ? (
@@ -123,10 +124,12 @@ export function PlatformHeader({ user }: { user?: User | null }) {
                   size="sm"
                   className="h-8 rounded-full px-3"
                 >
-                  <NavLink href="/login">{t("signIn")}</NavLink>
+                  <LocaleNavLink href="/login">{t("signIn")}</LocaleNavLink>
                 </Button>
                 <Button asChild size="sm" className="h-8 rounded-full px-4">
-                  <NavLink href="/signup">{t("getStarted")}</NavLink>
+                  <LocaleNavLink href="/signup">
+                    {t("getStarted")}
+                  </LocaleNavLink>
                 </Button>
               </>
             )}
@@ -149,44 +152,45 @@ export function PlatformHeader({ user }: { user?: User | null }) {
       {mobileOpen && (
         <div className="mx-auto mt-2 max-w-6xl rounded-xl border bg-popover px-6 py-5 shadow-sm md:hidden">
           <nav className="flex flex-col gap-4">
-            <NavLink
+            <LocaleNavLink
               href="/#team"
               className="text-base font-medium text-foreground hover:text-foreground"
               onClick={() => setMobileOpen(false)}
             >
               {t("howItWorks")}
-            </NavLink>
-            <NavLink
+            </LocaleNavLink>
+            <LocaleNavLink
               href="/#for"
               className="text-base font-medium text-foreground hover:text-foreground"
               onClick={() => setMobileOpen(false)}
             >
               {t("whoFor")}
-            </NavLink>
-            <NavLink
+            </LocaleNavLink>
+            <LocaleNavLink
               href="/pricing"
               className="text-base font-medium text-foreground hover:text-foreground"
               onClick={() => setMobileOpen(false)}
             >
               {t("pricing")}
-            </NavLink>
-            <NavLink
+            </LocaleNavLink>
+            <LocaleNavLink
               href="/blog"
               className="text-base font-medium text-foreground hover:text-foreground"
               onClick={() => setMobileOpen(false)}
             >
               {t("blog")}
-            </NavLink>
+            </LocaleNavLink>
             <div className="h-px bg-border" />
+            <LanguageSwitcher className="text-base" />
             {user ? (
               <>
-                <NavLink
+                <LocaleNavLink
                   href={user.is_superuser ? "/admin" : "/dashboard"}
                   className="text-base font-medium text-foreground"
                   onClick={() => setMobileOpen(false)}
                 >
                   {user.is_superuser ? t("dashboard") : t("myPlatforms")}
-                </NavLink>
+                </LocaleNavLink>
                 <div className="flex items-center gap-2 border-t border-border pt-3">
                   <UserIcon className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">
@@ -207,14 +211,20 @@ export function PlatformHeader({ user }: { user?: User | null }) {
             ) : (
               <div className="flex flex-col gap-2 pt-1">
                 <Button asChild variant="outline" className="w-full">
-                  <NavLink href="/login" onClick={() => setMobileOpen(false)}>
+                  <LocaleNavLink
+                    href="/login"
+                    onClick={() => setMobileOpen(false)}
+                  >
                     {t("signIn")}
-                  </NavLink>
+                  </LocaleNavLink>
                 </Button>
                 <Button asChild variant="brand" className="w-full">
-                  <NavLink href="/signup" onClick={() => setMobileOpen(false)}>
+                  <LocaleNavLink
+                    href="/signup"
+                    onClick={() => setMobileOpen(false)}
+                  >
                     {t("getStarted")}
-                  </NavLink>
+                  </LocaleNavLink>
                 </Button>
               </div>
             )}
