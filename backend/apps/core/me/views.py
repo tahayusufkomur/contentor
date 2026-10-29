@@ -5,12 +5,27 @@ which is locked to superusers managing the whole platform.
 """
 
 from django.conf import settings
+from django.db import DatabaseError, transaction
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from apps.core import languages
+
 from ..models import Tenant
+
+
+def _site_language(tenant: Tenant) -> str:
+    """The site's language (code). A site whose schema is not built yet has only the one picked at signup."""
+    if tenant.provisioning_status not in ("provisioned", "ready"):
+        return languages.resolve((tenant.wizard_state or {}).get("site_locale"))
+    # ponytail: one schema switch per site; denormalize onto Tenant if a creator ever owns dozens
+    try:
+        with transaction.atomic():  # a broken site must not take the whole list down
+            return languages.site_language(tenant)
+    except DatabaseError:
+        return languages.DEFAULT
 
 
 def _build_tenant_url(tenant: Tenant) -> str:
@@ -54,6 +69,7 @@ def my_tenants(request):
                 "provisioning_status": tenant.provisioning_status,
                 "plan_name": tenant.plan.name if tenant.plan else None,
                 "domain": domain_name,
+                "language": _site_language(tenant),
                 "studio_url": _build_tenant_url(tenant),
                 "created_at": tenant.created_at.isoformat(),
                 # Why the coach can't delete this platform (None = they can).

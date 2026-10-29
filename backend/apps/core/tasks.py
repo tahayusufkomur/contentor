@@ -318,9 +318,12 @@ def _pick_photos_with_ai(tenant, answers, pages):
     return "ok"
 
 
-def provision_tenant_schema(tenant, owner_email, owner_name, preferred_locale):
+def provision_tenant_schema(tenant, owner_email, owner_name, preferred_locale, site_locale=None):
     """Create the tenant schema, the owner user (public + tenant schema), and a
     default TenantConfig — and stop. Idempotent: every step reuses existing rows.
+
+    ``preferred_locale`` is the creator's language (the owner rows); ``site_locale`` the site's
+    (the config's default language; the creator's when not given).
 
     Does NOT seed niche content or AI-compose pages. On success leaves
     provisioning_status='provisioned'; provision_tenant continues from there
@@ -360,7 +363,7 @@ def provision_tenant_schema(tenant, owner_email, owner_name, preferred_locale):
         from apps.tenant_config.models import TenantConfig
 
         if not TenantConfig.objects.exists():
-            _create_default_config(tenant, preferred_locale)
+            _create_default_config(tenant, site_locale or preferred_locale)
 
         # Tenant schemas are isolated, but we still stamp region for
         # consistency with the public row and so JWT issuance has the
@@ -397,12 +400,14 @@ def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
 
     tenant = Tenant.objects.get(id=tenant_id)
     try:
-        from apps.core.constants import REGION_DEFAULT_LOCALE
+        from apps.core.languages import DEFAULT, resolve
 
-        region = tenant.region or "global"
-        preferred_locale = REGION_DEFAULT_LOCALE.get(region, "en")
+        # Both were picked at signup (onboarding.views); a tenant from before them is English.
+        state = tenant.wizard_state or {}
+        preferred_locale = resolve(state.get("locale"))
+        site_locale = resolve(state.get("site_locale"))
 
-        provision_tenant_schema(tenant, owner_email, owner_name, preferred_locale)
+        provision_tenant_schema(tenant, owner_email, owner_name, preferred_locale, site_locale)
 
         from apps.core.onboarding.site_composer import site_style_for
 
@@ -412,7 +417,8 @@ def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
         styled = bool(site_style_for(wizard_answers))
 
         _set_provisioning_stage(tenant, "seed")
-        if niche and tenant.template_seed_status != "ready" and styled:
+        # The niche seed is English-only content: a site in another language starts without it.
+        if niche and tenant.template_seed_status != "ready" and (styled or site_locale != DEFAULT):
             tenant.template_seed_status = "skipped"
             tenant.save(update_fields=["template_seed_status"])
         elif niche and tenant.template_seed_status != "ready":
@@ -427,7 +433,7 @@ def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
             tenant.save(update_fields=["template_seed_status"])
 
         if wizard_answers:
-            _apply_wizard_answers(tenant, wizard_answers, preferred_locale)
+            _apply_wizard_answers(tenant, wizard_answers, site_locale)
             if not styled:
                 _seed_starter_post(tenant)
 

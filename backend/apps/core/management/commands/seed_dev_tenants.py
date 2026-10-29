@@ -48,7 +48,8 @@ from django.db import connection, transaction
 from django_tenants.utils import schema_context, tenant_context
 
 from apps.accounts.models import User
-from apps.core.constants import REGION_DEFAULT_LOCALE, REGION_GLOBAL
+from apps.core.constants import REGION_GLOBAL
+from apps.core.languages import DEFAULT as DEFAULT_LOCALE
 from apps.core.models import Domain, PlatformPlan, PlatformSubscription, Tenant
 from apps.demo_seed import calendar_content, seeding_helpers
 from apps.demo_seed.registry import load_niche
@@ -191,7 +192,7 @@ Logins
 
         plan = self._resolve_plan(tier)
         region = REGION_GLOBAL
-        preferred_locale = REGION_DEFAULT_LOCALE.get(region, "en")
+        preferred_locale = DEFAULT_LOCALE
         owner_email = f"coach@{tenant_data['subdomain']}.test"
 
         # A schema no Tenant row owns is an orphan (an aborted run, or a

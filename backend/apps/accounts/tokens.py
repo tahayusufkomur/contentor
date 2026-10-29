@@ -23,14 +23,20 @@ def verify_magic_link_token(token: str) -> dict:
     return payload
 
 
-def create_signup_token(email: str, name: str, site: str, region: str = "global") -> str:
+def create_signup_token(
+    email: str, name: str, site: str, region: str = "global", locale: str = "en", site_locale: str = "en"
+) -> str:
     """``site`` is the schema of the site it creates (onboarding.site_name):
-    fixed for life, while the address changes once the creator names it."""
+    fixed for life, while the address changes once the creator names it.
+    ``locale`` is the creator's language, ``site_locale`` the site's (both already resolved):
+    the tenant created at verify keeps them in wizard_state."""
     payload = {
         "email": email,
         "name": name,
         "site": site,
         "region": region,
+        "locale": locale,
+        "site_locale": site_locale,
         "purpose": "signup",
         "exp": datetime.now(tz=UTC) + timedelta(minutes=settings.MAGIC_LINK_EXPIRY_MINUTES),
         "iat": datetime.now(tz=UTC),

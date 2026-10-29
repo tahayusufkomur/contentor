@@ -57,7 +57,9 @@ def creator_signup(request):
 
     from apps.accounts.tokens import create_signup_token
 
-    token = create_signup_token(email, name, site, region=region)
+    locale = languages.resolve(serializer.validated_data["locale"])
+    site_locale = languages.resolve(serializer.validated_data["site_locale"] or locale)
+    token = create_signup_token(email, name, site, region=region, locale=locale, site_locale=site_locale)
     logger.info("creator signup requested email=%s site=%s region=%s", email, site, region)
 
     scheme = "https" if request.is_secure() else "http"
@@ -158,7 +160,9 @@ def creator_signup_authenticated(request):
 
     from apps.accounts.tokens import create_signup_token
 
-    token = create_signup_token(user.email, user.name, site, region=region)
+    locale = languages.resolve(request.data.get("locale") or user.preferred_locale)
+    site_locale = languages.resolve(request.data.get("site_locale") or locale)
+    token = create_signup_token(user.email, user.name, site, region=region, locale=locale, site_locale=site_locale)
     logger.info(
         "authenticated creator new-platform email=%s site=%s region=%s",
         user.email,
@@ -229,7 +233,6 @@ def creator_signup_verify(request):
             }
         )
 
-    from apps.core.constants import REGION_DEFAULT_LOCALE
     from apps.core.currency import currency_for_country
 
     # The temporary address until the creator names the site in /setup.
@@ -250,6 +253,11 @@ def creator_signup_verify(request):
         wizard_bucket=assign_wizard_bucket(f"{email}:{region}"),
         # No Free plan any more: a Starter trial (card first) or a paid plan.
         requires_plan=True,
+        # The creator's language and the site's, as picked at signup (resolved: a hidden one is English).
+        wizard_state={
+            "locale": languages.resolve(payload.get("locale")),
+            "site_locale": languages.resolve(payload.get("site_locale")),
+        },
     )
     Domain.objects.create(
         domain=tenant_fqdn,
@@ -265,7 +273,7 @@ def creator_signup_verify(request):
             "status": "pending",
             "region": region,
             "domain": tenant_fqdn,
-            "locale": REGION_DEFAULT_LOCALE.get(region, "en"),
+            "locale": tenant.wizard_state["locale"],
             "wizard_token": wizard_token,
             **_card_step(tenant),
         },
@@ -301,7 +309,6 @@ def signup_checkout(request):
     from apps.billing.providers import get_provider
     from apps.billing.providers.stripe_provider import embedded_fields
     from apps.billing.providers.types import ProviderError
-    from apps.core.constants import REGION_DEFAULT_LOCALE
     from apps.core.models import PlatformPlan
     from apps.core.monetization import TRIAL_PLAN_NAME, trial_days_for
 
@@ -309,7 +316,7 @@ def signup_checkout(request):
     if plan is None:
         return Response({"error": "PLAN_NOT_FOUND"}, status=404)
     region = tenant.region or "global"
-    locale = REGION_DEFAULT_LOCALE.get(region, "en")
+    locale = languages.resolve((tenant.wizard_state or {}).get("locale"))
     # The plan is on the owner's platform account; the build reuses this row.
     account, _ = User.objects.get_or_create(
         email=tenant.owner_email,
@@ -527,7 +534,8 @@ def _start_interview_provisioning(tenant, email, owner_name, answers=None) -> No
     if is_placeholder(tenant.schema_name):  # unnamed: its name and bio are asked first in /setup
         defaults[NAMED_IN_SETUP] = True
     merged = {**defaults, "goals": [], **(answers or {})}
-    wizard_state = {"version": 2, "flow": "interview", "answers": merged}
+    kept = {k: v for k, v in (tenant.wizard_state or {}).items() if k in ("locale", "site_locale")}
+    wizard_state = {"version": 2, "flow": "interview", "answers": merged, **kept}
     Tenant.objects.filter(pk=tenant.pk).update(wizard_state=wizard_state, template_niche="general")
     if not tenant.is_paused:
         build_site(tenant.id, email, owner_name)
