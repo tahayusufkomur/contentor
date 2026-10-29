@@ -11,8 +11,6 @@ from django.conf import settings
 from django.core.cache import cache
 from pydantic import BaseModel
 
-from apps.core import languages
-
 logger = logging.getLogger(__name__)
 
 # The agentc hub run takes ~9-10 s; this becomes its per-run budget (ai._agentc_structured).
@@ -49,8 +47,9 @@ class NameReview(BaseModel):
     suggestions: list[str] = []
 
 
-def review(name: str) -> dict:
-    """{"typo_fix": str, "suggestions": [str]} for ``name``; empty on any failure."""
+def review(name: str, *, language: str) -> dict:
+    """{"typo_fix": str, "suggestions": [str]} for ``name``, written in ``language`` (the page's: this runs on
+    contentor.app, in the public schema); empty on any failure."""
     from apps.core import ai as core_ai
 
     from . import ai_compose
@@ -59,7 +58,7 @@ def review(name: str) -> dict:
     empty = {"typo_fix": "", "suggestions": []}
     if not name or not ai_compose.compose_available():
         return empty
-    key = f"name-review:{hashlib.sha256(name.encode()).hexdigest()}"
+    key = f"name-review:{hashlib.sha256(f'{language}|{name}'.encode()).hexdigest()}"
     if (hit := cache.get(key)) is not None:
         return hit
     try:
@@ -71,7 +70,7 @@ def review(name: str) -> dict:
             max_tokens=400,
             label="contentor:name-check",
             timeout_seconds=TIMEOUT_SECONDS,
-            language=languages.Mixed(languages.creator_language(), languages.site_language()),
+            language=language,
         )
     except core_ai.AiError as exc:
         ai_compose.record_spend("public", getattr(exc, "cost_usd", None) or 0)
@@ -98,8 +97,9 @@ class NameIdeas(BaseModel):
     names: list[str] = []
 
 
-def ideas(topic: str, first_name: str = "") -> list[str]:
-    """Up to IDEAS_COUNT brand-name ideas for a coach teaching ``topic``; empty on any failure."""
+def ideas(topic: str, first_name: str = "", *, language: str) -> list[str]:
+    """Up to IDEAS_COUNT brand-name ideas for a coach teaching ``topic``, written in ``language`` (the page's);
+    empty on any failure."""
     from apps.core import ai as core_ai
 
     from . import ai_compose
@@ -108,7 +108,7 @@ def ideas(topic: str, first_name: str = "") -> list[str]:
     first_name = first_name.strip()[:FIRST_NAME_MAX]
     if not topic or not ai_compose.compose_available():
         return []
-    key = "name-ideas:" + hashlib.sha256(json.dumps([topic.lower(), first_name.lower()]).encode()).hexdigest()
+    key = "name-ideas:" + hashlib.sha256(json.dumps([topic.lower(), first_name.lower(), language]).encode()).hexdigest()
     if (hit := cache.get(key)) is not None:
         return hit
     try:
@@ -120,7 +120,7 @@ def ideas(topic: str, first_name: str = "") -> list[str]:
             max_tokens=400,
             label="contentor:name-ideas",
             timeout_seconds=TIMEOUT_SECONDS,
-            language=languages.Mixed(languages.creator_language(), languages.site_language()),
+            language=language,
         )
     except core_ai.AiError as exc:
         ai_compose.record_spend("public", getattr(exc, "cost_usd", None) or 0)

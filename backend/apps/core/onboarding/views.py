@@ -4,13 +4,14 @@ from datetime import timedelta
 from urllib.parse import urlencode
 
 from django.conf import settings
-from django.utils import timezone
+from django.utils import timezone, translation
 from django.utils.translation import gettext as _
 from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 
+from apps.core import languages
 from apps.core.slugs import slugify
 from apps.core.throttling import BrandNameCheckThrottle
 
@@ -102,7 +103,7 @@ def check_brand_name(request):
         topic, first = request.data.get("ideas"), request.data.get("first_name") or ""
         if not isinstance(topic, str) or not isinstance(first, str):
             return Response({"detail": _("Brand name is required")}, status=400)
-        names = ideas(topic, first)
+        names = ideas(topic, first, language=languages.resolve(translation.get_language()))
         taken = set(
             Tenant.objects.filter(slug__in=[slugify(n)[:63] for n in names if n], region=region).values_list(
                 "slug", flat=True
@@ -123,7 +124,7 @@ def check_brand_name(request):
     # A typo fix and a few alternatives, only the ones still free to take.
     from .name_check import review
 
-    found = review(brand_name)
+    found = review(brand_name, language=languages.resolve(translation.get_language()))
     taken = set(
         Tenant.objects.filter(
             slug__in=[slugify(n)[:63] for n in (found["typo_fix"], *found["suggestions"]) if n], region=region
