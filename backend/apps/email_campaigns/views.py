@@ -6,6 +6,7 @@ from django.core.cache import cache
 from django.db import connection
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import ValidationError
@@ -75,7 +76,7 @@ def image_view(request):
 
     photo = Photo.objects.filter(pk=request.data.get("photo_id")).first() if request.data.get("photo_id") else None
     if photo is None or not photo.s3_key:
-        return Response({"detail": "Photo not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Photo not found.")}, status=status.HTTP_404_NOT_FOUND)
     return Response(
         {
             "src": images.stable_url_for(photo, site=catalog.site_of(connection.tenant)),
@@ -193,7 +194,7 @@ def _create_draft(request):
     if data.get("template_id"):
         template = EmailTemplate.objects.filter(pk=data["template_id"]).first()
         if template is None:
-            return Response({"detail": "Template not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": _("Template not found.")}, status=status.HTTP_404_NOT_FOUND)
     campaign = EmailCampaign.objects.create(
         status=CampaignStatus.DRAFT,
         template=template,
@@ -214,7 +215,7 @@ def campaign_detail(request, pk: int):
         # A draft or a not-yet-sent scheduled email can go; anything that went out is history.
         if campaign.status not in (CampaignStatus.DRAFT, CampaignStatus.SCHEDULED):
             return Response(
-                {"detail": "Only drafts and scheduled emails can be deleted."}, status=status.HTTP_400_BAD_REQUEST
+                {"detail": _("Only drafts and scheduled emails can be deleted.")}, status=status.HTTP_400_BAD_REQUEST
             )
         campaign.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -224,7 +225,7 @@ def campaign_detail(request, pk: int):
             campaign.status = CampaignStatus.DRAFT
             campaign.scheduled_at = None
         elif campaign.status != CampaignStatus.DRAFT:
-            return Response({"detail": "This email was already sent."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": _("This email was already sent.")}, status=status.HTTP_400_BAD_REQUEST)
         serializer = DraftUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         for field, value in serializer.validated_data.items():
@@ -246,18 +247,18 @@ def _quota_left(tenant, count):
 def campaign_send(request, pk: int):
     campaign = get_object_or_404(EmailCampaign, pk=pk)
     if campaign.status != CampaignStatus.DRAFT:
-        return Response({"detail": "This email is already on its way."}, status=status.HTTP_409_CONFLICT)
+        return Response({"detail": _("This email is already on its way.")}, status=status.HTTP_409_CONFLICT)
     if not campaign.subject.strip():
-        return Response({"detail": "Give your email a subject first."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": _("Give your email a subject first.")}, status=status.HTTP_400_BAD_REQUEST)
     if not any(brand.blocks_of(campaign.design)):
-        return Response({"detail": "This email is empty."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": _("This email is empty.")}, status=status.HTTP_400_BAD_REQUEST)
     serializer = SendSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     data = serializer.validated_data
     recipient_count = get_recipient_count(data["recipient_filter"])
     tenant = connection.tenant
     if not _quota_left(tenant, recipient_count):
-        return Response({"detail": "Email quota exceeded for this month."}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": _("Email quota exceeded for this month.")}, status=status.HTTP_403_FORBIDDEN)
 
     scheduled_at = data.get("scheduled_at")
     claimed = EmailCampaign.objects.filter(pk=campaign.pk, status=CampaignStatus.DRAFT).update(
@@ -269,7 +270,7 @@ def campaign_send(request, pk: int):
         template_name=campaign.template.name if campaign.template_id else "",
     )
     if not claimed:  # a double click: the first one sends it
-        return Response({"detail": "This email is already on its way."}, status=status.HTTP_409_CONFLICT)
+        return Response({"detail": _("This email is already on its way.")}, status=status.HTTP_409_CONFLICT)
     if not scheduled_at:
         from .tasks import send_campaign_emails
 
@@ -300,18 +301,13 @@ def campaign_test(request, pk: int):
     campaign = get_object_or_404(EmailCampaign, pk=pk)
     key = f"email-tests:{connection.schema_name}:{request.user.pk}:{timezone.now():%Y%m%d%H}"
     if cache.get_or_set(key, 0, 3600) >= TESTS_PER_HOUR:
-        return Response({"detail": "That's a lot of tests. Try again in an hour."}, status=429)
+        return Response({"detail": _("That's a lot of tests. Try again in an hour.")}, status=429)
     cache.incr(key)
+    subject = _("[Test] %(subject)s") % {"subject": campaign.subject or _("(no subject)")}  # her tag, in her language
     with site_language_context():  # the email in her students' language, not hers; her replies stay hers
-        ok = send_one(
-            campaign,
-            connection.tenant,
-            to=request.user.email,
-            name=request.user.name or "",
-            subject=f"[Test] {campaign.subject or '(no subject)'}",
-        )
+        ok = send_one(campaign, connection.tenant, to=request.user.email, name=request.user.name or "", subject=subject)
     if not ok:
-        return Response({"detail": "The test email could not be sent."}, status=status.HTTP_502_BAD_GATEWAY)
+        return Response({"detail": _("The test email could not be sent.")}, status=status.HTTP_502_BAD_GATEWAY)
     return Response({"sent_to": request.user.email})
 
 
@@ -364,10 +360,10 @@ def designer_start(request):
     campaign = get_object_or_404(EmailCampaign, pk=data["campaign_id"]) if data.get("campaign_id") else None
     template = get_object_or_404(EmailTemplate, pk=data["template_id"]) if data.get("template_id") else None
     if campaign is not None and campaign.status != CampaignStatus.DRAFT:
-        return Response({"detail": "This email was already sent."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": _("This email was already sent.")}, status=status.HTTP_400_BAD_REQUEST)
     ok, reason = designer.available()
     if not ok:
-        return Response({"detail": "The Designer isn't available right now.", "reason": reason}, status=503)
+        return Response({"detail": _("The Designer isn't available right now."), "reason": reason}, status=503)
     job = designer.start(
         user=request.user,
         campaign=campaign,

@@ -3,6 +3,7 @@ import re
 
 from django.conf import settings as django_settings
 from django.db import IntegrityError, connection
+from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django_tenants.utils import get_public_schema_name, schema_context, tenant_context
 from rest_framework import status
@@ -166,7 +167,7 @@ def platform_reply(request, pk):
 def _upload_attachment(request):
     f = request.FILES.get("file")
     if f is None:
-        return Response({"detail": "No file provided."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": _("No file provided.")}, status=status.HTTP_400_BAD_REQUEST)
     err = attachments_mod.validate_attachment(f.name, f.content_type or "", f.size)
     if err:
         return Response({"detail": err}, status=status.HTTP_400_BAD_REQUEST)

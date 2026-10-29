@@ -5,6 +5,8 @@ from django.conf import settings
 from django.db import IntegrityError, connection, transaction
 from django.utils import timezone
 from django.utils.html import escape
+from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 from django_tenants.utils import get_public_schema_name
 
 from apps.accounts.models import User
@@ -73,10 +75,17 @@ def send_message(
 
     ids = list(attachment_ids or [])
     if len(ids) > MAX_FILES_PER_MESSAGE:
-        raise ValueError(f"At most {MAX_FILES_PER_MESSAGE} attachments per message.")
+        raise ValueError(
+            ngettext(
+                "At most %(count)d attachment per message.",
+                "At most %(count)d attachments per message.",
+                MAX_FILES_PER_MESSAGE,
+            )
+            % {"count": MAX_FILES_PER_MESSAGE}
+        )
     atts = list(MessageAttachment.objects.filter(id__in=ids, message__isnull=True))
     if len(atts) != len(ids):
-        raise ValueError("Unknown or already-sent attachment.")
+        raise ValueError(_("Unknown or already-sent attachment."))
     resend_attachments = [
         {"filename": a.filename, "content": base64.b64encode(read_attachment(a.storage_key)).decode()} for a in atts
     ]

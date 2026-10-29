@@ -14,7 +14,7 @@ from django.utils import timezone
 from django.utils.formats import date_format, number_format
 from django.utils.html import strip_tags
 from django.utils.translation import gettext as _
-from django.utils.translation import ngettext
+from django.utils.translation import gettext_lazy, ngettext
 
 from . import images
 
@@ -32,7 +32,12 @@ SERIF_FONTS = {
     "Playfair Display", "Shippori Mincho", "Source Serif 4", "Spectral", "Young Serif", "Zilla Slab",
 }  # fmt: skip
 _PAGE_PATH = re.compile(r"/[\w/-]*")
-_EVENT_LABELS = {"live": "Live session", "stream": "Live stream", "zoom": "Zoom session", "onsite": "In-person event"}
+_EVENT_LABELS = {
+    "live": gettext_lazy("Live session"),
+    "stream": gettext_lazy("Live stream"),
+    "zoom": gettext_lazy("Zoom session"),
+    "onsite": gettext_lazy("In-person event"),
+}
 
 
 def font_stack(font: str) -> str:
@@ -113,7 +118,7 @@ def _course(c, site):
         summary=c.description,
         image=images.stable_url_for(c.thumbnail, c.thumbnail_url, site=site),
         meta=_price(c),
-        label="Course",
+        label=_("Course"),
     )
 
 
@@ -129,7 +134,7 @@ def _event(kind, event, site, zone):
         summary=event.description,
         image=images.stable_url_for(event.thumbnail, event.thumbnail_url, site=site),
         meta=" · ".join(p for p in (short_when(event.scheduled_at, zone), price) if p),
-        label=_EVENT_LABELS[kind],
+        label=str(_EVENT_LABELS[kind]),
     )
 
 
@@ -142,7 +147,7 @@ def _download(d, site):
         summary=d.description,
         image=images.stable_url_for(d.thumbnail, site=site),
         meta=_price(d),
-        label="Download",
+        label=_("Download"),
     )
 
 
@@ -154,7 +159,7 @@ def _post(p, site):
         f"{site}/blog/{p.slug}",
         summary=p.excerpt,
         image=images.stable_url_for(p.cover_photo, site=site),
-        label="Article",
+        label=_("Article"),
     )
 
 
@@ -176,7 +181,7 @@ def _plan(p, site):
         f"{site}/plans/{p.id}",
         summary=p.description,
         meta=every,
-        label="Membership",
+        label=_("Membership"),
     )
 
 
@@ -215,12 +220,12 @@ def _plans():
 
 def _pages(cfg, site) -> list[dict]:
     """Her home page and the pages her own navigation links to."""
-    pages = {"page:home": _item("page:home", "page", "Home", f"{site}/", label="Page")}
+    pages = {"page:home": _item("page:home", "page", _("Home"), f"{site}/", label=_("Page"))}
     for link in (getattr(cfg, "navbar_config", None) or {}).get("links") or []:
         href = str(link.get("href") or "") if isinstance(link, dict) else ""
         if href != "/" and _PAGE_PATH.fullmatch(href):
             ref = f"page:{href.strip('/')}"
-            pages.setdefault(ref, _item(ref, "page", link.get("label") or href, f"{site}{href}", label="Page"))
+            pages.setdefault(ref, _item(ref, "page", link.get("label") or href, f"{site}{href}", label=_("Page")))
     return list(pages.values())
 
 

@@ -1,6 +1,7 @@
 import uuid
 
 from django.conf import settings
+from django.utils.translation import gettext as _
 
 from apps.core.storage import build_s3_path, get_s3_client
 
@@ -24,13 +25,13 @@ _ALLOWED_EXACT = {
 
 def validate_attachment(filename: str, content_type: str, size: int) -> str | None:
     if not filename:
-        return "Missing file name."
+        return _("Missing file name.")
     if size > MAX_FILE_BYTES:
-        return "File is larger than 10 MB."
+        return _("File is larger than 10 MB.")
     ct = (content_type or "").lower()
     if ct in _ALLOWED_EXACT or ct.startswith(_ALLOWED_PREFIXES):
         return None
-    return "This file type isn't allowed."
+    return _("This file type isn't allowed.")
 
 
 def store_attachment(content: bytes, filename: str, content_type: str) -> str:

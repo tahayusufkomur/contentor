@@ -21,18 +21,18 @@ msgid "Only student accounts can be opened from here."
 msgstr "Stąd można otwierać tylko konta uczestników."
 
 #: apps/accounts/impersonation.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(name)s has no routable domain yet — cannot open a session."
 msgstr ""
 "%(name)s nie ma jeszcze domeny z routingiem — nie można otworzyć sesji."
 
 #: apps/accounts/impersonation.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Opening a session as %(email)s…"
 msgstr "Otwieranie sesji jako %(email)s…"
 
 #: apps/accounts/impersonation.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(name)s has no creator account to log in as."
 msgstr "%(name)s nie ma konta twórcy, na które można się zalogować."
 
@@ -163,7 +163,7 @@ msgid "Add at least two items"
 msgstr "Dodaj co najmniej dwa elementy"
 
 #: apps/billing/serializers/payments.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Invalid content type. Choose from: %(choices)s"
 msgstr "Nieprawidłowy typ treści. Wybierz spośród: %(choices)s"
 
@@ -212,17 +212,17 @@ msgid "Payment could not be processed. Please try again."
 msgstr "Płatność nie mogła zostać przetworzona. Spróbuj ponownie."
 
 #: apps/billing/views/payments.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "'%(item)s' is not on sale."
 msgstr "'%(item)s' nie jest w sprzedaży."
 
 #: apps/billing/views/payments.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "'%(item)s' is sold out."
 msgstr "'%(item)s' jest wyprzedany."
 
 #: apps/billing/views/payments.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "Item not found: content_type=%(content_type)s, object_id=%(object_id)s."
 msgstr ""
@@ -230,14 +230,14 @@ msgstr ""
 "object_id=%(object_id)s."
 
 #: apps/billing/views/payments.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Item '%(item)s' is not purchasable (pricing_type must be 'paid')."
 msgstr ""
 "Element '%(item)s' nie jest dostępny do zakupu (pricing_type musi mieć "
 "wartość 'paid')."
 
 #: apps/billing/views/payments.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Item '%(item)s' is already owned by this user."
 msgstr "Element '%(item)s' należy już do tego użytkownika."
 
@@ -301,6 +301,61 @@ msgstr "Plan nie istnieje."
 msgid "A plan is already running; contact support to switch plans."
 msgstr "Plan jest już aktywny; skontaktuj się ze wsparciem, aby zmienić plan."
 
+#: apps/blog/serializers.py
+#, fuzzy
+msgid "Expected a list of at most 6 placements."
+msgstr "Oczekiwano listy maksymalnie 6 umiejscowień."
+
+#: apps/blog/serializers.py
+#, fuzzy
+msgid "Each placement must be an object."
+msgstr "Każde umiejscowienie musi być obiektem."
+
+#: apps/blog/serializers.py
+#, fuzzy, python-format
+msgid "Unknown photo_id: %(photo_id)s"
+msgstr "Nieznany identyfikator zdjęcia: %(photo_id)s"
+
+#: apps/blog/serializers.py
+#, fuzzy
+msgid "required for weekly"
+msgstr "wymagane dla opcji tygodniowej"
+
+#: apps/blog/serializers.py
+#, fuzzy
+msgid "required for monthly"
+msgstr "wymagane dla opcji miesięcznej"
+
+#: apps/community/access.py
+#, fuzzy
+msgid "Community is not enabled."
+msgstr "Społeczność nie jest włączona."
+
+#: apps/community/access.py
+#, fuzzy
+msgid "You are banned from the community."
+msgstr "Jesteś zablokowany w społeczności."
+
+#: apps/community/access.py
+#, fuzzy
+msgid "You are muted in the community."
+msgstr "Jesteś wyciszony w społeczności."
+
+#: apps/community/moderation_views.py
+#, fuzzy
+msgid "Must be 'remove' or 'keep'."
+msgstr "Musi być 'usuń' lub 'zachowaj'."
+
+#: apps/community/moderation_views.py
+#, fuzzy
+msgid "Must be an integer."
+msgstr "Musi być liczbą całkowitą."
+
+#: apps/community/moderation_views.py
+#, fuzzy
+msgid "Must be between 0 and 90."
+msgstr "Musi mieścić się w przedziale od 0 do 90."
+
 #: apps/community/payloads.py
 #, fuzzy, python-format
 msgid "%(author)s posted in the community"
@@ -310,6 +365,16 @@ msgstr "%(author)s dodał(a) wpis w społeczności"
 #, fuzzy, python-format
 msgid "%(commenter)s commented on your post"
 msgstr "%(commenter)s skomentował(a) Twój post"
+
+#: apps/community/serializers.py
+#, fuzzy
+msgid "Invalid image key."
+msgstr "Nieprawidłowy klucz obrazu."
+
+#: apps/community/views.py
+#, fuzzy
+msgid "Invalid emoji."
+msgstr "Nieprawidłowe emoji."
 
 #: apps/core/email.py
 #, fuzzy
@@ -1776,7 +1841,7 @@ msgid "goals must be a list of strings."
 msgstr "goals musi być listą ciągów znaków."
 
 #: apps/core/onboarding/views.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Unknown niche '%(niche)s'."
 msgstr "Nieznana nisza '%(niche)s'."
 
@@ -2022,6 +2087,41 @@ msgstr "Nie masz dostępu do tego pliku."
 msgid "Open"
 msgstr "Otwórz"
 
+#: apps/email_campaigns/brand.py
+#, fuzzy
+msgid "The design must be an object."
+msgstr "Projekt musi być obiektem."
+
+#: apps/email_campaigns/brand.py
+#, fuzzy
+msgid "This email is too large."
+msgstr "Ten e-mail jest zbyt duży."
+
+#: apps/email_campaigns/brand.py
+#, fuzzy
+msgid "This email has too many blocks."
+msgstr "Ten e-mail ma zbyt wiele bloków."
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Live session"
+msgstr "Sesja na żywo"
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Live stream"
+msgstr "Transmisja na żywo"
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Zoom session"
+msgstr "Sesja Zoom"
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "In-person event"
+msgstr "Wydarzenie stacjonarne"
+
 #: apps/email_campaigns/catalog.py
 #, fuzzy, python-format
 msgid "%(city)s time"
@@ -2053,6 +2153,21 @@ msgid "Included in membership"
 msgstr "W ramach członkostwa"
 
 #: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Course"
+msgstr "Kurs"
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Download"
+msgstr "Plik do pobrania"
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Article"
+msgstr "Artykuł"
+
+#: apps/email_campaigns/catalog.py
 #, fuzzy, python-format
 msgid "%(price)s a month"
 msgstr "%(price)s miesięcznie"
@@ -2070,10 +2185,61 @@ msgstr[0] "%(price)s co %(count)d miesiąc"
 msgstr[1] "%(price)s co %(count)d miesiące"
 msgstr[2] "%(price)s co %(count)d miesięcy"
 
+#: apps/email_campaigns/catalog.py apps/notifications/transactional.py
+#, fuzzy
+msgid "Membership"
+msgstr "Członkostwo"
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Home"
+msgstr "Strona główna"
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Page"
+msgstr "Strona"
+
 #: apps/email_campaigns/render.py
 #, fuzzy
 msgid "Click here"
 msgstr "Kliknij tutaj"
+
+#: apps/email_campaigns/serializers.py
+#, fuzzy
+msgid "recipient_filter must be an object."
+msgstr "recipient_filter musi być obiektem."
+
+#: apps/email_campaigns/serializers.py
+#, fuzzy
+msgid "Invalid filter type. Must be 'all', 'course', or 'individual'."
+msgstr ""
+"Nieprawidłowy typ filtra. Musi to być 'all', 'course' lub 'individual'."
+
+#: apps/email_campaigns/serializers.py
+#, fuzzy
+msgid "course_ids must be a non-empty list."
+msgstr "course_ids musi być niepustą listą."
+
+#: apps/email_campaigns/serializers.py
+#, fuzzy
+msgid "user_ids must be a non-empty list."
+msgstr "user_ids musi być niepustą listą."
+
+#: apps/email_campaigns/serializers.py
+#, fuzzy
+msgid "No recipients match the filter."
+msgstr "Żaden odbiorca nie pasuje do filtra."
+
+#: apps/email_campaigns/serializers.py
+#, fuzzy
+msgid "scheduled_at must be in the future."
+msgstr "scheduled_at musi być w przyszłości."
+
+#: apps/email_campaigns/serializers.py
+#, fuzzy
+msgid "Give exactly one of campaign_id and template_id."
+msgstr "Podaj dokładnie jedno z campaign_id i template_id."
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
@@ -2244,6 +2410,71 @@ msgstr "przyjacielu"
 msgid "%(coach)s via %(brand)s"
 msgstr "%(coach)s przez %(brand)s"
 
+#: apps/email_campaigns/views.py apps/media/views.py
+#, fuzzy
+msgid "Photo not found."
+msgstr "Nie znaleziono zdjęcia."
+
+#: apps/email_campaigns/views.py
+#, fuzzy
+msgid "Template not found."
+msgstr "Nie znaleziono szablonu."
+
+#: apps/email_campaigns/views.py
+#, fuzzy
+msgid "Only drafts and scheduled emails can be deleted."
+msgstr "Usunąć można tylko wersje robocze i zaplanowane e-maile."
+
+#: apps/email_campaigns/views.py
+#, fuzzy
+msgid "This email was already sent."
+msgstr "Ten e-mail został już wysłany."
+
+#: apps/email_campaigns/views.py
+#, fuzzy
+msgid "This email is already on its way."
+msgstr "Ten e-mail jest już w drodze."
+
+#: apps/email_campaigns/views.py
+#, fuzzy
+msgid "Give your email a subject first."
+msgstr "Najpierw dodaj temat e-maila."
+
+#: apps/email_campaigns/views.py
+#, fuzzy
+msgid "This email is empty."
+msgstr "Ten e-mail jest pusty."
+
+#: apps/email_campaigns/views.py
+#, fuzzy
+msgid "Email quota exceeded for this month."
+msgstr "Przekroczono miesięczny limit e-maili."
+
+#: apps/email_campaigns/views.py
+#, fuzzy
+msgid "That's a lot of tests. Try again in an hour."
+msgstr "To dużo testów. Spróbuj ponownie za godzinę."
+
+#: apps/email_campaigns/views.py
+#, fuzzy, python-format
+msgid "[Test] %(subject)s"
+msgstr "[Test] %(subject)s"
+
+#: apps/email_campaigns/views.py
+#, fuzzy
+msgid "(no subject)"
+msgstr "(brak tematu)"
+
+#: apps/email_campaigns/views.py
+#, fuzzy
+msgid "The test email could not be sent."
+msgstr "Nie udało się wysłać testowej wiadomości e-mail."
+
+#: apps/email_campaigns/views.py
+#, fuzzy
+msgid "The Designer isn't available right now."
+msgstr "Kreator jest teraz niedostępny."
+
 #: apps/live/admin_events.py
 #, fuzzy
 msgid "Unknown kind of event."
@@ -2327,6 +2558,39 @@ msgstr "Nieprawidłowy typ wydarzenia."
 #, fuzzy
 msgid "bad signature"
 msgstr "nieprawidłowy podpis"
+
+#: apps/mailbox/attachments.py
+#, fuzzy
+msgid "Missing file name."
+msgstr "Brak nazwy pliku."
+
+#: apps/mailbox/attachments.py
+#, fuzzy
+msgid "File is larger than 10 MB."
+msgstr "Plik jest większy niż 10 MB."
+
+#: apps/mailbox/attachments.py
+#, fuzzy
+msgid "This file type isn't allowed."
+msgstr "Ten typ pliku jest niedozwolony."
+
+#: apps/mailbox/services.py
+#, fuzzy, python-format
+msgid "At most %(count)d attachment per message."
+msgid_plural "At most %(count)d attachments per message."
+msgstr[0] "Maksymalnie %(count)d załącznik na wiadomość."
+msgstr[1] "Maksymalnie %(count)d załączniki na wiadomość."
+msgstr[2] "Maksymalnie %(count)d załączników na wiadomość."
+
+#: apps/mailbox/services.py
+#, fuzzy
+msgid "Unknown or already-sent attachment."
+msgstr "Nieznany lub już wysłany załącznik."
+
+#: apps/mailbox/views.py
+#, fuzzy
+msgid "No file provided."
+msgstr "Nie podano pliku."
 
 #: apps/media/design_export.py
 #, fuzzy
@@ -2488,11 +2752,6 @@ msgstr "to zdjęcie już nie istnieje"
 
 #: apps/media/views.py
 #, fuzzy
-msgid "Photo not found."
-msgstr "Nie znaleziono zdjęcia."
-
-#: apps/media/views.py
-#, fuzzy
 msgid "Removing backgrounds is not on for this site."
 msgstr "Usuwanie tła nie jest włączone dla tej strony."
 
@@ -2526,6 +2785,11 @@ msgstr "Nieznana edycja."
 msgid "You have used this month's image generations."
 msgstr "Wykorzystałeś generacje obrazów na ten miesiąc."
 
+#: apps/notifications/admin_views.py
+#, fuzzy
+msgid "already sent"
+msgstr "już wysłano"
+
 #: apps/notifications/email_render.py
 #, fuzzy
 msgid "News"
@@ -2540,6 +2804,26 @@ msgstr "Wkrótce się rozpocznie: %(title)s"
 #, fuzzy, python-format
 msgid "New: %(title)s"
 msgstr "Nowość: %(title)s"
+
+#: apps/notifications/serializers.py
+#, fuzzy
+msgid "keys must include p256dh and auth"
+msgstr "klucze muszą zawierać p256dh i auth"
+
+#: apps/notifications/serializers.py
+#, fuzzy
+msgid "Required for weekly."
+msgstr "Wymagane dla opcji cotygodniowej."
+
+#: apps/notifications/serializers.py
+#, fuzzy
+msgid "Required for monthly."
+msgstr "Wymagane dla opcji comiesięcznej."
+
+#: apps/notifications/serializers.py
+#, fuzzy
+msgid "Must be on/after start date."
+msgstr "Musi być taka sama jak data rozpoczęcia lub późniejsza."
 
 #: apps/notifications/templates_builtin.py
 #, fuzzy, python-format
@@ -2772,11 +3056,6 @@ msgid ""
 msgstr ""
 "Twoje członkostwo w %(brand)s jest aktywne. Wszystko, co obejmuje, jest "
 "teraz dla ciebie dostępne."
-
-#: apps/notifications/transactional.py
-#, fuzzy
-msgid "Membership"
-msgstr "Członkostwo"
 
 #: apps/notifications/transactional.py
 #, fuzzy

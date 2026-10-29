@@ -21,19 +21,19 @@ msgid "Only student accounts can be opened from here."
 msgstr "Buradan yalnızca öğrenci hesapları açılabilir."
 
 #: apps/accounts/impersonation.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(name)s has no routable domain yet — cannot open a session."
 msgstr ""
 "%(name)s henüz yönlendirilebilir bir alan adına sahip değil — oturum "
 "açılamıyor."
 
 #: apps/accounts/impersonation.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Opening a session as %(email)s…"
 msgstr "%(email)s olarak oturum açılıyor…"
 
 #: apps/accounts/impersonation.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(name)s has no creator account to log in as."
 msgstr "%(name)s giriş yapılacak bir içerik üreticisi hesabına sahip değil."
 
@@ -163,7 +163,7 @@ msgid "Add at least two items"
 msgstr "En az iki öge ekle"
 
 #: apps/billing/serializers/payments.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Invalid content type. Choose from: %(choices)s"
 msgstr "Geçersiz içerik türü. Şunlar arasından seç: %(choices)s"
 
@@ -212,30 +212,30 @@ msgid "Payment could not be processed. Please try again."
 msgstr "Ödeme işlenemedi. Lütfen tekrar dene."
 
 #: apps/billing/views/payments.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "'%(item)s' is not on sale."
 msgstr "'%(item)s' satışta değil."
 
 #: apps/billing/views/payments.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "'%(item)s' is sold out."
 msgstr "'%(item)s' tükendi."
 
 #: apps/billing/views/payments.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "Item not found: content_type=%(content_type)s, object_id=%(object_id)s."
 msgstr ""
 "Öge bulunamadı: content_type=%(content_type)s, object_id=%(object_id)s."
 
 #: apps/billing/views/payments.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Item '%(item)s' is not purchasable (pricing_type must be 'paid')."
 msgstr ""
 "'%(item)s' ögesi satın alınabilir değil (pricing_type 'paid' olmalıdır)."
 
 #: apps/billing/views/payments.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Item '%(item)s' is already owned by this user."
 msgstr "'%(item)s' ögesine bu kullanıcı zaten sahip."
 
@@ -301,6 +301,61 @@ msgstr ""
 "Zaten aktif bir plan var; plan değiştirmek için destek ekibiyle iletişime "
 "geç."
 
+#: apps/blog/serializers.py
+#, fuzzy
+msgid "Expected a list of at most 6 placements."
+msgstr "En fazla 6 yerleşimden oluşan bir liste bekleniyordu."
+
+#: apps/blog/serializers.py
+#, fuzzy
+msgid "Each placement must be an object."
+msgstr "Her yerleşim bir nesne olmalıdır."
+
+#: apps/blog/serializers.py
+#, fuzzy, python-format
+msgid "Unknown photo_id: %(photo_id)s"
+msgstr "Bilinmeyen photo_id: %(photo_id)s"
+
+#: apps/blog/serializers.py
+#, fuzzy
+msgid "required for weekly"
+msgstr "haftalık için zorunlu"
+
+#: apps/blog/serializers.py
+#, fuzzy
+msgid "required for monthly"
+msgstr "aylık için zorunlu"
+
+#: apps/community/access.py
+#, fuzzy
+msgid "Community is not enabled."
+msgstr "Topluluk etkin değil."
+
+#: apps/community/access.py
+#, fuzzy
+msgid "You are banned from the community."
+msgstr "Topluluktan yasaklandın."
+
+#: apps/community/access.py
+#, fuzzy
+msgid "You are muted in the community."
+msgstr "Toplulukta sessize alındın."
+
+#: apps/community/moderation_views.py
+#, fuzzy
+msgid "Must be 'remove' or 'keep'."
+msgstr "'remove' veya 'keep' olmalıdır."
+
+#: apps/community/moderation_views.py
+#, fuzzy
+msgid "Must be an integer."
+msgstr "Bir tam sayı olmalıdır."
+
+#: apps/community/moderation_views.py
+#, fuzzy
+msgid "Must be between 0 and 90."
+msgstr "0 ile 90 arasında olmalıdır."
+
 #: apps/community/payloads.py
 #, fuzzy, python-format
 msgid "%(author)s posted in the community"
@@ -310,6 +365,16 @@ msgstr "%(author)s toplulukta bir gönderi paylaştı"
 #, fuzzy, python-format
 msgid "%(commenter)s commented on your post"
 msgstr "%(commenter)s gönderine yorum yaptı"
+
+#: apps/community/serializers.py
+#, fuzzy
+msgid "Invalid image key."
+msgstr "Geçersiz görsel anahtarı."
+
+#: apps/community/views.py
+#, fuzzy
+msgid "Invalid emoji."
+msgstr "Geçersiz emoji."
 
 #: apps/core/email.py
 #, fuzzy
@@ -1745,7 +1810,7 @@ msgid "goals must be a list of strings."
 msgstr "goals bir dize listesi olmalıdır."
 
 #: apps/core/onboarding/views.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Unknown niche '%(niche)s'."
 msgstr "Bilinmeyen niş '%(niche)s'."
 
@@ -1987,6 +2052,41 @@ msgstr "Bu dosyaya erişimin yok."
 msgid "Open"
 msgstr "Aç"
 
+#: apps/email_campaigns/brand.py
+#, fuzzy
+msgid "The design must be an object."
+msgstr "Tasarım bir nesne olmalıdır."
+
+#: apps/email_campaigns/brand.py
+#, fuzzy
+msgid "This email is too large."
+msgstr "Bu e-posta çok büyük."
+
+#: apps/email_campaigns/brand.py
+#, fuzzy
+msgid "This email has too many blocks."
+msgstr "Bu e-postada çok fazla blok var."
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Live session"
+msgstr "Canlı oturum"
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Live stream"
+msgstr "Canlı yayın"
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Zoom session"
+msgstr "Zoom oturumu"
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "In-person event"
+msgstr "Yüz yüze etkinlik"
+
 #: apps/email_campaigns/catalog.py
 #, fuzzy, python-format
 msgid "%(city)s time"
@@ -2018,6 +2118,21 @@ msgid "Included in membership"
 msgstr "Üyeliğe dahil"
 
 #: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Course"
+msgstr "Kurs"
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Download"
+msgstr "İndirilebilir dosya"
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Article"
+msgstr "Makale"
+
+#: apps/email_campaigns/catalog.py
 #, fuzzy, python-format
 msgid "%(price)s a month"
 msgstr "ayda %(price)s"
@@ -2034,10 +2149,60 @@ msgid_plural "%(price)s every %(count)d months"
 msgstr[0] "her %(count)d ayda bir %(price)s"
 msgstr[1] "her %(count)d ayda bir %(price)s"
 
+#: apps/email_campaigns/catalog.py apps/notifications/transactional.py
+#, fuzzy
+msgid "Membership"
+msgstr "Üyelik"
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Home"
+msgstr "Ana sayfa"
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Page"
+msgstr "Sayfa"
+
 #: apps/email_campaigns/render.py
 #, fuzzy
 msgid "Click here"
 msgstr "Buraya tıkla"
+
+#: apps/email_campaigns/serializers.py
+#, fuzzy
+msgid "recipient_filter must be an object."
+msgstr "recipient_filter bir nesne olmalıdır."
+
+#: apps/email_campaigns/serializers.py
+#, fuzzy
+msgid "Invalid filter type. Must be 'all', 'course', or 'individual'."
+msgstr "Geçersiz filtre türü. 'all', 'course' veya 'individual' olmalıdır."
+
+#: apps/email_campaigns/serializers.py
+#, fuzzy
+msgid "course_ids must be a non-empty list."
+msgstr "course_ids boş olmayan bir liste olmalıdır."
+
+#: apps/email_campaigns/serializers.py
+#, fuzzy
+msgid "user_ids must be a non-empty list."
+msgstr "user_ids boş olmayan bir liste olmalıdır."
+
+#: apps/email_campaigns/serializers.py
+#, fuzzy
+msgid "No recipients match the filter."
+msgstr "Filtreyle eşleşen alıcı yok."
+
+#: apps/email_campaigns/serializers.py
+#, fuzzy
+msgid "scheduled_at must be in the future."
+msgstr "scheduled_at gelecekte olmalıdır."
+
+#: apps/email_campaigns/serializers.py
+#, fuzzy
+msgid "Give exactly one of campaign_id and template_id."
+msgstr "campaign_id ve template_id'den tam olarak birini ver."
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
@@ -2208,6 +2373,71 @@ msgstr "dostum"
 msgid "%(coach)s via %(brand)s"
 msgstr "%(brand)s aracılığıyla %(coach)s"
 
+#: apps/email_campaigns/views.py apps/media/views.py
+#, fuzzy
+msgid "Photo not found."
+msgstr "Fotoğraf bulunamadı."
+
+#: apps/email_campaigns/views.py
+#, fuzzy
+msgid "Template not found."
+msgstr "Şablon bulunamadı."
+
+#: apps/email_campaigns/views.py
+#, fuzzy
+msgid "Only drafts and scheduled emails can be deleted."
+msgstr "Yalnızca taslak ve zamanlanmış e-postalar silinebilir."
+
+#: apps/email_campaigns/views.py
+#, fuzzy
+msgid "This email was already sent."
+msgstr "Bu e-posta zaten gönderildi."
+
+#: apps/email_campaigns/views.py
+#, fuzzy
+msgid "This email is already on its way."
+msgstr "Bu e-posta zaten yolda."
+
+#: apps/email_campaigns/views.py
+#, fuzzy
+msgid "Give your email a subject first."
+msgstr "Önce e-postana bir konu ekle."
+
+#: apps/email_campaigns/views.py
+#, fuzzy
+msgid "This email is empty."
+msgstr "Bu e-posta boş."
+
+#: apps/email_campaigns/views.py
+#, fuzzy
+msgid "Email quota exceeded for this month."
+msgstr "Bu ayki e-posta kotası aşıldı."
+
+#: apps/email_campaigns/views.py
+#, fuzzy
+msgid "That's a lot of tests. Try again in an hour."
+msgstr "Bu çok fazla test. Bir saat sonra tekrar dene."
+
+#: apps/email_campaigns/views.py
+#, fuzzy, python-format
+msgid "[Test] %(subject)s"
+msgstr "[Test] %(subject)s"
+
+#: apps/email_campaigns/views.py
+#, fuzzy
+msgid "(no subject)"
+msgstr "(konu yok)"
+
+#: apps/email_campaigns/views.py
+#, fuzzy
+msgid "The test email could not be sent."
+msgstr "Test e-postası gönderilemedi."
+
+#: apps/email_campaigns/views.py
+#, fuzzy
+msgid "The Designer isn't available right now."
+msgstr "Tasarımcı şu anda kullanılamıyor."
+
 #: apps/live/admin_events.py
 #, fuzzy
 msgid "Unknown kind of event."
@@ -2292,6 +2522,38 @@ msgstr "Geçersiz etkinlik türü."
 #, fuzzy
 msgid "bad signature"
 msgstr "geçersiz imza"
+
+#: apps/mailbox/attachments.py
+#, fuzzy
+msgid "Missing file name."
+msgstr "Dosya adı eksik."
+
+#: apps/mailbox/attachments.py
+#, fuzzy
+msgid "File is larger than 10 MB."
+msgstr "Dosya 10 MB'tan büyük."
+
+#: apps/mailbox/attachments.py
+#, fuzzy
+msgid "This file type isn't allowed."
+msgstr "Bu dosya türüne izin verilmiyor."
+
+#: apps/mailbox/services.py
+#, fuzzy, python-format
+msgid "At most %(count)d attachment per message."
+msgid_plural "At most %(count)d attachments per message."
+msgstr[0] "Mesaj başına en fazla %(count)d ek."
+msgstr[1] "Mesaj başına en fazla %(count)d ek."
+
+#: apps/mailbox/services.py
+#, fuzzy
+msgid "Unknown or already-sent attachment."
+msgstr "Bilinmeyen veya zaten gönderilmiş ek."
+
+#: apps/mailbox/views.py
+#, fuzzy
+msgid "No file provided."
+msgstr "Dosya sağlanmadı."
 
 #: apps/media/design_export.py
 #, fuzzy
@@ -2453,11 +2715,6 @@ msgstr "o fotoğraf artık mevcut değil"
 
 #: apps/media/views.py
 #, fuzzy
-msgid "Photo not found."
-msgstr "Fotoğraf bulunamadı."
-
-#: apps/media/views.py
-#, fuzzy
 msgid "Removing backgrounds is not on for this site."
 msgstr "Arka plan kaldırma bu site için açık değil."
 
@@ -2491,6 +2748,11 @@ msgstr "Bilinmeyen düzenleme."
 msgid "You have used this month's image generations."
 msgstr "Bu ayki görsel oluşturma haklarını kullandın."
 
+#: apps/notifications/admin_views.py
+#, fuzzy
+msgid "already sent"
+msgstr "zaten gönderildi"
+
 #: apps/notifications/email_render.py
 #, fuzzy
 msgid "News"
@@ -2505,6 +2767,26 @@ msgstr "Yakında başlıyor: %(title)s"
 #, fuzzy, python-format
 msgid "New: %(title)s"
 msgstr "Yeni: %(title)s"
+
+#: apps/notifications/serializers.py
+#, fuzzy
+msgid "keys must include p256dh and auth"
+msgstr "anahtarlar p256dh ve auth içermelidir"
+
+#: apps/notifications/serializers.py
+#, fuzzy
+msgid "Required for weekly."
+msgstr "Haftalık için gereklidir."
+
+#: apps/notifications/serializers.py
+#, fuzzy
+msgid "Required for monthly."
+msgstr "Aylık için gereklidir."
+
+#: apps/notifications/serializers.py
+#, fuzzy
+msgid "Must be on/after start date."
+msgstr "Başlangıç tarihinde veya sonrasında olmalıdır."
 
 #: apps/notifications/templates_builtin.py
 #, fuzzy, python-format
@@ -2730,11 +3012,6 @@ msgid ""
 "Your %(brand)s membership is active. Everything it includes is open to you "
 "now."
 msgstr "%(brand)s üyeliğin aktif. Kapsadığı her şey artık erişimine açık."
-
-#: apps/notifications/transactional.py
-#, fuzzy
-msgid "Membership"
-msgstr "Üyelik"
 
 #: apps/notifications/transactional.py
 #, fuzzy

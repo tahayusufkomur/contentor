@@ -1,3 +1,4 @@
+from django.utils.translation import gettext as _
 from rest_framework import serializers
 
 from apps.core.storage import build_s3_path
@@ -13,7 +14,7 @@ def _check_community_key(key):
     presign endpoint's). Any other key of this tenant, a paid lesson's video
     for one, would otherwise be a free download for a student."""
     if ".." in key.split("/") or not key.startswith(build_s3_path("community", "")):
-        raise serializers.ValidationError("Invalid image key.")
+        raise serializers.ValidationError(_("Invalid image key."))
     return key
 
 

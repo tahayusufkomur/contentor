@@ -1,4 +1,5 @@
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from rest_framework import serializers
 
 from apps.tenant_config.defaults import sanitize_rich_text
@@ -19,7 +20,7 @@ class SubscribeSerializer(serializers.Serializer):
 
     def validate_keys(self, value):
         if "p256dh" not in value or "auth" not in value:
-            raise serializers.ValidationError("keys must include p256dh and auth")
+            raise serializers.ValidationError(_("keys must include p256dh and auth"))
         return value
 
 
@@ -130,12 +131,12 @@ class RecurringAnnouncementSerializer(serializers.ModelSerializer):
     def validate(self, data):
         freq = self._get(data, "frequency")
         if freq == "weekly" and self._get(data, "weekday") is None:
-            raise serializers.ValidationError({"weekday": "Required for weekly."})
+            raise serializers.ValidationError({"weekday": _("Required for weekly.")})
         if freq == "monthly" and self._get(data, "day_of_month") is None:
-            raise serializers.ValidationError({"day_of_month": "Required for monthly."})
+            raise serializers.ValidationError({"day_of_month": _("Required for monthly.")})
         sd, ed = self._get(data, "start_date"), self._get(data, "end_date")
         if ed and sd and ed < sd:
-            raise serializers.ValidationError({"end_date": "Must be on/after start date."})
+            raise serializers.ValidationError({"end_date": _("Must be on/after start date.")})
         return data
 
     def _compute_next(self, instance):

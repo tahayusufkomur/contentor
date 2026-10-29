@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext as _
 from rest_framework import serializers
 
 from apps.core.models import PlatformBlogPost
@@ -81,18 +82,18 @@ class BlogPostAdminSerializer(serializers.ModelSerializer):
 
     def validate_image_placements(self, value):
         if not isinstance(value, list) or len(value) > 6:
-            raise serializers.ValidationError("Expected a list of at most 6 placements.")
+            raise serializers.ValidationError(_("Expected a list of at most 6 placements."))
         cleaned = []
         for item in value:
             if not isinstance(item, dict):
-                raise serializers.ValidationError("Each placement must be an object.")
+                raise serializers.ValidationError(_("Each placement must be an object."))
             photo_id = str(item.get("photo_id", ""))
             try:
                 exists = Photo.objects.filter(pk=photo_id).exists()
             except (ValueError, ValidationError):
                 exists = False
             if not exists:
-                raise serializers.ValidationError(f"Unknown photo_id: {photo_id}")
+                raise serializers.ValidationError(_("Unknown photo_id: %(photo_id)s") % {"photo_id": photo_id})
             cleaned.append({"heading": str(item.get("heading", ""))[:200], "photo_id": photo_id})
         return cleaned
 
@@ -155,9 +156,9 @@ class BlogAutopilotSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         freq = attrs.get("frequency", getattr(self.instance, "frequency", "weekly"))
         if freq == "weekly" and attrs.get("weekday", getattr(self.instance, "weekday", None)) is None:
-            raise serializers.ValidationError({"weekday": "required for weekly"})
+            raise serializers.ValidationError({"weekday": _("required for weekly")})
         if freq == "monthly" and attrs.get("day_of_month", getattr(self.instance, "day_of_month", None)) is None:
-            raise serializers.ValidationError({"day_of_month": "required for monthly"})
+            raise serializers.ValidationError({"day_of_month": _("required for monthly")})
         return attrs
 
 

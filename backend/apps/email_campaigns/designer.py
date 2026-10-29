@@ -24,6 +24,7 @@ from decimal import Decimal
 from django.conf import settings
 from django.db import connection, transaction
 from django.utils import timezone
+from django.utils.translation import override
 
 from . import brand, catalog, images
 from .models import EmailDesignJob
@@ -267,7 +268,11 @@ def _fence(data: dict) -> str:
 
 def _context(tenant) -> dict:
     """What the model may use: her voice, her items and her photos, by id only (no URLs)."""
+    from apps.core import languages
+
     cfg = catalog._config()
+    with override(languages.site_language()):  # the kind labels are what her students will read
+        listed = catalog.items(tenant, cfg)
     items = [
         {
             "ref": i["ref"],
@@ -277,7 +282,7 @@ def _context(tenant) -> dict:
             "price_or_date": i["meta"],
             "has_image": bool(i["image"]),
         }
-        for i in catalog.items(tenant, cfg)
+        for i in listed
     ][:40]
     photos = [
         {"id": p["id"], "description": p["description"][:160], "aspect": p["aspect"]}

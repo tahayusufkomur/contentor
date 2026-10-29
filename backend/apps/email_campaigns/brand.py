@@ -291,9 +291,9 @@ def clean_design(design) -> dict:
     import json
 
     if not isinstance(design, dict):
-        raise DesignError("The design must be an object.")
+        raise DesignError(_("The design must be an object."))
     if len(json.dumps(design)) > MAX_DESIGN_BYTES:
-        raise DesignError("This email is too large.")
+        raise DesignError(_("This email is too large."))
     out = {
         "version": 1,
         "settings": design.get("settings") if isinstance(design.get("settings"), dict) else {},
@@ -308,7 +308,7 @@ def clean_design(design) -> dict:
                 continue
             count += 1
             if count > MAX_BLOCKS:
-                raise DesignError("This email has too many blocks.")
+                raise DesignError(_("This email has too many blocks."))
             block = {
                 "id": str(block.get("id") or f"b{count}")[:64],
                 "type": block["type"],

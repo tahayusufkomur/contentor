@@ -1,4 +1,5 @@
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from rest_framework import serializers
 
 from .brand import DesignError, clean_design
@@ -8,20 +9,20 @@ from .recipients import get_recipient_count
 
 def validate_recipient_filter(value, *, require_recipients=True):
     if not isinstance(value, dict):
-        raise serializers.ValidationError("recipient_filter must be an object.")
+        raise serializers.ValidationError(_("recipient_filter must be an object."))
     filter_type = value.get("type")
     if filter_type not in ("all", "course", "individual"):
-        raise serializers.ValidationError("Invalid filter type. Must be 'all', 'course', or 'individual'.")
+        raise serializers.ValidationError(_("Invalid filter type. Must be 'all', 'course', or 'individual'."))
     if filter_type == "course":
         course_ids = value.get("course_ids")
         if not isinstance(course_ids, list) or not course_ids:
-            raise serializers.ValidationError("course_ids must be a non-empty list.")
+            raise serializers.ValidationError(_("course_ids must be a non-empty list."))
     if filter_type == "individual":
         user_ids = value.get("user_ids")
         if not isinstance(user_ids, list) or not user_ids:
-            raise serializers.ValidationError("user_ids must be a non-empty list.")
+            raise serializers.ValidationError(_("user_ids must be a non-empty list."))
     if require_recipients and get_recipient_count(value) == 0:
-        raise serializers.ValidationError("No recipients match the filter.")
+        raise serializers.ValidationError(_("No recipients match the filter."))
     return value
 
 
@@ -131,7 +132,7 @@ class SendSerializer(serializers.Serializer):
 
     def validate_scheduled_at(self, value):
         if value is not None and value <= timezone.now():
-            raise serializers.ValidationError("scheduled_at must be in the future.")
+            raise serializers.ValidationError(_("scheduled_at must be in the future."))
         return value
 
     def validate_recipient_filter(self, value):
@@ -161,5 +162,5 @@ class DesignerStartSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         if bool(attrs.get("campaign_id")) == bool(attrs.get("template_id")):
-            raise serializers.ValidationError("Give exactly one of campaign_id and template_id.")
+            raise serializers.ValidationError(_("Give exactly one of campaign_id and template_id."))
         return attrs

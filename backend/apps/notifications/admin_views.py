@@ -1,5 +1,6 @@
 from django.db import connection
 from django.db.models import Count, Q
+from django.utils.translation import gettext as _
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -126,7 +127,7 @@ def announcement_detail(request, pk):
 
     # PATCH — only while scheduled
     if announcement.status == "sent":
-        return Response({"detail": "already sent"}, status=status.HTTP_409_CONFLICT)
+        return Response({"detail": _("already sent")}, status=status.HTTP_409_CONFLICT)
     serializer = AnnouncementCreateSerializer(data=request.data, partial=True)
     serializer.is_valid(raise_exception=True)
     for field, model_field in (("title", "title"), ("body", "body"), ("link", "link")):

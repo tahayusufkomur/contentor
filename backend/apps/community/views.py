@@ -4,6 +4,7 @@ from django.db import connection
 from django.db.models import Q
 from django.http import Http404
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import CursorPagination, PageNumberPagination
@@ -227,12 +228,12 @@ def _handle_reaction(request, member, *, post=None, comment=None):
     if request.method == "PUT":
         emoji = request.data.get("emoji")
         if emoji not in REACTION_EMOJIS:
-            return Response({"emoji": ["Invalid emoji."]}, status=status.HTTP_400_BAD_REQUEST)
-        _, created = Reaction.objects.update_or_create(member=member, **kwargs, defaults={"emoji": emoji})
+            return Response({"emoji": [_("Invalid emoji.")]}, status=status.HTTP_400_BAD_REQUEST)
+        _reaction, created = Reaction.objects.update_or_create(member=member, **kwargs, defaults={"emoji": emoji})
         if created:
             services.adjust_reaction_count(target, +1)
         return Response(status=status.HTTP_204_NO_CONTENT)
-    deleted, _ = Reaction.objects.filter(member=member, **kwargs).delete()
+    deleted, _rows = Reaction.objects.filter(member=member, **kwargs).delete()
     if deleted:
         services.adjust_reaction_count(target, -1)
     return Response(status=status.HTTP_204_NO_CONTENT)

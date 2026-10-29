@@ -1,6 +1,7 @@
 from django.db.models import Count, Q
 from django.http import Http404
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -39,7 +40,7 @@ def resolve_report_view(request, pk):
     report = _get_or_404(Report, pk=pk, status="open")
     action = request.data.get("action")
     if action not in ("remove", "keep"):
-        return Response({"action": ["Must be 'remove' or 'keep'."]}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"action": [_("Must be 'remove' or 'keep'.")]}, status=status.HTTP_400_BAD_REQUEST)
     services.resolve_target(post=report.post, comment=report.comment, moderator=request.user, action=action)
     return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -122,9 +123,9 @@ def mute_member(request, pk):
     try:
         days = int(request.data.get("days", 7))
     except (TypeError, ValueError):
-        return Response({"days": ["Must be an integer."]}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"days": [_("Must be an integer.")]}, status=status.HTTP_400_BAD_REQUEST)
     if not 0 <= days <= 90:
-        return Response({"days": ["Must be between 0 and 90."]}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"days": [_("Must be between 0 and 90.")]}, status=status.HTTP_400_BAD_REQUEST)
     member.muted_until = timezone.now() + timezone.timedelta(days=days) if days else None
     member.save(update_fields=["muted_until"])
     return Response(status=status.HTTP_204_NO_CONTENT)
