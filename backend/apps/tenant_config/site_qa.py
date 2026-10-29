@@ -24,13 +24,14 @@ from typing import Literal
 
 import requests
 from django.conf import settings
-from django.utils import timezone
+from django.utils import timezone, translation
 from django.utils.dateparse import parse_datetime
+from django.utils.translation import gettext as _
 from django_tenants.utils import tenant_context
 from pydantic import BaseModel
 
 from apps.core import ai as core_ai
-from apps.core.languages import site_language
+from apps.core.languages import creator_language, info, site_language
 
 from .models import TenantConfig
 
@@ -197,7 +198,7 @@ def _review(context: str, views: list[tuple[str, dict]], language: str) -> tuple
         ]
         if capture["issues"]:
             content.append({"type": "text", "text": "The browser also measured: " + "; ".join(capture["issues"])})
-    review, cost, _ = core_ai.structured_messages(
+    review, cost, _model = core_ai.structured_messages(
         system=SYSTEM_PROMPT,
         messages=[{"role": "user", "content": content}],
         output_model=PageReview,
@@ -224,12 +225,15 @@ def _check_page(job: dict) -> dict:
         return {"page": job["page"], "error": str(exc), "cost": Decimal("0")}
 
 
-def _page_context(tenant, config, page: str, digest: str) -> str:
+def _page_context(tenant, config, page: str, digest: str, language: str) -> str:
     from . import interview_brief as brief
 
     answers = brief.answers_of(tenant)
     lines = [line for line in digest.split("\n") if line.startswith("  ")]
+    name = info(language)["name"]
     return (
+        f"The site is in {name}. Every visible word that is not {name} is a finding, except brand names and the "
+        "creator's own words: rewrite_text when it is page content, none when it is interface text.\n"
         f"Brand: {config.brand_name or tenant.name}\n"
         f"Teaches: {brief.subject_of(answers) or 'not said'}\n"
         f"Page: {page}\n"
@@ -304,7 +308,7 @@ def _action(tenant, config, page: str, finding: Finding) -> tuple[dict, str] | N
 
     if finding.fix == "clean_logo":
         action = _clean_logo(config)
-        return (action, "Gave your logo a clean, see-through background") if action else None
+        return (action, _("Gave your logo a clean, see-through background")) if action else None
     block = _block(config, page, finding.block_id)
     if block is None:
         return None
@@ -312,10 +316,11 @@ def _action(tenant, config, page: str, finding: Finding) -> tuple[dict, str] | N
     if finding.fix == "hide_block":
         if block["_first"] or block.get("type") == "hero":
             return None
-        return {"kind": "toggle_block", **target, "enabled": False}, f"Hid an unfinished section on your {page} page"
+        said = _("Hid an unfinished section on your %(page)s page") % {"page": page}
+        return {"kind": "toggle_block", **target, "enabled": False}, said
     if finding.fix == "rewrite_text" and finding.field and finding.value.strip():
         action = {"kind": "edit_block_fields", **target, "fields": {finding.field: finding.value}}
-        return action, f"Tidied the wording on your {page} page"
+        return action, _("Tidied the wording on your %(page)s page") % {"page": page}
     if finding.fix == "swap_image" and finding.value.strip():
         field = photos.image_field_for(block.get("type"), finding.field or None)
         current = block.get(field) if isinstance(block.get(field), dict) else {}
@@ -331,7 +336,7 @@ def _action(tenant, config, page: str, finding: Finding) -> tuple[dict, str] | N
             subject=f"{tenant.schema_name}:page:{page}:{block['id']}:{field}",
         )
         action = {"kind": "set_block_image", **target, "field": field, "curated_asset_id": image.asset_id}
-        return action, f"Replaced a photo on your {page} page"
+        return action, _("Replaced a photo on your %(page)s page") % {"page": page}
     return None
 
 
@@ -354,7 +359,7 @@ def _apply(tenant, results: list[dict]) -> tuple[list[str], list[dict]]:
             continue
         tried.add(target)
         try:
-            with tenant_context(tenant):
+            with tenant_context(tenant), translation.override(creator_language()):  # they read it in their trail
                 planned = _action(tenant, TenantConfig.objects.first(), page, finding)
             if planned is None:
                 continue
@@ -408,7 +413,7 @@ def run(tenant) -> None:
                         "slug": tenant.slug,
                         "language": language,  # read here: the worker threads have no database
                         "context": _page_context(
-                            tenant, config, page, digest[start:].split("\npage=")[0] if start >= 0 else ""
+                            tenant, config, page, digest[start:].split("\npage=")[0] if start >= 0 else "", language
                         ),
                     }
                 )

@@ -2,6 +2,7 @@
 (through the copilot's doors) and what it leaves for a person."""
 
 import io
+import logging
 from decimal import Decimal
 from unittest import mock
 
@@ -10,6 +11,7 @@ from PIL import Image
 
 from apps.core import ai as core_ai
 from apps.core.models import Tenant
+from apps.core.tests.i18n_utils import translated
 from apps.tenant_config import site_qa
 from apps.tenant_config.models import CopilotAudit, TenantConfig
 from apps.tenant_config.site_qa import Finding, PageReview
@@ -183,6 +185,42 @@ def test_a_broken_section_past_the_first_is_hidden(tenant_ctx, config):
     cfg = TenantConfig.objects.first()
     assert cfg.pages["home"]["blocks"][1]["enabled"] is False
     assert cfg.setup_flow["qa"]["fixed"] == ["Hid an unfinished section on your home page"]
+
+
+def _turkish(tenant_ctx, creator=False):
+    from apps.accounts.models import User
+
+    TenantConfig.objects.update(default_locale="tr")
+    if creator:
+        User.objects.create_user(email="owner@glow.test", password="pw", role="owner", preferred_locale="tr")
+
+
+def test_the_reviewer_is_told_the_sites_language(tenant_ctx, config):
+    _turkish(tenant_ctx)
+    review, _spend = _run(tenant_ctx, [])
+    text = review.call_args.kwargs["messages"][0]["content"][0]["text"]
+    assert "The site is in Turkish. Every visible word that is not Turkish is a finding" in text
+    assert "rewrite_text when it is page content, none when it is interface text." in text
+    assert review.call_args.kwargs["language"] == "tr"
+
+
+def test_interface_text_in_the_wrong_language_is_left_open_for_us(tenant_ctx, config):
+    _turkish(tenant_ctx)
+    finding = Finding(where="Footer, button", issue="Says Sign in.", severity="noticeable", fix="none")
+    with mock.patch.object(site_qa.logger, "log") as log:
+        _run(tenant_ctx, [finding])
+    level, message, _tenant, entry = log.call_args.args
+    assert level == logging.WARNING and message.startswith("site-qa: open finding") and "Says Sign in." in entry
+
+
+def test_what_was_fixed_is_told_in_the_creators_language(tenant_ctx, config):
+    _turkish(tenant_ctx, creator=True)
+    _run(
+        tenant_ctx,
+        [Finding(where="Text", issue="Placeholder copy.", severity="blocker", fix="hide_block", block_id="blk_text")],
+    )
+    fixed = TenantConfig.objects.first().setup_flow["qa"]["fixed"]
+    assert fixed == [translated("Hid an unfinished section on your %(page)s page") % {"page": "home"}]
 
 
 def test_a_check_that_cannot_look_fails_without_touching_the_site(tenant_ctx, config):

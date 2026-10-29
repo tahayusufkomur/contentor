@@ -37,7 +37,7 @@ msgid "%(author)s posted in the community"
 msgstr "%(author)s hat in der Community gepostet"
 
 #: apps/community/payloads.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(commenter)s commented on your post"
 msgstr "%(commenter)s hat deinen Beitrag kommentiert"
 
@@ -549,22 +549,22 @@ msgid "%(topic)s, together"
 msgstr "%(topic)s, gemeinsam"
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "I also teach %(also)s."
 msgstr "Ich unterrichte auch %(also)s."
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "We also teach %(also)s."
 msgstr "Wir unterrichten auch %(also)s."
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(topic)s with %(brand)s"
 msgstr "%(topic)s mit %(brand)s"
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Hello, I'm %(name)s"
 msgstr "Hallo, ich bin %(name)s"
 
@@ -1071,12 +1071,12 @@ msgid "In their words"
 msgstr "In ihren Worten"
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "About %(brand)s"
 msgstr "Über %(brand)s"
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Behind %(brand)s"
 msgstr "Hinter %(brand)s"
 
@@ -2166,3 +2166,23 @@ msgstr "Jederzeit kündbar."
 #, fuzzy, python-format
 msgid "%(perks)s, for %(teaches)s."
 msgstr "%(perks)s, für %(teaches)s."
+
+#: apps/tenant_config/site_qa.py
+#, fuzzy
+msgid "Gave your logo a clean, see-through background"
+msgstr "Deinem Logo einen sauberen, transparenten Hintergrund gegeben"
+
+#: apps/tenant_config/site_qa.py
+#, python-format, fuzzy
+msgid "Hid an unfinished section on your %(page)s page"
+msgstr "Einen unfertigen Abschnitt auf deiner %(page)s-Seite ausgeblendet"
+
+#: apps/tenant_config/site_qa.py
+#, python-format, fuzzy
+msgid "Tidied the wording on your %(page)s page"
+msgstr "Die Formulierungen auf deiner %(page)s-Seite überarbeitet"
+
+#: apps/tenant_config/site_qa.py
+#, python-format, fuzzy
+msgid "Replaced a photo on your %(page)s page"
+msgstr "Ein Foto auf deiner %(page)s-Seite ersetzt"
