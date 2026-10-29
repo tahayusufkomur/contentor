@@ -12,7 +12,6 @@ from decimal import Decimal
 from django_tenants.utils import tenant_context
 
 from apps.accounts.models import User
-from apps.core import languages
 from apps.core.models import PlatformPlan, PlatformSubscription, Tenant
 
 from .webhooks_common import _invoice_period_end, _invoice_subscription_id, _sub_period
@@ -48,16 +47,6 @@ def _resolve_plan(metadata: dict) -> PlatformPlan | None:
         return PlatformPlan.objects.get(pk=int(pid))
     except (PlatformPlan.DoesNotExist, ValueError, TypeError):
         return None
-
-
-def _set_receipt_language(session, metadata):
-    """Stripe's receipts follow the customer's preferred_locales: the creator's language, the one the
-    checkout was opened in (`metadata.locale`). Best effort, like the student checkouts'."""
-    code, customer = metadata.get("locale"), session.get("customer")
-    if code in languages.CODES and customer:
-        from apps.billing.providers import connect
-
-        connect.set_customer_locale(customer_id=customer, stripe_locale=languages.info(code)["stripe"])
 
 
 def _upsert_subscription_from_event(*, tenant, user, plan, session_obj, subscription_obj):

@@ -10,6 +10,7 @@ from unittest.mock import patch
 import pytest
 import stripe
 from django.test import override_settings
+from django_tenants.utils import schema_context
 from rest_framework.test import APIClient
 
 from apps.accounts.models import User
@@ -75,6 +76,51 @@ def test_plan_checkout_is_in_the_creators_language(tenant_ctx, plan, locale):
     assert kwargs["locale"] == locale
     assert kwargs["metadata"]["locale"] == locale
     assert kwargs["subscription_data"]["metadata"]["locale"] == locale
+
+
+@override_settings(BILLING_BYPASS_ENABLED=False, STRIPE_SECRET_KEY="sk_test_locale_dummy")  # noqa: S106
+def test_the_owners_public_account_sets_the_language_not_the_signed_in_copy(tenant_ctx, plan):
+    """The plan is the owner's, on their public account: this schema's copy of the user (same person,
+    maybe another language) is only the fallback."""
+    Tenant.objects.filter(pk=tenant_ctx.pk).update(billing_currency="", region="global")
+    with schema_context("public"):
+        User.objects.create_user(
+            email=tenant_ctx.owner_email,
+            name="Owner",
+            password="secret123",
+            role="owner",
+            preferred_locale="pl",  # noqa: S106
+        )
+    client = APIClient(HTTP_HOST=SHARED_DOMAIN)
+    client.force_authenticate(user=_owner(tenant_ctx, "de"))
+    with patch("stripe.checkout.Session.create", return_value=_SESSION) as create:
+        resp = client.post("/api/v1/billing/platform/checkout/", {"plan_id": plan.pk}, format="json")
+    assert resp.status_code == 200, resp.content
+    assert create.call_args.kwargs["locale"] == "pl"
+    assert create.call_args.kwargs["metadata"]["locale"] == "pl"
+
+
+@override_settings(BILLING_BYPASS_ENABLED=False, STRIPE_SECRET_KEY="sk_test_locale_dummy", ENABLED_LOCALES=["en"])  # noqa: S106
+def test_a_hidden_language_is_checked_out_in_english_and_the_receipts_follow(tenant_ctx, plan):
+    """A Polish creator on a platform where Polish is not enabled: the checkout opens in English and says so
+    in its metadata, and the webhook then reads that English from the metadata, never `pl`."""
+    Tenant.objects.filter(pk=tenant_ctx.pk).update(billing_currency="", region="global")
+    client = APIClient(HTTP_HOST=SHARED_DOMAIN)
+    client.force_authenticate(user=_owner(tenant_ctx, "pl"))
+    with patch("stripe.checkout.Session.create", return_value=_SESSION) as create:
+        resp = client.post("/api/v1/billing/platform/checkout/", {"plan_id": plan.pk}, format="json")
+    assert resp.status_code == 200, resp.content
+    kwargs = create.call_args.kwargs
+    assert kwargs["locale"] == "en"
+    assert kwargs["metadata"]["locale"] == "en"
+    assert kwargs["subscription_data"]["metadata"]["locale"] == "en"
+
+    with override_settings(STRIPE_WEBHOOK_SECRET="whsec_l"), schema_context("public"):  # noqa: S106
+        user = User.objects.create_user(email="o2@locale.test", name="O", password="secret123", role="owner")  # noqa: S106
+        modify = _complete(
+            {**kwargs["metadata"], "tenant_id": str(tenant_ctx.pk), "user_id": str(user.pk), "plan_id": str(plan.pk)}
+        )
+    modify.assert_called_once_with("cus_p", preferred_locales=["en"])
 
 
 def _complete(metadata, *, customer="cus_p", modify_error=None):

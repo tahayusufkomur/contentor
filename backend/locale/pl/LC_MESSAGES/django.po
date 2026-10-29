@@ -26,7 +26,7 @@ msgid "Click the button below to sign in to Contentor."
 msgstr "Kliknij poniższy przycisk, aby zalogować się do Contentor."
 
 #: apps/accounts/views.py apps/core/onboarding/views.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "This link expires in %(minutes)d minute."
 msgid_plural "This link expires in %(minutes)d minutes."
 msgstr[0] "Ten link wygasa za %(minutes)d minutę."
@@ -255,12 +255,7 @@ msgid "Logo"
 msgstr "Logo"
 
 #: apps/core/onboarding/recovery.py
-#, fuzzy
-msgid "your site"
-msgstr "twoja strona"
-
-#: apps/core/onboarding/recovery.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "This link is valid for %(days)d day."
 msgid_plural "This link is valid for %(days)d days."
 msgstr[0] "Ten link jest ważny przez %(days)d dzień."
@@ -268,12 +263,48 @@ msgstr[1] "Ten link jest ważny przez %(days)d dni."
 msgstr[2] "Ten link jest ważny przez %(days)d dni."
 
 #: apps/core/onboarding/recovery.py
+#, fuzzy
+msgid "Still want to build your site?"
+msgstr "Nadal chcesz zbudować swoją stronę?"
+
+#: apps/core/onboarding/recovery.py
 #, python-format, fuzzy
+msgid ""
+"You started setting up your site but never finished. We'll remove this "
+"unfinished signup in %(grace)d day to free it up. Click below to pick up "
+"exactly where you left off — nothing is lost yet."
+msgid_plural ""
+"You started setting up your site but never finished. We'll remove this "
+"unfinished signup in %(grace)d days to free it up. Click below to pick up "
+"exactly where you left off — nothing is lost yet."
+msgstr[0] ""
+"Zacząłeś konfigurować swoją stronę, ale nie dokończyłeś. Usuniemy tę "
+"niedokończoną rejestrację za %(grace)d dzień, aby ją zwolnić. Kliknij "
+"poniżej, aby kontynuować dokładnie tam, gdzie przerwałeś — nic jeszcze nie "
+"przepadło."
+msgstr[1] ""
+"Zacząłeś konfigurować swoją stronę, ale nie dokończyłeś. Usuniemy tę "
+"niedokończoną rejestrację za %(grace)d dni, aby ją zwolnić. Kliknij poniżej,"
+" aby kontynuować dokładnie tam, gdzie przerwałeś — nic jeszcze nie "
+"przepadło."
+msgstr[2] ""
+"Zacząłeś konfigurować swoją stronę, ale nie dokończyłeś. Usuniemy tę "
+"niedokończoną rejestrację za %(grace)d dni, aby ją zwolnić. Kliknij poniżej,"
+" aby kontynuować dokładnie tam, gdzie przerwałeś — nic jeszcze nie "
+"przepadło."
+
+#: apps/core/onboarding/recovery.py
+#, fuzzy
+msgid "Your unfinished setup will be removed — your site"
+msgstr "Twoja niedokończona konfiguracja zostanie usunięta — twoja strona"
+
+#: apps/core/onboarding/recovery.py
+#, fuzzy, python-format
 msgid "Still want to build %(brand)s?"
 msgstr "Nadal chcesz zbudować %(brand)s?"
 
 #: apps/core/onboarding/recovery.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "You started setting up %(brand)s but never finished. We'll remove this "
 "unfinished signup in %(grace)d day to free it up. Click below to pick up "
@@ -299,22 +330,32 @@ msgstr[2] ""
 "przepadło."
 
 #: apps/core/onboarding/recovery.py
-#, fuzzy
-msgid "Resume my setup"
-msgstr "Wznów moją konfigurację"
-
-#: apps/core/onboarding/recovery.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Your unfinished setup will be removed — %(brand)s"
 msgstr "Twoja niedokończona konfiguracja zostanie usunięta — %(brand)s"
 
 #: apps/core/onboarding/recovery.py
 #, fuzzy
-msgid "Your site is waiting"
-msgstr "Twoja strona czeka"
+msgid "Resume my setup"
+msgstr "Wznów moją konfigurację"
 
 #: apps/core/onboarding/recovery.py
-#, python-format, fuzzy
+#, fuzzy
+msgid ""
+"You started setting up your site — every answer you gave is saved. Click "
+"below to continue right where you left off."
+msgstr ""
+"Zacząłeś konfigurować swoją stronę — każda odpowiedź, której udzieliłeś, "
+"została zapisana. Kliknij poniżej, aby kontynuować dokładnie tam, gdzie "
+"przerwałeś."
+
+#: apps/core/onboarding/recovery.py
+#, fuzzy
+msgid "Pick up where you left off — your site"
+msgstr "Kontynuuj tam, gdzie przerwałeś — twoja strona"
+
+#: apps/core/onboarding/recovery.py
+#, fuzzy, python-format
 msgid ""
 "You started setting up %(brand)s — every answer you gave is saved. Click "
 "below to continue right where you left off."
@@ -324,14 +365,19 @@ msgstr ""
 "przerwałeś."
 
 #: apps/core/onboarding/recovery.py
+#, fuzzy, python-format
+msgid "Pick up where you left off — %(brand)s"
+msgstr "Kontynuuj tam, gdzie przerwałeś — %(brand)s"
+
+#: apps/core/onboarding/recovery.py
+#, fuzzy
+msgid "Your site is waiting"
+msgstr "Twoja strona czeka"
+
+#: apps/core/onboarding/recovery.py
 #, fuzzy
 msgid "Continue my setup"
 msgstr "Kontynuuj moją konfigurację"
-
-#: apps/core/onboarding/recovery.py
-#, python-format, fuzzy
-msgid "Pick up where you left off — %(brand)s"
-msgstr "Kontynuuj tam, gdzie przerwałeś — %(brand)s"
 
 #: apps/core/onboarding/recovery.py apps/core/onboarding/views.py
 #, fuzzy
@@ -1411,7 +1457,7 @@ msgid "us"
 msgstr "nas"
 
 #: apps/domains/billing.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Custom domain: %(domain)s"
 msgstr "Własna domena: %(domain)s"
 

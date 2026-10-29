@@ -26,6 +26,8 @@ from rest_framework.response import Response
 from apps.core import ipblock, languages
 from apps.core.throttling import WizardRecoverThrottle
 
+from .site_name import is_placeholder
+
 logger = logging.getLogger(__name__)
 
 # Manual re-sends (resume screen) are allowed at most once per hour per
@@ -120,13 +122,6 @@ def find_abandoned_tenants(now=None):
     return to_warn, to_delete
 
 
-def brand_of(tenant) -> str:
-    """What the emails call the site: its name, once it has one."""
-    from .site_name import is_placeholder
-
-    return _("your site") if is_placeholder(tenant.slug) else tenant.name
-
-
 def _resume_link(tenant) -> tuple[str, str]:
     """A fresh wizard link for the owner, and the creator's language it is sent in.
     Older tenants have no wizard_state locale: the owner's own language then."""
@@ -160,10 +155,24 @@ def send_abandon_warning(tenant, now=None) -> bool:
     days = settings.WIZARD_TOKEN_EXPIRY_DAYS
     grace = settings.WIZARD_ABANDON_DELETE_GRACE_DAYS
     with translation.override(locale):
-        brand = brand_of(tenant)
-        html, text = action_email(
-            heading=_("Still want to build %(brand)s?") % {"brand": brand},
-            intro=ngettext(
+        # A site with no name yet gets whole sentences of its own: "your site" is no fragment to splice
+        # into a sentence that needs a grammatical case.
+        if is_placeholder(tenant.slug):
+            heading = _("Still want to build your site?")
+            intro = ngettext(
+                "You started setting up your site but never finished. "
+                "We'll remove this unfinished signup in %(grace)d day to free it up. "
+                "Click below to pick up exactly where you left off — nothing is lost yet.",
+                "You started setting up your site but never finished. "
+                "We'll remove this unfinished signup in %(grace)d days to free it up. "
+                "Click below to pick up exactly where you left off — nothing is lost yet.",
+                grace,
+            ) % {"grace": grace}
+            subject = _("Your unfinished setup will be removed — your site")
+        else:
+            brand = {"brand": tenant.name}
+            heading = _("Still want to build %(brand)s?") % brand
+            intro = ngettext(
                 "You started setting up %(brand)s but never finished. "
                 "We'll remove this unfinished signup in %(grace)d day to free it up. "
                 "Click below to pick up exactly where you left off — nothing is lost yet.",
@@ -171,13 +180,15 @@ def send_abandon_warning(tenant, now=None) -> bool:
                 "We'll remove this unfinished signup in %(grace)d days to free it up. "
                 "Click below to pick up exactly where you left off — nothing is lost yet.",
                 grace,
-            )
-            % {"brand": brand, "grace": grace},
+            ) % {**brand, "grace": grace}
+            subject = _("Your unfinished setup will be removed — %(brand)s") % brand
+        html, text = action_email(
+            heading=heading,
+            intro=intro,
             button=_("Resume my setup"),
             link=link,
             expires=_valid_for(days),
         )
-        subject = _("Your unfinished setup will be removed — %(brand)s") % {"brand": brand}
     sent = send_email(to=tenant.owner_email, subject=subject, html=html, text=text)
     if sent:
         tenant.abandon_warned_at = now or timezone.now()
@@ -198,19 +209,25 @@ def send_recovery_email(tenant) -> bool:
 
     link, locale = _resume_link(tenant)
     with translation.override(locale):
-        brand = brand_of(tenant)
-        html, text = action_email(
-            heading=_("Your site is waiting"),
-            intro=_(
-                "You started setting up %(brand)s — every answer you gave is saved. "
+        if is_placeholder(tenant.slug):  # whole sentences: see send_abandon_warning
+            intro = _(
+                "You started setting up your site — every answer you gave is saved. "
                 "Click below to continue right where you left off."
             )
-            % {"brand": brand},
+            subject = _("Pick up where you left off — your site")
+        else:
+            intro = _(
+                "You started setting up %(brand)s — every answer you gave is saved. "
+                "Click below to continue right where you left off."
+            ) % {"brand": tenant.name}
+            subject = _("Pick up where you left off — %(brand)s") % {"brand": tenant.name}
+        html, text = action_email(
+            heading=_("Your site is waiting"),
+            intro=intro,
             button=_("Continue my setup"),
             link=link,
             expires=_valid_for(settings.WIZARD_TOKEN_EXPIRY_DAYS),
         )
-        subject = _("Pick up where you left off — %(brand)s") % {"brand": brand}
     sent = send_email(to=tenant.owner_email, subject=subject, html=html, text=text)
     if sent:
         tenant.recovery_email_sent_at = timezone.now()

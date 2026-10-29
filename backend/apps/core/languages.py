@@ -39,8 +39,12 @@ def resolve(code: str | None) -> str:
 
 def locale_href(path: str, code: str) -> str:
     """A contentor.app address in a language: English has none, every other language a prefix
-    (the same rule as frontend-main/src/lib/locale-href.ts)."""
-    return path if code == DEFAULT else f"/{code}{path}"
+    (the same rule as frontend-main/src/lib/locale-href.ts: "/" is "/pl", not "/pl/").
+    A language that is not enabled is English, so a link never names a hidden language."""
+    code = resolve(code)
+    if code == DEFAULT:
+        return path
+    return f"/{code}{'' if path == '/' else path[1:] if path.startswith(('/?', '/#')) else path}"
 
 
 def site_language(tenant=None) -> str:

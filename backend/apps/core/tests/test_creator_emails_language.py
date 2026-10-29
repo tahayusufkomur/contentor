@@ -1,11 +1,15 @@
 """A creator's platform emails (signup verification, setup recovery, sign-in link) come in the creator's
 language, and every link carries the language's address prefix (/pl/signup/verify)."""
 
+from html import unescape
 from unittest import mock
 
 import pytest
+from django.conf import settings as django_settings
 from django.core.cache import cache
 from django.db import connection
+from django.utils import translation
+from django.utils.translation import ngettext
 from rest_framework.test import APIClient
 
 from apps.accounts.models import User
@@ -32,6 +36,18 @@ def _all_languages(settings):
 def test_the_locale_prefix_follows_the_frontend_rule():
     assert languages.locale_href("/signup/verify", "en") == "/signup/verify"
     assert languages.locale_href("/signup/verify", "pl") == "/pl/signup/verify"
+    assert languages.locale_href("/", "pl") == "/pl"  # not "/pl/"
+    assert languages.locale_href("/?a=1", "pl") == "/pl?a=1"
+    assert languages.locale_href("/#team", "pl") == "/pl#team"
+    assert languages.locale_href("/pricing", "pl") == "/pl/pricing"
+    assert languages.locale_href("/", "en") == "/"
+
+
+@pytest.mark.parametrize("code", ["xx", "", None, "de"])
+def test_a_link_never_names_a_hidden_or_unknown_language(settings, code):
+    settings.ENABLED_LOCALES = ["en", "pl"]
+    assert languages.locale_href("/signup/verify", code) == "/signup/verify"
+    assert languages.locale_href("/", code) == "/"
 
 
 @pytest.mark.parametrize("locale", ["pl", "de"])
@@ -83,14 +99,70 @@ def cleanup():
     User.objects.filter(email=EMAIL)._raw_delete("default")  # a delete would cascade into tenant-only tables
 
 
-@pytest.mark.parametrize("send", [recovery.send_recovery_email, recovery.send_abandon_warning])
-def test_the_setup_emails_follow_the_creators_language(cleanup, send):
-    tenant = _tenant({"locale": "pl", "site_locale": "en"})
-    assert send(tenant)
+RECOVERY_INTRO = (
+    "You started setting up %(brand)s — every answer you gave is saved. "
+    "Click below to continue right where you left off."
+)
+ABANDON_INTRO = (
+    "You started setting up %(brand)s but never finished. "
+    "We'll remove this unfinished signup in %(grace)d {days} to free it up. "
+    "Click below to pick up exactly where you left off — nothing is lost yet."
+)
+NO_NAME_RECOVERY_INTRO = RECOVERY_INTRO.replace("%(brand)s", "your site")
+NO_NAME_ABANDON_INTRO = ABANDON_INTRO.replace("%(brand)s", "your site")
+
+
+def _body(mail):
+    """What the creator reads: the email's HTML with its escapes (an apostrophe) undone."""
+    return unescape(mail.html)
+
+
+def _abandon_intro(language, template):
+    """The abandon intro in a language, for the configured grace (ngettext picks the plural form)."""
+    grace = django_settings.WIZARD_ABANDON_DELETE_GRACE_DAYS
+    one, other = (template.format(days=d) for d in ("day", "days"))
+    with translation.override(language):
+        text = ngettext(one, other, grace)
+    assert text != (one if grace == 1 else other), f"{language} has no translation for the abandon intro"
+    return text
+
+
+@pytest.mark.parametrize("language", ["pl", "de", "tr"])
+def test_a_site_with_no_name_gets_whole_sentences_not_a_spliced_fragment(cleanup, language):
+    """Placeholder slug: "your site" must not be glued into a sentence that needs a grammatical case
+    (pl "Rozpocząłeś konfigurację twoja strona"), so each sentence is its own message."""
+    grace = django_settings.WIZARD_ABANDON_DELETE_GRACE_DAYS
+    tenant = _tenant({"locale": language, "site_locale": "en"})
+    assert recovery.send_recovery_email(tenant)
     mail = DevOutboundEmail.objects.get(to=EMAIL)
-    assert translated("your site", "pl") in mail.subject
-    assert "/pl/signup/verify?token=" in mail.html
-    assert "your site" not in mail.subject
+    assert mail.subject == translated("Pick up where you left off — your site", language)
+    assert translated(NO_NAME_RECOVERY_INTRO, language) in _body(mail)
+    assert f"/{language}/signup/verify?token=" in mail.html
+
+    DevOutboundEmail.objects.filter(to=EMAIL).delete()
+    assert recovery.send_abandon_warning(tenant)
+    mail = DevOutboundEmail.objects.get(to=EMAIL)
+    assert mail.subject == translated("Your unfinished setup will be removed — your site", language)
+    assert translated("Still want to build your site?", language) in _body(mail)
+    assert (_abandon_intro(language, NO_NAME_ABANDON_INTRO) % {"grace": grace}) in _body(mail)
+    assert f"/{language}/signup/verify?token=" in mail.html
+
+
+@pytest.mark.parametrize("language", ["pl", "de", "tr"])
+def test_a_named_site_still_fills_its_name_into_the_sentences(cleanup, language):
+    grace = django_settings.WIZARD_ABANDON_DELETE_GRACE_DAYS
+    brand = {"brand": "Lang Rec"}
+    tenant = _tenant({"locale": language}, slug="lang-rec")
+    assert recovery.send_recovery_email(tenant)
+    mail = DevOutboundEmail.objects.get(to=EMAIL)
+    assert mail.subject == translated("Pick up where you left off — %(brand)s", language) % brand
+    assert translated(RECOVERY_INTRO, language) % brand in _body(mail)
+
+    DevOutboundEmail.objects.filter(to=EMAIL).delete()
+    assert recovery.send_abandon_warning(tenant)
+    mail = DevOutboundEmail.objects.get(to=EMAIL)
+    assert translated("Still want to build %(brand)s?", language) % brand in _body(mail)
+    assert _abandon_intro(language, ABANDON_INTRO) % {**brand, "grace": grace} in _body(mail)
 
 
 def test_the_setup_email_falls_back_to_the_owners_language(cleanup):
@@ -106,6 +178,18 @@ def test_an_english_setup_email_is_unchanged(cleanup):
     mail = DevOutboundEmail.objects.get(to=EMAIL)
     assert mail.subject == "Pick up where you left off — your site"
     assert "/signup/verify?token=" in mail.html and "/en/signup" not in mail.html
+    assert NO_NAME_RECOVERY_INTRO in _body(mail)
+
+
+def test_an_english_abandon_warning_is_unchanged(cleanup):
+    tenant = _tenant({"locale": "en"})
+    assert recovery.send_abandon_warning(tenant)
+    mail = DevOutboundEmail.objects.get(to=EMAIL)
+    assert mail.subject == "Your unfinished setup will be removed — your site"
+    assert "Still want to build your site?" in _body(mail)
+    grace = django_settings.WIZARD_ABANDON_DELETE_GRACE_DAYS
+    expected = ABANDON_INTRO.format(days="day" if grace == 1 else "days") % {"brand": "your site", "grace": grace}
+    assert expected in _body(mail)
 
 
 @pytest.fixture()
@@ -119,9 +203,9 @@ def apex(restore_public):
     Domain.objects.get_or_create(domain=APEX, defaults={"tenant": public, "is_primary": True})
 
 
-def _apex_magic_link(**extra):
+def _apex_magic_link(email=EMAIL, **extra):
     with mock.patch("apps.accounts.views.MagicLinkThrottle.allow_request", return_value=True):
-        return APIClient(HTTP_HOST=APEX, **extra).post(MAGIC_LINK, {"email": EMAIL}, format="json")
+        return APIClient(HTTP_HOST=APEX, **extra).post(MAGIC_LINK, {"email": email}, format="json")
 
 
 def test_the_apex_sign_in_link_is_in_the_creators_language_without_a_site(apex, cleanup):
@@ -151,3 +235,12 @@ def test_the_apex_link_still_signs_in(apex, cleanup):
     token = send.call_args.kwargs["text"].split("token=")[1].split()[0]
     resp = APIClient(HTTP_HOST=APEX).post("/api/v1/auth/magic-link/verify/", {"token": token}, format="json")
     assert resp.status_code == 200, resp.content
+
+
+def test_the_apex_sign_in_does_not_tell_a_known_address_from_an_unknown_one(apex, cleanup):
+    User.objects.create(email=EMAIL, name="C", role="owner", preferred_locale="de")
+    with mock.patch("apps.core.email.send_email", return_value=True):
+        known = _apex_magic_link(EMAIL)
+        unknown = _apex_magic_link("nobody@lang.test")
+    assert (known.status_code, known.content) == (unknown.status_code, unknown.content)
+    assert known.status_code == 200

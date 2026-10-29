@@ -342,6 +342,15 @@ def set_customer_locale(*, customer_id: str, stripe_locale: str, account_id: str
         logger.warning("could not set preferred locale: account=%s customer=%s", account_id, customer_id, exc_info=True)
 
 
+def set_receipt_language(session: dict, metadata: dict, account_id: str = "") -> None:
+    """Stripe's receipts follow the customer's preferred_locales: the language the checkout was opened in
+    (`metadata.locale`), never this request's, since a webhook has no site. Best effort; no `account_id`
+    means the platform account (a creator's plan checkout)."""
+    code, customer = metadata.get("locale"), session.get("customer")
+    if code in languages.CODES and customer:
+        set_customer_locale(customer_id=customer, stripe_locale=languages.info(code)["stripe"], account_id=account_id)
+
+
 def retrieve_account_status(*, account_id: str) -> ConnectAccountStatus:
     """Read the connected account's current readiness from Stripe."""
     stripe = _client()

@@ -27,6 +27,7 @@ from rest_framework.decorators import (
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+from apps.billing.providers import connect
 from apps.billing.providers.stripe_provider import StripeProvider
 from apps.billing.providers.types import InvalidWebhookSignature
 from apps.core.models import WebhookEvent
@@ -55,7 +56,6 @@ from .webhooks_platform import (
     _resolve_plan,
     _resolve_tenant,
     _resolve_user,
-    _set_receipt_language,
     _upsert_subscription_from_event,
     sync_platform_checkout_session,  # noqa: F401  (re-exported: onboarding + tests import it from here)
 )
@@ -125,7 +125,7 @@ def _handle_checkout_session_completed(event, webhook_event):
         subscription_obj=None,
     )
     # After access is granted: a slow Stripe call must never delay it.
-    _set_receipt_language(session, metadata)
+    connect.set_receipt_language(session, metadata)
 
 
 @csrf_exempt
