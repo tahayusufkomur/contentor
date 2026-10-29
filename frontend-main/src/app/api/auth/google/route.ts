@@ -18,8 +18,10 @@ export async function POST(request: NextRequest) {
       },
     });
     if (res.ok) preferredLocale = (await res.json()).preferred_locale ?? "";
-  } catch {
+    else console.error("google sign-in: users/me answered", res.status);
+  } catch (err) {
     // no language known: the callback falls back to English
+    console.error("google sign-in: could not read preferred_locale", err);
   }
 
   const out = NextResponse.json({

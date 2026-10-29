@@ -11,7 +11,10 @@ const call = () =>
   );
 
 describe("POST /api/auth/google", () => {
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
 
   it("sets the session and says which language the creator reads", async () => {
     vi.stubGlobal(
@@ -26,7 +29,8 @@ describe("POST /api/auth/google", () => {
     expect(res.headers.get("set-cookie")).toContain("jwt");
   });
 
-  it("still signs in when the language cannot be read", async () => {
+  it("still signs in when the language cannot be read, and logs why", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => {
@@ -37,5 +41,21 @@ describe("POST /api/auth/google", () => {
     expect(res.status).toBe(200);
     expect((await res.json()).user.preferred_locale).toBe("");
     expect(res.headers.get("set-cookie")).toContain("jwt");
+    expect(log).toHaveBeenCalledWith(
+      expect.stringContaining("could not read preferred_locale"),
+      expect.any(Error),
+    );
+  });
+
+  it("logs the status when the language lookup is refused", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response("no", { status: 502 })),
+    );
+    const res = await call();
+    expect(res.status).toBe(200);
+    expect((await res.json()).user.preferred_locale).toBe("");
+    expect(log).toHaveBeenCalledWith(expect.stringContaining("answered"), 502);
   });
 });
