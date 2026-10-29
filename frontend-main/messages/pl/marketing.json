@@ -230,5 +230,13 @@
     "agentJoined": "{name} dołącza do czatu",
     "assistantResumed": "Asystent wrócił",
     "humanModeNotice": "Rozmawiasz z: {name}"
+  },
+  "meta": {
+    "title": "Contentor — Jesteś ekspertem. Jesteśmy twoim całym zespołem.",
+    "description": "Contentor działa jak stojący za tobą zespół: buduje twoją stronę, przyciąga uczestników, sprawia, że wracają, i dba o to, byś zarabiał. Wypróbuj go za darmo przez 14 dni."
+  },
+  "blogMeta": {
+    "title": "Blog — Contentor",
+    "description": "Poradniki i pomysły dla twórców budujących biznes online z Contentor."
   }
 }

@@ -230,5 +230,13 @@
     "agentJoined": "{name} sohbete katıldı",
     "assistantResumed": "Asistan geri döndü",
     "humanModeNotice": "{name} ile sohbet ediyorsun"
+  },
+  "meta": {
+    "title": "Contentor — Uzman sensin. Tüm ekibin biziz.",
+    "description": "Contentor arkanda bir ekip gibi çalışır: siteni kurar, öğrencileri getirir, tekrar gelmelerini sağlar ve ödeme almanı sağlar. 14 gün ücretsiz dene."
+  },
+  "blogMeta": {
+    "title": "Blog — Contentor",
+    "description": "Contentor ile çevrim içi bir iş kuran içerik üreticileri için rehberler ve fikirler."
   }
 }

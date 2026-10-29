@@ -111,5 +111,9 @@
   },
   "comingSoon": "Kendi para biriminde fiyatlandırma çok yakında",
   "comingSoonNote": "Yerel fiyatlandırmayı tamamlıyoruz. Lütfen kısa süre sonra tekrar göz at.",
-  "trialCta": "Ücretsiz denemeyi başlat"
+  "trialCta": "Ücretsiz denemeyi başlat",
+  "meta": {
+    "title": "Fiyatlandırma — Contentor",
+    "description": "Starter'ı 14 gün ücretsiz dene. Gizli ücret yok, ve istediğin zaman iptal edebilirsin."
+  }
 }

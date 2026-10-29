@@ -279,6 +279,14 @@
     "src": "b8d1bae4",
     "reviewed": false
   },
+  "auth.signup.meta.title": {
+    "src": "310f3ad3",
+    "reviewed": false
+  },
+  "auth.signup.meta.description": {
+    "src": "2828a8ff",
+    "reviewed": false
+  },
   "auth.login.title": {
     "src": "7c39b5a1",
     "reviewed": false
@@ -349,6 +357,14 @@
   },
   "auth.login.googleErrors.noEmail": {
     "src": "fc2dbdba",
+    "reviewed": false
+  },
+  "auth.login.meta.title": {
+    "src": "edd71749",
+    "reviewed": false
+  },
+  "auth.login.meta.description": {
+    "src": "33d07de3",
     "reviewed": false
   },
   "auth.callback.verifying": {
@@ -561,6 +577,10 @@
   },
   "common.checkout.beginsAtFallback": {
     "src": "81a853c0",
+    "reviewed": false
+  },
+  "common.meta.ogAlt": {
+    "src": "77cfd76d",
     "reviewed": false
   },
   "marketing.hero.pill": {
@@ -1187,6 +1207,22 @@
     "src": "c8d88979",
     "reviewed": false
   },
+  "marketing.meta.title": {
+    "src": "bfbcb928",
+    "reviewed": false
+  },
+  "marketing.meta.description": {
+    "src": "65db82fb",
+    "reviewed": false
+  },
+  "marketing.blogMeta.title": {
+    "src": "d31b9a98",
+    "reviewed": false
+  },
+  "marketing.blogMeta.description": {
+    "src": "4da4d03c",
+    "reviewed": false
+  },
   "pricing.title": {
     "src": "b2348e42",
     "reviewed": false
@@ -1429,6 +1465,14 @@
   },
   "pricing.trialCta": {
     "src": "a1db3a80",
+    "reviewed": false
+  },
+  "pricing.meta.title": {
+    "src": "4b1349af",
+    "reviewed": false
+  },
+  "pricing.meta.description": {
+    "src": "240aade2",
     "reviewed": false
   }
 }

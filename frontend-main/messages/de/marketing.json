@@ -230,5 +230,13 @@
     "agentJoined": "{name} ist dem Chat beigetreten",
     "assistantResumed": "Der Assistent ist zurück",
     "humanModeNotice": "Du chattest mit {name}"
+  },
+  "meta": {
+    "title": "Contentor — Du bist der Experte. Wir sind dein gesamtes Team.",
+    "description": "Contentor funktioniert wie ein Team hinter dir: Es baut deine Seite auf, bringt Teilnehmer, sorgt dafür, dass sie wiederkommen, und sorgt dafür, dass du bezahlt wirst. Teste es 14 Tage lang kostenlos."
+  },
+  "blogMeta": {
+    "title": "Blog — Contentor",
+    "description": "Leitfäden und Ideen für Creator, die mit Contentor ein Online-Business aufbauen."
   }
 }

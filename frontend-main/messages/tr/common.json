@@ -59,5 +59,8 @@
     "startsAtFallback": "{name} aylık ücretiyle başlar.",
     "beginsAt": "{name} aylık {price} ücretle başlıyor.",
     "beginsAtFallback": "{name} aylık ücretiyle başlıyor."
+  },
+  "meta": {
+    "ogAlt": "Contentor — evde yoga dersi çeken bir içerik üreticisi, kamera ve ışık kurulmuş"
   }
 }

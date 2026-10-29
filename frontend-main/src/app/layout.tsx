@@ -3,46 +3,28 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
-import { headers } from "next/headers";
 import { Toaster } from "sonner";
 
 import { HelpBubble } from "@/components/shared/help-bubble";
 import { ThemeProvider } from "@/components/shared/theme-provider";
-import { apexFromHost } from "@/i18n/config";
-import { BASE_DOMAIN } from "@/lib/constants";
+import { BASE_URL, pageMetadata } from "@/lib/seo";
 import { NavigationProvider } from "@shared/navigation/navigation-provider";
 import { NavigationProgress } from "@/components/ui/navigation-progress";
 import { TrackPageView } from "@shared/tracking/track-page-view";
 import "@/styles/globals.css";
 
-const TITLE = "Contentor — You're the expert. We're your whole team.";
-const DESCRIPTION =
-  "Contentor works like a team behind you: it builds your site, brings students in, keeps them coming back and gets you paid. Try it free for 14 days.";
-// public/og.jpg: scripts/footage/og-image.mjs renders it from the hero's photo.
-const OG_IMAGE = {
-  url: "/og.jpg",
-  width: 1200,
-  height: 630,
-  alt: "Contentor — a creator filming a yoga class at home, camera and light set up",
-};
-
-export const metadata: Metadata = {
-  // Absolute URLs for the share-card tags; prod sets NEXT_PUBLIC_BASE_DOMAIN.
-  metadataBase: new URL(
-    BASE_DOMAIN === "localhost" ? "http://localhost" : `https://${BASE_DOMAIN}`,
-  ),
-  // No title.template: blog pages already set "… — Contentor" in full.
-  title: TITLE,
-  description: DESCRIPTION,
-  openGraph: {
-    type: "website",
-    siteName: "Contentor",
-    title: TITLE,
-    description: DESCRIPTION,
-    images: [OG_IMAGE],
-  },
-  twitter: { card: "summary_large_image", images: [OG_IMAGE.url] },
-};
+// What a page without its own head shows (the landing, /dashboard, /signup/verify);
+// it names no canonical or other languages, which only the pages that have them do.
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    // Absolute URLs for the share-card tags; prod sets NEXT_PUBLIC_BASE_DOMAIN.
+    metadataBase: new URL(BASE_URL),
+    // No title.template: blog pages already set "… — Contentor" in full.
+    ...(await pageMetadata(await getLocale(), "/", "marketing.meta", {
+      withAlternates: false,
+    })),
+  };
+}
 
 export default async function RootLayout({
   children,
@@ -51,21 +33,10 @@ export default async function RootLayout({
 }) {
   const locale = await getLocale();
   const messages = await getMessages();
-  const h = await headers();
-  const host = h.get("x-forwarded-host") || h.get("host") || "";
-  const apex = apexFromHost(host);
-  const scheme = host.includes("localhost") ? "http" : "https";
 
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
-        <link rel="canonical" href={`${scheme}://${apex}`} />
-        <link rel="alternate" hrefLang={locale} href={`${scheme}://${apex}`} />
-        <link
-          rel="alternate"
-          hrefLang="x-default"
-          href={`${scheme}://${apex}`}
-        />
         {/* The site has its own dark theme: Dark Reader leaves it (and the
             logo's colours) alone instead of re-inverting it. */}
         <meta name="darkreader-lock" />

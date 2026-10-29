@@ -4,15 +4,18 @@ import { LocaleNavLink } from "@/i18n/navigation";
 import { BlogCover } from "@/components/blog/blog-cover";
 import { getAuthUser } from "@/lib/auth";
 import { fetchPlatformPosts } from "@/lib/platform-blog";
+import { pageMetadata } from "@/lib/seo";
 import { getLocale } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Blog — Contentor",
-  description:
-    "Guides and ideas for creators building an online business with Contentor.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  return pageMetadata((await params).locale, "/blog", "marketing.blogMeta");
+}
 
 const formatDate = (iso: string, locale: string) =>
   new Date(iso).toLocaleDateString(locale);

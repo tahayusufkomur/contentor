@@ -59,5 +59,8 @@
     "startsAtFallback": "{name} startet zum monatlichen Preis.",
     "beginsAt": "{name} beginnt ab {price} pro Monat.",
     "beginsAtFallback": "{name} beginnt zum monatlichen Preis."
+  },
+  "meta": {
+    "ogAlt": "Contentor — ein Creator filmt zu Hause einen Yogakurs, Kamera und Licht aufgebaut"
   }
 }

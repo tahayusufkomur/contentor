@@ -59,5 +59,8 @@
     "startsAtFallback": "{name} zaczyna się od swojej ceny miesięcznej.",
     "beginsAt": "{name} rozpoczyna się od {price} miesięcznie.",
     "beginsAtFallback": "{name} rozpoczyna się od swojej ceny miesięcznej."
+  },
+  "meta": {
+    "ogAlt": "Contentor — twórca nagrywający zajęcia jogi w domu, ustawiona kamera i oświetlenie"
   }
 }

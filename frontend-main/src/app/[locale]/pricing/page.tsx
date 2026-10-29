@@ -7,6 +7,7 @@ import { PlatformHeader } from "@/components/shared/platform-header";
 import { PlatformFooter } from "@/components/shared/platform-footer";
 import { formatPlanPrice } from "@shared/lib/format-plan-price";
 import { getAuthUser } from "@/lib/auth";
+import { pageMetadata } from "@/lib/seo";
 import { fetchPlans } from "@/lib/plans-server";
 import {
   FEATURE_KEYS,
@@ -20,6 +21,14 @@ import {
 } from "@/lib/pricing-matrix";
 
 import { PricingCta } from "./PricingCta";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  return pageMetadata((await params).locale, "/pricing", "pricing.meta");
+}
 
 const FAQ_KEYS = ["switch", "trial", "payments", "limits"] as const;
 const HIGHLIGHTED: PlanKey = "starter";

@@ -59,5 +59,8 @@
     "startsAtFallback": "{name} starts at its monthly price.",
     "beginsAt": "{name} begins at {price} a month.",
     "beginsAtFallback": "{name} begins at its monthly price."
+  },
+  "meta": {
+    "ogAlt": "Contentor — a creator filming a yoga class at home, camera and light set up"
   }
 }

@@ -230,5 +230,13 @@
     "agentJoined": "{name} joined the chat",
     "assistantResumed": "The assistant is back",
     "humanModeNotice": "You're chatting with {name}"
+  },
+  "meta": {
+    "title": "Contentor — You're the expert. We're your whole team.",
+    "description": "Contentor works like a team behind you: it builds your site, brings students in, keeps them coming back and gets you paid. Try it free for 14 days."
+  },
+  "blogMeta": {
+    "title": "Blog — Contentor",
+    "description": "Guides and ideas for creators building an online business with Contentor."
   }
 }

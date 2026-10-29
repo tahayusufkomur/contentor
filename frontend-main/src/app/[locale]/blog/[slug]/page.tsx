@@ -7,6 +7,7 @@ import { ReadingProgress } from "@/components/blog/reading-progress";
 import { getAuthUser } from "@/lib/auth";
 import { fetchPlatformPost } from "@/lib/platform-blog";
 import { getLocale } from "next-intl/server";
+import { ogLocale } from "@shared/i18n/locales";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +22,11 @@ export async function generateMetadata({
   return {
     title: `${post.title} — Contentor`,
     description: post.meta_description || post.excerpt,
+    // Posts are written in English only: /tr/blog/x is the same article in a
+    // translated frame, so every language points at the English address.
+    alternates: { canonical: `/blog/${slug}` },
     openGraph: {
+      locale: ogLocale("en"),
       title: post.title,
       description: post.meta_description || post.excerpt,
       type: "article",

@@ -111,5 +111,9 @@
   },
   "comingSoon": "Preise in deiner Währung folgen in Kürze",
   "comingSoonNote": "Wir stellen gerade die lokalen Preise fertig. Schau bald wieder vorbei.",
-  "trialCta": "Kostenlos testen"
+  "trialCta": "Kostenlos testen",
+  "meta": {
+    "title": "Preise — Contentor",
+    "description": "Teste Starter 14 Tage lang kostenlos. Keine versteckten Gebühren und du kannst jederzeit kündigen."
+  }
 }

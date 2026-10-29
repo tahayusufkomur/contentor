@@ -111,5 +111,9 @@
   },
   "comingSoon": "Ceny w twojej walucie już wkrótce",
   "comingSoonNote": "Kończymy ustalanie cen lokalnych. Zajrzyj tu wkrótce.",
-  "trialCta": "Wypróbuj za darmo"
+  "trialCta": "Wypróbuj za darmo",
+  "meta": {
+    "title": "Cennik — Contentor",
+    "description": "Wypróbuj Starter za darmo przez 14 dni. Brak ukrytych opłat i możesz zrezygnować w dowolnym momencie."
+  }
 }

@@ -1,5 +1,14 @@
 import { getAuthUser } from "@/lib/auth";
+import { pageMetadata } from "@/lib/seo";
 import { SignupForm } from "./signup-form";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  return pageMetadata((await params).locale, "/signup", "auth.signup.meta");
+}
 
 export default async function SignupPage() {
   const user = await getAuthUser();

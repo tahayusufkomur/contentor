@@ -111,5 +111,9 @@
   },
   "comingSoon": "Pricing in your currency is coming soon",
   "comingSoonNote": "We're finalizing local pricing. Please check back shortly.",
-  "trialCta": "Start free trial"
+  "trialCta": "Start free trial",
+  "meta": {
+    "title": "Pricing — Contentor",
+    "description": "Try Starter free for 14 days. No hidden fees, and you can cancel any time."
+  }
 }
