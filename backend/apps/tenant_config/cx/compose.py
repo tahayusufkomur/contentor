@@ -133,7 +133,7 @@ def _has_photo(value):
 
 
 def _find(field, ctx, words, used):
-    brief = {"subject": field.get("role") or ctx["topic"]}
+    brief = {"subject": field.get("role") or ctx["search"]}  # a search: English, not her own words
     try:
         image, photo = site_composer._find_photo(
             site_composer._queries(brief, ctx, words), field.get("aspect", "4:3"), used, ctx
@@ -150,7 +150,9 @@ def _find(field, ctx, words, used):
 def _fill_images(content, spec, coach, brand, style_id, started):
     """Fill every image slot that has no photo yet (in place). At most
     MAX_IMAGES searches; the rest stay empty for the coach to pick."""
-    ctx = site_composer._ctx(coach["niche"], brand, coach.get("description", ""), coach.get("topic", ""))
+    ctx = site_composer._ctx(
+        coach["niche"], brand, coach.get("description", ""), coach.get("topic", ""), search=coach.get("search")
+    )
     words = (sections.style(style_id) or {}).get("photoWords", "")
     used: set[str] = set()
     searched = 0

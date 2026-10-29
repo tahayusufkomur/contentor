@@ -231,3 +231,23 @@ def test_photo_searches_stop_when_the_time_budget_is_spent(tenant, ai, slow_mode
     res = compose.compose(tenant, ASK)
     assert res["source"] == "ai" and photos == []
     assert all(not day["image"]["photo_id"] for day in res["block"]["days"])
+
+
+@pytest.mark.parametrize(
+    ("coach", "word", "absent"),
+    [
+        ({"topic": "yüz yogası", "search": {"topic": "face yoga", "topics": []}}, "face yoga", "yüz"),
+        ({"topic": "face yoga"}, "face yoga", "yüz"),  # an English creator: unchanged
+    ],
+)
+def test_photo_searches_use_the_english_search_words(monkeypatch, coach, word, absent):
+    seen = []
+
+    def fake(queries, aspect, used, ctx):
+        seen.append(queries)
+        return None, None
+
+    monkeypatch.setattr(site_composer, "_find_photo", fake)
+    spec = {"fields": {"hero": {"type": "image", "aspect": "4:3"}}}  # no role: the subject falls back to the topic
+    compose._fill_images({}, spec, {"niche": "yoga", **coach}, "Flow Studio", "", compose._now())
+    assert word in seen[0][0] and all(absent not in q for q in seen[0])
