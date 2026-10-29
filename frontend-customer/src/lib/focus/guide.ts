@@ -27,6 +27,15 @@ export function guideBody(
   return text ? { field, text } : null;
 }
 
+/** Whether the starter tiles show: a starter she finishes, or a kind's format
+ *  tiles with an empty prefill (a download's article exists in English only). */
+export function showsStarters(question: FocusQuestion): boolean {
+  return (
+    question.starter != null &&
+    (question.starter !== "" || !!question.starters?.length)
+  );
+}
+
 /** Past this many tiles, "Select all" sits above them, where she sees it. */
 export const PICK_ALL_ABOVE = 8;
 

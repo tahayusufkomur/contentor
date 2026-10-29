@@ -6,6 +6,7 @@ import {
   pickAllAbove,
   pickAnswer,
   pickOrder,
+  showsStarters,
 } from "@/lib/focus/guide";
 
 const q = (field: string): FocusQuestion => ({
@@ -121,5 +122,29 @@ describe("keptTicks", () => {
     ]);
     // Nothing new named: exactly as she left them.
     expect(keptTicks(kept, ["course:2"])).toEqual(["course:1"]);
+  });
+});
+
+describe("showsStarters", () => {
+  const tiles = [
+    { label: "Bir çalışma kitabı", starter: "Bir çalışma kitabı: " },
+  ];
+
+  it("shows a starter she finishes, and the kind's tiles with an empty prefill", () => {
+    expect(showsStarters({ ...q("topic"), starter: "A course on " })).toBe(
+      true,
+    );
+    // Turkish, German and Polish downloads have no article to prefill, but still have their format tiles.
+    expect(showsStarters({ ...q("topic"), starter: "", starters: tiles })).toBe(
+      true,
+    );
+  });
+
+  it("shows nothing for no starter, or an empty one with no tiles", () => {
+    expect(showsStarters({ ...q("topic"), starter: null })).toBe(false);
+    expect(showsStarters({ ...q("topic"), starter: "" })).toBe(false);
+    expect(
+      showsStarters({ ...q("topic"), starter: null, starters: tiles }),
+    ).toBe(false);
   });
 });

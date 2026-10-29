@@ -322,7 +322,10 @@ def test_her_subscription_plan_names_are_matched_with_the_language_she_writes_in
 
 def test_a_download_starter_is_not_an_english_article_for_other_languages(tenant_ctx):
     with translation.override("tr"):
-        assert flow.question("download", "topic")["starter"] == ""
+        asked = flow.question("download", "topic")
+        assert asked["starter"] == ""
+        # the format tiles still go out, translated (the studio shows them for an empty prefill)
+        assert [t["label"] for t in asked["starters"]][0] == translated("A workbook")
     with translation.override("en"):
         assert flow.question("download", "topic")["starter"] == "A "
 

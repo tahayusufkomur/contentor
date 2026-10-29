@@ -7,7 +7,7 @@ import { SpecialistByline } from "@/components/copilot/specialist-face";
 import { AnswerBox } from "@/components/setup-flow/answer-box";
 import { Button } from "@/components/ui/button";
 import type { FocusQuestion } from "@/lib/focus/api";
-import type { GuideInput } from "@/lib/focus/guide";
+import { type GuideInput, showsStarters } from "@/lib/focus/guide";
 
 const NONE: GuideInput = {
   picked: null,
@@ -88,7 +88,8 @@ export function GuideQuestion({
           ))}
         </div>
       )}
-      {question.starter &&
+      {showsStarters(question) &&
+        question.starter != null &&
         !text &&
         [
           // A kind's format tiles first, then "My own idea…"; the course's own starter alone.
