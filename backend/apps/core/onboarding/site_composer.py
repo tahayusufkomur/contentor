@@ -1327,7 +1327,9 @@ def _coach_data(tenant, brand) -> dict:
     subject = (
         interview_brief.say_list(focus["disciplines"])
         if focus and focus["mode"] == "equal"
-        else interview_brief.subject_of(answers, language=site_language(tenant))  # English: it is searched for
+        else interview_brief.subject_of(
+            answers, language=ai_curate.words_language(tenant)
+        )  # English: it is searched for
     )
     followups = [
         {"q": str(item.get("q") or "").strip()[:200], "a": str(item.get("a") or "").strip()[:500]}

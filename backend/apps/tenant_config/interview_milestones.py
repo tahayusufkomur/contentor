@@ -23,6 +23,7 @@ from django_tenants.utils import schema_context
 
 from apps.core import languages
 from apps.core.languages import site_language
+from apps.core.onboarding.ai_curate import words_language
 
 from . import interview_brief as brief
 from . import interview_schedule as schedule
@@ -689,7 +690,7 @@ def _look_photos(tenant, answers: dict) -> list[str]:
     640 px thumbnail looked soft. The catalog's are cached for an hour."""
     if tenant is None:
         return []
-    subject = brief.subject_of(answers, language=site_language(tenant))  # English: it is searched for
+    subject = brief.subject_of(answers, language=words_language(tenant))  # English: it is searched for
     # Her own wide photos first: the looks are previewed with the site's real pictures.
     own = _own_look_photos(answers, subject)
     if len(own) >= LOOK_PHOTOS or not subject:
@@ -859,7 +860,7 @@ def logo_cards(tenant, answers: dict, page: int = 0) -> dict:
     from apps.core.models import CuratedLogo
     from apps.core.onboarding.ai_curate import CoachBrief, shortlist
 
-    remote = _remote_logo_options(answers, page, site_language(tenant)) if client.logos_available() else None
+    remote = _remote_logo_options(answers, page, words_language(tenant)) if client.logos_available() else None
     if remote is not None:
         options, more = remote
     else:

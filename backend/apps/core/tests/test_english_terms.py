@@ -75,3 +75,25 @@ def test_subject_of_keeps_non_ascii_words_and_translates_on_request(model):
     model.answer["terms"] = "face yoga"
     assert interview_brief.subject_of(answers, language="tr") == "face yoga"
     assert interview_brief.subject_of({"niche": "general", "teaches": "boxing"}, language="en") == "boxing"
+
+
+@pytest.mark.django_db(transaction=True)
+@pytest.mark.parametrize(
+    ("creator", "site", "calls"),
+    [("tr", "en", 1), ("en", "tr", 1), ("tr", "tr", 1), ("en", "en", 0)],
+)
+def test_the_creators_words_are_translated_from_the_language_she_wrote_in(tenant_ctx, model, creator, site, calls):
+    from apps.accounts.models import User
+    from apps.tenant_config.models import TenantConfig
+
+    User.objects.create_user(email="o@words.test", name="O", password="x", role="owner", preferred_locale=creator)
+    TenantConfig.objects.all().delete()
+    TenantConfig.objects.create(brand_name="Glow", default_locale=site)
+    tenant = SimpleNamespace(
+        schema_name=tenant_ctx.schema_name,
+        wizard_state={"answers": {"niche": "general", "teaches": "yüz yogası"}},
+        name="Glow",
+    )
+    brief = ai_curate.CoachBrief.from_tenant(tenant)
+    assert len(model.calls) == calls
+    assert brief.subject == ("face yoga exercises" if calls else "yüz yogası")

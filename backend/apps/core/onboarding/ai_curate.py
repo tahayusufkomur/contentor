@@ -20,7 +20,7 @@ from django_tenants.utils import schema_context
 from pydantic import BaseModel, Field
 
 from apps.core import ai as core_ai
-from apps.core.languages import site_language
+from apps.core.languages import DEFAULT, creator_language, site_language
 
 
 @dataclass(frozen=True)
@@ -32,7 +32,7 @@ class CoachBrief:
     goals: tuple[str, ...] = ()
     style: str = ""  # the look's style id
     brand_name: str = ""
-    language: str = "en"  # the site's: the language their words and photo titles are in
+    language: str = "en"  # the language their words are in (words_language)
 
     @classmethod
     def from_tenant(cls, tenant) -> CoachBrief:
@@ -44,7 +44,7 @@ class CoachBrief:
             for item in ((answers.get("description_followups") or {}).get("items") or [])
             if str(item.get("q") or "").strip() and str(item.get("a") or "").strip()
         ) + tuple((f["q"], f["a"]) for f in interview_brief.composer_facts(answers))
-        language = site_language(tenant)
+        language = words_language(tenant)
         return cls(
             niche=answers.get("niche") or "general",
             subject=interview_brief.subject_of(answers, language=language),
@@ -55,6 +55,18 @@ class CoachBrief:
             brand_name=tenant.name or "",
             language=language,
         )
+
+
+def words_language(tenant) -> str:
+    """The language the creator's own words are written in: hers when it is not English, else the site's
+    (so english_terms is skipped only when both are English). Reads both inside the tenant, so it is right
+    on a worker thread; the public schema has no creator."""
+    site = site_language(tenant)
+    if tenant.schema_name == "public":
+        return site
+    with schema_context(tenant.schema_name):
+        creator = creator_language()
+    return creator if creator != DEFAULT else site
 
 
 ENGLISH_TERMS_TTL = 30 * 24 * 3600
