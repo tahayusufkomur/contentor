@@ -31,7 +31,8 @@ from apps.accounts.models import User
 from apps.billing.providers import get_provider
 from apps.billing.providers.stripe_provider import embedded_fields
 from apps.billing.providers.types import ProviderError
-from apps.core.constants import CURRENCY_USD, REGION_DEFAULT_LOCALE
+from apps.core import languages
+from apps.core.constants import CURRENCY_USD
 from apps.core.currency import currency_for_country
 from apps.core.models import Domain, PlatformPlan, PlatformSubscription
 from apps.core.monetization import TRIAL_PLAN_NAME, trial_days_for
@@ -55,28 +56,6 @@ def _tenant_origin(tenant) -> str:
     # Fallback — build from subdomain (which is what django-tenants installs).
     base = dj_settings.CONTENTOR_DOMAIN
     return f"{scheme}://{tenant.subdomain}.{base}"
-
-
-def _resolve_locale(user, tenant) -> str:
-    """Pick the locale for Stripe Checkout.
-
-    Order: user.preferred_locale -> TenantConfig.default_locale -> region default.
-    """
-    locale = getattr(user, "preferred_locale", "") or ""
-    if locale:
-        return locale
-    # tenant_config is a tenant-schema app; only readable when the active
-    # connection is on the tenant schema. The view runs under tenant context
-    # (TenantJWTAuthentication enforces a tenant Host header) so this is safe.
-    try:
-        from apps.tenant_config.models import TenantConfig
-
-        cfg = TenantConfig.objects.first()
-        if cfg and cfg.default_locale:
-            return cfg.default_locale
-    except Exception:  # noqa: BLE001 — public schema or missing table
-        logger.debug("Could not read TenantConfig.default_locale; falling back to region default")
-    return REGION_DEFAULT_LOCALE.get(tenant.region, "en")
 
 
 @api_view(["POST"])
@@ -159,12 +138,12 @@ def start_checkout(request):
     sep = "&" if "?" in back else "?"
     success_url = f"{back}{sep}checkout=success"
     cancel_url = f"{back}{sep}checkout=cancel"
-    locale = _resolve_locale(request.user, tenant)
 
     # The plan is the owner's, on their platform account (public schema):
     # request.user is this schema's copy, whose id means someone else there.
     with schema_context("public"):
         account = User.objects.filter(email__iexact=tenant.owner_email).order_by("id").first()
+    locale = languages.creator_language(account or request.user)
 
     provider = get_provider()
     try:

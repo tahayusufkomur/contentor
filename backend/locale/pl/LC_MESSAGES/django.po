@@ -15,6 +15,29 @@ msgstr ""
 msgid "If an account exists, a magic link has been sent."
 msgstr "Jeśli konto istnieje, magiczny link został wysłany."
 
+#: apps/accounts/views.py apps/notifications/transactional.py
+#, fuzzy
+msgid "Sign in"
+msgstr "Zaloguj się"
+
+#: apps/accounts/views.py
+#, fuzzy
+msgid "Click the button below to sign in to Contentor."
+msgstr "Kliknij poniższy przycisk, aby zalogować się do Contentor."
+
+#: apps/accounts/views.py apps/core/onboarding/views.py
+#, python-format, fuzzy
+msgid "This link expires in %(minutes)d minute."
+msgid_plural "This link expires in %(minutes)d minutes."
+msgstr[0] "Ten link wygasa za %(minutes)d minutę."
+msgstr[1] "Ten link wygasa za %(minutes)d minuty."
+msgstr[2] "Ten link wygasa za %(minutes)d minut."
+
+#: apps/accounts/views.py
+#, fuzzy
+msgid "Your Contentor sign-in link"
+msgstr "Twój link do logowania do Contentor"
+
 #: apps/accounts/views.py apps/core/onboarding/recovery.py
 #: apps/core/onboarding/views.py
 #, fuzzy
@@ -40,6 +63,11 @@ msgstr "%(author)s dodał(a) wpis w społeczności"
 #, fuzzy, python-format
 msgid "%(commenter)s commented on your post"
 msgstr "%(commenter)s skomentował(a) Twój post"
+
+#: apps/core/email.py
+#, fuzzy
+msgid "Contentor · Courses, live sessions and payments under your own brand."
+msgstr "Contentor · Kursy, sesje na żywo i płatności pod własną marką."
 
 #: apps/core/onboarding/compose.py apps/core/onboarding/site_composer.py
 #: apps/core/tasks.py apps/tenant_config/interview_milestones.py
@@ -225,6 +253,85 @@ msgstr ""
 #, fuzzy
 msgid "Logo"
 msgstr "Logo"
+
+#: apps/core/onboarding/recovery.py
+#, fuzzy
+msgid "your site"
+msgstr "twoja strona"
+
+#: apps/core/onboarding/recovery.py
+#, python-format, fuzzy
+msgid "This link is valid for %(days)d day."
+msgid_plural "This link is valid for %(days)d days."
+msgstr[0] "Ten link jest ważny przez %(days)d dzień."
+msgstr[1] "Ten link jest ważny przez %(days)d dni."
+msgstr[2] "Ten link jest ważny przez %(days)d dni."
+
+#: apps/core/onboarding/recovery.py
+#, python-format, fuzzy
+msgid "Still want to build %(brand)s?"
+msgstr "Nadal chcesz zbudować %(brand)s?"
+
+#: apps/core/onboarding/recovery.py
+#, python-format, fuzzy
+msgid ""
+"You started setting up %(brand)s but never finished. We'll remove this "
+"unfinished signup in %(grace)d day to free it up. Click below to pick up "
+"exactly where you left off — nothing is lost yet."
+msgid_plural ""
+"You started setting up %(brand)s but never finished. We'll remove this "
+"unfinished signup in %(grace)d days to free it up. Click below to pick up "
+"exactly where you left off — nothing is lost yet."
+msgstr[0] ""
+"Rozpocząłeś konfigurację %(brand)s, ale jej nie dokończyłeś. Usuniemy tę "
+"niedokończoną rejestrację za %(grace)d dzień, aby ją zwolnić. Kliknij "
+"poniżej, aby kontynuować dokładnie tam, gdzie przerwałeś — nic jeszcze nie "
+"przepadło."
+msgstr[1] ""
+"Rozpocząłeś konfigurację %(brand)s, ale jej nie dokończyłeś. Usuniemy tę "
+"niedokończoną rejestrację za %(grace)d dni, aby ją zwolnić. Kliknij poniżej,"
+" aby kontynuować dokładnie tam, gdzie przerwałeś — nic jeszcze nie "
+"przepadło."
+msgstr[2] ""
+"Rozpocząłeś konfigurację %(brand)s, ale jej nie dokończyłeś. Usuniemy tę "
+"niedokończoną rejestrację za %(grace)d dni, aby ją zwolnić. Kliknij poniżej,"
+" aby kontynuować dokładnie tam, gdzie przerwałeś — nic jeszcze nie "
+"przepadło."
+
+#: apps/core/onboarding/recovery.py
+#, fuzzy
+msgid "Resume my setup"
+msgstr "Wznów moją konfigurację"
+
+#: apps/core/onboarding/recovery.py
+#, python-format, fuzzy
+msgid "Your unfinished setup will be removed — %(brand)s"
+msgstr "Twoja niedokończona konfiguracja zostanie usunięta — %(brand)s"
+
+#: apps/core/onboarding/recovery.py
+#, fuzzy
+msgid "Your site is waiting"
+msgstr "Twoja strona czeka"
+
+#: apps/core/onboarding/recovery.py
+#, python-format, fuzzy
+msgid ""
+"You started setting up %(brand)s — every answer you gave is saved. Click "
+"below to continue right where you left off."
+msgstr ""
+"Rozpocząłeś konfigurację %(brand)s — każda udzielona przez ciebie odpowiedź "
+"została zapisana. Kliknij poniżej, aby kontynuować dokładnie tam, gdzie "
+"przerwałeś."
+
+#: apps/core/onboarding/recovery.py
+#, fuzzy
+msgid "Continue my setup"
+msgstr "Kontynuuj moją konfigurację"
+
+#: apps/core/onboarding/recovery.py
+#, python-format, fuzzy
+msgid "Pick up where you left off — %(brand)s"
+msgstr "Kontynuuj tam, gdzie przerwałeś — %(brand)s"
 
 #: apps/core/onboarding/recovery.py apps/core/onboarding/views.py
 #, fuzzy
@@ -1225,6 +1332,28 @@ msgstr "Użyj liter lub cyfr w nazwie swojej marki"
 
 #: apps/core/onboarding/views.py
 #, fuzzy
+msgid "Confirm your email"
+msgstr "Potwierdź swój adres e-mail"
+
+#: apps/core/onboarding/views.py
+#, fuzzy
+msgid "Click the button below to verify your email and create your site."
+msgstr ""
+"Kliknij poniższy przycisk, aby zweryfikować swój adres e-mail i utworzyć "
+"swoją stronę."
+
+#: apps/core/onboarding/views.py
+#, fuzzy
+msgid "Verify and create my site"
+msgstr "Zweryfikuj i utwórz moją stronę"
+
+#: apps/core/onboarding/views.py
+#, fuzzy
+msgid "Verify your email to create your site"
+msgstr "Zweryfikuj swój adres e-mail, aby utworzyć swoją stronę"
+
+#: apps/core/onboarding/views.py
+#, fuzzy
 msgid "Verification email sent. Check your inbox."
 msgstr "Wysłano e-mail weryfikacyjny. Sprawdź swoją skrzynkę odbiorczą."
 
@@ -1280,6 +1409,11 @@ msgstr "Wypisz się"
 msgctxt "the brand, when the site has none"
 msgid "us"
 msgstr "nas"
+
+#: apps/domains/billing.py
+#, python-format, fuzzy
+msgid "Custom domain: %(domain)s"
+msgstr "Własna domena: %(domain)s"
 
 #: apps/email_campaigns/brand.py apps/notifications/email_render.py
 #, fuzzy
@@ -1638,11 +1772,6 @@ msgstr[2] "%(price)s / %(count)d miesięcy"
 #, fuzzy, python-format
 msgid "Your sign-in link for %(brand)s"
 msgstr "Twój link do logowania do %(brand)s"
-
-#: apps/notifications/transactional.py
-#, fuzzy
-msgid "Sign in"
-msgstr "Zaloguj się"
 
 #: apps/notifications/transactional.py
 #, fuzzy, python-format

@@ -44,7 +44,7 @@ class BypassProvider(PaymentProvider):
         # is imported at startup (no AppConfig.ready ordering guarantee).
         from apps.core.models import PlatformSubscription, WebhookEvent
 
-        del cancel_url, locale  # bypass doesn't render a real hosted page
+        del cancel_url  # bypass doesn't render a real hosted page
 
         session_id = f"bypass_cs_{uuid.uuid4().hex}"
         now = timezone.now()
@@ -76,7 +76,7 @@ class BypassProvider(PaymentProvider):
             email = getattr(user, "email", None)
             if email:
                 from apps.accounts.models import User
-                from apps.core.constants import REGION_DEFAULT_LOCALE
+                from apps.core import languages
 
                 region = tenant.region or "global"
                 resolved_user, _ = User.objects.get_or_create(
@@ -85,7 +85,7 @@ class BypassProvider(PaymentProvider):
                     defaults={
                         "name": getattr(user, "name", "") or "",
                         "role": "coach",
-                        "preferred_locale": REGION_DEFAULT_LOCALE.get(region, "en"),
+                        "preferred_locale": languages.resolve(locale),
                         "accessible_regions": [],
                     },
                 )

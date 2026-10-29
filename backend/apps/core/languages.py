@@ -37,6 +37,12 @@ def resolve(code: str | None) -> str:
     return code if code in enabled() else DEFAULT
 
 
+def locale_href(path: str, code: str) -> str:
+    """A contentor.app address in a language: English has none, every other language a prefix
+    (the same rule as frontend-main/src/lib/locale-href.ts)."""
+    return path if code == DEFAULT else f"/{code}{path}"
+
+
 def site_language(tenant=None) -> str:
     """The site's language: TenantConfig.default_locale of the current schema (or `tenant`'s)."""
     from django.db import connection

@@ -3,8 +3,11 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 
 from django.conf import settings
+from django.utils import translation
+from django.utils.translation import gettext as _
 
 from apps.billing.providers.types import CheckoutSession
+from apps.core import languages
 
 
 def create_domain_checkout(*, tenant, user, custom_domain, success_url, cancel_url) -> CheckoutSession:
@@ -19,14 +22,19 @@ def create_domain_checkout(*, tenant, user, custom_domain, success_url, cancel_u
 
     stripe.api_key = settings.STRIPE_SECRET_KEY
     metadata = {"domains_custom_domain_id": str(custom_domain.id)}
+    # The creator is the one paying: the page and its product line are in their language.
+    locale = languages.creator_language(user)
+    with translation.override(locale):
+        product_name = _("Custom domain: %(domain)s") % {"domain": custom_domain.domain}
     session = stripe.checkout.Session.create(
         mode="subscription",
+        locale=languages.info(locale)["stripe"],
         customer_email=getattr(user, "email", None),
         line_items=[
             {
                 "price_data": {
                     "currency": custom_domain.currency.lower(),
-                    "product_data": {"name": f"Custom domain: {custom_domain.domain}"},
+                    "product_data": {"name": product_name},
                     "unit_amount": custom_domain.price_minor,
                     "recurring": {"interval": "year"},
                 },

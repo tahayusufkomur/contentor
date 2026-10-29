@@ -6,6 +6,7 @@ from urllib.parse import urlencode
 from django.conf import settings
 from django.utils import timezone, translation
 from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -64,18 +65,25 @@ def creator_signup(request):
 
     scheme = "https" if request.is_secure() else "http"
     host = request.get_host()
-    link = f"{scheme}://{host}/signup/verify?token={token}"
+    link = f"{scheme}://{host}{languages.locale_href('/signup/verify', locale)}?token={token}"
 
     from apps.core.email import action_email, send_email
 
-    html, text = action_email(
-        heading="Confirm your email",
-        intro="Click the button below to verify your email and create your site.",
-        button="Verify and create my site",
-        link=link,
-        expires=f"This link expires in {settings.MAGIC_LINK_EXPIRY_MINUTES} minutes.",
-    )
-    sent = send_email(to=email, subject="Verify your email to create your site", html=html, text=text)
+    minutes = settings.MAGIC_LINK_EXPIRY_MINUTES
+    # The email is the creator's, whatever language this request is in.
+    with translation.override(locale):
+        html, text = action_email(
+            heading=_("Confirm your email"),
+            intro=_("Click the button below to verify your email and create your site."),
+            button=_("Verify and create my site"),
+            link=link,
+            expires=ngettext(
+                "This link expires in %(minutes)d minute.", "This link expires in %(minutes)d minutes.", minutes
+            )
+            % {"minutes": minutes},
+        )
+        subject = _("Verify your email to create your site")
+    sent = send_email(to=email, subject=subject, html=html, text=text)
     if not sent:
         if settings.DEBUG:
             print(f"\n{'=' * 60}")

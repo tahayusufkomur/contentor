@@ -55,6 +55,7 @@ from .webhooks_platform import (
     _resolve_plan,
     _resolve_tenant,
     _resolve_user,
+    _set_receipt_language,
     _upsert_subscription_from_event,
     sync_platform_checkout_session,  # noqa: F401  (re-exported: onboarding + tests import it from here)
 )
@@ -123,6 +124,8 @@ def _handle_checkout_session_completed(event, webhook_event):
         session_obj=session,
         subscription_obj=None,
     )
+    # After access is granted: a slow Stripe call must never delay it.
+    _set_receipt_language(session, metadata)
 
 
 @csrf_exempt

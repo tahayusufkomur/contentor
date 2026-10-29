@@ -110,6 +110,7 @@ class StripeProvider(PaymentProvider):
             "plan_id": str(plan.pk),
             "region": tenant.region,
             "user_id": str(getattr(user, "pk", "")),
+            "locale": locale,  # the webhook has no site of its own: it reads the language from here
         }
 
         # Stripe replaces `{CHECKOUT_SESSION_ID}` with the real session id when

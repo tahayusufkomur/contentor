@@ -7,9 +7,8 @@ their answers are already server-side, so the link resumes exactly where
 they left off. The same email can be re-requested from the expired-token
 resume screen via the wizard_recover view (Task 5).
 
-Every email goes to tenant.owner_email and nowhere else. The email strings
-are tenant-facing content, not UI chrome — same convention as the signup
-verification email in views.py. TR needs native review.
+Every email goes to tenant.owner_email and nowhere else, in the creator's
+language (wizard_state["locale"]), with that language's address prefix.
 """
 
 import logging
@@ -17,13 +16,14 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.db.models import Q
-from django.utils import timezone
+from django.utils import timezone, translation
 from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from apps.core import ipblock
+from apps.core import ipblock, languages
 from apps.core.throttling import WizardRecoverThrottle
 
 logger = logging.getLogger(__name__)
@@ -32,35 +32,6 @@ logger = logging.getLogger(__name__)
 # tenant — the per-IP throttle alone would let a third party replay an old
 # token to spam the OWNER's inbox from many IPs.
 RESEND_COOLDOWN = timedelta(hours=1)
-
-_COPY = {
-    "en": {
-        "subject": "Pick up where you left off — {brand}",
-        "heading": "Your site is waiting",
-        "intro": (
-            "You started setting up {brand} — every answer you gave is saved. "
-            "Click below to continue right where you left off."
-        ),
-        "button": "Continue my setup",
-        "expires": "This link is valid for {days} days.",
-    },
-}
-
-# Final "we are about to delete this signup" nudge. Same resume link as the
-# recovery email — only the framing differs.
-_ABANDON_COPY = {
-    "en": {
-        "subject": "Your unfinished setup will be removed — {brand}",
-        "heading": "Still want to build {brand}?",
-        "intro": (
-            "You started setting up {brand} but never finished. "
-            "We'll remove this unfinished signup in {grace} days to free it up. "
-            "Click below to pick up exactly where you left off — nothing is lost yet."
-        ),
-        "button": "Resume my setup",
-        "expires": "This link is valid for {days} days.",
-    },
-}
 
 
 def _last_activity(tenant):
@@ -153,7 +124,27 @@ def brand_of(tenant) -> str:
     """What the emails call the site: its name, once it has one."""
     from .site_name import is_placeholder
 
-    return "your site" if is_placeholder(tenant.slug) else tenant.name
+    return _("your site") if is_placeholder(tenant.slug) else tenant.name
+
+
+def _resume_link(tenant) -> tuple[str, str]:
+    """A fresh wizard link for the owner, and the creator's language it is sent in.
+    Older tenants have no wizard_state locale: the owner's own language then."""
+    from apps.accounts.models import User
+    from apps.accounts.tokens import create_wizard_token
+
+    region = tenant.region or "global"
+    user = User.objects.filter(email=tenant.owner_email, region=region).first()
+    token = create_wizard_token(tenant.owner_email, user.name if user else "", tenant.schema_name, region=region)
+    locale = languages.resolve((tenant.wizard_state or {}).get("locale") or getattr(user, "preferred_locale", ""))
+    path = languages.locale_href("/signup/verify", locale)
+    return f"{settings.SITE_SCHEME}://{settings.CONTENTOR_DOMAIN}{path}?token={token}", locale
+
+
+def _valid_for(days: int) -> str:
+    return ngettext("This link is valid for %(days)d day.", "This link is valid for %(days)d days.", days) % {
+        "days": days
+    }
 
 
 def send_abandon_warning(tenant, now=None) -> bool:
@@ -163,29 +154,31 @@ def send_abandon_warning(tenant, now=None) -> bool:
     is retried by the next beat run — and, because stage 2 keys off that
     timestamp, a tenant is never deleted without having been warned first.
     """
-    from apps.accounts.models import User
-    from apps.accounts.tokens import create_wizard_token
     from apps.core.email import action_email, send_email
 
-    region = tenant.region or "global"
-    user = User.objects.filter(email=tenant.owner_email, region=region).first()
-    token = create_wizard_token(tenant.owner_email, user.name if user else "", tenant.schema_name, region=region)
-
-    base = settings.CONTENTOR_DOMAIN
-    link = f"{settings.SITE_SCHEME}://{base}/signup/verify?token={token}"
-
-    strings = _ABANDON_COPY["en"]
-    brand = brand_of(tenant)
+    link, locale = _resume_link(tenant)
     days = settings.WIZARD_TOKEN_EXPIRY_DAYS
     grace = settings.WIZARD_ABANDON_DELETE_GRACE_DAYS
-    html, text = action_email(
-        heading=strings["heading"].format(brand=brand),
-        intro=strings["intro"].format(brand=brand, grace=grace),
-        button=strings["button"],
-        link=link,
-        expires=strings["expires"].format(days=days),
-    )
-    sent = send_email(to=tenant.owner_email, subject=strings["subject"].format(brand=brand), html=html, text=text)
+    with translation.override(locale):
+        brand = brand_of(tenant)
+        html, text = action_email(
+            heading=_("Still want to build %(brand)s?") % {"brand": brand},
+            intro=ngettext(
+                "You started setting up %(brand)s but never finished. "
+                "We'll remove this unfinished signup in %(grace)d day to free it up. "
+                "Click below to pick up exactly where you left off — nothing is lost yet.",
+                "You started setting up %(brand)s but never finished. "
+                "We'll remove this unfinished signup in %(grace)d days to free it up. "
+                "Click below to pick up exactly where you left off — nothing is lost yet.",
+                grace,
+            )
+            % {"brand": brand, "grace": grace},
+            button=_("Resume my setup"),
+            link=link,
+            expires=_valid_for(days),
+        )
+        subject = _("Your unfinished setup will be removed — %(brand)s") % {"brand": brand}
+    sent = send_email(to=tenant.owner_email, subject=subject, html=html, text=text)
     if sent:
         tenant.abandon_warned_at = now or timezone.now()
         tenant.save(update_fields=["abandon_warned_at"])
@@ -201,28 +194,24 @@ def send_recovery_email(tenant) -> bool:
     Stamps recovery_email_sent_at only when the send succeeded, so a failed
     provider call is retried by the next beat run.
     """
-    from apps.accounts.models import User
-    from apps.accounts.tokens import create_wizard_token
     from apps.core.email import action_email, send_email
 
-    region = tenant.region or "global"
-    user = User.objects.filter(email=tenant.owner_email, region=region).first()
-    token = create_wizard_token(tenant.owner_email, user.name if user else "", tenant.schema_name, region=region)
-
-    base = settings.CONTENTOR_DOMAIN
-    link = f"{settings.SITE_SCHEME}://{base}/signup/verify?token={token}"
-
-    strings = _COPY["en"]
-    brand = brand_of(tenant)
-    days = settings.WIZARD_TOKEN_EXPIRY_DAYS
-    html, text = action_email(
-        heading=strings["heading"].format(brand=brand),
-        intro=strings["intro"].format(brand=brand),
-        button=strings["button"],
-        link=link,
-        expires=strings["expires"].format(days=days),
-    )
-    sent = send_email(to=tenant.owner_email, subject=strings["subject"].format(brand=brand), html=html, text=text)
+    link, locale = _resume_link(tenant)
+    with translation.override(locale):
+        brand = brand_of(tenant)
+        html, text = action_email(
+            heading=_("Your site is waiting"),
+            intro=_(
+                "You started setting up %(brand)s — every answer you gave is saved. "
+                "Click below to continue right where you left off."
+            )
+            % {"brand": brand},
+            button=_("Continue my setup"),
+            link=link,
+            expires=_valid_for(settings.WIZARD_TOKEN_EXPIRY_DAYS),
+        )
+        subject = _("Pick up where you left off — %(brand)s") % {"brand": brand}
+    sent = send_email(to=tenant.owner_email, subject=subject, html=html, text=text)
     if sent:
         tenant.recovery_email_sent_at = timezone.now()
         tenant.save(update_fields=["recovery_email_sent_at"])

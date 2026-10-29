@@ -4,6 +4,7 @@ import mimetypes
 import requests
 import resend
 from django.conf import settings
+from django.utils.translation import gettext as _
 
 logger = logging.getLogger(__name__)
 
@@ -169,7 +170,7 @@ def action_email(*, heading: str, intro: str, button: str, link: str, expires: s
         </a>
         <p style="color: #888; font-size: 13px;">{escape(expires)}</p>
         <p style="color: #aaa; font-size: 12px; margin-top: 32px;">
-            Contentor · Courses, live sessions and payments under your own brand.
+            {escape(_("Contentor · Courses, live sessions and payments under your own brand."))}
         </p>
     </div>
     """

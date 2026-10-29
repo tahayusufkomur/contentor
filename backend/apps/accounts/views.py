@@ -8,14 +8,17 @@ from django.conf import settings
 from django.db import connection
 from django.db.models import Q
 from django.http import HttpResponseRedirect
-from django.utils import timezone
+from django.utils import timezone, translation
 from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
+from django_tenants.utils import get_public_schema_name
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 
+from apps.core import languages
 from apps.core.pagination import StandardPagination
 
 from .models import User
@@ -54,27 +57,30 @@ def magic_link_request(request):
         callback_url = f"{scheme}://{request.get_host()}/callback?token={token}"
         return Response({"detail": "Demo mode", "demo_redirect": callback_url})
 
-    scheme = "https" if request.is_secure() else "http"
-    link = f"{scheme}://{request.get_host()}/callback?token={token}"
+    if connection.schema_name == get_public_schema_name():
+        # contentor.app has no site (no TenantConfig): the creator's own email, in the creator's language.
+        link, sent = _send_platform_sign_in(request, email, token)
+    else:
+        scheme = "https" if request.is_secure() else "http"
+        link = f"{scheme}://{request.get_host()}/callback?token={token}"
+        brand_name = tenant.name
+        try:
+            from apps.tenant_config.models import TenantConfig
 
-    brand_name = tenant.name
-    try:
-        from apps.tenant_config.models import TenantConfig
+            config = TenantConfig.objects.first()
+            if config:
+                brand_name = config.brand_name
+        except Exception:  # noqa: S110
+            pass
 
-        config = TenantConfig.objects.first()
-        if config:
-            brand_name = config.brand_name
-    except Exception:  # noqa: S110
-        pass
+        from apps.accounts import login_code
+        from apps.notifications import transactional
 
-    from apps.accounts import login_code
-    from apps.notifications import transactional
+        code = login_code.issue(tenant.schema_name, email)
 
-    code = login_code.issue(tenant.schema_name, email)
-
-    # In her email style, drawn by the email engine (a plain email should it fail).
-    sign_in = transactional.sign_in(brand_name, link, code, settings.MAGIC_LINK_EXPIRY_MINUTES)
-    sent = transactional.send(email, sign_in, tenant)
+        # In her email style, drawn by the email engine (a plain email should it fail).
+        sign_in = transactional.sign_in(brand_name, link, code, settings.MAGIC_LINK_EXPIRY_MINUTES)
+        sent = transactional.send(email, sign_in, tenant)
     if not sent:
         if settings.DEBUG:
             # Dev convenience only: surface the link locally when email is stubbed.
@@ -87,6 +93,31 @@ def magic_link_request(request):
             logger.error("Failed to send magic-link email to %s (link withheld from logs)", email)
 
     return Response({"detail": _("If an account exists, a magic link has been sent.")})
+
+
+def _send_platform_sign_in(request, email, token) -> tuple[str, bool]:
+    """The sign-in link for contentor.app: in the creator's language (an address nobody has an account for
+    yet gets the page's), on that language's address."""
+    from apps.core.email import action_email, send_email
+
+    user = User.objects.filter(email__iexact=email, region=getattr(request, "region", "global")).first()
+    language = languages.resolve(user.preferred_locale if user else translation.get_language())
+    scheme = "https" if request.is_secure() else "http"
+    link = f"{scheme}://{request.get_host()}{languages.locale_href('/callback', language)}?token={token}"
+    minutes = settings.MAGIC_LINK_EXPIRY_MINUTES
+    with translation.override(language):
+        html, text = action_email(
+            heading=_("Sign in"),
+            intro=_("Click the button below to sign in to Contentor."),
+            button=_("Sign in"),
+            link=link,
+            expires=ngettext(
+                "This link expires in %(minutes)d minute.", "This link expires in %(minutes)d minutes.", minutes
+            )
+            % {"minutes": minutes},
+        )
+        subject = _("Your Contentor sign-in link")
+    return link, send_email(to=email, subject=subject, html=html, text=text)
 
 
 def _login_user_response(request, tenant, email, via="magic_link"):

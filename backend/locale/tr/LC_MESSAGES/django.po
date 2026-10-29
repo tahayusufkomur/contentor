@@ -15,6 +15,28 @@ msgstr ""
 msgid "If an account exists, a magic link has been sent."
 msgstr "Bir hesap varsa, bir sihirli bağlantı gönderildi."
 
+#: apps/accounts/views.py apps/notifications/transactional.py
+#, fuzzy
+msgid "Sign in"
+msgstr "Giriş yap"
+
+#: apps/accounts/views.py
+#, fuzzy
+msgid "Click the button below to sign in to Contentor."
+msgstr "Contentor'a giriş yapmak için aşağıdaki butona tıkla."
+
+#: apps/accounts/views.py apps/core/onboarding/views.py
+#, python-format, fuzzy
+msgid "This link expires in %(minutes)d minute."
+msgid_plural "This link expires in %(minutes)d minutes."
+msgstr[0] "Bu bağlantının süresi %(minutes)d dakika içinde dolar."
+msgstr[1] "Bu bağlantının süresi %(minutes)d dakika içinde dolar."
+
+#: apps/accounts/views.py
+#, fuzzy
+msgid "Your Contentor sign-in link"
+msgstr "Contentor giriş bağlantın"
+
 #: apps/accounts/views.py apps/core/onboarding/recovery.py
 #: apps/core/onboarding/views.py
 #, fuzzy
@@ -40,6 +62,12 @@ msgstr "%(author)s toplulukta bir gönderi paylaştı"
 #, fuzzy, python-format
 msgid "%(commenter)s commented on your post"
 msgstr "%(commenter)s gönderine yorum yaptı"
+
+#: apps/core/email.py
+#, fuzzy
+msgid "Contentor · Courses, live sessions and payments under your own brand."
+msgstr ""
+"Contentor · Kendi markan altında kurslar, canlı oturumlar ve ödemeler."
 
 #: apps/core/onboarding/compose.py apps/core/onboarding/site_composer.py
 #: apps/core/tasks.py apps/tenant_config/interview_milestones.py
@@ -222,6 +250,76 @@ msgstr "%(brand)s her yerden takip edebileceğin %(topic)s sunuyor."
 #, fuzzy
 msgid "Logo"
 msgstr "Logo"
+
+#: apps/core/onboarding/recovery.py
+#, fuzzy
+msgid "your site"
+msgstr "siten"
+
+#: apps/core/onboarding/recovery.py
+#, python-format, fuzzy
+msgid "This link is valid for %(days)d day."
+msgid_plural "This link is valid for %(days)d days."
+msgstr[0] "Bu bağlantı %(days)d gün geçerlidir."
+msgstr[1] "Bu bağlantı %(days)d gün geçerlidir."
+
+#: apps/core/onboarding/recovery.py
+#, python-format, fuzzy
+msgid "Still want to build %(brand)s?"
+msgstr "Hâlâ %(brand)s kurmak istiyor musun?"
+
+#: apps/core/onboarding/recovery.py
+#, python-format, fuzzy
+msgid ""
+"You started setting up %(brand)s but never finished. We'll remove this "
+"unfinished signup in %(grace)d day to free it up. Click below to pick up "
+"exactly where you left off — nothing is lost yet."
+msgid_plural ""
+"You started setting up %(brand)s but never finished. We'll remove this "
+"unfinished signup in %(grace)d days to free it up. Click below to pick up "
+"exactly where you left off — nothing is lost yet."
+msgstr[0] ""
+"%(brand)s kurulumuna başladın ama tamamlamadın. Bu tamamlanmamış kaydı boşa "
+"çıkarmak için %(grace)d gün içinde kaldıracağız. Tam olarak kaldığın yerden "
+"devam etmek için aşağıya tıkla — henüz hiçbir şey kaybolmadı."
+msgstr[1] ""
+"%(brand)s kurulumuna başladın ama tamamlamadın. Bu tamamlanmamış kaydı boşa "
+"çıkarmak için %(grace)d gün içinde kaldıracağız. Tam olarak kaldığın yerden "
+"devam etmek için aşağıya tıkla — henüz hiçbir şey kaybolmadı."
+
+#: apps/core/onboarding/recovery.py
+#, fuzzy
+msgid "Resume my setup"
+msgstr "Kurulumuma devam et"
+
+#: apps/core/onboarding/recovery.py
+#, python-format, fuzzy
+msgid "Your unfinished setup will be removed — %(brand)s"
+msgstr "Tamamlanmamış kurulumun kaldırılacak — %(brand)s"
+
+#: apps/core/onboarding/recovery.py
+#, fuzzy
+msgid "Your site is waiting"
+msgstr "Siten bekliyor"
+
+#: apps/core/onboarding/recovery.py
+#, python-format, fuzzy
+msgid ""
+"You started setting up %(brand)s — every answer you gave is saved. Click "
+"below to continue right where you left off."
+msgstr ""
+"%(brand)s kurulumuna başladın — verdiğin her yanıt kaydedildi. Tam kaldığın "
+"yerden devam etmek için aşağıya tıkla."
+
+#: apps/core/onboarding/recovery.py
+#, fuzzy
+msgid "Continue my setup"
+msgstr "Kurulumuma devam et"
+
+#: apps/core/onboarding/recovery.py
+#, python-format, fuzzy
+msgid "Pick up where you left off — %(brand)s"
+msgstr "Kaldığın yerden devam et — %(brand)s"
 
 #: apps/core/onboarding/recovery.py apps/core/onboarding/views.py
 #, fuzzy
@@ -1211,6 +1309,27 @@ msgstr "Lütfen marka adında harf veya rakam kullan"
 
 #: apps/core/onboarding/views.py
 #, fuzzy
+msgid "Confirm your email"
+msgstr "E-postanı onayla"
+
+#: apps/core/onboarding/views.py
+#, fuzzy
+msgid "Click the button below to verify your email and create your site."
+msgstr ""
+"E-postanı doğrulamak ve siteni oluşturmak için aşağıdaki butona tıkla."
+
+#: apps/core/onboarding/views.py
+#, fuzzy
+msgid "Verify and create my site"
+msgstr "Doğrula ve sitemi oluştur"
+
+#: apps/core/onboarding/views.py
+#, fuzzy
+msgid "Verify your email to create your site"
+msgstr "Siteni oluşturmak için e-postanı doğrula"
+
+#: apps/core/onboarding/views.py
+#, fuzzy
 msgid "Verification email sent. Check your inbox."
 msgstr "Doğrulama e-postası gönderildi. Gelen kutunu kontrol et."
 
@@ -1266,6 +1385,11 @@ msgstr "Abonelikten çık"
 msgctxt "the brand, when the site has none"
 msgid "us"
 msgstr "biz"
+
+#: apps/domains/billing.py
+#, python-format, fuzzy
+msgid "Custom domain: %(domain)s"
+msgstr "Özel alan adı: %(domain)s"
 
 #: apps/email_campaigns/brand.py apps/notifications/email_render.py
 #, fuzzy
@@ -1621,11 +1745,6 @@ msgstr[1] "%(price)s / %(count)d ay"
 #, fuzzy, python-format
 msgid "Your sign-in link for %(brand)s"
 msgstr "%(brand)s için giriş bağlantın"
-
-#: apps/notifications/transactional.py
-#, fuzzy
-msgid "Sign in"
-msgstr "Giriş yap"
 
 #: apps/notifications/transactional.py
 #, fuzzy, python-format
