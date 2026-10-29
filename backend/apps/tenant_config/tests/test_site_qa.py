@@ -187,12 +187,13 @@ def test_a_broken_section_past_the_first_is_hidden(tenant_ctx, config):
     assert cfg.setup_flow["qa"]["fixed"] == ["Hid an unfinished section on your home page"]
 
 
-def _turkish(tenant_ctx, creator=False):
+def _turkish(tenant_ctx, creator=None):
+    """The site is Turkish; ``creator`` (a locale) is the owner's own language, when it is not the site's."""
     from apps.accounts.models import User
 
     TenantConfig.objects.update(default_locale="tr")
     if creator:
-        User.objects.create_user(email="owner@glow.test", password="pw", role="owner", preferred_locale="tr")
+        User.objects.create_user(email="owner@glow.test", password="pw", role="owner", preferred_locale=creator)
 
 
 def test_the_reviewer_is_told_the_sites_language(tenant_ctx, config):
@@ -213,14 +214,21 @@ def test_interface_text_in_the_wrong_language_is_left_open_for_us(tenant_ctx, co
     assert level == logging.WARNING and message.startswith("site-qa: open finding") and "Says Sign in." in entry
 
 
-def test_what_was_fixed_is_told_in_the_creators_language(tenant_ctx, config):
-    _turkish(tenant_ctx, creator=True)
+@pytest.mark.parametrize("creator", ["de", "pl", "en"])
+def test_what_was_fixed_is_told_in_the_creators_language_not_the_sites(tenant_ctx, config, creator):
+    _turkish(tenant_ctx, creator=creator)  # a Turkish site, a creator who reads something else
     _run(
         tenant_ctx,
         [Finding(where="Text", issue="Placeholder copy.", severity="blocker", fix="hide_block", block_id="blk_text")],
     )
     fixed = TenantConfig.objects.first().setup_flow["qa"]["fixed"]
-    assert fixed == [translated("Hid an unfinished section on your %(page)s page") % {"page": "home"}]
+    sentence = "Hid an unfinished section on your %(page)s page"
+    if creator == "en":
+        assert fixed == ["Hid an unfinished section on your home page"]
+    else:
+        # The page's name is in her language too: no English "home" inside German or Polish text.
+        assert fixed == [translated(sentence, creator) % {"page": translated("home", creator)}]
+    assert fixed != [translated(sentence, "tr") % {"page": translated("home", "tr")}]
 
 
 def test_a_check_that_cannot_look_fails_without_touching_the_site(tenant_ctx, config):

@@ -2169,20 +2169,55 @@ msgstr "%(perks)s, für %(teaches)s."
 
 #: apps/tenant_config/site_qa.py
 #, fuzzy
+msgid "home"
+msgstr "Startseite"
+
+#: apps/tenant_config/site_qa.py
+#, fuzzy
+msgid "about"
+msgstr "Über uns"
+
+#: apps/tenant_config/site_qa.py
+#, fuzzy
+msgid "courses"
+msgstr "Kurse"
+
+#: apps/tenant_config/site_qa.py
+#, fuzzy
+msgid "pricing"
+msgstr "Preise"
+
+#: apps/tenant_config/site_qa.py
+#, fuzzy
+msgid "faq"
+msgstr "FAQ"
+
+#: apps/tenant_config/site_qa.py
+#, fuzzy
+msgid "contact"
+msgstr "Kontakt"
+
+#: apps/tenant_config/site_qa.py
+#, fuzzy
+msgid "events"
+msgstr "Veranstaltungen"
+
+#: apps/tenant_config/site_qa.py
+#, fuzzy
 msgid "Gave your logo a clean, see-through background"
 msgstr "Deinem Logo einen sauberen, transparenten Hintergrund gegeben"
 
 #: apps/tenant_config/site_qa.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Hid an unfinished section on your %(page)s page"
-msgstr "Einen unfertigen Abschnitt auf deiner %(page)s-Seite ausgeblendet"
+msgstr "Einen unfertigen Abschnitt auf deiner Seite „%(page)s“ ausgeblendet"
 
 #: apps/tenant_config/site_qa.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Tidied the wording on your %(page)s page"
-msgstr "Die Formulierungen auf deiner %(page)s-Seite überarbeitet"
+msgstr "Die Formulierungen auf deiner Seite „%(page)s“ überarbeitet"
 
 #: apps/tenant_config/site_qa.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Replaced a photo on your %(page)s page"
-msgstr "Ein Foto auf deiner %(page)s-Seite ersetzt"
+msgstr "Ein Foto auf deiner Seite „%(page)s“ ersetzt"

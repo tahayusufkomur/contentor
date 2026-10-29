@@ -2141,20 +2141,55 @@ msgstr "%(perks)s, %(teaches)s için."
 
 #: apps/tenant_config/site_qa.py
 #, fuzzy
+msgid "home"
+msgstr "Ana"
+
+#: apps/tenant_config/site_qa.py
+#, fuzzy
+msgid "about"
+msgstr "Hakkında"
+
+#: apps/tenant_config/site_qa.py
+#, fuzzy
+msgid "courses"
+msgstr "Kurslar"
+
+#: apps/tenant_config/site_qa.py
+#, fuzzy
+msgid "pricing"
+msgstr "Fiyatlandırma"
+
+#: apps/tenant_config/site_qa.py
+#, fuzzy
+msgid "faq"
+msgstr "SSS"
+
+#: apps/tenant_config/site_qa.py
+#, fuzzy
+msgid "contact"
+msgstr "İletişim"
+
+#: apps/tenant_config/site_qa.py
+#, fuzzy
+msgid "events"
+msgstr "Etkinlikler"
+
+#: apps/tenant_config/site_qa.py
+#, fuzzy
 msgid "Gave your logo a clean, see-through background"
 msgstr "Logona temiz, şeffaf bir arka plan verdik"
 
 #: apps/tenant_config/site_qa.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Hid an unfinished section on your %(page)s page"
 msgstr "%(page)s sayfandaki tamamlanmamış bir bölümü gizledik"
 
 #: apps/tenant_config/site_qa.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Tidied the wording on your %(page)s page"
 msgstr "%(page)s sayfandaki ifadeleri toparladık"
 
 #: apps/tenant_config/site_qa.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Replaced a photo on your %(page)s page"
 msgstr "%(page)s sayfandaki bir fotoğrafı değiştirdik"

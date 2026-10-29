@@ -27,6 +27,7 @@ from django.conf import settings
 from django.utils import timezone, translation
 from django.utils.dateparse import parse_datetime
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 from django_tenants.utils import tenant_context
 from pydantic import BaseModel
 
@@ -298,6 +299,18 @@ def _clean_logo(config) -> dict | None:
     return {"kind": "set_logo", "tenant_photo_id": str(photo.pk)}
 
 
+# The page's name as the coach's sentence says it ("on your home page"); an unknown key stays as it is.
+PAGE_NAMES = {
+    "home": gettext_lazy("home"),
+    "about": gettext_lazy("about"),
+    "courses": gettext_lazy("courses"),
+    "pricing": gettext_lazy("pricing"),
+    "faq": gettext_lazy("faq"),
+    "contact": gettext_lazy("contact"),
+    "events": gettext_lazy("events"),
+}
+
+
 def _action(tenant, config, page: str, finding: Finding) -> tuple[dict, str] | None:
     """The copilot action for a finding's fix and what to tell the coach, or
     None when the fix does not hold up (an id the model made up, a section
@@ -313,14 +326,15 @@ def _action(tenant, config, page: str, finding: Finding) -> tuple[dict, str] | N
     if block is None:
         return None
     target = {"page": page, "block_id": block["id"]}
+    name = str(PAGE_NAMES.get(page, page))
     if finding.fix == "hide_block":
         if block["_first"] or block.get("type") == "hero":
             return None
-        said = _("Hid an unfinished section on your %(page)s page") % {"page": page}
+        said = _("Hid an unfinished section on your %(page)s page") % {"page": name}
         return {"kind": "toggle_block", **target, "enabled": False}, said
     if finding.fix == "rewrite_text" and finding.field and finding.value.strip():
         action = {"kind": "edit_block_fields", **target, "fields": {finding.field: finding.value}}
-        return action, _("Tidied the wording on your %(page)s page") % {"page": page}
+        return action, _("Tidied the wording on your %(page)s page") % {"page": name}
     if finding.fix == "swap_image" and finding.value.strip():
         field = photos.image_field_for(block.get("type"), finding.field or None)
         current = block.get(field) if isinstance(block.get(field), dict) else {}
@@ -336,7 +350,7 @@ def _action(tenant, config, page: str, finding: Finding) -> tuple[dict, str] | N
             subject=f"{tenant.schema_name}:page:{page}:{block['id']}:{field}",
         )
         action = {"kind": "set_block_image", **target, "field": field, "curated_asset_id": image.asset_id}
-        return action, _("Replaced a photo on your %(page)s page") % {"page": page}
+        return action, _("Replaced a photo on your %(page)s page") % {"page": name}
     return None
 
 
@@ -353,13 +367,15 @@ def _apply(tenant, results: list[dict]) -> tuple[list[str], list[dict]]:
 
     found = [(r["page"], f) for r in results for f in r.get("findings") or []]
     fixed, tried, applied = [], set(), set()
+    with tenant_context(tenant):
+        language = creator_language()  # they read it in their trail; one read, not one per fix
     for page, finding in found:
         target = _target(page, finding)
         if finding.fix == "none" or finding.severity == "minor" or target in tried or len(tried) >= MAX_FIXES:
             continue
         tried.add(target)
         try:
-            with tenant_context(tenant), translation.override(creator_language()):  # they read it in their trail
+            with tenant_context(tenant), translation.override(language):
                 planned = _action(tenant, TenantConfig.objects.first(), page, finding)
             if planned is None:
                 continue
