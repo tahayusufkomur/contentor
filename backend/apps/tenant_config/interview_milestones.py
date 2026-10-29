@@ -206,12 +206,15 @@ def available_nav_links(answers: dict, current_links: list[dict]) -> list[dict]:
 
 
 def _default_cta_texts() -> set[str]:
-    """The header button texts setup itself writes ("Get Started", "Start a course"), in EVERY language: a default
-    written before the site changed language is still a default."""
+    """Every header button text setup itself writes (the legacy "Get Started" and what `header_cta` gives for courses,
+    events and contact), in EVERY language: a default written before the site changed language is still a default."""
     texts = set()
     for code in languages.CODES:
         with override(code):
-            texts |= {gettext("Get Started"), header_cta(["/courses"])["text"]}
+            texts |= {
+                gettext("Get Started"),
+                *(header_cta([href])["text"] for href in ("/courses", "/events", "/contact")),
+            }
     return texts
 
 

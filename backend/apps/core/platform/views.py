@@ -209,6 +209,11 @@ def _tenant_detail_payload(tenant):
 @permission_classes([IsSuperUser])
 def platform_tenant_detail(request, slug):
     tenant = get_object_or_404(Tenant, slug=slug)
+    if request.method == "PATCH" and "default_locale" in request.data and tenant.provisioning_status != "ready":
+        return Response(
+            {"detail": "This site is still being set up. Change its language once it is ready."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
     if request.method == "PATCH" and "is_active" in request.data:
         tenant.is_active = request.data["is_active"]
         tenant.save(update_fields=["is_active"])
