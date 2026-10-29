@@ -37,7 +37,7 @@ msgid "%(author)s posted in the community"
 msgstr "%(author)s hat in der Community gepostet"
 
 #: apps/community/payloads.py
-#, fuzzy, python-format
+#, python-format, fuzzy
 msgid "%(commenter)s commented on your post"
 msgstr "%(commenter)s hat deinen Beitrag kommentiert"
 
@@ -394,7 +394,7 @@ msgid "I coach with clear guidance, patience and room for your questions."
 msgstr "Ich coache mit klarer Anleitung, Geduld und Raum für deine Fragen."
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "I teach %(topic)s with clear guidance, patience and room for your questions."
 msgstr ""
@@ -402,7 +402,7 @@ msgstr ""
 "Fragen."
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "At %(brand)s we coach with clear guidance, patience and room for your "
 "questions."
@@ -416,7 +416,7 @@ msgid "We coach with clear guidance, patience and room for your questions."
 msgstr "Wir coachen mit klarer Anleitung, Geduld und Raum für deine Fragen."
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "At %(brand)s we teach %(topic)s with clear guidance, patience and room for "
 "your questions."
@@ -425,7 +425,7 @@ msgstr ""
 "Raum für deine Fragen."
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "We teach %(topic)s with clear guidance, patience and room for your "
 "questions."
@@ -434,7 +434,7 @@ msgstr ""
 "Fragen."
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "I started %(brand)s to share my coaching the way I believe it should be "
 "taught: clearly, patiently and without pressure."
@@ -443,7 +443,7 @@ msgstr ""
 "meiner Meinung nach gelehrt werden sollte: klar, geduldig und ohne Druck."
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "I started %(brand)s to share %(topic)s the way I believe it should be "
 "taught: clearly, patiently and without pressure."
@@ -452,7 +452,7 @@ msgstr ""
 "Meinung nach gelehrt werden sollte: klar, geduldig und ohne Druck."
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "%(brand)s exists to share our coaching the way we believe it should be "
 "taught: clearly, patiently and without pressure."
@@ -461,7 +461,7 @@ msgstr ""
 "Meinung nach gelehrt werden sollte: klar, geduldig und ohne Druck."
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "%(brand)s exists to share %(topic)s the way we believe it should be taught: "
 "clearly, patiently and without pressure."
@@ -526,50 +526,45 @@ msgstr ""
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid "Take a look at the courses and start with what fits you today."
-msgstr ""
-"Wirf einen Blick auf die Kurse und starte heute mit dem, was zu dir passt."
+msgstr "Schau dir die Kurse an und starte mit dem, was heute zu dir passt."
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid "Take a look at the sessions and start with what fits you today."
-msgstr ""
-"Wirf einen Blick auf die Sessions und starte heute mit dem, was zu dir "
-"passt."
+msgstr "Schau dir die Sessions an und starte mit dem, was heute zu dir passt."
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid "Take a look at the work and start with what fits you today."
-msgstr ""
-"Wirf einen Blick auf die Arbeiten und starte heute mit dem, was zu dir "
-"passt."
+msgstr "Schau dir die Arbeiten an und starte mit dem, was heute zu dir passt."
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(topic)s that fits your real life"
 msgstr "%(topic)s, das zu deinem echten Leben passt"
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(topic)s, together"
 msgstr "%(topic)s, gemeinsam"
 
 #: apps/core/onboarding/site_composer.py
-#, fuzzy, python-format
+#, python-format, fuzzy
 msgid "I also teach %(also)s."
 msgstr "Ich unterrichte auch %(also)s."
 
 #: apps/core/onboarding/site_composer.py
-#, fuzzy, python-format
+#, python-format, fuzzy
 msgid "We also teach %(also)s."
 msgstr "Wir unterrichten auch %(also)s."
 
 #: apps/core/onboarding/site_composer.py
-#, fuzzy, python-format
+#, python-format, fuzzy
 msgid "%(topic)s with %(brand)s"
 msgstr "%(topic)s mit %(brand)s"
 
 #: apps/core/onboarding/site_composer.py
-#, fuzzy, python-format
+#, python-format, fuzzy
 msgid "Hello, I'm %(name)s"
 msgstr "Hallo, ich bin %(name)s"
 
@@ -604,7 +599,7 @@ msgid "Built for real weeks, not perfect ones"
 msgstr "Gemacht für echte Wochen, nicht für perfekte"
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "A few things that shape every lesson at %(brand)s."
 msgstr "Ein paar Dinge, die jede Lektion bei %(brand)s prägen."
 
@@ -788,7 +783,7 @@ msgid "Moments"
 msgstr "Momente"
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "A closer look at %(topic)s"
 msgstr "Ein genauerer Blick auf %(topic)s"
 
@@ -827,12 +822,12 @@ msgstr "Vor deiner ersten Session"
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid "Can't find yours? Send me a message."
-msgstr "Du findest deine Frage nicht? Schreib mir eine Nachricht."
+msgstr "Nicht das Passende dabei? Schreib mir eine Nachricht."
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid "Can't find yours? Send us a message."
-msgstr "Du findest deine Frage nicht? Schreib uns eine Nachricht."
+msgstr "Nicht das Passende dabei? Schreib uns eine Nachricht."
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
@@ -946,7 +941,7 @@ msgstr ""
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid "How do I get in touch?"
-msgstr "Wie kann ich Kontakt aufnehmen?"
+msgstr "Wie nehme ich Kontakt auf?"
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
@@ -985,7 +980,7 @@ msgstr ""
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid "Ask a question"
-msgstr "Stell eine Frage"
+msgstr "Eine Frage stellen"
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
@@ -1076,24 +1071,24 @@ msgid "In their words"
 msgstr "In ihren Worten"
 
 #: apps/core/onboarding/site_composer.py
-#, fuzzy, python-format
+#, python-format, fuzzy
 msgid "About %(brand)s"
 msgstr "Über %(brand)s"
 
 #: apps/core/onboarding/site_composer.py
-#, fuzzy, python-format
+#, python-format, fuzzy
 msgid "Behind %(brand)s"
 msgstr "Hinter %(brand)s"
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(why)s, how I work, and what you can expect from a session with me."
 msgstr ""
 "%(why)s, wie ich arbeite und was du von einer Session mit mir erwarten "
 "kannst."
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(why)s, how we work, and what you can expect from a session with us."
 msgstr ""
 "%(why)s, wie wir arbeiten und was du von einer Session mit uns erwarten "

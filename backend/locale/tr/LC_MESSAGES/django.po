@@ -37,7 +37,7 @@ msgid "%(author)s posted in the community"
 msgstr "%(author)s toplulukta bir gönderi paylaştı"
 
 #: apps/community/payloads.py
-#, fuzzy, python-format
+#, python-format, fuzzy
 msgid "%(commenter)s commented on your post"
 msgstr "%(commenter)s gönderine yorum yaptı"
 
@@ -394,13 +394,13 @@ msgid "I coach with clear guidance, patience and room for your questions."
 msgstr "Net rehberlik, sabır ve sorularına yer vererek koçluk yapıyorum."
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "I teach %(topic)s with clear guidance, patience and room for your questions."
 msgstr "Net rehberlik, sabır ve sorularına yer vererek %(topic)s öğretiyorum."
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "At %(brand)s we coach with clear guidance, patience and room for your "
 "questions."
@@ -414,7 +414,7 @@ msgid "We coach with clear guidance, patience and room for your questions."
 msgstr "Net rehberlik, sabır ve sorularına yer vererek koçluk yapıyoruz."
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "At %(brand)s we teach %(topic)s with clear guidance, patience and room for "
 "your questions."
@@ -423,14 +423,14 @@ msgstr ""
 "%(topic)s öğretiyoruz."
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "We teach %(topic)s with clear guidance, patience and room for your "
 "questions."
 msgstr "Net rehberlik, sabır ve sorularına yer vererek %(topic)s öğretiyoruz."
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "I started %(brand)s to share my coaching the way I believe it should be "
 "taught: clearly, patiently and without pressure."
@@ -439,7 +439,7 @@ msgstr ""
 "platform kurdum: %(brand)s. Net, sabırla ve baskı olmadan."
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "I started %(brand)s to share %(topic)s the way I believe it should be "
 "taught: clearly, patiently and without pressure."
@@ -448,7 +448,7 @@ msgstr ""
 " bir platform kurdum: %(brand)s. Net, sabırla ve baskı olmadan."
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "%(brand)s exists to share our coaching the way we believe it should be "
 "taught: clearly, patiently and without pressure."
@@ -457,7 +457,7 @@ msgstr ""
 " için var: net, sabırla ve baskı olmadan."
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "%(brand)s exists to share %(topic)s the way we believe it should be taught: "
 "clearly, patiently and without pressure."
@@ -522,45 +522,45 @@ msgstr ""
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid "Take a look at the courses and start with what fits you today."
-msgstr "Kurslara göz at ve bugün sana uyanla başla."
+msgstr "Kurslara göz at ve bugün sana uygun olanla başla."
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid "Take a look at the sessions and start with what fits you today."
-msgstr "Oturumlara göz at ve bugün sana uyanla başla."
+msgstr "Oturumlara göz at ve bugün sana uygun olanla başla."
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid "Take a look at the work and start with what fits you today."
-msgstr "Çalışmalara göz at ve bugün sana uyanla başla."
+msgstr "Çalışmalara göz at ve bugün sana uygun olanla başla."
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(topic)s that fits your real life"
 msgstr "Gerçek hayatına uyan %(topic)s"
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(topic)s, together"
 msgstr "%(topic)s, birlikte"
 
 #: apps/core/onboarding/site_composer.py
-#, fuzzy, python-format
+#, python-format, fuzzy
 msgid "I also teach %(also)s."
-msgstr "Ayrıca şunları da öğretiyorum: %(also)s."
+msgstr "Ayrıca %(also)s öğretiyorum."
 
 #: apps/core/onboarding/site_composer.py
-#, fuzzy, python-format
+#, python-format, fuzzy
 msgid "We also teach %(also)s."
-msgstr "Ayrıca şunları da öğretiyoruz: %(also)s."
+msgstr "Ayrıca %(also)s öğretiyoruz."
 
 #: apps/core/onboarding/site_composer.py
-#, fuzzy, python-format
+#, python-format, fuzzy
 msgid "%(topic)s with %(brand)s"
 msgstr "%(brand)s ile %(topic)s"
 
 #: apps/core/onboarding/site_composer.py
-#, fuzzy, python-format
+#, python-format, fuzzy
 msgid "Hello, I'm %(name)s"
 msgstr "Merhaba, ben %(name)s"
 
@@ -577,12 +577,12 @@ msgstr "Biz kimiz"
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid "More about me"
-msgstr "Benim hakkımda daha fazlası"
+msgstr "Hakkımda daha fazlası"
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid "More about us"
-msgstr "Bizim hakkımızda daha fazlası"
+msgstr "Hakkımızda daha fazlası"
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
@@ -595,14 +595,14 @@ msgid "Built for real weeks, not perfect ones"
 msgstr "Mükemmel değil, gerçek haftalar için tasarlandı"
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "A few things that shape every lesson at %(brand)s."
 msgstr "%(brand)s bünyesindeki her dersi şekillendiren birkaç şey."
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid "Clear guidance"
-msgstr "Net yönlendirme"
+msgstr "Net rehberlik"
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
@@ -777,7 +777,7 @@ msgid "Moments"
 msgstr "Anlar"
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "A closer look at %(topic)s"
 msgstr "%(topic)s konusuna daha yakından bir görünüm"
 
@@ -794,7 +794,7 @@ msgstr "Planlar"
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid "Plans and pricing"
-msgstr "Planlar ve fiyatlar"
+msgstr "Planlar ve fiyatlandırma"
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
@@ -886,7 +886,7 @@ msgstr ""
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid "Questions, answered"
-msgstr "Sorular, cevaplar"
+msgstr "Sorular, yanıtlar"
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
@@ -955,7 +955,7 @@ msgstr ""
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid "See you soon"
-msgstr "Yakında görüşürüz"
+msgstr "Yakında görüşmek üzere"
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
@@ -1061,23 +1061,23 @@ msgid "In their words"
 msgstr "Onların sözleriyle"
 
 #: apps/core/onboarding/site_composer.py
-#, fuzzy, python-format
+#, python-format, fuzzy
 msgid "About %(brand)s"
 msgstr "%(brand)s hakkında"
 
 #: apps/core/onboarding/site_composer.py
-#, fuzzy, python-format
+#, python-format, fuzzy
 msgid "Behind %(brand)s"
-msgstr "Perde arkası: %(brand)s"
+msgstr "%(brand)s perde arkası"
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(why)s, how I work, and what you can expect from a session with me."
 msgstr ""
 "%(why)s, nasıl çalıştığım ve benimle bir oturumdan neler bekleyebileceğin."
 
 #: apps/core/onboarding/site_composer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(why)s, how we work, and what you can expect from a session with us."
 msgstr ""
 "%(why)s, nasıl çalıştığımız ve bizimle bir oturumdan neler bekleyebileceğin."
@@ -1103,7 +1103,7 @@ msgstr "Nasıl öğrenmek istediğini seç"
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid "Good questions, plain answers"
-msgstr "İyi sorular, sade cevaplar"
+msgstr "İyi sorular, net yanıtlar"
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
@@ -1118,7 +1118,7 @@ msgstr "Oturumlar & etkinlikler"
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid "Train with me live"
-msgstr "Benimle canlı çalış"
+msgstr "Benimle canlı antrenman yap"
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
