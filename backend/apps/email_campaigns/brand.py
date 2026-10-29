@@ -11,6 +11,7 @@ import html
 import re
 
 from django.conf import settings
+from django.utils.functional import lazy
 from django.utils.html import strip_tags
 from django.utils.translation import gettext as _
 from django.utils.translation import override
@@ -182,6 +183,13 @@ def refs_in(design: dict) -> list[str]:
     return [b["data"]["ref"] for b in blocks_of(design) if b.get("type") == "item" and (b.get("data") or {}).get("ref")]
 
 
+# Lazy: `build` resolves under the site's language, but this warning is for the creator reading the preview.
+_item_missing = lazy(
+    lambda ref: _("A featured item (%(ref)s) isn't available, so it's left out.") % {"ref": ref or _("none picked")},
+    str,
+)
+
+
 def resolve(design: dict, kit_: dict, found: dict | None = None) -> tuple[dict, list[str]]:
     """A copy the renderer can draw: tokens resolved, links absolute, each item block carrying its
     item (``found``: ref -> item, from catalog.find). Returns (design, warnings)."""
@@ -197,7 +205,7 @@ def resolve(design: dict, kit_: dict, found: dict | None = None) -> tuple[dict, 
             data["_item"] = item
         else:
             data.pop("_item", None)
-            warnings.append(f"A featured item ({data.get('ref') or 'none picked'}) isn't available, so it's left out.")
+            warnings.append(_item_missing(data.get("ref") or ""))
     return out, warnings
 
 

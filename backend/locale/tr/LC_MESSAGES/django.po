@@ -148,28 +148,28 @@ msgid "Access granted successfully."
 msgstr "Erişim başarıyla verildi."
 
 #: apps/billing/admin_panels.py apps/billing/tests/test_error_language.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Deactivated %(count)d plan."
 msgid_plural "Deactivated %(count)d plans."
 msgstr[0] "%(count)d plan devre dışı bırakıldı."
 msgstr[1] "%(count)d plan devre dışı bırakıldı."
 
 #: apps/billing/admin_panels.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Activated %(count)d plan."
 msgid_plural "Activated %(count)d plans."
 msgstr[0] "%(count)d plan etkinleştirildi."
 msgstr[1] "%(count)d plan etkinleştirildi."
 
 #: apps/billing/admin_panels.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Deactivated %(count)d bundle."
 msgid_plural "Deactivated %(count)d bundles."
 msgstr[0] "%(count)d paket devre dışı bırakıldı."
 msgstr[1] "%(count)d paket devre dışı bırakıldı."
 
-#: apps/billing/admin_panels.py apps/billing/tests/test_error_language.py
-#, python-format, fuzzy
+#: apps/billing/admin_panels.py
+#, fuzzy, python-format
 msgid "Activated %(count)d bundle."
 msgid_plural "Activated %(count)d bundles."
 msgstr[0] "%(count)d paket etkinleştirildi."
@@ -355,7 +355,7 @@ msgid "That kind of item has no ways in to set."
 msgstr "O tür bir öğenin ayarlanacak erişim yolu yoktur."
 
 #: apps/billing/ways.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "The dates for %(what)s are not valid. Use whole days from 1 to %(max)d, or a"
 " calendar date."
@@ -364,14 +364,14 @@ msgstr ""
 "bir takvim tarihi kullan."
 
 #: apps/billing/ways.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Give %(what)s a span or a calendar date for each end, not both."
 msgstr ""
 "%(what)s için her bir uç için bir süre veya bir takvim tarihi ver, ikisini "
 "birden değil."
 
 #: apps/billing/ways.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "The dates for %(what)s close before they open."
 msgstr "%(what)s için tarihler açılmadan önce kapanıyor."
 
@@ -2178,6 +2178,17 @@ msgstr "Dosya henüz mevcut değil."
 msgid "You do not have access to this file."
 msgstr "Bu dosyaya erişimin yok."
 
+#: apps/email_campaigns/brand.py
+#, python-format, fuzzy
+msgid "A featured item (%(ref)s) isn't available, so it's left out."
+msgstr ""
+"Öne çıkan bir öğe (%(ref)s) kullanılamıyor, bu yüzden dışarıda bırakıldı."
+
+#: apps/email_campaigns/brand.py
+#, fuzzy
+msgid "none picked"
+msgstr "hiçbiri seçilmedi"
+
 #: apps/email_campaigns/brand.py apps/notifications/email_render.py
 #, fuzzy
 msgid "Open"
@@ -2197,6 +2208,26 @@ msgstr "Bu e-posta çok büyük."
 #, fuzzy
 msgid "This email has too many blocks."
 msgstr "Bu e-postada çok fazla blok var."
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Your next session or event"
+msgstr "Sıradaki oturumun veya etkinliğin"
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Your newest course"
+msgstr "En yeni kursun"
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Your latest article"
+msgstr "En son makalen"
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Your newest download"
+msgstr "En yeni indirilebilir dosyan"
 
 #: apps/email_campaigns/catalog.py
 #, fuzzy
@@ -2294,6 +2325,171 @@ msgstr "Ana sayfa"
 #, fuzzy
 msgid "Page"
 msgstr "Sayfa"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "Designer · reading your brief"
+msgstr "Tasarımcı · brifini okuyor"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "The Designer stopped before finishing. Try again."
+msgstr "Tasarımcı bitirmeden durdu. Tekrar dene."
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "That email is gone."
+msgstr "Bu e-posta artık yok."
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "The Designer couldn't finish this one. Try again in a moment."
+msgstr "Tasarımcı bunu bitiremedi. Birazdan tekrar dene."
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid ""
+"The Designer's draft didn't come out right. Try again, or say it "
+"differently."
+msgstr ""
+"Tasarımcının taslağı düzgün çıkmadı. Tekrar dene ya da farklı bir şekilde "
+"anlat."
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "Something went wrong. Try again."
+msgstr "Bir şeyler ters gitti. Tekrar dene."
+
+#: apps/email_campaigns/designer.py
+#, python-format, fuzzy
+msgid ""
+"The Designer couldn't write %(count)d part of this email and left it out."
+msgid_plural ""
+"The Designer couldn't write %(count)d parts of this email and left it out."
+msgstr[0] ""
+"Tasarımcı bu e-postanın %(count)d bölümünü yazamadığı için çıkardı."
+msgstr[1] ""
+"Tasarımcı bu e-postanın %(count)d bölümünü yazamadığı için çıkardı."
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "paragraph"
+msgstr "paragraf"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "headline"
+msgstr "başlık"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "button"
+msgstr "düğme"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "list"
+msgstr "liste"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "card"
+msgstr "kart"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "picture"
+msgstr "görsel"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "hero"
+msgstr "kapak alanı"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "section"
+msgstr "bölüm"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "profile"
+msgstr "profil"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "divider"
+msgstr "ayırıcı"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "spacing"
+msgstr "boşluk"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "featured offer"
+msgstr "öne çıkan teklif"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "header"
+msgstr "üst bilgi"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "footer"
+msgstr "alt bilgi"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "Marketing Specialist · writing"
+msgstr "Pazarlama Uzmanı · yazıyor"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "Marketing Specialist · writing the subject line"
+msgstr "Pazarlama Uzmanı · konu satırını yazıyor"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "Designer · tidying up"
+msgstr "Tasarımcı · son düzenlemeleri yapıyor"
+
+#: apps/email_campaigns/designer.py
+#, python-format, fuzzy
+msgid "Marketing Specialist · rewriting the %(part)s"
+msgstr "Pazarlama Uzmanı · yeniden yazıyor: %(part)s"
+
+#: apps/email_campaigns/designer.py
+#, python-format, fuzzy
+msgid "Marketing Specialist · writing the %(part)s"
+msgstr "Pazarlama Uzmanı · yazıyor: %(part)s"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "block"
+msgstr "blok"
+
+#: apps/email_campaigns/designer.py
+#, python-format, fuzzy
+msgid "Designer · reworking the %(part)s"
+msgstr "Tasarımcı · yeniden düzenliyor: %(part)s"
+
+#: apps/email_campaigns/designer.py
+#, python-format, fuzzy
+msgid "Designer · laying out the %(part)s"
+msgstr "Tasarımcı · yerleşimi hazırlıyor: %(part)s"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "Designer · finding photos"
+msgstr "Tasarımcı · fotoğraf arıyor"
+
+#: apps/email_campaigns/designer.py
+#, python-format, fuzzy
+msgid "No picture was found for %(what)s, so that spot is empty."
+msgstr "%(what)s için görsel bulunamadı, bu yüzden o alan boş."
 
 #: apps/email_campaigns/render.py
 #, fuzzy

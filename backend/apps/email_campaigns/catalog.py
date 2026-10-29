@@ -20,10 +20,10 @@ from . import images
 
 MAX_EACH = 20
 SLOTS = {
-    "next:event": "Your next session or event",
-    "latest:course": "Your newest course",
-    "latest:post": "Your latest article",
-    "latest:download": "Your newest download",
+    "next:event": gettext_lazy("Your next session or event"),
+    "latest:course": gettext_lazy("Your newest course"),
+    "latest:post": gettext_lazy("Your latest article"),
+    "latest:download": gettext_lazy("Your newest download"),
 }
 # The looks' fonts that are serifs. Gmail shows no web fonts, so the fallback is what most people read.
 # ponytail: a look with a new serif font joins this set, or its emails fall back to a sans-serif.
@@ -322,7 +322,7 @@ def find(refs, tenant, cfg=None) -> dict[str, dict]:
 def slots(tenant, cfg=None) -> list[dict]:
     """The live slots with what each shows today (an empty slot is left out)."""
     found = find(SLOTS, tenant, cfg)
-    return [{**found[ref], "slotLabel": label} for ref, label in SLOTS.items() if ref in found]
+    return [{**found[ref], "slotLabel": str(label)} for ref, label in SLOTS.items() if ref in found]
 
 
 def voice(tenant, cfg=None) -> dict:

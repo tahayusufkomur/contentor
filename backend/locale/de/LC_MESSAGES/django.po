@@ -148,28 +148,28 @@ msgid "Access granted successfully."
 msgstr "Zugriff erfolgreich gewährt."
 
 #: apps/billing/admin_panels.py apps/billing/tests/test_error_language.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Deactivated %(count)d plan."
 msgid_plural "Deactivated %(count)d plans."
 msgstr[0] "%(count)d Tarif deaktiviert."
 msgstr[1] "%(count)d Tarife deaktiviert."
 
 #: apps/billing/admin_panels.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Activated %(count)d plan."
 msgid_plural "Activated %(count)d plans."
 msgstr[0] "%(count)d Tarif aktiviert."
 msgstr[1] "%(count)d Tarife aktiviert."
 
 #: apps/billing/admin_panels.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Deactivated %(count)d bundle."
 msgid_plural "Deactivated %(count)d bundles."
 msgstr[0] "%(count)d Bundle deaktiviert."
 msgstr[1] "%(count)d Bundles deaktiviert."
 
-#: apps/billing/admin_panels.py apps/billing/tests/test_error_language.py
-#, python-format, fuzzy
+#: apps/billing/admin_panels.py
+#, fuzzy, python-format
 msgid "Activated %(count)d bundle."
 msgid_plural "Activated %(count)d bundles."
 msgstr[0] "%(count)d Bundle aktiviert."
@@ -358,7 +358,7 @@ msgstr ""
 "Für diese Art von Element können keine Zugangswege eingestellt werden."
 
 #: apps/billing/ways.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "The dates for %(what)s are not valid. Use whole days from 1 to %(max)d, or a"
 " calendar date."
@@ -367,14 +367,14 @@ msgstr ""
 "oder ein Kalenderdatum."
 
 #: apps/billing/ways.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Give %(what)s a span or a calendar date for each end, not both."
 msgstr ""
 "Gib %(what)s eine Zeitspanne oder ein Kalenderdatum für jedes Ende an, nicht"
 " beides."
 
 #: apps/billing/ways.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "The dates for %(what)s close before they open."
 msgstr "Die Daten für %(what)s schließen, bevor sie öffnen."
 
@@ -2201,6 +2201,18 @@ msgstr "Datei noch nicht verfügbar."
 msgid "You do not have access to this file."
 msgstr "Du hast keinen Zugriff auf diese Datei."
 
+#: apps/email_campaigns/brand.py
+#, python-format, fuzzy
+msgid "A featured item (%(ref)s) isn't available, so it's left out."
+msgstr ""
+"Ein hervorgehobenes Element (%(ref)s) ist nicht verfügbar und wird daher "
+"weggelassen."
+
+#: apps/email_campaigns/brand.py
+#, fuzzy
+msgid "none picked"
+msgstr "keins ausgewählt"
+
 #: apps/email_campaigns/brand.py apps/notifications/email_render.py
 #, fuzzy
 msgid "Open"
@@ -2220,6 +2232,26 @@ msgstr "Diese E-Mail ist zu groß."
 #, fuzzy
 msgid "This email has too many blocks."
 msgstr "Diese E-Mail hat zu viele Blöcke."
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Your next session or event"
+msgstr "Deine nächste Session oder Veranstaltung"
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Your newest course"
+msgstr "Dein neuester Kurs"
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Your latest article"
+msgstr "Dein neuester Artikel"
+
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Your newest download"
+msgstr "Dein neuester Download"
 
 #: apps/email_campaigns/catalog.py
 #, fuzzy
@@ -2317,6 +2349,176 @@ msgstr "Startseite"
 #, fuzzy
 msgid "Page"
 msgstr "Seite"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "Designer · reading your brief"
+msgstr "Designer · liest dein Briefing"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "The Designer stopped before finishing. Try again."
+msgstr "Der Designer hat vor dem Abschluss aufgehört. Versuch es noch einmal."
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "That email is gone."
+msgstr "Diese E-Mail gibt es nicht mehr."
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "The Designer couldn't finish this one. Try again in a moment."
+msgstr ""
+"Der Designer konnte diese E-Mail nicht fertigstellen. Versuch es gleich noch"
+" einmal."
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid ""
+"The Designer's draft didn't come out right. Try again, or say it "
+"differently."
+msgstr ""
+"Der Entwurf des Designers ist nicht gelungen. Versuch es noch einmal oder "
+"formuliere es anders."
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "Something went wrong. Try again."
+msgstr "Etwas ist schiefgelaufen. Versuch es noch einmal."
+
+#: apps/email_campaigns/designer.py
+#, python-format, fuzzy
+msgid ""
+"The Designer couldn't write %(count)d part of this email and left it out."
+msgid_plural ""
+"The Designer couldn't write %(count)d parts of this email and left it out."
+msgstr[0] ""
+"Der Designer konnte %(count)d Teil dieser E-Mail nicht schreiben und hat ihn"
+" weggelassen."
+msgstr[1] ""
+"Der Designer konnte %(count)d Teile dieser E-Mail nicht schreiben und hat "
+"sie weggelassen."
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "paragraph"
+msgstr "Absatz"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "headline"
+msgstr "Überschrift"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "button"
+msgstr "Button"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "list"
+msgstr "Liste"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "card"
+msgstr "Karte"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "picture"
+msgstr "Bild"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "hero"
+msgstr "Hero"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "section"
+msgstr "Abschnitt"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "profile"
+msgstr "Profil"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "divider"
+msgstr "Trennlinie"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "spacing"
+msgstr "Abstand"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "featured offer"
+msgstr "hervorgehobenes Angebot"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "header"
+msgstr "Kopfzeile"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "footer"
+msgstr "Fußzeile"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "Marketing Specialist · writing"
+msgstr "Marketing-Spezialist · schreibt"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "Marketing Specialist · writing the subject line"
+msgstr "Marketing-Spezialist · schreibt die Betreffzeile"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "Designer · tidying up"
+msgstr "Designer · räumt auf"
+
+#: apps/email_campaigns/designer.py
+#, python-format, fuzzy
+msgid "Marketing Specialist · rewriting the %(part)s"
+msgstr "Marketing-Spezialist · schreibt den Bereich „%(part)s“ neu"
+
+#: apps/email_campaigns/designer.py
+#, python-format, fuzzy
+msgid "Marketing Specialist · writing the %(part)s"
+msgstr "Marketing-Spezialist · schreibt den Bereich „%(part)s“"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "block"
+msgstr "Block"
+
+#: apps/email_campaigns/designer.py
+#, python-format, fuzzy
+msgid "Designer · reworking the %(part)s"
+msgstr "Designer · überarbeitet den Bereich „%(part)s“"
+
+#: apps/email_campaigns/designer.py
+#, python-format, fuzzy
+msgid "Designer · laying out the %(part)s"
+msgstr "Designer · gestaltet das Layout für „%(part)s“"
+
+#: apps/email_campaigns/designer.py
+#, fuzzy
+msgid "Designer · finding photos"
+msgstr "Designer · sucht Fotos"
+
+#: apps/email_campaigns/designer.py
+#, python-format, fuzzy
+msgid "No picture was found for %(what)s, so that spot is empty."
+msgstr ""
+"Für %(what)s wurde kein Bild gefunden, daher bleibt diese Stelle leer."
 
 #: apps/email_campaigns/render.py
 #, fuzzy

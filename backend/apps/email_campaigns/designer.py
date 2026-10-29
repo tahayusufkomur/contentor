@@ -24,7 +24,8 @@ from decimal import Decimal
 from django.conf import settings
 from django.db import connection, transaction
 from django.utils import timezone
-from django.utils.translation import override
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy, ngettext, override
 
 from . import brand, catalog, images
 from .models import EmailDesignJob
@@ -162,7 +163,7 @@ def start(*, user, campaign, template, brief, mode, block_id="", refs=()) -> Ema
         brief=brief[:4000],
         mode=mode,
         block_id=block_id,
-        step="Designer · reading your brief",
+        step=_("Designer · reading your brief"),
         created_by=user if getattr(user, "pk", None) else None,
     )
     schema = connection.schema_name
@@ -173,13 +174,13 @@ def start(*, user, campaign, template, brief, mode, block_id="", refs=()) -> Ema
 def sweep(job: EmailDesignJob) -> None:
     """A run nobody finished (a worker that died) fails the next time someone looks at it."""
     if job.status in (job.Status.QUEUED, job.Status.WORKING) and job.updated_at < timezone.now() - STALE:
-        _finish(job, ok=False, error="The Designer stopped before finishing. Try again.")
+        _finish(job, ok=False, error=_("The Designer stopped before finishing. Try again."))
 
 
 def _finish(job, *, ok, error="", warnings=()):
     job.status = job.Status.DONE if ok else job.Status.FAILED
     job.error = error[:500]
-    job.warnings = list(warnings)[:20]
+    job.warnings = [str(w) for w in warnings][:20]
     job.step = "" if ok else job.step
     job.save(update_fields=["status", "error", "warnings", "step", "updated_at"])
 
@@ -189,7 +190,17 @@ def _progress(job_id, step):
 
 
 def execute(tenant, job_id: int) -> None:
-    """The agents worker's job: one design or edit, written into the email or template."""
+    """The agents worker's job: one design or edit, written into the email or template. What it says to the
+    creator (steps, warnings, errors) is in her language; what the model writes for students is in the site's
+    (see ``_context`` and ``_run``). The texts are stored once: a run lasts minutes, so they don't go stale."""
+    from apps.core import languages
+
+    job = EmailDesignJob.objects.select_related("created_by").filter(pk=job_id).first()
+    with override(languages.creator_language(job.created_by if job else None)):
+        _execute(tenant, job_id)
+
+
+def _execute(tenant, job_id: int) -> None:
     from apps.core import ai as core_ai
     from apps.core.onboarding import ai_compose
 
@@ -201,7 +212,7 @@ def execute(tenant, job_id: int) -> None:
     job = EmailDesignJob.objects.select_related("campaign", "template").get(pk=job_id)
     target = job.campaign or job.template
     if target is None:
-        _finish(job, ok=False, error="That email is gone.")
+        _finish(job, ok=False, error=_("That email is gone."))
         return
     spent = [Decimal("0")]
     try:
@@ -224,13 +235,13 @@ def execute(tenant, job_id: int) -> None:
     except core_ai.AiError as exc:
         spent[0] += getattr(exc, "cost_usd", None) or Decimal("0")
         logger.warning("email designer run %s failed: %s", job_id, exc)
-        _finish(job, ok=False, error="The Designer couldn't finish this one. Try again in a moment.")
+        _finish(job, ok=False, error=_("The Designer couldn't finish this one. Try again in a moment."))
     except (ValueError, brand.DesignError) as exc:
         logger.warning("email designer run %s wrote nothing usable: %s", job_id, exc)
-        _finish(job, ok=False, error="The Designer's draft didn't come out right. Try again, or say it differently.")
+        _finish(job, ok=False, error=_("The Designer's draft didn't come out right. Try again, or say it differently."))
     except Exception:
         logger.exception("email designer run %s failed", job_id)
-        _finish(job, ok=False, error="Something went wrong. Try again.")
+        _finish(job, ok=False, error=_("Something went wrong. Try again."))
     finally:
         ai_compose.record_spend(connection.schema_name, spent[0])
 
@@ -370,14 +381,16 @@ def edit(tenant, current: dict, request: str, block_id: str, job_id: int, spent)
 
 
 def _failed_warning(failed: dict) -> list[str]:
-    return (
-        [
-            f"The Designer couldn't write {len(failed)} part{'s' if len(failed) > 1 else ''} "
-            "of this email and left it out."
-        ]
-        if failed
-        else []
-    )
+    if not failed:
+        return []
+    return [
+        ngettext(
+            "The Designer couldn't write %(count)d part of this email and left it out.",
+            "The Designer couldn't write %(count)d parts of this email and left it out.",
+            len(failed),
+        )
+        % {"count": len(failed)}
+    ]
 
 
 # ── ops ────────────────────────────────────────────────────────────────────────────────────────
@@ -507,33 +520,47 @@ def apply_ops(design: dict, ops: list) -> dict[int, str]:
     return skipped
 
 
-_COPY = {"text": "paragraph", "heading": "headline", "button": "button", "list": "list", "card": "card"}
+_COPY = {
+    "text": gettext_lazy("paragraph"),
+    "heading": gettext_lazy("headline"),
+    "button": gettext_lazy("button"),
+    "list": gettext_lazy("list"),
+    "card": gettext_lazy("card"),
+}
 _DESIGN = {
-    "image": "picture",
-    "hero": "hero",
-    "columns": "section",
-    "profile": "profile",
-    "divider": "divider",
-    "spacer": "spacing",
-    "item": "featured offer",
-    "brandHeader": "header",
-    "brandFooter": "footer",
+    "image": gettext_lazy("picture"),
+    "hero": gettext_lazy("hero"),
+    "columns": gettext_lazy("section"),
+    "profile": gettext_lazy("profile"),
+    "divider": gettext_lazy("divider"),
+    "spacer": gettext_lazy("spacing"),
+    "item": gettext_lazy("featured offer"),
+    "brandHeader": gettext_lazy("header"),
+    "brandFooter": gettext_lazy("footer"),
 }
 
 
 def activity(op) -> str:
     """The step line for an op, signed by the specialist whose work it is."""
     if not isinstance(op, dict):
-        return "Marketing Specialist · writing"
+        return _("Marketing Specialist · writing")
     kind = op.get("op")
     if kind == "meta":
-        return "Marketing Specialist · writing the subject line"
+        return _("Marketing Specialist · writing the subject line")
     if kind == "remove":
-        return "Designer · tidying up"
+        return _("Designer · tidying up")
     block_type = (op.get("block") or {}).get("type") if isinstance(op.get("block"), dict) else None
+    replacing = kind == "replace"
     if block_type in _COPY:
-        return f"Marketing Specialist · {'rewriting' if kind == 'replace' else 'writing'} the {_COPY[block_type]}"
-    return f"Designer · {'reworking' if kind == 'replace' else 'laying out'} the {_DESIGN.get(block_type, 'block')}"
+        text = (
+            _("Marketing Specialist · rewriting the %(part)s")
+            if replacing
+            else _("Marketing Specialist · writing the %(part)s")
+        )
+        return text % {"part": _COPY[block_type]}
+    part = _DESIGN.get(block_type) or _("block")
+    text = _("Designer · reworking the %(part)s") if replacing else _("Designer · laying out the %(part)s")
+    return text % {"part": part}
 
 
 # ── refs → her pictures and pages ──────────────────────────────────────────────────────────────
@@ -567,7 +594,7 @@ def resolve_refs(design: dict, tenant, job_id: int, keep=frozenset()) -> list[st
     items = catalog.find(item_refs, tenant) if item_refs else {}
     warnings, cache, stock = [], {}, [MAX_STOCK_IMAGES]
     if any("stock://" in json.dumps(b) for b in blocks):
-        _progress(job_id, "Designer · finding photos")
+        _progress(job_id, _("Designer · finding photos"))
 
     def picture(ref) -> tuple[str, str]:
         if ref in cache:
@@ -588,7 +615,9 @@ def resolve_refs(design: dict, tenant, job_id: int, keep=frozenset()) -> list[st
             if photo is not None:
                 src, alt = images.stable_url_for(photo, site=site), photo.alt_text or words
         if not src:
-            warnings.append(f"No picture was found for {ref.split('://', 1)[-1][:60]}, so that spot is empty.")
+            warnings.append(
+                _("No picture was found for %(what)s, so that spot is empty.") % {"what": ref.split("://", 1)[-1][:60]}
+            )
         cache[ref] = (src, alt)
         return cache[ref]
 
