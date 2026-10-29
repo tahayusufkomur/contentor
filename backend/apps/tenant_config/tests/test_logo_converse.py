@@ -5,7 +5,16 @@ from decimal import Decimal
 
 import pytest
 
+from apps.core import languages
 from apps.tenant_config import logo_converse
+
+
+@pytest.fixture(autouse=True)
+def _english(monkeypatch):
+    """No database here: the two languages the calls ask for are fixed."""
+    monkeypatch.setattr(languages, "creator_language", lambda user=None: "en")
+    monkeypatch.setattr(languages, "site_language", lambda tenant=None: "en")
+
 
 _ICON_TURN = {
     "message": "Here are three directions.",
@@ -53,7 +62,7 @@ _NAME_TURN = {
 
 
 def _mock_structured(monkeypatch, payload, cost=Decimal("0.02")):
-    def fake(*, system, user, output_model, model, max_tokens):
+    def fake(*, system, user, output_model, model, max_tokens, language):
         return output_model.model_validate(payload), cost, model
 
     monkeypatch.setattr(logo_converse.core_ai, "structured", fake)
@@ -94,7 +103,7 @@ class TestCritiqueTurn:
     def test_critique_returns_corrected_designs(self, monkeypatch, settings):
         settings.LOGO_AI_MODEL = "claude-sonnet-5"
 
-        def fake_messages(*, system, messages, output_model, model, max_tokens):
+        def fake_messages(*, system, messages, output_model, model, max_tokens, language):
             # image blocks made it into the user turn
             blocks = messages[0]["content"]
             assert any(b.get("type") == "image" for b in blocks)

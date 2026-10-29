@@ -12,6 +12,7 @@ bucket's spend sums into help_bot.global_spend like every tenant's).
 
 from django.conf import settings
 from django.http import StreamingHttpResponse
+from django.utils import translation
 from rest_framework.decorators import (
     api_view,
     authentication_classes,
@@ -21,7 +22,7 @@ from rest_framework.decorators import (
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from apps.core import assistant, ipblock
+from apps.core import assistant, ipblock, languages
 from apps.core.email import send_email
 from apps.core.models import AiConversation
 from apps.core.throttling import (
@@ -108,7 +109,14 @@ def help_bot_public_chat(request):
         assistant.append_message(convo, "user", question)
     response = StreamingHttpResponse(
         help_bot.sse_events(
-            history, "visitor", MARKETING_BUCKET, month, question=question, session_id=session_id, conversation=convo
+            history,
+            "visitor",
+            MARKETING_BUCKET,
+            month,
+            question=question,
+            session_id=session_id,
+            conversation=convo,
+            language=languages.resolve(translation.get_language()),  # the page's language (contentor.app)
         ),
         content_type="text/event-stream",
     )

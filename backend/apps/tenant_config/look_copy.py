@@ -130,6 +130,7 @@ def for_tenant(tenant, answers: dict) -> dict | None:
     """The coach's sample copy as a dict (the LookCopy fields), cached per
     answers; None when the model cannot write it."""
     from apps.core import ai as core_ai
+    from apps.core import languages
     from apps.core.onboarding import ai_compose
 
     from .interview import brand_of
@@ -165,6 +166,7 @@ def for_tenant(tenant, answers: dict) -> dict | None:
                 label="contentor:look-copy",
                 timeout_seconds=TIMEOUT_SECONDS,
                 effort="low",
+                language=languages.site_language(),
             )
         except core_ai.AiError as exc:
             ai_compose.record_spend(tenant.schema_name, getattr(exc, "cost_usd", None) or 0)

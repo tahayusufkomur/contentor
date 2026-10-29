@@ -264,6 +264,7 @@ def test_the_cli_reads_the_images_from_disk(settings):
             model="claude-opus-5-5",
             max_tokens=100,
             effort="medium",
+            language=None,
         )
     assert seen["files"] == ["image-1.jpg", "image-2.jpg"] and seen["effort"] == "medium"
     assert seen["user"].startswith("Page: home\n[image file: ") and "image-2.jpg]" in seen["user"]

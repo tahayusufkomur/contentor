@@ -1,6 +1,7 @@
 import polib
 
 from apps.core.management.commands.i18n_check import (
+    ai_calls_without_language,
     count_literals,
     coverage,
     locale_lists,
@@ -137,3 +138,12 @@ def test_slugify_comes_from_apps_core_slugs():
     assert slugify_imports("from django.utils import text\nx = text.slugify('a')\n", "apps/a.py")
     assert not slugify_imports("from django.utils.text import capfirst\n", "apps/a.py")
     assert not slugify_imports("from apps.core.slugs import slugify\n", "apps/a.py")
+
+
+def test_ai_calls_pass_a_language():
+    assert ai_calls_without_language("core_ai.structured(system=s, user=u)\n", "apps/a.py")
+    assert ai_calls_without_language("ai.stream_text(system=s)\n", "apps/a.py")
+    assert ai_calls_without_language("structured_messages(system=s)\n", "apps/a.py")
+    assert not ai_calls_without_language("core_ai.structured(system=s, language=None)\n", "apps/a.py")
+    assert not ai_calls_without_language("core_ai.agentc_look(language=Mixed(a, b))\n", "apps/a.py")
+    assert not ai_calls_without_language("run_chat(system=s)\n", "apps/a.py")

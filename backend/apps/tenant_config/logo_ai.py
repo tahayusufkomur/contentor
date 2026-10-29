@@ -20,6 +20,7 @@ from django.conf import settings
 from pydantic import BaseModel, Field
 
 from apps.core import ai as core_ai
+from apps.core import languages
 from apps.core.models import LogoAiUsage
 
 from .logo_geometry import compile_elements
@@ -617,6 +618,7 @@ def refine_design(recipe, elements, instruction):
             output_model=_RefinedDesign,
             model=settings.LOGO_AI_MODEL,
             max_tokens=3000,
+            language=languages.creator_language(),
         )
     except core_ai.AiError as exc:
         raise RefineError(str(exc), cost_usd=exc.cost_usd) from exc

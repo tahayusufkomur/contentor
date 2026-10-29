@@ -162,6 +162,7 @@ def pick_photos(
             model=settings.ONBOARDING_AI_MODEL,
             max_tokens=MAX_OUTPUT_TOKENS,
             effort="low",
+            language=None,
         )
     except core_ai.AiError as exc:
         ai_compose.record_spend(tenant_schema, float(getattr(exc, "cost_usd", 0) or 0))

@@ -64,7 +64,8 @@ def test_draft_mode_maps_keys_and_sends_the_rule(calls, monkeypatch, settings):
     call_command("translate", draft="de", stdout=out, stderr=io.StringIO())
     assert json.loads(out.getvalue()) == {"a.b": "[x] Hello {name}", "c": "[x] Save"}
     system = calls[0]["system"]
-    assert "German" in system and "du" in system and "Creator-Studio" in system
+    assert "German" in system
+    assert calls[0]["language"] == "de"  # ai.structured appends the rule: the glossary and the voice
     assert calls[0]["model"] == settings.TRANSLATE_MODEL
 
 

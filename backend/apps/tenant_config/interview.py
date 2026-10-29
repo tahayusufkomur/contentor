@@ -552,6 +552,7 @@ def _is_tapped(text: str, answering, answers, brand) -> bool:
 
 def _ask_ai(tenant, answers, turns, message, spoken, answering=None) -> InterviewTurn | None:
     from apps.core import ai as core_ai
+    from apps.core import languages
     from apps.core.onboarding import ai_compose
 
     if not ai_compose.compose_available():
@@ -567,6 +568,7 @@ def _ask_ai(tenant, answers, turns, message, spoken, answering=None) -> Intervie
             timeout_seconds=INTERVIEW_TIMEOUT_SECONDS,
             # The coach waits on every turn: low skips thinking on easy turns.
             effort="low",
+            language=languages.Mixed(languages.creator_language(), languages.site_language()),
         )
     except core_ai.AiError as exc:
         ai_compose.record_spend(tenant.schema_name, getattr(exc, "cost_usd", None) or 0)

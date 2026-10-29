@@ -55,7 +55,12 @@ def test_structured_sends_schema_and_thinking_and_bills_tokens(google):
     calls, replies = google
     replies.append(_answer('{"greeting": "hi"}', thought="planning…"))
     parsed, cost, model = ai.structured(
-        system="sys", user="u", output_model=_Greeting, model="claude-sonnet-5", max_tokens=50
+        system="sys",
+        user="u",
+        output_model=_Greeting,
+        model="claude-sonnet-5",
+        max_tokens=50,
+        language=None,
     )
     assert parsed.greeting == "hi" and model == "gemini-test"
     assert cost == Decimal("1.5") + Decimal("0.75")  # 1M in + 100k out at the conservative list price
@@ -72,7 +77,9 @@ def test_structured_sends_schema_and_thinking_and_bills_tokens(google):
 def test_one_retry_absorbs_an_overloaded_moment(google):
     calls, replies = google
     replies += [_Resp({"error": "overloaded"}, status=503), _answer('{"greeting": "hi"}')]
-    parsed, _cost, _model = ai.structured(system="s", user="u", output_model=_Greeting, model="m", max_tokens=50)
+    parsed, _cost, _model = ai.structured(
+        system="s", user="u", output_model=_Greeting, model="m", max_tokens=50, language=None
+    )
     assert parsed.greeting == "hi" and len(calls) == 2
 
 
@@ -80,7 +87,7 @@ def test_invalid_output_twice_raises_with_the_spend(google):
     _calls, replies = google
     replies += [_answer("not json"), _answer('{"nope": 1}')]
     with pytest.raises(ai.AiError) as exc:
-        ai.structured(system="s", user="u", output_model=_Greeting, model="m", max_tokens=50)
+        ai.structured(system="s", user="u", output_model=_Greeting, model="m", max_tokens=50, language=None)
     assert exc.value.cost_usd == 2 * (Decimal("1.5") + Decimal("0.75"))
 
 
@@ -89,7 +96,7 @@ def test_empty_answer_is_an_error(google):
     blocked = _Resp({"candidates": [{"finishReason": "SAFETY"}], "usageMetadata": {}})
     replies += [blocked, blocked]
     with pytest.raises(ai.AiError, match="SAFETY"):
-        ai.structured(system="s", user="u", output_model=_Greeting, model="m", max_tokens=50)
+        ai.structured(system="s", user="u", output_model=_Greeting, model="m", max_tokens=50, language=None)
 
 
 def test_stream_text_maps_roles_and_yields_one_delta(google):
@@ -100,7 +107,7 @@ def test_stream_text_maps_roles_and_yields_one_delta(google):
         {"role": "assistant", "content": "hey"},
         {"role": "user", "content": "how?"},
     ]
-    events = list(ai.stream_text(system="s", history=history, model="m", max_tokens=50))
+    events = list(ai.stream_text(system="s", history=history, model="m", max_tokens=50, language=None))
     assert events[0] == ("delta", "Hello there")
     assert events[1][0] == "done" and events[1][1]["provider"] == "gemini" and events[1][1]["cost_usd"] > 0
     assert [c["role"] for c in calls[0]["json"]["contents"]] == ["user", "model", "user"]

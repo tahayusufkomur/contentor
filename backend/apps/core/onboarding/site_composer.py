@@ -1070,6 +1070,7 @@ def _plan_site(tenant, *, force=False) -> dict:
                 max_tokens=PLAN_MAX_TOKENS,
                 label="contentor:compose-plan",
                 effort="medium",
+                language=site_language(tenant),
             )
             ai_compose.record_spend(tenant.schema_name, float(cost or 0))
             raw, source = parsed, "ai"
@@ -1619,6 +1620,7 @@ def _call_page_model(tenant, user) -> dict[int, dict]:
         max_tokens=PAGE_MAX_TOKENS,
         label="contentor:compose-page",
         effort="medium",
+        language=site_language(tenant),
     )
     ai_compose.record_spend(tenant.schema_name, float(cost or 0))
     return {s.index: s.model_dump() for s in parsed.sections}

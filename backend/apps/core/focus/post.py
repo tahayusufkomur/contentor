@@ -16,6 +16,7 @@ from django.db import connection, transaction
 from apps.blog import ai as blog_ai
 from apps.blog import curated
 from apps.blog.models import BlogPost, unique_slug
+from apps.core import languages
 from apps.core.copilot import runs
 from apps.tenant_config.models import CopilotRun, FocusCreation
 
@@ -92,6 +93,7 @@ def carry_out(tenant, run_id) -> None:
         "\n".join(w for w in words if w),
         photos=blog_ai.photos_for(subject),
         label="contentor:copilot",  # she waits at the review
+        language=languages.site_language(),
     ).fields
     draft["cover_photo_id"] = ""  # the cover is her pick at the cover step
     # Its catalog photos are copied into her storage before the locks, so a slow catalog never holds her

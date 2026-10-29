@@ -23,7 +23,7 @@ def test_ai_check_succeeds_end_to_end(settings, monkeypatch, capsys):
     monkeypatch.setattr("shutil.which", lambda name: "/usr/local/bin/claude")
     monkeypatch.setenv("CLAUDE_CODE_OAUTH_TOKEN", "oat-token")
 
-    def fake_structured(*, system, user, output_model, model, max_tokens):
+    def fake_structured(*, system, user, output_model, model, max_tokens, language):
         return output_model(ok=True), Decimal("0"), "haiku"
 
     monkeypatch.setattr("apps.core.ai.structured", fake_structured)

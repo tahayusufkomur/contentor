@@ -74,7 +74,7 @@ def _same(a: str, b: str) -> bool:
 
 
 def _draft_batch(lang: str, batch: list[dict]) -> dict:
-    system = _SYSTEM.format(name=languages.info(lang)["name"]) + languages.rule(lang)
+    system = _SYSTEM.format(name=languages.info(lang)["name"]).rstrip()
     user = json.dumps({"items": batch}, ensure_ascii=False)
     try:
         out, _cost, _model = ai.structured(
@@ -84,6 +84,7 @@ def _draft_batch(lang: str, batch: list[dict]) -> dict:
             model=settings.TRANSLATE_MODEL,
             max_tokens=8000,
             label=f"translate-{lang}",
+            language=lang,
         )
     except ai.AiError as exc:
         sys.stderr.write(f"translate: a batch of {len(batch)} failed: {exc}\n")

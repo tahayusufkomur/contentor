@@ -31,11 +31,12 @@ def _blog_brief(brief: CoachBrief) -> str:
     )
 
 
-def generate_starter_draft(brief: CoachBrief, tenant_schema: str, *, topic: str | None = None) -> dict:
+def generate_starter_draft(brief: CoachBrief, tenant_schema: str, *, language: str, topic: str | None = None) -> dict:
     """LLM step — safe for provision_tenant's worker thread (public-schema
     reads only). Returns BlogPost-ready fields with curated:<pk> photo ids
     still unresolved. Raises on any provider failure; spend is recorded
-    either way against the onboarding budget.
+    either way against the onboarding budget. ``language`` is the site's
+    (the caller reads it: this runs on a worker thread, outside the tenant).
 
     ``topic`` defaults to the original single-post welcome topic; callers
     seeding several posts (the AI-seeding "complete site" pass) pass their
@@ -43,15 +44,15 @@ def generate_starter_draft(brief: CoachBrief, tenant_schema: str, *, topic: str 
     from apps.blog import ai as blog_ai
     from apps.core.onboarding import ai_compose
 
-    language = "English"
+    written_in = "English"
     topic = topic or f"Welcome to {brief.brand_name or 'my studio'}: what I offer and how to start"
     instructions = (
-        f"Write in {language}. This is the coach's very first post, introducing themselves and their "
+        f"Write in {written_in}. This is the coach's very first post, introducing themselves and their "
         f"{brief.niche} practice to brand-new students. In the coach's own words: {brief.description[:300]}"
     )
     photos = blog_curated.curated_candidates(f"{brief.niche} {brief.description}", limit=MAX_CANDIDATE_PHOTOS)
     try:
-        result = blog_ai.generate_post(_blog_brief(brief), topic, instructions, photos=photos)
+        result = blog_ai.generate_post(_blog_brief(brief), topic, instructions, photos=photos, language=language)
     except blog_ai.BlogAiError as exc:
         ai_compose.record_spend(tenant_schema, float(getattr(exc, "cost_usd", 0) or 0))
         raise

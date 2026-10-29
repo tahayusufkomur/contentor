@@ -26,15 +26,21 @@ def test_generate_starter_draft_records_spend(monkeypatch):
     from apps.blog import ai as blog_ai
     from apps.core.onboarding import ai_compose
 
-    spends = []
+    spends, languages = [], []
     monkeypatch.setattr(ai_compose, "record_spend", lambda schema, usd: spends.append((schema, usd)))
     monkeypatch.setattr(starter_post.blog_curated, "curated_candidates", lambda topic, limit=8: [])
     monkeypatch.setattr(
         blog_ai,
         "generate_post",
-        lambda brief, topic, instructions="", photos=(): SimpleNamespace(fields=dict(FIELDS), cost_usd=0.02),
+        lambda brief, topic, instructions="", photos=(), *, language: (
+            languages.append(language),
+            SimpleNamespace(fields=dict(FIELDS), cost_usd=0.02),
+        )[1],
     )
-    fields = starter_post.generate_starter_draft(CoachBrief(niche="yoga", brand_name="Glow Studio"), "glow")
+    fields = starter_post.generate_starter_draft(
+        CoachBrief(niche="yoga", brand_name="Glow Studio"), "glow", language="pl"
+    )
+    assert languages == ["pl"]
     assert fields["title"] == "Welcome to Glow Studio"
     assert spends == [("glow", 0.02)]
 

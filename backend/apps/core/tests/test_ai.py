@@ -106,7 +106,12 @@ def test_structured_cli_parses_and_costs_zero(settings, monkeypatch):
     monkeypatch.setattr("subprocess.run", fake_run)
     monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-should-be-stripped")
     parsed, cost, model = ai.structured(
-        system="s", user="u", output_model=_Out, model="claude-sonnet-5", max_tokens=100
+        system="s",
+        user="u",
+        output_model=_Out,
+        model="claude-sonnet-5",
+        max_tokens=100,
+        language=None,
     )
     assert parsed.title == "hi"
     assert cost == Decimal("0")
@@ -128,7 +133,12 @@ def test_structured_cli_maps_the_requested_model_to_its_cli_alias(settings, monk
 
     monkeypatch.setattr("subprocess.run", fake_run)
     parsed, _cost, model = ai.structured(
-        system="s", user="u", output_model=_Out, model="claude-opus-4-8", max_tokens=100
+        system="s",
+        user="u",
+        output_model=_Out,
+        model="claude-opus-4-8",
+        max_tokens=100,
+        language=None,
     )
     assert captured["cmd"][captured["cmd"].index("--model") + 1] == "opus"
     assert model == "claude-opus-4-8"  # returned model is the request, not the CLI alias
@@ -144,7 +154,9 @@ def test_structured_cli_passes_effort(settings, monkeypatch):
         return _completed(stdout=_json.dumps({"result": '{"title": "hi"}'}))
 
     monkeypatch.setattr("subprocess.run", fake_run)
-    ai.structured(system="s", user="u", output_model=_Out, model="claude-sonnet-5-5", max_tokens=100, effort="low")
+    ai.structured(
+        system="s", user="u", output_model=_Out, model="claude-sonnet-5-5", max_tokens=100, effort="low", language=None
+    )
     assert captured["cmd"][captured["cmd"].index("--effort") + 1] == "low"
 
 
@@ -159,7 +171,7 @@ def test_structured_cli_falls_back_to_ai_cli_model_for_unmapped_family(settings,
     monkeypatch.setattr("subprocess.run", fake_run)
     # "fable" has no CLI --model alias yet — falls back to AI_CLI_MODEL rather
     # than passing an unrecognized value straight through to the CLI.
-    ai.structured(system="s", user="u", output_model=_Out, model="claude-fable-5", max_tokens=100)
+    ai.structured(system="s", user="u", output_model=_Out, model="claude-fable-5", max_tokens=100, language=None)
     assert captured["cmd"][captured["cmd"].index("--model") + 1] == "haiku"
 
 
@@ -167,7 +179,7 @@ def test_structured_cli_strips_code_fences(settings, monkeypatch):
     _cli_settings(settings)
     fenced = '```json\n{"title": "hi"}\n```'
     monkeypatch.setattr("subprocess.run", lambda cmd, **kw: _completed(stdout=_json.dumps({"result": fenced})))
-    parsed, _, _ = ai.structured(system="s", user="u", output_model=_Out, model="m", max_tokens=100)
+    parsed, _, _ = ai.structured(system="s", user="u", output_model=_Out, model="m", max_tokens=100, language=None)
     assert parsed.title == "hi"
 
 
@@ -181,7 +193,7 @@ def test_structured_cli_retries_once_on_bad_json(settings, monkeypatch):
         return _completed(stdout=outs[len(calls) - 1])
 
     monkeypatch.setattr("subprocess.run", fake_run)
-    parsed, _, _ = ai.structured(system="s", user="u", output_model=_Out, model="m", max_tokens=100)
+    parsed, _, _ = ai.structured(system="s", user="u", output_model=_Out, model="m", max_tokens=100, language=None)
     assert parsed.title == "ok"
     assert len(calls) == 2
 
@@ -200,7 +212,7 @@ def test_structured_cli_user_prompt_carries_json_reminder(settings, monkeypatch)
         return _completed(stdout=_json.dumps({"result": '{"title": "hi"}'}))
 
     monkeypatch.setattr("subprocess.run", fake_run)
-    ai.structured(system="s", user="hey there", output_model=_Out, model="m", max_tokens=100)
+    ai.structured(system="s", user="hey there", output_model=_Out, model="m", max_tokens=100, language=None)
     user_arg = captured["cmd"][captured["cmd"].index("-p") + 1]
     assert user_arg.startswith("hey there")
     assert user_arg.endswith("(Reply with ONLY the JSON object matching the schema — no prose.)")
@@ -216,7 +228,7 @@ def test_structured_cli_raises_after_second_bad_json(settings, monkeypatch):
 
     monkeypatch.setattr("subprocess.run", fake_run)
     with pytest.raises(ai.AiError, match="did not match schema"):
-        ai.structured(system="s", user="u", output_model=_Out, model="m", max_tokens=100)
+        ai.structured(system="s", user="u", output_model=_Out, model="m", max_tokens=100, language=None)
     assert len(calls) == 2
 
 
@@ -230,7 +242,7 @@ def test_structured_cli_nonzero_rc_raises_without_retry(settings, monkeypatch):
 
     monkeypatch.setattr("subprocess.run", fake_run)
     with pytest.raises(ai.AiError, match="rc=1"):
-        ai.structured(system="s", user="u", output_model=_Out, model="m", max_tokens=100)
+        ai.structured(system="s", user="u", output_model=_Out, model="m", max_tokens=100, language=None)
     assert len(calls) == 1
 
 
@@ -251,7 +263,12 @@ def test_structured_anthropic_parses_and_costs(settings, monkeypatch):
 
     monkeypatch.setattr(ai, "_anthropic_client", lambda: _Client())
     parsed, cost, model = ai.structured(
-        system="s", user="u", output_model=_Out, model="claude-sonnet-5", max_tokens=100
+        system="s",
+        user="u",
+        output_model=_Out,
+        model="claude-sonnet-5",
+        max_tokens=100,
+        language=None,
     )
     assert parsed.title == "hi"
     assert cost == Decimal("2")
@@ -274,7 +291,15 @@ def test_structured_anthropic_passes_effort(settings, monkeypatch):
     settings.AI_PROVIDER = "anthropic"
     resp = SimpleNamespace(parsed_output=_Out(title="hi"), usage=_Usage(), stop_reason="end_turn")
     monkeypatch.setattr(ai, "_anthropic_client", lambda: _parse_client(resp))
-    ai.structured(system="s", user="u", output_model=_Out, model="claude-sonnet-5-5", max_tokens=100, effort="medium")
+    ai.structured(
+        system="s",
+        user="u",
+        output_model=_Out,
+        model="claude-sonnet-5-5",
+        max_tokens=100,
+        effort="medium",
+        language=None,
+    )
     assert resp.kwargs["output_config"] == {"effort": "medium"}
     assert resp.kwargs["output_format"] is _Out  # the SDK merges it into output_config.format
 
@@ -284,7 +309,7 @@ def test_structured_anthropic_refusal_raises_with_cost(settings, monkeypatch):
     resp = SimpleNamespace(parsed_output=None, usage=_Usage(out=1_000_000), stop_reason="refusal")
     monkeypatch.setattr(ai, "_anthropic_client", lambda: _parse_client(resp))
     with pytest.raises(ai.AiError, match="refusal") as excinfo:
-        ai.structured(system="s", user="u", output_model=_Out, model="claude-sonnet-5-5", max_tokens=100)
+        ai.structured(system="s", user="u", output_model=_Out, model="claude-sonnet-5-5", max_tokens=100, language=None)
     assert excinfo.value.cost_usd == Decimal("10")  # billed, so it still accrues against the caps
 
 
@@ -300,7 +325,7 @@ def test_structured_anthropic_wraps_sdk_errors(settings, monkeypatch):
 
     monkeypatch.setattr(ai, "_anthropic_client", lambda: _Client())
     with pytest.raises(ai.AiError, match="network down") as excinfo:
-        ai.structured(system="s", user="u", output_model=_Out, model="m", max_tokens=100)
+        ai.structured(system="s", user="u", output_model=_Out, model="m", max_tokens=100, language=None)
     assert excinfo.value.cost_usd == Decimal("0")
 
 
@@ -347,7 +372,9 @@ def test_stream_cli_yields_deltas_then_done(settings, monkeypatch):
 
     monkeypatch.setattr("subprocess.Popen", fake_popen)
     monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-should-be-stripped")
-    events = list(ai.stream_text(system="persona", history=_HISTORY, model="claude-sonnet-5", max_tokens=64))
+    events = list(
+        ai.stream_text(system="persona", history=_HISTORY, model="claude-sonnet-5", max_tokens=64, language=None)
+    )
     assert events[:2] == [("delta", "Hel"), ("delta", "lo")]
     assert events[-1] == ("done", {"cost_usd": Decimal("0"), "provider": "cli", "model": "claude-sonnet-5"})
     assert "ANTHROPIC_API_KEY" not in captured["env"]
@@ -364,7 +391,7 @@ def test_stream_cli_falls_back_to_ai_cli_model_for_unmapped_family(settings, mon
         return _FakeProc([_json.dumps({"type": "result"})])
 
     monkeypatch.setattr("subprocess.Popen", fake_popen)
-    list(ai.stream_text(system="s", history=_HISTORY, model="claude-fable-5", max_tokens=64))
+    list(ai.stream_text(system="s", history=_HISTORY, model="claude-fable-5", max_tokens=64, language=None))
     assert captured["cmd"][captured["cmd"].index("--model") + 1] == "haiku"
 
 
@@ -382,7 +409,7 @@ def test_stream_cli_serializes_prior_turns(settings, monkeypatch):
         {"role": "assistant", "content": "answer"},
         {"role": "user", "content": "second"},
     ]
-    list(ai.stream_text(system="s", history=history, model="m", max_tokens=64))
+    list(ai.stream_text(system="s", history=history, model="m", max_tokens=64, language=None))
     prompt = captured["cmd"][captured["cmd"].index("-p") + 1]
     assert "<conversation_so_far>" in prompt
     assert "User: first" in prompt and "You: answer" in prompt
@@ -393,7 +420,7 @@ def test_stream_cli_failure_raises_ai_error(settings, monkeypatch):
     _cli_settings(settings)
     monkeypatch.setattr("subprocess.Popen", lambda cmd, **kw: _FakeProc([], returncode=1))
     with pytest.raises(ai.AiError, match="rc=1"):
-        list(ai.stream_text(system="s", history=_HISTORY, model="m", max_tokens=64))
+        list(ai.stream_text(system="s", history=_HISTORY, model="m", max_tokens=64, language=None))
 
 
 def test_stream_anthropic_yields_deltas_then_done(settings, monkeypatch):
@@ -423,7 +450,9 @@ def test_stream_anthropic_yields_deltas_then_done(settings, monkeypatch):
         messages = _Messages()
 
     monkeypatch.setattr(ai, "_anthropic_client", lambda: _Client())
-    events = list(ai.stream_text(system="persona", history=_HISTORY, model="claude-sonnet-5", max_tokens=64))
+    events = list(
+        ai.stream_text(system="persona", history=_HISTORY, model="claude-sonnet-5", max_tokens=64, language=None)
+    )
     assert events[:2] == [("delta", "Hel"), ("delta", "lo")]
     assert events[-1] == ("done", {"cost_usd": Decimal("2"), "provider": "anthropic", "model": "claude-sonnet-5"})
     assert _Stream.kwargs["system"][0]["cache_control"] == {"type": "ephemeral"}
@@ -451,6 +480,7 @@ class TestStructuredMessages:
                 output_model=_Echo,
                 model="m",
                 max_tokens=10,
+                language=None,
             )
 
     def test_anthropic_passes_messages_through(self, settings, monkeypatch):
@@ -477,6 +507,7 @@ class TestStructuredMessages:
             output_model=_Echo,
             model="claude-sonnet-5",
             max_tokens=10,
+            language=None,
         )
         assert parsed.text == "ok"
         assert captured["messages"] is msgs
@@ -556,7 +587,9 @@ class TestStructuredStream:
         monkeypatch.setattr(ai, "PARTIAL_MIN_INTERVAL_SECONDS", 0)
         stream = _fake_stream_client(monkeypatch, ['{"text": "par', '{"text": "partial"}'], self._final())
         events = list(
-            ai.structured_stream(system="s", user="u", output_model=_Echo, model="claude-sonnet-5", max_tokens=64)
+            ai.structured_stream(
+                system="s", user="u", output_model=_Echo, model="claude-sonnet-5", max_tokens=64, language=None
+            )
         )
         assert events[0] == ("partial", {"text": "par"})
         assert events[1] == ("partial", {"text": "partial"})
@@ -572,7 +605,9 @@ class TestStructuredStream:
         settings.AI_PROVIDER = "anthropic"
         _fake_stream_client(monkeypatch, ['{"text": "a', '{"text": "ab', '{"text": "abc"}'], self._final())
         events = list(
-            ai.structured_stream(system="s", user="u", output_model=_Echo, model="claude-sonnet-5", max_tokens=64)
+            ai.structured_stream(
+                system="s", user="u", output_model=_Echo, model="claude-sonnet-5", max_tokens=64, language=None
+            )
         )
         # Default interval (0.4s) is far longer than this loop takes, so only
         # the first snapshot gets through.
@@ -583,7 +618,11 @@ class TestStructuredStream:
         final = SimpleNamespace(content=[SimpleNamespace(parsed_output=None)], usage=_Usage(inp=1_000_000))
         _fake_stream_client(monkeypatch, [], final)
         with pytest.raises(ai.AiError, match="no parsed output") as exc:
-            list(ai.structured_stream(system="s", user="u", output_model=_Echo, model="claude-sonnet-5", max_tokens=64))
+            list(
+                ai.structured_stream(
+                    system="s", user="u", output_model=_Echo, model="claude-sonnet-5", max_tokens=64, language=None
+                )
+            )
         assert exc.value.cost_usd == Decimal("2")
 
     def test_provider_failure_raises_ai_error(self, settings, monkeypatch):
@@ -597,7 +636,11 @@ class TestStructuredStream:
 
         monkeypatch.setattr(ai, "_anthropic_client", lambda: _Client())
         with pytest.raises(ai.AiError, match="anthropic stream failed"):
-            list(ai.structured_stream(system="s", user="u", output_model=_Echo, model="claude-sonnet-5", max_tokens=64))
+            list(
+                ai.structured_stream(
+                    system="s", user="u", output_model=_Echo, model="claude-sonnet-5", max_tokens=64, language=None
+                )
+            )
 
     def test_cli_provider_yields_done_only(self, settings, monkeypatch):
         """The cli provider cannot stream, so callers degrade to an
@@ -606,7 +649,9 @@ class TestStructuredStream:
         envelope = _json.dumps({"type": "result", "result": '{"text": "ok"}'})
         monkeypatch.setattr("subprocess.run", lambda *a, **kw: _completed(stdout=envelope))
         events = list(
-            ai.structured_stream(system="s", user="u", output_model=_Echo, model="claude-sonnet-5", max_tokens=64)
+            ai.structured_stream(
+                system="s", user="u", output_model=_Echo, model="claude-sonnet-5", max_tokens=64, language=None
+            )
         )
         assert [k for k, _ in events] == ["done"]
         assert events[0][1][0].text == "ok"

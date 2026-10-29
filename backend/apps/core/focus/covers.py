@@ -19,6 +19,7 @@ from pydantic import BaseModel
 from rest_framework import serializers
 
 from apps.core import ai as core_ai
+from apps.core import languages
 from apps.core.copilot import runs
 from apps.core.curated_images import cache, client
 from apps.core.onboarding import ai_compose
@@ -155,6 +156,7 @@ def _plan(tenant, creation, record, shown: list, label: str) -> tuple[list, str]
             max_tokens=2000,
             label=label,
             effort="low",
+            language=languages.site_language(),
         )
     except core_ai.AiError as exc:
         ai_compose.record_spend(tenant.schema_name, getattr(exc, "cost_usd", None) or 0)

@@ -23,9 +23,13 @@ schema-validated generation), selected by settings.AI_PROVIDER:
   streaming.
 
 Prompt-caching contract: the ``system`` argument must be byte-frozen per
-feature (persona / knowledge base / static prompt only). Tenant state
-travels in the user turn — never interpolate it into ``system`` (it would
-fragment the Anthropic cache per tenant).
+feature and language (persona / knowledge base / static prompt only). Tenant
+state travels in the user turn — never interpolate it into ``system`` (it
+would fragment the Anthropic cache per tenant). The five entry points
+(structured, structured_stream, structured_messages, stream_text,
+agentc_look) take a required ``language=``: a code, a languages.Mixed, or
+None when nobody reads the output. They append languages.rule(language) to
+``system``, so the cached prompt is one per feature and language.
 """
 
 import json
@@ -40,6 +44,8 @@ from decimal import Decimal
 
 import requests
 from django.conf import settings
+
+from apps.core import languages
 
 logger = logging.getLogger(__name__)
 
@@ -167,7 +173,15 @@ def _strip_fences(text):
 # ── structured output (blog drafts/topics, brand pack) ──────────────────────
 
 
-def structured(*, system, user, output_model, model, max_tokens, label=None, timeout_seconds=None, effort=None):
+def _with_language(system, language):
+    """``system`` plus the rule that says which language the output is written in (None: unchanged)."""
+    rule = languages.rule(language)
+    return f"{system}\n\n{rule}" if rule else system
+
+
+def structured(
+    *, system, user, output_model, model, max_tokens, language, label=None, timeout_seconds=None, effort=None
+):
     """One structured-output call -> (validated ``output_model`` instance,
     cost_usd, effective_model). Raises AiError on provider or schema
     failure. ``label`` tags the run on the agentc hub; other providers
@@ -177,7 +191,9 @@ def structured(*, system, user, output_model, model, max_tokens, label=None, tim
     the anthropic and cli providers; None keeps the model default (high on
     Sonnet 5.5). On agentc, "low" picks the -low variant of AGENTC_MODEL.
     Thinking counts toward ``max_tokens``, so size it for both. Haiku 4.5
-    rejects effort: pass None for haiku models."""
+    rejects effort: pass None for haiku models. ``language``: see the module
+    note."""
+    system = _with_language(system, language)
     if settings.AI_PROVIDER == "gemini":
         return _gemini_structured(system, user, output_model, timeout_seconds)
     if settings.AI_PROVIDER == "agentc":
@@ -438,7 +454,7 @@ _AGENTC_LOOK = (
 )
 
 
-def agentc_look(*, system, user, urls, output_model, label, timeout_seconds=None):
+def agentc_look(*, system, user, urls, output_model, label, language, timeout_seconds=None):
     """A structured call on the hub that looks at pictures -> (validated instance, Decimal("0"), model). The
     agent downloads `urls` (links it can reach from the hub, such as the storage's own) into a scratch folder
     of its run directory and opens them with its file viewer: tools are the point, so the tool check is
@@ -448,6 +464,7 @@ def agentc_look(*, system, user, urls, output_model, label, timeout_seconds=None
 
     from pydantic import ValidationError
 
+    system = _with_language(system, language)
     seconds = settings.AGENTC_TIMEOUT_SECONDS if timeout_seconds is None else timeout_seconds
     deadline = time.monotonic() + seconds
     model = _agentc_model(None)
@@ -615,7 +632,7 @@ def _partial_json(text):
         return {}
 
 
-def structured_stream(*, system, user, output_model, model, max_tokens, label=None):
+def structured_stream(*, system, user, output_model, model, max_tokens, language, label=None):
     """Streaming twin of structured(). Yields ("partial", dict) as the output
     forms, then exactly one ("done", (parsed, cost_usd, effective_model)).
     Raises AiError on provider or schema failure, like structured().
@@ -623,6 +640,7 @@ def structured_stream(*, system, user, output_model, model, max_tokens, label=No
     The cli, agentc and gemini providers do not stream (blocking), so they
     yield no partials and go straight to ("done", …) — callers degrade to an
     indeterminate wait rather than breaking."""
+    system = _with_language(system, language)
     if settings.AI_PROVIDER == "gemini":
         yield ("done", _gemini_structured(system, user, output_model))
         return
@@ -704,10 +722,13 @@ def _cli_vision(system, messages, output_model, model, effort):
         return _cli_structured(system, user, output_model, model, effort, read_dir=folder)
 
 
-def structured_messages(*, system, messages, output_model, model, max_tokens, effort=None, timeout_seconds=None):
+def structured_messages(
+    *, system, messages, output_model, model, max_tokens, language, effort=None, timeout_seconds=None
+):
     """Structured output over a full messages array (content blocks may
     include base64 images) -> (validated instance, cost_usd, model).
     Served by vision_provider(); raises AiError when there is none."""
+    system = _with_language(system, language)
     provider = vision_provider()
     if provider == "cli":
         return _cli_vision(system, messages, output_model, model, effort)
@@ -737,10 +758,11 @@ def structured_messages(*, system, messages, output_model, model, max_tokens, ef
 # ── streaming chat (help bot) ────────────────────────────────────────────────
 
 
-def stream_text(*, system, history, model, max_tokens, label=None):
+def stream_text(*, system, history, model, max_tokens, language, label=None):
     """Yield ("delta", text) events, then exactly one ("done", info) where
     info = {"cost_usd": Decimal, "provider": str, "model": str}. ``label``
     tags the run on the agentc hub; other providers ignore it."""
+    system = _with_language(system, language)
     if settings.AI_PROVIDER == "gemini":
         yield from _stream_gemini(system, history)
     elif settings.AI_PROVIDER == "agentc":

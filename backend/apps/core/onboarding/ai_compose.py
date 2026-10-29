@@ -19,6 +19,7 @@ from django.db.models import F, Sum
 from pydantic import BaseModel, Field
 
 from apps.core import ai as core_ai
+from apps.core import languages
 from apps.core.models import OnboardingAiUsage
 from apps.tenant_config.defaults import sanitize_rich_text
 
@@ -271,6 +272,7 @@ def compose_pages(
             model=settings.ONBOARDING_AI_MODEL,
             max_tokens=MAX_OUTPUT_TOKENS,
             effort="medium",
+            language=languages.site_language(),
         )
     except core_ai.AiError as exc:
         record_spend(tenant_schema, float(getattr(exc, "cost_usd", 0) or 0))

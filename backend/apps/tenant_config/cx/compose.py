@@ -18,6 +18,7 @@ from time import monotonic as _now
 from django.conf import settings
 
 from apps.core import ai as core_ai
+from apps.core import languages
 from apps.core.models import CxComponent, CxVersion
 from apps.core.onboarding import site_ai, site_composer
 from apps.tenant_config import sections
@@ -94,6 +95,7 @@ def _generate(turn, started):
                 label="contentor:cx-compose",
                 timeout_seconds=TIMEOUT_SECONDS,
                 effort="medium",
+                language=languages.site_language(),
             )
         except core_ai.AiError as exc:
             cost += exc.cost_usd

@@ -153,6 +153,7 @@ def analyze(text: str) -> dict:
     """{"facts": [{"field", "label", "value", "items", "answers"}], "summary": str}
     for ``text``; empty on failure or when AI is disabled."""
     from apps.core import ai as core_ai
+    from apps.core import languages
 
     from . import ai_compose
 
@@ -179,6 +180,7 @@ def analyze(text: str) -> dict:
             label="contentor:about-analyze",
             timeout_seconds=TIMEOUT_SECONDS,
             effort="low",
+            language=languages.creator_language(),
         )
     except core_ai.AiError as exc:
         ai_compose.record_spend("public", getattr(exc, "cost_usd", None) or 0)

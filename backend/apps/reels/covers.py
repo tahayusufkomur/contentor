@@ -203,6 +203,7 @@ def _ask_hub(sheets: list[bytes], label: str) -> Choices | None:
             output_model=Choices,
             label=label,
             timeout_seconds=300,
+            language=None,
         )
         return parsed
     finally:
@@ -231,6 +232,7 @@ def _ask_vision(sheets: list[bytes]) -> Choices:
             max_tokens=4000,
             effort="low",
             timeout_seconds=240,
+            language=None,
         )
     except core_ai.AiError as exc:
         cost = exc.cost_usd

@@ -43,7 +43,12 @@ def test_cli_provider_parses_envelope_and_validates(settings):
     completed = SimpleNamespace(returncode=0, stdout=_cli_envelope(DRAFT_JSON), stderr="")
     with mock.patch("subprocess.run", return_value=completed) as run:
         parsed, cost, model = ai._call_structured(
-            "sys", "user", ai._BlogDraft, "claude-sonnet-5", max_tokens=ai.MAX_OUTPUT_TOKENS
+            "sys",
+            "user",
+            ai._BlogDraft,
+            "claude-sonnet-5",
+            max_tokens=ai.MAX_OUTPUT_TOKENS,
+            language=None,
         )
     assert parsed.title == "Morning Habits That Stick"
     assert cost == Decimal("0")
@@ -60,7 +65,9 @@ def test_cli_provider_strips_code_fences(settings):
     fenced = "```json\n" + DRAFT_JSON + "\n```"
     completed = SimpleNamespace(returncode=0, stdout=_cli_envelope(fenced), stderr="")
     with mock.patch("subprocess.run", return_value=completed):
-        parsed, _, _ = ai._call_structured("sys", "user", ai._BlogDraft, "claude-sonnet-5", max_tokens=100)
+        parsed, _, _ = ai._call_structured(
+            "sys", "user", ai._BlogDraft, "claude-sonnet-5", max_tokens=100, language=None
+        )
     assert parsed.slug == "morning-habits"
 
 
@@ -68,14 +75,14 @@ def test_cli_provider_raises_blog_ai_error_on_failure(settings):
     _cli_settings(settings)
     completed = SimpleNamespace(returncode=1, stdout="", stderr="boom")
     with mock.patch("subprocess.run", return_value=completed), pytest.raises(ai.BlogAiError):
-        ai._call_structured("sys", "user", ai._BlogDraft, "claude-sonnet-5", max_tokens=100)
+        ai._call_structured("sys", "user", ai._BlogDraft, "claude-sonnet-5", max_tokens=100, language=None)
 
 
 def test_generate_post_returns_rendered_fields(settings):
     _cli_settings(settings)
     completed = SimpleNamespace(returncode=0, stdout=_cli_envelope(DRAFT_JSON), stderr="")
     with mock.patch("subprocess.run", return_value=completed):
-        result = ai.generate_post("<brand_brief>x</brand_brief>", "Morning habits")
+        result = ai.generate_post("<brand_brief>x</brand_brief>", "Morning habits", language=None)
     assert result.fields["title"] == "Morning Habits That Stick"
     assert "<strong>small</strong>" in result.fields["body_html"]
     assert result.fields["ai_model"] == "claude-sonnet-5"  # settings.BLOG_AI_MODEL default
@@ -126,7 +133,7 @@ def test_generate_post_picks_cover_and_inline_photos(settings):
     completed = SimpleNamespace(returncode=0, stdout=_cli_envelope(DRAFT_JSON_WITH_PHOTOS), stderr="")
     photos = [_photo("p1", "Morning stretch"), _photo("p2", "Journal on desk")]
     with mock.patch("subprocess.run", return_value=completed):
-        result = ai.generate_post("<brand_brief>x</brand_brief>", "Morning habits", photos=photos)
+        result = ai.generate_post("<brand_brief>x</brand_brief>", "Morning habits", photos=photos, language=None)
     assert result.fields["cover_photo_id"] == "p1"
     assert result.fields["image_placements"] == [{"heading": "Stretch first", "photo_id": "p2"}]
 
@@ -136,7 +143,9 @@ def test_generate_post_drops_hallucinated_photo_ids(settings):
     completed = SimpleNamespace(returncode=0, stdout=_cli_envelope(DRAFT_JSON_WITH_PHOTOS), stderr="")
     # Neither p1 nor p2 is in the real candidate list -> both dropped, fails open.
     with mock.patch("subprocess.run", return_value=completed):
-        result = ai.generate_post("<brand_brief>x</brand_brief>", "Morning habits", photos=[_photo("other", "x")])
+        result = ai.generate_post(
+            "<brand_brief>x</brand_brief>", "Morning habits", photos=[_photo("other", "x")], language=None
+        )
     assert result.fields["cover_photo_id"] == ""
     assert result.fields["image_placements"] == []
 
@@ -157,7 +166,7 @@ def test_generate_post_caps_inline_placements_at_two(settings):
     completed = SimpleNamespace(returncode=0, stdout=_cli_envelope(three_sections), stderr="")
     photos = [_photo("p1", "1"), _photo("p2", "2"), _photo("p3", "3")]
     with mock.patch("subprocess.run", return_value=completed):
-        result = ai.generate_post("<brand_brief>x</brand_brief>", "t", photos=photos)
+        result = ai.generate_post("<brand_brief>x</brand_brief>", "t", photos=photos, language=None)
     assert len(result.fields["image_placements"]) == 2
 
 

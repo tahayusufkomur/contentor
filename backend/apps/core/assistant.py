@@ -61,18 +61,21 @@ def _parse_suggestions(tail):
     return out
 
 
-def run_chat(*, system, history, model, max_tokens, on_complete):
+def run_chat(*, system, history, model, max_tokens, language, on_complete):
     """Yield SSE frames for one streamed answer. The persona appends a
     |||SUGGESTIONS ["…"] tail; we hold back the last len(delimiter)-1 chars
     while streaming so a tail split across deltas never leaks, then ship the
     parsed list in the done event. on_complete(info) gets the CLEAN answer
-    plus info["suggestions"]; its return dict merges into the done event."""
+    plus info["suggestions"]; its return dict merges into the done event.
+    ``language`` is the language the answer is written in (see core.ai)."""
     parts = []
     emitted = 0
     done_info = None
     hold = len(TAIL_DELIMITER) - 1
     try:
-        for kind, value in core_ai.stream_text(system=system, history=history, model=model, max_tokens=max_tokens):
+        for kind, value in core_ai.stream_text(
+            system=system, history=history, model=model, max_tokens=max_tokens, language=language
+        ):
             if kind == "delta":
                 parts.append(value)
                 full = "".join(parts)

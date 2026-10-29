@@ -70,7 +70,8 @@ def platform_blog_generate(request):
     if ai.global_spend() >= Decimal(str(settings.BLOG_AI_MONTHLY_BUDGET_USD)):
         return Response({"post": None, "source": "budget"})
     try:
-        result = ai.generate_post(PLATFORM_BRIEF, topic, str(data.get("instructions") or "")[:500])
+        # English until PlatformBlogPost has a language of its own (Task 3.5).
+        result = ai.generate_post(PLATFORM_BRIEF, topic, str(data.get("instructions") or "")[:500], language="en")
     except ai.BlogAiError as exc:
         ai.record_attempt_cost("public", exc.cost_usd)
         logger.exception("platform blog generate failed")

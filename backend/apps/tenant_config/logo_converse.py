@@ -14,6 +14,7 @@ from django.conf import settings
 from pydantic import BaseModel
 
 from apps.core import ai as core_ai
+from apps.core import languages
 
 from . import logo_image, logo_trace
 from .logo_ai import (
@@ -449,6 +450,7 @@ def converse_turn(stage, brief, transcript, pinned, message):
             output_model=output_model,
             model=settings.LOGO_AI_MODEL,
             max_tokens=6000,
+            language=languages.Mixed(languages.creator_language(), languages.site_language()),
         )
     except core_ai.AiError as exc:
         raise ConverseError(str(exc), cost_usd=exc.cost_usd) from exc
@@ -479,6 +481,7 @@ def converse_turn_stream(stage, brief, transcript, pinned, message):
             output_model=output_model,
             model=settings.LOGO_AI_MODEL,
             max_tokens=6000,
+            language=languages.Mixed(languages.creator_language(), languages.site_language()),
         ):
             if kind == "partial":
                 preview = _turn_preview(value)
@@ -518,6 +521,7 @@ def critique_refine(cached, images):
             output_model=logo_ai._RefinedDesign,
             model=settings.LOGO_AI_MODEL,
             max_tokens=3000,
+            language=languages.Mixed(languages.creator_language(), languages.site_language()),
         )
     except core_ai.AiError as exc:
         raise ConverseError(str(exc), cost_usd=exc.cost_usd) from exc
@@ -560,6 +564,7 @@ def critique_turn(stage, draft, images):
             output_model=output_model,
             model=settings.LOGO_AI_MODEL,
             max_tokens=6000,
+            language=languages.Mixed(languages.creator_language(), languages.site_language()),
         )
     except core_ai.AiError as exc:
         raise ConverseError(str(exc), cost_usd=exc.cost_usd) from exc

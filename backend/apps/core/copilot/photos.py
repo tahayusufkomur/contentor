@@ -320,6 +320,7 @@ def describe_tenant_photo(photo):
     from pydantic import BaseModel, Field
 
     from apps.core import ai as core_ai
+    from apps.core import languages
 
     logger = logging.getLogger(__name__)
 
@@ -360,6 +361,7 @@ def describe_tenant_photo(photo):
             output_model=_PhotoDescription,
             model=settings.COPILOT_MODEL,
             max_tokens=300,
+            language=languages.site_language(),
         )
     except core_ai.AiError as exc:
         logger.exception("copilot describe: vision call failed for %s", photo.pk)

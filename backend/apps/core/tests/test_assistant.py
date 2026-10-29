@@ -57,7 +57,12 @@ class TestRunChat:
         with patch.object(assistant.core_ai, "stream_text", _fake_stream("he", "llo")):
             events = _frames(
                 assistant.run_chat(
-                    system="s", history=[{"role": "user", "content": "q"}], model="m", max_tokens=64, on_complete=hook
+                    system="s",
+                    history=[{"role": "user", "content": "q"}],
+                    model="m",
+                    max_tokens=64,
+                    on_complete=hook,
+                    language=None,
                 )
             )
         # run_chat holds back a small tail buffer to detect a possible
@@ -83,6 +88,7 @@ class TestRunChat:
                     model="m",
                     max_tokens=64,
                     on_complete=lambda i: calls.append(i),
+                    language=None,
                 )
             )
         assert events == [{"type": "error", "message": "answer_failed"}]
@@ -100,6 +106,7 @@ class TestRunChat:
                     model="m",
                     max_tokens=64,
                     on_complete=bad_hook,
+                    language=None,
                 )
             )
         assert events[-1] == {"type": "done", "suggestions": []}

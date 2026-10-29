@@ -227,6 +227,7 @@ def rank_logos(brief: CoachBrief, *, tenant_schema: str) -> list[int]:
             max_tokens=LOGO_RANK_MAX_TOKENS,
             label="contentor:compose-logo-rank",  # background: nobody waits on it
             effort="low",
+            language=None,
         )
     except core_ai.AiError as exc:
         ai_compose.record_spend(tenant_schema, float(getattr(exc, "cost_usd", 0) or 0))

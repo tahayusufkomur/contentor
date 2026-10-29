@@ -13,7 +13,7 @@ from django.conf import settings
 from django.utils import timezone
 
 from apps.core import ai as core_ai
-from apps.core import assistant
+from apps.core import assistant, languages
 from apps.core.currency import tenant_charge_currency
 from apps.core.models import StudentBotUsage
 from apps.tenant_config.help_bot import current_month
@@ -351,5 +351,6 @@ def sse_events(history, tenant, month, question="", session_id="", is_preview=Fa
         history=history,
         model=settings.STUDENT_BOT_MODEL,
         max_tokens=settings.STUDENT_BOT_MAX_OUTPUT_TOKENS,
+        language=languages.site_language(),
         on_complete=on_complete,
     )

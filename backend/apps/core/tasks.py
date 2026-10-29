@@ -620,6 +620,7 @@ AI_STARTER_POST_TIMEOUT_SECONDS = 90
 
 def _seed_starter_post(tenant, preferred_locale):
     """One draft welcome blog post. Fail-silent; status in wizard_state."""
+    from apps.core.languages import site_language
     from apps.core.onboarding import ai_compose, ai_curate, starter_post
 
     state = dict(tenant.wizard_state or {})
@@ -632,7 +633,7 @@ def _seed_starter_post(tenant, preferred_locale):
         fields, status = _run_ai_step(
             "starter post",
             tenant,
-            lambda: starter_post.generate_starter_draft(brief, tenant.schema_name),
+            lambda: starter_post.generate_starter_draft(brief, tenant.schema_name, language=site_language(tenant)),
             AI_STARTER_POST_TIMEOUT_SECONDS,
         )
         if status == "ok":

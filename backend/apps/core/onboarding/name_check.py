@@ -11,6 +11,8 @@ from django.conf import settings
 from django.core.cache import cache
 from pydantic import BaseModel
 
+from apps.core import languages
+
 logger = logging.getLogger(__name__)
 
 # The agentc hub run takes ~9-10 s; this becomes its per-run budget (ai._agentc_structured).
@@ -69,6 +71,7 @@ def review(name: str) -> dict:
             max_tokens=400,
             label="contentor:name-check",
             timeout_seconds=TIMEOUT_SECONDS,
+            language=languages.Mixed(languages.creator_language(), languages.site_language()),
         )
     except core_ai.AiError as exc:
         ai_compose.record_spend("public", getattr(exc, "cost_usd", None) or 0)
@@ -117,6 +120,7 @@ def ideas(topic: str, first_name: str = "") -> list[str]:
             max_tokens=400,
             label="contentor:name-ideas",
             timeout_seconds=TIMEOUT_SECONDS,
+            language=languages.Mixed(languages.creator_language(), languages.site_language()),
         )
     except core_ai.AiError as exc:
         ai_compose.record_spend("public", getattr(exc, "cost_usd", None) or 0)

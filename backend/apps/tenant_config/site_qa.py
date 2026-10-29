@@ -30,6 +30,7 @@ from django_tenants.utils import tenant_context
 from pydantic import BaseModel
 
 from apps.core import ai as core_ai
+from apps.core.languages import site_language
 
 from .models import TenantConfig
 
@@ -186,7 +187,7 @@ def _views(url: str, slug: str) -> list[tuple[str, dict]]:
 # ── review ───────────────────────────────────────────────────────────────────
 
 
-def _review(context: str, views: list[tuple[str, dict]]) -> tuple[PageReview, Decimal]:
+def _review(context: str, views: list[tuple[str, dict]], language: str) -> tuple[PageReview, Decimal]:
     content = [{"type": "text", "text": context}]
     for label, capture in views:
         content.append({"type": "text", "text": f"{label}, {len(capture['tiles'])} strip(s) top to bottom:"})
@@ -204,6 +205,7 @@ def _review(context: str, views: list[tuple[str, dict]]) -> tuple[PageReview, De
         max_tokens=16000,
         effort="medium",
         timeout_seconds=REVIEW_TIMEOUT,
+        language=language,
     )
     return review, cost
 
@@ -212,7 +214,7 @@ def _check_page(job: dict) -> dict:
     """One page, in a worker thread: no database here."""
     try:
         views = _views(job["url"], job["slug"])
-        review, cost = _review(job["context"], views)
+        review, cost = _review(job["context"], views, job["language"])
         return {"page": job["page"], "findings": review.findings, "cost": cost}
     except core_ai.AiError as exc:
         logger.warning("site-qa: review failed page=%s: %s", job["page"], exc)
@@ -395,6 +397,7 @@ def run(tenant) -> None:
             config = TenantConfig.objects.first()
             host = tenant.domains.order_by("-is_primary").values_list("domain", flat=True).first()
             digest = _pages_digest(tenant)
+            language = site_language()
             jobs = []
             for page in _built_pages(config.setup_flow or {}):
                 start = digest.find(f"page={page}\n")
@@ -403,6 +406,7 @@ def run(tenant) -> None:
                         "page": page,
                         "url": f"http://{host}{PAGE_PATHS.get(page, f'/{page}')}",
                         "slug": tenant.slug,
+                        "language": language,  # read here: the worker threads have no database
                         "context": _page_context(
                             tenant, config, page, digest[start:].split("\npage=")[0] if start >= 0 else ""
                         ),

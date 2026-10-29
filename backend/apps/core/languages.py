@@ -9,6 +9,7 @@ import contextvars
 import functools
 import json
 from pathlib import Path
+from typing import NamedTuple
 
 from django.conf import settings
 from django.db import connection
@@ -94,16 +95,37 @@ def creator_language(user=None) -> str:
     return resolve(user.preferred_locale)
 
 
-def rule(language: str | None) -> str:
+class Mixed(NamedTuple):
+    """An AI call whose output has two readers: the creator (talked to) and the site (written for)."""
+
+    creator: str
+    site: str
+
+
+_KEEP = (
+    "Keep brand names and the creator's own words as they wrote them. "
+    "Search terms, photo briefs and image prompts stay in English."
+)
+
+
+def _words(code: str) -> str:
+    """The voice and glossary sentences of a non-English language."""
+    terms = "; ".join(f"{term['en']} = {term[code]}" for term in _GLOSSARY["terms"])
+    return f"{_GLOSSARY['voice'][code]} Use these words: {terms}."
+
+
+def rule(language: "str | Mixed | None") -> str:
     """The sentence that goes at the end of an AI system prompt so the model writes in `language`.
-    None (no language) gives ""; English only needs the first sentence."""
+    None (nobody reads the output) gives ""; English needs no voice or glossary lines."""
     if language is None:
         return ""
-    text = (
-        f"Write every word a reader will see in {info(language)['name']}. Keep brand names and the creator's own "
-        "words as they wrote them. Search terms, photo briefs and image prompts stay in English."
-    )
-    if language == DEFAULT:
-        return text
-    words = "; ".join(f"{term['en']} = {term[language]}" for term in _GLOSSARY["terms"])
-    return f"{text} {_GLOSSARY['voice'][language]} Use these words: {words}."
+    if isinstance(language, Mixed):
+        text = (
+            f"Talk to the creator in {info(language.creator)['name']}. "
+            f"Write every word that goes on their site in {info(language.site)['name']}. {_KEEP}"
+        )
+        codes = dict.fromkeys(code for code in (language.creator, language.site) if code != DEFAULT)
+    else:
+        text = f"Write every word a reader will see in {info(language)['name']}. {_KEEP}"
+        codes = [language] if language != DEFAULT else []
+    return " ".join([text, *(_words(code) for code in codes)])

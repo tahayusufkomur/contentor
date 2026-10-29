@@ -12,6 +12,7 @@ from django.db import transaction
 from pydantic import BaseModel
 
 from apps.core import ai as core_ai
+from apps.core import languages
 from apps.core.copilot import runs
 from apps.core.onboarding import ai_compose
 from apps.tenant_config.models import CopilotRun, FocusCreation
@@ -142,6 +143,7 @@ def _decide(tenant, creation, record, slot) -> FollowUp:
             max_tokens=1000,
             label="contentor:copilot",
             effort="low",
+            language=languages.creator_language(),
         )
     except core_ai.AiError as exc:
         ai_compose.record_spend(tenant.schema_name, getattr(exc, "cost_usd", None) or 0)

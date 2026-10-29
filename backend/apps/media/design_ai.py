@@ -16,6 +16,7 @@ from django.db import connection
 from pydantic import BaseModel
 
 from apps.core import ai as core_ai
+from apps.core import languages
 from apps.core.onboarding import ai_compose
 
 from . import designs
@@ -76,6 +77,7 @@ def _ask(system: str, turn: dict, output_model, max_tokens: int):
             max_tokens=max_tokens,
             label=LABEL,
             effort="low",
+            language=languages.site_language(),
         )
     except core_ai.AiError as exc:
         ai_compose.record_spend(connection.schema_name, getattr(exc, "cost_usd", None) or 0)

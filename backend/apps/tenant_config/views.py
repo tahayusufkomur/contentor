@@ -16,7 +16,7 @@ from rest_framework.throttling import UserRateThrottle
 
 from apps.accounts.models import User
 from apps.billing.models import Payment
-from apps.core import assistant
+from apps.core import assistant, languages
 from apps.core.ai_sse import EventStreamRenderer, stream_response, wants_stream
 from apps.core.email import send_email
 from apps.core.models import AiConversation
@@ -338,7 +338,14 @@ def help_bot_chat(request):
         assistant.append_message(convo, "user", question)
     response = StreamingHttpResponse(
         help_bot.sse_events(
-            history, "coach", tenant.schema_name, month, question=question, session_id=session_id, conversation=convo
+            history,
+            "coach",
+            tenant.schema_name,
+            month,
+            question=question,
+            session_id=session_id,
+            conversation=convo,
+            language=languages.creator_language(request.user),
         ),
         content_type="text/event-stream",
     )

@@ -8,6 +8,8 @@ from celery import shared_task
 from django.utils import timezone
 from django_tenants.utils import get_tenant_model, tenant_context
 
+from apps.core.languages import site_language
+
 logger = logging.getLogger(__name__)
 
 
@@ -96,7 +98,9 @@ def _generate_for_current_tenant(tenant):
     if topic is None:
         existing = list(BlogPost.objects.values_list("title", flat=True)[:20])
         try:
-            topics, cost = ai.generate_topics(ai.brief_for_current_tenant(), existing, label=ai.AUTOPILOT_LABEL)
+            topics, cost = ai.generate_topics(
+                ai.brief_for_current_tenant(), existing, label=ai.AUTOPILOT_LABEL, language=site_language()
+            )
         except ai.BlogAiError as exc:
             ai.record_attempt_cost(tenant.schema_name, exc.cost_usd)
             return
@@ -110,7 +114,12 @@ def _generate_for_current_tenant(tenant):
     photos += curated.curated_candidates(topic.title, limit=ai.MAX_AVAILABLE_PHOTOS - len(photos))
     try:
         result = ai.generate_post(
-            ai.brief_for_current_tenant(), topic.title, topic.angle, photos=photos, label=ai.AUTOPILOT_LABEL
+            ai.brief_for_current_tenant(),
+            topic.title,
+            topic.angle,
+            photos=photos,
+            label=ai.AUTOPILOT_LABEL,
+            language=site_language(),
         )
     except ai.BlogAiError as exc:
         ai.record_attempt_cost(tenant.schema_name, exc.cost_usd)

@@ -20,6 +20,7 @@ from django_tenants.utils import tenant_context
 from pydantic import BaseModel, Field
 
 from apps.core import ai as core_ai
+from apps.core import languages
 from apps.core.copilot import blocks, chrome, content, logos, photos, team, tokens
 from apps.core.copilot import context as page_context
 from apps.core.onboarding import site_ai
@@ -1824,6 +1825,7 @@ def run_turn(
         timeout_seconds=timeout_seconds,
         # Interactive, under a 35 s wizard timeout.
         effort="low",
+        language=languages.Mixed(languages.creator_language(actor), languages.site_language()),
     )
     if parsed.kind == "ask" and capped:
         # Hard cap: the question still reads fine as a statement-of-need,

@@ -18,6 +18,7 @@ from django.db import connection
 from pydantic import BaseModel, Field
 
 from apps.core import ai as core_ai
+from apps.core import languages
 from apps.core.onboarding import ai_compose
 
 from . import words as w
@@ -240,6 +241,7 @@ def _ask(video, sents, count: int, taken, label: str):
         label=label,
         effort="medium",
         timeout_seconds=240,
+        language=languages.Mixed(languages.creator_language(), languages.site_language()),
     )
     return parsed.moments, cost
 
@@ -283,6 +285,7 @@ def translate(lines: list[str], language: str) -> list[str]:
             label=LABEL,
             effort="low",
             timeout_seconds=90,
+            language=language if language in languages.CODES else None,
         )
     except core_ai.AiError as exc:
         cost = exc.cost_usd

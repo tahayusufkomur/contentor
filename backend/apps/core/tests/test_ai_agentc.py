@@ -103,7 +103,9 @@ def hub(settings, monkeypatch):
 
 
 def _call(**kw):
-    return ai.structured(system="sys", user="usr", output_model=_Greeting, model="claude-sonnet-5", max_tokens=9, **kw)
+    return ai.structured(
+        system="sys", user="usr", output_model=_Greeting, model="claude-sonnet-5", max_tokens=9, language=None, **kw
+    )
 
 
 def test_success_strips_fences_and_reports_agentc_model(hub, settings):
@@ -227,7 +229,12 @@ def test_stream_text_yields_one_delta_then_done(hub, settings):
     hub.results = ["Hello coach"]
     events = list(
         ai.stream_text(
-            system="sys", history=[{"role": "user", "content": "q"}], model="x", max_tokens=9, label="help_bot"
+            system="sys",
+            history=[{"role": "user", "content": "q"}],
+            model="x",
+            max_tokens=9,
+            label="help_bot",
+            language=None,
         )
     )
     assert events[0] == ("delta", "Hello coach")
@@ -238,7 +245,11 @@ def test_stream_text_yields_one_delta_then_done(hub, settings):
 def test_stream_text_tool_guard(hub):
     hub.events = ("tool",)
     with pytest.raises(ai.AiError, match="agent used a tool"):
-        list(ai.stream_text(system="s", history=[{"role": "user", "content": "q"}], model="x", max_tokens=9))
+        list(
+            ai.stream_text(
+                system="s", history=[{"role": "user", "content": "q"}], model="x", max_tokens=9, language=None
+            )
+        )
 
 
 def test_available_up(settings, monkeypatch):
@@ -261,7 +272,7 @@ def test_no_vision_on_agentc(settings):
     settings.AI_PROVIDER = "agentc"
     assert ai.supports_vision() is False
     with pytest.raises(ai.AiError):
-        ai.structured_messages(system="s", messages=[], output_model=_Greeting, model="m", max_tokens=1)
+        ai.structured_messages(system="s", messages=[], output_model=_Greeting, model="m", max_tokens=1, language=None)
 
 
 def test_per_call_timeout_beats_the_global_one(hub, settings):
@@ -316,6 +327,7 @@ def test_a_look_downloads_the_pictures_and_may_use_tools(hub):
         urls=["https://storage.example/a.jpg", "https://storage.example/b.jpg"],
         output_model=_Greeting,
         label="contentor:reels-ahead-covers",
+        language=None,
     )
     assert (parsed.greeting, cost) == ("hi", Decimal("0"))
     body = hub.created[0]

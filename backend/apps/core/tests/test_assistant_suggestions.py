@@ -18,7 +18,9 @@ def _run(deltas, on_complete=None):
     try:
         frames = [
             json.loads(f.removeprefix("data: ").strip())
-            for f in assistant.run_chat(system="s", history=[], model="m", max_tokens=10, on_complete=on_complete)
+            for f in assistant.run_chat(
+                system="s", history=[], model="m", max_tokens=10, on_complete=on_complete, language=None
+            )
         ]
     finally:
         assistant.core_ai.stream_text = original

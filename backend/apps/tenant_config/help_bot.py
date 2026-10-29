@@ -215,7 +215,7 @@ def prepare_history(messages, tenant_context):
 # HelpBotError. Provider plumbing lives in apps.core.ai.
 
 
-def stream_answer(history, audience="coach"):
+def stream_answer(history, audience="coach", *, language):
     """Yield ("delta", text) events, then exactly one ("done", info).
     Raises HelpBotError on provider failure."""
     try:
@@ -224,17 +224,20 @@ def stream_answer(history, audience="coach"):
             history=history,
             model=settings.HELP_BOT_MODEL,
             max_tokens=MAX_OUTPUT_TOKENS,
+            language=language,
         )
     except core_ai.AiError as exc:
         raise HelpBotError(str(exc)) from exc
 
 
-def sse_events(history, audience, bucket, month, question="", session_id="", conversation=None):
+def sse_events(history, audience, bucket, month, question="", session_id="", conversation=None, *, language):
     """Yield SSE-framed events for one answer; on completion record usage and
     write the audit transcript. ``question`` is the RAW last user message
     (before context injection) so transcripts never store tenant snapshots.
     ``conversation`` (an AiConversation, optional) gets the assistant's reply
-    appended to its thread, mirroring the student bot.
+    appended to its thread, mirroring the student bot. ``language`` is the
+    language the answer is written in: the creator's for the studio bot, the
+    page's for the marketing visitor.
 
     A first-turn question (len(history) == 1) consults the answer cache: a
     hit replays the stored answer with zero model cost (still audited); a
@@ -296,6 +299,7 @@ def sse_events(history, audience, bucket, month, question="", session_id="", con
         history=history,
         model=settings.HELP_BOT_MODEL,
         max_tokens=MAX_OUTPUT_TOKENS,
+        language=language,
         on_complete=on_complete,
     )
 

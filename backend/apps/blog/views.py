@@ -16,6 +16,7 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 
 from apps.core.ai_sse import EventStreamRenderer, sse_frame, stream_response, wants_stream
+from apps.core.languages import site_language
 from apps.core.permissions import IsCoachOrOwner
 from apps.media.models import Photo
 
@@ -190,7 +191,9 @@ def _generate_sse(request, tenant, status, topic, topic_obj, instructions, photo
 
     try:
         yield sse_frame({"type": "phase", "phase": "preparing"})
-        for kind, value in ai.generate_post_stream(ai.brief_for_current_tenant(), topic, instructions, photos=photos):
+        for kind, value in ai.generate_post_stream(
+            ai.brief_for_current_tenant(), topic, instructions, photos=photos, language=site_language()
+        ):
             if kind == "phase":
                 yield sse_frame({"type": "phase", "phase": value})
             elif kind == "preview":
@@ -248,7 +251,9 @@ def blog_generate(request):
         return stream_response(_generate_sse(request, tenant, status, topic, topic_obj, instructions, photos))
 
     try:
-        result = ai.generate_counted(tenant, ai.brief_for_current_tenant(), topic, instructions, photos=photos)
+        result = ai.generate_counted(
+            tenant, ai.brief_for_current_tenant(), topic, instructions, photos=photos, language=site_language()
+        )
     except ai.BlogAiError:
         logger.exception("blog generate failed")
         return Response({"post": None, "source": "error", "remaining": status["remaining"]})
@@ -274,7 +279,7 @@ def blog_topics(request):
         return Response({"topics": [], "source": status["reason"]})
     existing = list(BlogPost.objects.values_list("title", flat=True)[:20])
     try:
-        topics, cost = ai.generate_topics(ai.brief_for_current_tenant(), existing)
+        topics, cost = ai.generate_topics(ai.brief_for_current_tenant(), existing, language=site_language())
     except ai.BlogAiError as exc:
         ai.record_attempt_cost(tenant.schema_name, exc.cost_usd)
         return Response({"topics": [], "source": "error"})

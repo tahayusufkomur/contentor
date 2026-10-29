@@ -13,6 +13,7 @@ from django.utils.html import escape
 from pydantic import BaseModel
 
 from apps.core import ai as core_ai
+from apps.core import languages
 from apps.core.copilot import runs
 from apps.core.onboarding import ai_compose
 from apps.core.sanitize import clean_rich_html
@@ -108,6 +109,7 @@ def carry_out(tenant, run_id) -> None:
                 max_tokens=MAX_TOKENS,
                 label="contentor:focus-ahead",
                 effort="low",
+                language=languages.site_language(),
             )
         except core_ai.AiError as exc:
             ai_compose.record_spend(tenant.schema_name, getattr(exc, "cost_usd", None) or 0)

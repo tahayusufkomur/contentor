@@ -135,7 +135,7 @@ def test_stream_answer_cli_parses_deltas_and_result(kb_file, monkeypatch, settin
     monkeypatch.setattr("subprocess.Popen", fake_popen)
     monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-should-be-stripped")
 
-    events = list(help_bot.stream_answer([{"role": "user", "content": "payouts?"}]))
+    events = list(help_bot.stream_answer([{"role": "user", "content": "payouts?"}], language=None))
 
     assert [e for e in events if e[0] == "delta"] == [("delta", "Connect "), ("delta", "Stripe.")]
     kind, info = events[-1]
@@ -157,7 +157,7 @@ def test_stream_answer_cli_failure_raises(kb_file, monkeypatch, settings):
     settings.AI_PROVIDER = "cli"
     monkeypatch.setattr("subprocess.Popen", lambda cmd, **kw: _FakeProc([], returncode=1))
     with pytest.raises(help_bot.HelpBotError):
-        list(help_bot.stream_answer([{"role": "user", "content": "hi"}]))
+        list(help_bot.stream_answer([{"role": "user", "content": "hi"}], language=None))
 
 
 # ── availability + accounting ────────────────────────────────────────────────
@@ -255,9 +255,15 @@ class TestAnswerCacheTenantScoping:
         question = "what should I set up next?"
         history = [{"role": "user", "content": question}]
 
-        list(help_bot.sse_events(list(history), "coach", "tenant-a", MONTH, question=question, session_id="s-a"))
+        list(
+            help_bot.sse_events(
+                list(history), "coach", "tenant-a", MONTH, question=question, session_id="s-a", language=None
+            )
+        )
         frames_b = list(
-            help_bot.sse_events(list(history), "coach", "tenant-b", MONTH, question=question, session_id="s-b")
+            help_bot.sse_events(
+                list(history), "coach", "tenant-b", MONTH, question=question, session_id="s-b", language=None
+            )
         )
         delta_text_b = "".join(
             json.loads(f.removeprefix("data: ").strip())["text"]
@@ -282,7 +288,15 @@ class TestAnswerCacheTenantScoping:
         question = "how much does it cost?"
         history = [{"role": "user", "content": question}]
 
-        list(help_bot.sse_events(list(history), "visitor", "__marketing__", MONTH, question=question, session_id="v-1"))
-        list(help_bot.sse_events(list(history), "visitor", "__marketing__", MONTH, question=question, session_id="v-2"))
+        list(
+            help_bot.sse_events(
+                list(history), "visitor", "__marketing__", MONTH, question=question, session_id="v-1", language=None
+            )
+        )
+        list(
+            help_bot.sse_events(
+                list(history), "visitor", "__marketing__", MONTH, question=question, session_id="v-2", language=None
+            )
+        )
         assert len(calls) == 1
         assert AiTranscript.objects.filter(provider="cache").count() == 1

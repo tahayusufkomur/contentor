@@ -55,6 +55,7 @@ class Command(BaseCommand):
                 output_model=_Ping,
                 model=settings.HELP_BOT_MODEL,
                 max_tokens=32,
+                language=None,
             )
         except ai.AiError as exc:
             self.stderr.write(self.style.ERROR(f"end-to-end call failed: {exc}"))

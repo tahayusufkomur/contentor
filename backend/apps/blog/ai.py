@@ -232,7 +232,7 @@ def render_body(sections, faq=()):
 AUTOPILOT_LABEL = "contentor:compose-blog"
 
 
-def _call_structured(system_prompt, user_prompt, output_model, model, max_tokens, label=None):
+def _call_structured(system_prompt, user_prompt, output_model, model, max_tokens, label=None, *, language):
     """One structured-output model call -> (validated output_model, cost,
     effective_model). Raises BlogAiError on any provider failure."""
     try:
@@ -243,6 +243,7 @@ def _call_structured(system_prompt, user_prompt, output_model, model, max_tokens
             model=model,
             max_tokens=max_tokens,
             label=label,
+            language=language,
         )
     except core_ai.AiError as exc:
         raise BlogAiError(str(exc), cost_usd=exc.cost_usd) from exc
@@ -308,10 +309,11 @@ def _draft_preview(snapshot):
     return {"title": title, "excerpt": str(snapshot.get("excerpt") or "")[:300], "headings": headings}
 
 
-def generate_post(brief, topic, instructions="", photos=(), label=None):
+def generate_post(brief, topic, instructions="", photos=(), label=None, *, language):
     """ONE model call -> BlogPost-ready field dict. Slug and status are
     intentionally absent (callers re-derive the slug via models.unique_slug
-    and decide status). Raises BlogAiError on failure."""
+    and decide status). ``language`` is the language the post is written in
+    (the site's; see core.ai). Raises BlogAiError on failure."""
     photo_list = list(photos)
     valid_ids = {str(p.id) for p in photo_list}
     parsed, cost, effective_model = _call_structured(
@@ -321,16 +323,17 @@ def generate_post(brief, topic, instructions="", photos=(), label=None):
         settings.BLOG_AI_MODEL,
         MAX_OUTPUT_TOKENS,
         label,
+        language=language,
     )
     return DraftResult(_draft_fields(parsed, valid_ids, effective_model, cost), cost)
 
 
-def generate_counted(tenant, brief, topic, instructions="", photos=(), label=None):
+def generate_counted(tenant, brief, topic, instructions="", photos=(), label=None, *, language):
     """generate_post on her blog quota: what it cost is recorded on every
     attempt, and only a post that came back uses a credit. Callers check
     availability(tenant) first. Raises what generate_post raises."""
     try:
-        result = generate_post(brief, topic, instructions, photos=photos, label=label)
+        result = generate_post(brief, topic, instructions, photos=photos, label=label, language=language)
     except BlogAiError as exc:
         record_attempt_cost(tenant.schema_name, exc.cost_usd)
         raise
@@ -343,7 +346,7 @@ def generate_counted(tenant, brief, topic, instructions="", photos=(), label=Non
     return result
 
 
-def generate_post_stream(brief, topic, instructions="", photos=()):
+def generate_post_stream(brief, topic, instructions="", photos=(), *, language):
     """Streaming twin of generate_post. Yields ("phase", name) and
     ("preview", dict) as the draft forms, then exactly one ("result",
     DraftResult). Raises BlogAiError on failure, like generate_post.
@@ -362,6 +365,7 @@ def generate_post_stream(brief, topic, instructions="", photos=()):
             output_model=_BlogDraft,
             model=settings.BLOG_AI_MODEL,
             max_tokens=MAX_OUTPUT_TOKENS,
+            language=language,
         ):
             if kind == "partial":
                 preview = _draft_preview(value)
@@ -378,12 +382,18 @@ def generate_post_stream(brief, topic, instructions="", photos=()):
     yield ("result", DraftResult(_draft_fields(parsed, valid_ids, effective_model, cost), cost))
 
 
-def generate_topics(brief, existing_titles=(), label=None):
+def generate_topics(brief, existing_titles=(), label=None, *, language):
     """One cheap-model call -> 12 topic dicts. Costs budget USD, never quota."""
     titles = "; ".join(list(existing_titles)[:20]) or "-"
     user_prompt = f"{brief}\n\nAlready-covered titles: {titles}"
     parsed, cost, _ = _call_structured(
-        TOPIC_STATIC_PROMPT, user_prompt, _TopicBatch, settings.BLOG_AI_TOPIC_MODEL, TOPIC_MAX_OUTPUT_TOKENS, label
+        TOPIC_STATIC_PROMPT,
+        user_prompt,
+        _TopicBatch,
+        settings.BLOG_AI_TOPIC_MODEL,
+        TOPIC_MAX_OUTPUT_TOKENS,
+        label,
+        language=language,
     )
     topics = [{"title": str(t.title)[:200], "angle": str(t.angle)[:300]} for t in parsed.topics[:12]]
     if not topics:

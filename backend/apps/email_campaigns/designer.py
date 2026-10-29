@@ -293,6 +293,7 @@ def _context(tenant) -> dict:
 def _run(system, user, job_id, spent) -> list:
     """Stream the model's reply, refreshing the step line as ops arrive; -> the parsed ops."""
     from apps.core import ai as core_ai
+    from apps.core import languages
 
     text = ""
     seen = 0
@@ -302,6 +303,7 @@ def _run(system, user, job_id, spent) -> list:
         model=settings.EMAIL_DESIGNER_MODEL,
         max_tokens=16000,
         label="contentor:email-designer",
+        language=languages.site_language(),
     ):
         if kind == "delta":
             text += payload

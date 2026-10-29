@@ -13,6 +13,7 @@ from django.db.models import Max
 from pydantic import BaseModel
 
 from apps.core import ai as core_ai
+from apps.core import languages
 from apps.core.copilot import runs
 from apps.core.onboarding import ai_compose
 from apps.tenant_config.models import CopilotRun, FocusCreation
@@ -143,6 +144,7 @@ def _draft(tenant, creation, course, instruction: str) -> OutlineDraft:
             max_tokens=12000,
             label="contentor:copilot",
             effort="medium",
+            language=languages.site_language(),
         )
     except core_ai.AiError as exc:
         ai_compose.record_spend(tenant.schema_name, getattr(exc, "cost_usd", None) or 0)

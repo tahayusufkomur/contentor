@@ -46,7 +46,13 @@ def test_help_bot_sse_writes_transcript_with_raw_question():
     with patch.object(assistant.core_ai, "stream_text", _fake_stream("ans")):
         frames = list(
             help_bot.sse_events(
-                history, "coach", "demo_yoga", "2026-07", question="how do payouts work?", session_id="abc"
+                history,
+                "coach",
+                "demo_yoga",
+                "2026-07",
+                question="how do payouts work?",
+                session_id="abc",
+                language=None,
             )
         )
     row = AiTranscript.objects.get()
@@ -65,13 +71,13 @@ def test_no_transcript_on_provider_error():
 
     history = [{"role": "user", "content": "q"}]
     with patch.object(assistant.core_ai, "stream_text", boom):
-        list(help_bot.sse_events(history, "visitor", "__marketing__", "2026-07", question="q"))
+        list(help_bot.sse_events(history, "visitor", "__marketing__", "2026-07", question="q", language=None))
     assert AiTranscript.objects.count() == 0
 
 
 def test_usage_still_recorded_on_success():
     history = [{"role": "user", "content": "q"}]
     with patch.object(assistant.core_ai, "stream_text", _fake_stream("a")):
-        list(help_bot.sse_events(history, "coach", "demo_yoga", "2026-07", question="q"))
+        list(help_bot.sse_events(history, "coach", "demo_yoga", "2026-07", question="q", language=None))
     usage = help_bot.tenant_usage("demo_yoga", month="2026-07")
     assert usage.questions == 1 and usage.usd_spent == Decimal("0.02")

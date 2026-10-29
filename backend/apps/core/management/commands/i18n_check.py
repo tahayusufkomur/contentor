@@ -10,6 +10,7 @@
    lines marked `# not-site-locales`.
 4. Slugs: `django.utils.text.slugify` is imported only in `apps/core/slugs.py` (it drops ı, ł and ß); everyone else
    uses `apps.core.slugs.slugify`.
+5. AI language: every call of the five `apps.core.ai` entry points passes `language=` (a code, `Mixed`, or None).
 
 Spec: docs/superpowers/specs/2026-10-28-four-languages-design.md.
 """
@@ -311,6 +312,29 @@ def slugify_problems(base: Path) -> list[str]:
     ]
 
 
+# --- 5. AI language ---
+
+AI_ENTRY_POINTS = {"structured", "structured_stream", "structured_messages", "stream_text", "agentc_look"}
+
+
+def ai_calls_without_language(source: str, rel: str) -> list[str]:
+    return [
+        f"{rel}:{node.lineno}: {_callee(node)}() needs language= (a code, languages.Mixed, or None)"
+        for node in ast.walk(ast.parse(source))
+        if isinstance(node, ast.Call)
+        and _callee(node) in AI_ENTRY_POINTS
+        and not any(keyword.arg == "language" for keyword in node.keywords)
+    ]
+
+
+def ai_language_problems(base: Path) -> list[str]:
+    return [
+        problem
+        for path, rel in source_files(base)
+        for problem in ai_calls_without_language(path.read_text(encoding="utf-8"), rel)
+    ]
+
+
 class Command(BaseCommand):
     help = "The i18n guards of make lint: hard-coded strings, .po coverage and locale lists (see the module docstring)."
     requires_system_checks = []
@@ -351,6 +375,9 @@ class Command(BaseCommand):
         slugs = slugify_problems(base)
         if slugs:
             failures.append("i18n: slugify:\n  " + "\n  ".join(slugs))
+        ai_calls = ai_language_problems(base)
+        if ai_calls:
+            failures.append("i18n: AI calls:\n  " + "\n  ".join(ai_calls))
         if failures:
             raise CommandError("\n\n".join(failures))
         self.stdout.write(f"i18n_check OK ({sum(counts.values())} hard-coded texts left in {len(counts)} files)")

@@ -53,6 +53,12 @@ class TestRule:
 
 
 class TestModel:
+    @pytest.fixture(autouse=True)
+    def _english(self, monkeypatch):
+        """No database here: the two languages the model call asks for are fixed."""
+        monkeypatch.setattr(moments.languages, "creator_language", lambda user=None: "en")
+        monkeypatch.setattr(moments.languages, "site_language", lambda tenant=None: "en")
+
     def _picks(self, *picks):
         return moments.Picks(moments=[moments.Pick(**p) for p in picks])
 

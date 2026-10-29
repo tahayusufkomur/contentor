@@ -584,6 +584,7 @@ def create_draft(tenant, user, kind: str, prompt: str, *, label: str = "contento
     re-draft replaces (deletes) the flow's previous draft of that kind.
     Raises ai.AiError (provider down / unavailable) or ContentOpError."""
     from apps.core import ai as core_ai
+    from apps.core import languages
     from apps.core.onboarding import ai_compose
 
     if kind not in DRAFT_MODELS:
@@ -600,6 +601,7 @@ def create_draft(tenant, user, kind: str, prompt: str, *, label: str = "contento
             max_tokens=12000,
             label=label,
             effort="medium",
+            language=languages.site_language(),
         )
     except core_ai.AiError as exc:
         ai_compose.record_spend(tenant.schema_name, getattr(exc, "cost_usd", None) or 0)
