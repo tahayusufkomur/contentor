@@ -1,3 +1,4 @@
+from django.utils.translation import gettext as _
 from rest_framework import serializers
 
 from apps.core.storage import is_blocked_content_type, is_tenant_scoped_key
@@ -5,13 +6,13 @@ from apps.core.storage import is_blocked_content_type, is_tenant_scoped_key
 
 def _validate_content_type(value):
     if is_blocked_content_type(value):
-        raise serializers.ValidationError("This content type is not allowed for uploads.")
+        raise serializers.ValidationError(_("This content type is not allowed for uploads."))
     return value
 
 
 def _validate_tenant_s3_key(value):
     if not is_tenant_scoped_key(value):
-        raise serializers.ValidationError("s3_key must be within this tenant's storage.")
+        raise serializers.ValidationError(_("s3_key must be within this tenant's storage."))
     return value
 
 
@@ -21,7 +22,7 @@ def check_tenant_key(value, current=None):
     file and be handed a signed link to it. Empty (the upload comes later) and
     unchanged values pass."""
     if value and value != current and not is_tenant_scoped_key(value):
-        raise serializers.ValidationError("s3_key must be within this tenant's storage.")
+        raise serializers.ValidationError(_("s3_key must be within this tenant's storage."))
     return value
 
 

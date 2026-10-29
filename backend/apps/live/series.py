@@ -8,6 +8,7 @@ from __future__ import annotations
 from django.db import transaction
 from django.db.models import Case, F, Value, When
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from apps.billing import ways
 from apps.tenant_config import interview_schedule
@@ -109,8 +110,10 @@ def set_trial(row, on: bool):
                 return current
             if not trial_state(row)["available"]:
                 raise TrialError(
-                    "A free trial needs a paid class with at least two sessions still to come "
-                    "(Zoom sessions are always free)."
+                    _(
+                        "A free trial needs a paid class with at least two sessions still to come "
+                        "(Zoom sessions are always free)."
+                    )
                 )
             first = _to_come(row).select_for_update().first()
             first.trial_ways = ways.ways_of(first)

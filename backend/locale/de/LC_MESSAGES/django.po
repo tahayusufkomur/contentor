@@ -48,7 +48,8 @@ msgstr "Ungültiger oder abgelaufener Token"
 msgid "Token not valid for this tenant"
 msgstr "Token für diesen Mandanten nicht gültig"
 
-#: apps/accounts/views.py apps/core/onboarding/views.py
+#: apps/accounts/views.py apps/core/onboarding/views.py apps/courses/views.py
+#: apps/downloads/views.py apps/live/views.py
 #, fuzzy
 msgid "Permission denied."
 msgstr "Zugriff verweigert."
@@ -1443,10 +1444,159 @@ msgctxt "the brand, when the site has none"
 msgid "us"
 msgstr "uns"
 
+#: apps/core/uploads/multipart.py apps/core/uploads/serializers.py
+#, fuzzy
+msgid "s3_key must be within this tenant's storage."
+msgstr "s3_key muss sich im Speicher dieses Mandanten befinden."
+
+#: apps/core/uploads/multipart.py apps/core/uploads/serializers.py
+#, fuzzy
+msgid "This content type is not allowed for uploads."
+msgstr "Dieser Inhaltstyp ist für Uploads nicht zulässig."
+
+#: apps/core/uploads/multipart.py
+#, fuzzy
+msgid "Each part must have ETag and PartNumber."
+msgstr "Jeder Teil muss ETag und PartNumber haben."
+
+#: apps/core/uploads/multipart.py apps/core/uploads/views.py
+#, fuzzy
+msgid "video_id is required for library uploads."
+msgstr "video_id ist für Bibliotheks-Uploads erforderlich."
+
+#: apps/core/uploads/multipart.py apps/core/uploads/views.py
+#, fuzzy
+msgid "Video not found."
+msgstr "Video nicht gefunden."
+
+#: apps/core/uploads/multipart.py apps/core/uploads/views.py
+#, fuzzy
+msgid "Upload complete."
+msgstr "Upload abgeschlossen."
+
+#: apps/core/uploads/multipart.py
+#, fuzzy
+msgid "Upload aborted."
+msgstr "Upload abgebrochen."
+
+#: apps/core/uploads/views.py
+#, fuzzy
+msgid "lesson_id is required for video uploads."
+msgstr "lesson_id ist für Video-Uploads erforderlich."
+
+#: apps/core/uploads/views.py
+#, fuzzy
+msgid "Lesson not found."
+msgstr "Lektion nicht gefunden."
+
+#: apps/core/uploads/views.py
+#, fuzzy
+msgid "Lesson video updated."
+msgstr "Lektionsvideo aktualisiert."
+
+#: apps/core/uploads/views.py
+#, fuzzy
+msgid "download_id is required for download uploads."
+msgstr "download_id ist für Download-Uploads erforderlich."
+
+#: apps/core/uploads/views.py
+#, fuzzy
+msgid "Download file not found."
+msgstr "Download-Datei nicht gefunden."
+
+#: apps/core/uploads/views.py
+#, fuzzy
+msgid "Download file updated."
+msgstr "Download-Datei aktualisiert."
+
+#: apps/core/uploads/views.py
+#, fuzzy
+msgid "Video updated."
+msgstr "Video aktualisiert."
+
+#: apps/core/uploads/views.py
+#, fuzzy
+msgid "Branding"
+msgstr "Branding"
+
+#: apps/core/uploads/views.py
+#, fuzzy
+msgid "Photo uploaded."
+msgstr "Foto hochgeladen."
+
+#: apps/core/uploads/views.py
+#, fuzzy
+msgid "Invalid category."
+msgstr "Ungültige Kategorie."
+
+#: apps/courses/models.py
+#, fuzzy
+msgid ""
+"a course goes live once every lesson has a video, or text you wrote or "
+"edited, and it has no lessons yet"
+msgstr ""
+"ein Kurs geht live, sobald jede Lektion ein Video oder Text hat, den du "
+"geschrieben oder bearbeitet hast, und er hat noch keine Lektionen"
+
+#: apps/courses/models.py
+#, python-format, fuzzy
+msgid ""
+"a course goes live once every lesson has a video, or text you wrote or "
+"edited, and %(empty)s of its %(total)s lessons have none yet"
+msgstr ""
+"ein Kurs geht live, sobald jede Lektion ein Video oder Text hat, den du "
+"geschrieben oder bearbeitet hast, und %(empty)s seiner %(total)s Lektionen "
+"haben noch keines davon"
+
+#: apps/courses/serializers.py
+#, fuzzy
+msgid ""
+"Curriculum can only be set at creation. Use the module/lesson endpoints to "
+"edit."
+msgstr ""
+"Das Curriculum kann nur bei der Erstellung festgelegt werden. Verwende die "
+"Modul-/Lektions-Endpunkte zum Bearbeiten."
+
+#: apps/courses/views.py apps/downloads/views.py apps/media/design_views.py
+#: apps/media/views.py
+#, fuzzy
+msgid "Not found."
+msgstr "Nicht gefunden."
+
+#: apps/courses/views.py
+#, fuzzy
+msgid "Already enrolled."
+msgstr "Bereits eingeschrieben."
+
+#: apps/courses/views.py
+#, fuzzy
+msgid "This course requires purchase or subscription."
+msgstr "Dieser Kurs erfordert einen Kauf oder ein Abonnement."
+
+#: apps/courses/views.py
+#, fuzzy
+msgid "Not enrolled."
+msgstr "Nicht eingeschrieben."
+
+#: apps/courses/views.py
+#, fuzzy
+msgid "lesson field is required."
+msgstr "Das Feld lesson ist erforderlich."
+
 #: apps/domains/billing.py
 #, fuzzy, python-format
 msgid "Custom domain: %(domain)s"
 msgstr "Eigene Domain: %(domain)s"
+
+#: apps/downloads/views.py
+#, fuzzy
+msgid "File not yet available."
+msgstr "Datei noch nicht verfügbar."
+
+#: apps/downloads/views.py
+#, fuzzy
+msgid "You do not have access to this file."
+msgstr "Du hast keinen Zugriff auf diese Datei."
 
 #: apps/email_campaigns/brand.py apps/notifications/email_render.py
 #, fuzzy
@@ -1679,6 +1829,290 @@ msgstr "du"
 #, fuzzy, python-format
 msgid "%(coach)s via %(brand)s"
 msgstr "%(coach)s über %(brand)s"
+
+#: apps/live/admin_events.py
+#, fuzzy
+msgid "Unknown kind of event."
+msgstr "Unbekannte Art von Veranstaltung."
+
+#: apps/live/admin_events.py
+#, fuzzy
+msgid "Say whether the trial is on or off."
+msgstr "Gib an, ob die Testphase ein- oder ausgeschaltet ist."
+
+#: apps/live/series.py
+#, fuzzy
+msgid ""
+"A free trial needs a paid class with at least two sessions still to come "
+"(Zoom sessions are always free)."
+msgstr ""
+"Eine kostenlose Testphase erfordert einen kostenpflichtigen Kurs mit "
+"mindestens zwei noch bevorstehenden Sessions (Zoom-Sessions sind immer "
+"kostenlos)."
+
+#: apps/live/views.py
+#, fuzzy
+msgid "This session has not started yet. Please wait for the host to join."
+msgstr ""
+"Diese Session hat noch nicht begonnen. Bitte warte, bis der Host beitritt."
+
+#: apps/live/views.py
+#, fuzzy
+msgid "You were removed from this session."
+msgstr "Du wurdest aus dieser Session entfernt."
+
+#: apps/live/views.py
+#, fuzzy
+msgid "Failed to connect to video service."
+msgstr "Verbindung zum Videodienst fehlgeschlagen."
+
+#: apps/live/views.py
+#, python-format, fuzzy
+msgid "Cannot start a class with status '%(status)s'."
+msgstr "Eine Live-Session mit dem Status '%(status)s' kann nicht gestartet werden."
+
+#: apps/live/views.py
+#, fuzzy
+msgid "Failed to start video call. Please try again."
+msgstr "Videoanruf konnte nicht gestartet werden. Bitte versuche es erneut."
+
+#: apps/live/views.py
+#, fuzzy
+msgid "Session is not live."
+msgstr "Session ist nicht live."
+
+#: apps/live/views.py
+#, fuzzy
+msgid "You do not have access to this live session."
+msgstr "Du hast keinen Zugriff auf diese Live-Session."
+
+#: apps/live/views.py
+#, python-format, fuzzy
+msgid "Cannot start a stream with status '%(status)s'."
+msgstr "Ein Stream mit dem Status '%(status)s' kann nicht gestartet werden."
+
+#: apps/live/views.py
+#, fuzzy
+msgid "Failed to start live stream. Please try again."
+msgstr "Livestream konnte nicht gestartet werden. Bitte versuche es erneut."
+
+#: apps/live/views.py
+#, fuzzy
+msgid "Stream is not live."
+msgstr "Stream ist nicht live."
+
+#: apps/live/views.py
+#, fuzzy
+msgid "You do not have access to this live stream."
+msgstr "Du hast keinen Zugriff auf diesen Livestream."
+
+#: apps/live/views.py
+#, fuzzy
+msgid "Invalid event type."
+msgstr "Ungültiger Veranstaltungstyp."
+
+#: apps/live/webhooks.py
+#, fuzzy
+msgid "bad signature"
+msgstr "ungültige Signatur"
+
+#: apps/media/design_export.py
+#, fuzzy
+msgid "this site has no address to draw the design on"
+msgstr "diese Website hat keine Adresse, um das Design darauf zu zeichnen"
+
+#: apps/media/design_export.py
+#, fuzzy
+msgid "the design could not be drawn as a file right now"
+msgstr "das Design konnte gerade nicht als Datei gezeichnet werden"
+
+#: apps/media/design_recipe.py
+#, python-format, fuzzy
+msgid "%(field)s must be a palette role or a #rrggbb colour."
+msgstr "%(field)s muss eine Palettenrolle oder eine #rrggbb-Farbe sein."
+
+#: apps/media/design_recipe.py
+#, fuzzy
+msgid "photo.id must be one of your photos."
+msgstr "photo.id muss eines deiner Fotos sein."
+
+#: apps/media/design_recipe.py
+#, python-format, fuzzy
+msgid "%(field)s must be a frame with x, y, w and h."
+msgstr "%(field)s muss ein Rahmen mit x, y, w und h sein."
+
+#: apps/media/design_recipe.py
+#, python-format, fuzzy
+msgid "%(field)s must be a number."
+msgstr "%(field)s muss eine Zahl sein."
+
+#: apps/media/design_recipe.py
+#, python-format, fuzzy
+msgid "extras holds at most %(max)s layers."
+msgstr "Extras enthält höchstens %(max)s Ebenen."
+
+#: apps/media/design_recipe.py
+#, python-format, fuzzy
+msgid "%(field)s must be an object."
+msgstr "%(field)s muss ein Objekt sein."
+
+#: apps/media/design_recipe.py
+#, python-format, fuzzy
+msgid ""
+"%(field)s.id must be unique, 1-24 of a-z, 0-9 or -, and not the name of a "
+"part."
+msgstr ""
+"%(field)s.id muss eindeutig sein, 1-24 Zeichen aus a-z, 0-9 oder - lang und "
+"darf kein Name eines Teils sein."
+
+#: apps/media/design_recipe.py
+#, python-format, fuzzy
+msgid "%(field)s.text must be a web address."
+msgstr "%(field)s.text muss eine Webadresse sein."
+
+#: apps/media/design_recipe.py
+#, fuzzy
+msgid "recipe must be an object."
+msgstr "Rezept muss ein Objekt sein."
+
+#: apps/media/design_views.py
+#, fuzzy
+msgid "a kept cover can't be changed; edit a copy"
+msgstr "ein behaltenes Cover kann nicht geändert werden; bearbeite eine Kopie"
+
+#: apps/media/design_views.py
+#, fuzzy
+msgid "state is draft or kept."
+msgstr "Status ist Entwurf oder behalten."
+
+#: apps/media/design_views.py
+#, fuzzy
+msgid "Downloads are not on for this site."
+msgstr "Downloads sind für diese Website nicht aktiviert."
+
+#: apps/media/design_views.py
+#, fuzzy
+msgid "Choose a size and png or jpeg."
+msgstr "Wähle eine Größe und PNG oder JPEG."
+
+#: apps/media/design_views.py
+#, fuzzy
+msgid "part is label, title or subtitle."
+msgstr "Teil ist Label, Titel oder Untertitel."
+
+#: apps/media/design_views.py
+#, fuzzy
+msgid "Suggestions are not on for this site."
+msgstr "Vorschläge sind für diese Website nicht aktiviert."
+
+#: apps/media/design_views.py
+#, fuzzy
+msgid "No words came back. Try again."
+msgstr "Es kamen keine Wörter zurück. Versuche es erneut."
+
+#: apps/media/designs.py
+#, fuzzy
+msgid "it was changed since, so undoing it would overwrite newer work"
+msgstr ""
+"es wurde seitdem geändert, ein Rückgängigmachen würde neuere Arbeiten "
+"überschreiben"
+
+#: apps/media/designs.py
+#, fuzzy
+msgid "that course no longer exists"
+msgstr "dieser Kurs existiert nicht mehr"
+
+#: apps/media/designs.py
+#, fuzzy
+msgid "that download no longer exists"
+msgstr "dieser Download existiert nicht mehr"
+
+#: apps/media/designs.py
+#, fuzzy
+msgid "that live session no longer exists"
+msgstr "diese Live-Session existiert nicht mehr"
+
+#: apps/media/designs.py
+#, fuzzy
+msgid "that live stream no longer exists"
+msgstr "dieser Livestream existiert nicht mehr"
+
+#: apps/media/designs.py
+#, fuzzy
+msgid "that Zoom session no longer exists"
+msgstr "diese Zoom-Session existiert nicht mehr"
+
+#: apps/media/designs.py
+#, fuzzy
+msgid "that onsite event no longer exists"
+msgstr "diese Präsenzveranstaltung existiert nicht mehr"
+
+#: apps/media/designs.py
+#, fuzzy
+msgid "that is not something you can design a cover for"
+msgstr "dafür kannst du kein Cover entwerfen"
+
+#: apps/media/designs.py
+#, fuzzy
+msgid "that design no longer exists"
+msgstr "dieses Design existiert nicht mehr"
+
+#: apps/media/designs.py
+#, fuzzy
+msgid "that cover was changed since"
+msgstr "dieses Cover wurde seitdem geändert"
+
+#: apps/media/designs.py
+#, fuzzy
+msgid "only a draft can be kept"
+msgstr "nur ein Entwurf kann behalten werden"
+
+#: apps/media/designs.py
+#, fuzzy
+msgid "that photo no longer exists"
+msgstr "dieses Foto existiert nicht mehr"
+
+#: apps/media/views.py
+#, fuzzy
+msgid "Photo not found."
+msgstr "Foto nicht gefunden."
+
+#: apps/media/views.py
+#, fuzzy
+msgid "Removing backgrounds is not on for this site."
+msgstr ""
+"Das Entfernen von Hintergründen ist für diese Website nicht aktiviert."
+
+#: apps/media/views.py
+#, fuzzy
+msgid "That's a lot of backgrounds this hour. Try again later."
+msgstr ""
+"Das sind viele Hintergründe in dieser Stunde. Versuche es später erneut."
+
+#: apps/media/views.py
+#, fuzzy
+msgid "Photo edits are not on for this site."
+msgstr "Fotobearbeitungen sind für diese Website nicht aktiviert."
+
+#: apps/media/views.py
+#, fuzzy
+msgid "Say the shape to extend the photo to."
+msgstr "Gib die Form an, auf die das Foto erweitert werden soll."
+
+#: apps/media/views.py
+#, fuzzy
+msgid "Say what to change."
+msgstr "Gib an, was geändert werden soll."
+
+#: apps/media/views.py
+#, fuzzy
+msgid "Unknown edit."
+msgstr "Unbekannte Bearbeitung."
+
+#: apps/media/views.py
+#, fuzzy
+msgid "You have used this month's image generations."
+msgstr "Du hast die Bildgenerierungen für diesen Monat aufgebraucht."
 
 #: apps/notifications/email_render.py
 #, fuzzy

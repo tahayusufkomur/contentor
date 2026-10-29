@@ -14,6 +14,7 @@ import re
 import uuid
 from collections.abc import Callable
 
+from django.utils.translation import gettext as _
 from rest_framework import serializers
 
 from apps.tenant_config.logo_recipe import _HEX_RE, _enum, _num
@@ -136,7 +137,7 @@ def _paint(value, field):
     logo_recipe._hex there is no colour to fall back to."""
     if isinstance(value, str) and (value in PAINT_ROLES or _HEX_RE.fullmatch(value)):
         return value
-    raise serializers.ValidationError(f"{field} must be a palette role or a #rrggbb colour.")
+    raise serializers.ValidationError(_("%(field)s must be a palette role or a #rrggbb colour.") % {"field": field})
 
 
 def _photo_id(value, photo_exists):
@@ -148,7 +149,7 @@ def _photo_id(value, photo_exists):
     except ValueError:
         photo_id = None
     if photo_id is None or not photo_exists(photo_id):
-        raise serializers.ValidationError("photo.id must be one of your photos.")
+        raise serializers.ValidationError(_("photo.id must be one of your photos."))
     return photo_id
 
 
@@ -156,12 +157,12 @@ def _frame(value, field):
     """A frame in fractions of the canvas. Nothing can stand in for a missing side, so (unlike a
     plain number) a missing or non-numeric side is an error."""
     if not isinstance(value, dict):
-        raise serializers.ValidationError(f"{field} must be a frame with x, y, w and h.")
+        raise serializers.ValidationError(_("%(field)s must be a frame with x, y, w and h.") % {"field": field})
     frame = {}
     for side, (lo, hi) in _FRAME_RANGES.items():
         number = _clamp(value.get(side), lo, hi, None)
         if number is None:
-            raise serializers.ValidationError(f"{field}.{side} must be a number.")
+            raise serializers.ValidationError(_("%(field)s must be a number.") % {"field": f"{field}.{side}"})
         frame[side] = number
     return frame
 
@@ -197,12 +198,12 @@ def _part_style(value, field):
 def _extras(value):
     items = value if isinstance(value, list) else []
     if len(items) > MAX_EXTRAS:
-        raise serializers.ValidationError(f"extras holds at most {MAX_EXTRAS} layers.")
+        raise serializers.ValidationError(_("extras holds at most %(max)s layers.") % {"max": MAX_EXTRAS})
     extras, seen = [], set()
     for index, raw in enumerate(items):
         field = f"extras[{index}]"
         if not isinstance(raw, dict):
-            raise serializers.ValidationError(f"{field} must be an object.")
+            raise serializers.ValidationError(_("%(field)s must be an object.") % {"field": field})
         layer_id = raw.get("id")
         if not (
             isinstance(layer_id, str)
@@ -211,7 +212,7 @@ def _extras(value):
             and layer_id not in seen
         ):
             raise serializers.ValidationError(
-                f"{field}.id must be unique, 1-24 of a-z, 0-9 or -, and not the name of a part."
+                _("%(field)s.id must be unique, 1-24 of a-z, 0-9 or -, and not the name of a part.") % {"field": field}
             )
         seen.add(layer_id)
         kind = _enum(raw.get("type"), EXTRA_TYPES, f"{field}.type")
@@ -225,7 +226,7 @@ def _extras(value):
         elif kind == "qr":
             link = _text(raw.get("text"), TEXT_MAX["qr"])
             if not _QR_RE.fullmatch(link):
-                raise serializers.ValidationError(f"{field}.text must be a web address.")
+                raise serializers.ValidationError(_("%(field)s.text must be a web address.") % {"field": field})
             extra["text"] = link
             extra["fill"] = _paint(raw.get("fill", "black"), f"{field}.fill")
             extra["back"] = _paint(raw.get("back", "white"), f"{field}.back")
@@ -248,7 +249,7 @@ def validate_recipe(value: dict, *, photo_exists: Callable[[str], bool]) -> dict
     decides what counts as hers. Raises ``rest_framework.serializers.ValidationError``.
     """
     if not isinstance(value, dict):
-        raise serializers.ValidationError("recipe must be an object.")
+        raise serializers.ValidationError(_("recipe must be an object."))
     photo, words, badge = _obj(value.get("photo")), _obj(value.get("words")), _obj(value.get("badge"))
     focus = photo.get("focus")
     focus = focus if isinstance(focus, list | tuple) and len(focus) == 2 else (None, None)

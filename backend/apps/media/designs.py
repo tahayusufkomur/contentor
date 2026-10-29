@@ -16,6 +16,8 @@ from contextlib import contextmanager
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import IntegrityError, transaction
 from django.utils import timezone
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 
 from apps.core.storage import generate_presigned_download_url, sign_if_s3_key
 
@@ -33,7 +35,16 @@ BY_ID = ("course", "download")
 
 _MEMO = "_cover_designs"
 # The words of copilot.views.SNAPSHOT_STALE, which History shows for every other snapshot it refuses.
-_STALE = "it was changed since, so undoing it would overwrite newer work"
+_STALE = gettext_lazy("it was changed since, so undoing it would overwrite newer work")
+# One sentence per target kind: the noun is part of it, so it can't be spliced in.
+_GONE = {
+    "course": gettext_lazy("that course no longer exists"),
+    "download": gettext_lazy("that download no longer exists"),
+    "live": gettext_lazy("that live session no longer exists"),
+    "stream": gettext_lazy("that live stream no longer exists"),
+    "zoom": gettext_lazy("that Zoom session no longer exists"),
+    "onsite": gettext_lazy("that onsite event no longer exists"),
+}
 
 
 # --- targets ---------------------------------------------------------------
@@ -51,17 +62,14 @@ def _model(target_kind):
 
         return DownloadFile
     if target_kind not in TARGET_KINDS:
-        raise DesignError("that is not something you can design a cover for")
+        raise DesignError(_("that is not something you can design a cover for"))
     from apps.core.copilot import content
 
     return content.event_model(target_kind)
 
 
 def _gone(target_kind):
-    from apps.core.copilot.content import EVENT_KINDS
-
-    noun = target_kind if target_kind in BY_ID else EVENT_KINDS[target_kind][4]
-    return DesignError(f"that {noun} no longer exists")
+    return DesignError(_GONE[target_kind])
 
 
 def kind_of(obj) -> str:
@@ -144,7 +152,7 @@ def open_draft(
     elif from_id:
         source = _design(from_id)
         if source is None:
-            raise DesignError("that design no longer exists")
+            raise DesignError(_("that design no longer exists"))
         recipe = source.recipe
     else:
         recipe = validate_recipe({"photo": {"id": rows[0].thumbnail_id}}, photo_exists=_photo_exists)
@@ -171,20 +179,20 @@ def keep(design: Design) -> tuple[dict, dict]:
     History row; `restore_cover(inverse)` is Undo. As for the other cover changes, `result["id"]` is
     the record that was touched (the course, or the first row of the series), which is what the page
     showing it reloads on when History undoes this; the design's own id is `result["design_id"]`."""
-    with _atomic("that cover was changed since"):
+    with _atomic(_("that cover was changed since")):
         try:
             # Locked and current: a double submit waits here and then finds it kept.
             design.refresh_from_db(from_queryset=Design.objects.select_for_update())
         except Design.DoesNotExist:
-            raise DesignError("that design no longer exists") from None
+            raise DesignError(_("that design no longer exists")) from None
         if design.state != "draft":
-            raise DesignError("only a draft can be kept")
+            raise DesignError(_("only a draft can be kept"))
         rows = target_rows(design.target_kind, design.target_key)
         if not rows:
             raise _gone(design.target_kind)
         photo_id = _recipe_photo(design.recipe)
         if photo_id and not _photo_exists(photo_id):
-            raise DesignError("that photo no longer exists")
+            raise DesignError(_("that photo no longer exists"))
         previous = (
             Design.objects.select_for_update()
             .filter(kind=design.kind, target_kind=design.target_kind, target_key=design.target_key, state="kept")
@@ -244,7 +252,7 @@ def restore_cover(inverse: dict) -> None:
         raise _gone(kind)
     photo_ids = {thumbnails[str(row.pk)] for row in rows} - {None}
     if photo_ids and Photo.objects.filter(pk__in=photo_ids).count() != len(photo_ids):
-        raise DesignError("that photo no longer exists")
+        raise DesignError(_("that photo no longer exists"))
     with _atomic(_STALE):
         design = Design.objects.select_for_update().filter(pk=inverse["design_id"], state="kept").first()
         if design is None:

@@ -2,6 +2,7 @@ from dataclasses import asdict
 
 from django.db.models import F
 from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext as _
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -38,7 +39,7 @@ def download_list_create(request):
 
     # POST requires coach or owner
     if not is_coach_or_owner(request.user):
-        return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": _("Permission denied.")}, status=status.HTTP_403_FORBIDDEN)
 
     serializer = DownloadFileCreateSerializer(data=request.data, context={"request": request})
     serializer.is_valid(raise_exception=True)
@@ -77,16 +78,16 @@ def download_url(request, pk):
 
     # A draft is the coach's alone: to a student it does not exist.
     if not download_file.is_published and not is_coach_or_owner(request.user):
-        return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Not found.")}, status=status.HTTP_404_NOT_FOUND)
 
     if not download_file.file_url:
-        return Response({"detail": "File not yet available."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("File not yet available.")}, status=status.HTTP_404_NOT_FOUND)
 
     access_service = ContentAccessService()
     if not access_service.check_access(request.user, download_file):
         info = access_service.get_access_info(request.user, download_file)
         return Response(
-            {"detail": "You do not have access to this file.", "access_info": asdict(info)},
+            {"detail": _("You do not have access to this file."), "access_info": asdict(info)},
             status=status.HTTP_403_FORBIDDEN,
         )
 

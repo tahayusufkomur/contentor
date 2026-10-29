@@ -3,6 +3,7 @@
 import json
 import logging
 
+from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django_tenants.utils import schema_context
 from rest_framework import status
@@ -30,7 +31,7 @@ def livecraft_webhook(request):
     tenant. The recording lands in our bucket, so the key is all we store.
     """
     if not livecraft.valid_signature(request.body, request.headers.get("X-LiveCraft-Signature", "")):
-        return Response({"detail": "bad signature"}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({"detail": _("bad signature")}, status=status.HTTP_401_UNAUTHORIZED)
     payload = json.loads(request.body)
     if payload.get("event") != "recording.ready":
         return Response(status=status.HTTP_204_NO_CONTENT)

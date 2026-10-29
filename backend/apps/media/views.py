@@ -1,4 +1,5 @@
 from django.db.models import F, Q
+from django.utils.translation import gettext as _
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -61,7 +62,7 @@ def photo_detail(request, pk):
     try:
         photo = Photo.objects.get(pk=pk)
     except Photo.DoesNotExist:
-        return Response({"detail": "Photo not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Photo not found.")}, status=status.HTTP_404_NOT_FOUND)
 
     if request.method == "GET":
         return Response(PhotoSerializer(photo).data)
@@ -87,7 +88,7 @@ def photo_colours(request, pk):
     """The colours her photo is made of, most of it first: the studio offers them beside her look's."""
     photo = _photo(pk)
     if photo is None:
-        return Response({"detail": "Photo not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Photo not found.")}, status=status.HTTP_404_NOT_FOUND)
     return Response({"colours": photo_edits.colours(photo)})
 
 
@@ -107,13 +108,13 @@ def _job_response(job_id: str, state: dict) -> dict:
 def photo_cutout(request, pk):
     """Start removing her photo's background (free: our own service). 202 with the job to follow."""
     if not photo_edits.cutout_available():
-        return Response({"detail": "Removing backgrounds is not on for this site."}, status=503)
+        return Response({"detail": _("Removing backgrounds is not on for this site.")}, status=503)
     photo = _photo(pk)
     if photo is None:
-        return Response({"detail": "Photo not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Photo not found.")}, status=status.HTTP_404_NOT_FOUND)
     if not photo_edits.take_cutout():
         return Response(
-            {"detail": "That's a lot of backgrounds this hour. Try again later."},
+            {"detail": _("That's a lot of backgrounds this hour. Try again later.")},
             status=status.HTTP_429_TOO_MANY_REQUESTS,
         )
     job_id = photo_edits.start(photo, photo_edits.CUTOUT)
@@ -129,10 +130,10 @@ def photo_edit(request, pk):
     from apps.core.curated_images.views import count_generation, generation_allowance
 
     if not photo_edits.ai_available():
-        return Response({"detail": "Photo edits are not on for this site."}, status=503)
+        return Response({"detail": _("Photo edits are not on for this site.")}, status=503)
     photo = _photo(pk)
     if photo is None:
-        return Response({"detail": "Photo not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Photo not found.")}, status=status.HTTP_404_NOT_FOUND)
     data = request.data if isinstance(request.data, dict) else {}
     mode = data.get("mode")
     words = str(data.get("instruction") or "").strip()[: photo_edits.INSTRUCTION_MAX]
@@ -143,15 +144,15 @@ def photo_edit(request, pk):
         except (TypeError, ValueError):
             aspect = None
         if aspect is None or not 0.2 <= aspect <= 5:
-            return Response({"detail": "Say the shape to extend the photo to."}, status=400)
+            return Response({"detail": _("Say the shape to extend the photo to.")}, status=400)
     elif mode in (photo_edits.ERASE, photo_edits.CHANGE):
         if not words:
-            return Response({"detail": "Say what to change."}, status=400)
+            return Response({"detail": _("Say what to change.")}, status=400)
     else:
-        return Response({"detail": "Unknown edit."}, status=400)
+        return Response({"detail": _("Unknown edit.")}, status=400)
     if generation_allowance()["left"] <= 0:
         return Response(
-            {"detail": "You have used this month's image generations."}, status=status.HTTP_429_TOO_MANY_REQUESTS
+            {"detail": _("You have used this month's image generations.")}, status=status.HTTP_429_TOO_MANY_REQUESTS
         )
     count_generation()
     job_id = photo_edits.start(photo, mode, aspect=aspect, words=words)
@@ -164,5 +165,5 @@ def photo_job(request, job_id):
     """Where an edit stands. Another site's job, or one long gone, is a 404."""
     state = photo_edits.job(job_id)
     if state is None:
-        return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Not found.")}, status=status.HTTP_404_NOT_FOUND)
     return Response(_job_response(job_id, state))

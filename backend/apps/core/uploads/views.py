@@ -1,5 +1,6 @@
 import uuid
 
+from django.utils.translation import gettext as _
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -61,7 +62,7 @@ def complete(request):
         lesson_id = data.get("lesson_id")
         if not lesson_id:
             return Response(
-                {"detail": "lesson_id is required for video uploads."},
+                {"detail": _("lesson_id is required for video uploads.")},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         from apps.courses.models import Lesson, Video
@@ -69,7 +70,7 @@ def complete(request):
         try:
             lesson = Lesson.objects.select_related("video").get(pk=lesson_id)
         except Lesson.DoesNotExist:
-            return Response({"detail": "Lesson not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": _("Lesson not found.")}, status=status.HTTP_404_NOT_FOUND)
 
         duration = data.get("duration_seconds", 0)
 
@@ -91,13 +92,13 @@ def complete(request):
         if duration:
             lesson.duration_seconds = duration
         lesson.save()
-        return Response({"detail": "Lesson video updated.", "s3_key": s3_key})
+        return Response({"detail": _("Lesson video updated."), "s3_key": s3_key})
 
     elif category == "download":
         download_id = data.get("download_id")
         if not download_id:
             return Response(
-                {"detail": "download_id is required for download uploads."},
+                {"detail": _("download_id is required for download uploads.")},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         from apps.downloads.models import DownloadFile
@@ -105,18 +106,18 @@ def complete(request):
         try:
             download_file = DownloadFile.objects.get(pk=download_id)
         except DownloadFile.DoesNotExist:
-            return Response({"detail": "Download file not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": _("Download file not found.")}, status=status.HTTP_404_NOT_FOUND)
         download_file.file_url = s3_key
         if data.get("file_size"):
             download_file.file_size = data["file_size"]
         download_file.save()
-        return Response({"detail": "Download file updated.", "s3_key": s3_key})
+        return Response({"detail": _("Download file updated."), "s3_key": s3_key})
 
     elif category == "library":
         video_id = data.get("video_id")
         if not video_id:
             return Response(
-                {"detail": "video_id is required for library uploads."},
+                {"detail": _("video_id is required for library uploads.")},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         from apps.courses.models import Video
@@ -124,14 +125,14 @@ def complete(request):
         try:
             video = Video.objects.get(pk=video_id)
         except Video.DoesNotExist:
-            return Response({"detail": "Video not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": _("Video not found.")}, status=status.HTTP_404_NOT_FOUND)
         video.s3_key = s3_key
         if data.get("duration_seconds"):
             video.duration_seconds = data["duration_seconds"]
         if data.get("file_size"):
             video.file_size = int(data["file_size"])
         video.save()
-        return Response({"detail": "Video updated.", "s3_key": s3_key})
+        return Response({"detail": _("Video updated."), "s3_key": s3_key})
 
     elif category == "branding":
         from apps.core.storage import generate_presigned_download_url
@@ -139,14 +140,14 @@ def complete(request):
 
         photo = Photo.objects.create(
             s3_key=s3_key,
-            title="Branding",
+            title=_("Branding"),
             content_type=data.get("content_type", ""),
             file_size=data.get("file_size", 0),
         )
         file_url = generate_presigned_download_url(s3_key, expiry=86400 * 7)
         return Response(
             {
-                "detail": "Upload complete.",
+                "detail": _("Upload complete."),
                 "s3_key": s3_key,
                 "file_url": file_url,
                 "photo_id": str(photo.id),
@@ -168,11 +169,11 @@ def complete(request):
         signed_url = generate_presigned_download_url(s3_key, expiry=86400 * 7)
         return Response(
             {
-                "detail": "Photo uploaded.",
+                "detail": _("Photo uploaded."),
                 "photo_id": str(photo.id),
                 "s3_key": s3_key,
                 "signed_url": signed_url,
             }
         )
 
-    return Response({"detail": "Invalid category."}, status=status.HTTP_400_BAD_REQUEST)
+    return Response({"detail": _("Invalid category.")}, status=status.HTTP_400_BAD_REQUEST)

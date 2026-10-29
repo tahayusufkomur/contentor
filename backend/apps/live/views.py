@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -78,16 +79,16 @@ def _join_response(request, event, *, guest_role, layout):
                 raise
             if not host:
                 return Response(
-                    {"detail": "This session has not started yet. Please wait for the host to join."},
+                    {"detail": _("This session has not started yet. Please wait for the host to join.")},
                     status=status.HTTP_409_CONFLICT,
                 )
             _start_room(event, layout=layout)
             url = livecraft.join_url(event.room_name, request.user, role=role)
     except livecraft.LiveCraftError as exc:
         if exc.status == 403:
-            return Response({"detail": "You were removed from this session."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"detail": _("You were removed from this session.")}, status=status.HTTP_403_FORBIDDEN)
         logger.exception("LiveCraft join failed for room %s", event.room_name)
-        return Response({"detail": "Failed to connect to video service."}, status=status.HTTP_502_BAD_GATEWAY)
+        return Response({"detail": _("Failed to connect to video service.")}, status=status.HTTP_502_BAD_GATEWAY)
     return Response({"join_url": url, "role": "host" if host else "viewer"})
 
 
@@ -116,7 +117,7 @@ def live_class_list_create(request):
         return _serialize_list_response(request, qs, LiveClassSerializer)
 
     if not is_coach_or_owner(request.user):
-        return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": _("Permission denied.")}, status=status.HTTP_403_FORBIDDEN)
 
     serializer = LiveClassCreateSerializer(data=request.data, context={"request": request})
     serializer.is_valid(raise_exception=True)
@@ -136,7 +137,7 @@ def live_class_detail(request, pk):
 
     if request.method == "PUT":
         if not is_coach_or_owner(request.user):
-            return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"detail": _("Permission denied.")}, status=status.HTTP_403_FORBIDDEN)
         serializer = LiveClassCreateSerializer(
             live_class, data=request.data, partial=True, context={"request": request}
         )
@@ -146,7 +147,7 @@ def live_class_detail(request, pk):
 
     if request.method == "DELETE":
         if not request.user.is_authenticated or request.user.role != "owner":
-            return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"detail": _("Permission denied.")}, status=status.HTTP_403_FORBIDDEN)
         live_class.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -157,7 +158,7 @@ def live_class_start(request, pk):
     live_class = get_object_or_404(LiveClass, pk=pk)
     if live_class.status not in ("draft", "scheduled"):
         return Response(
-            {"detail": f"Cannot start a class with status '{live_class.status}'."},
+            {"detail": _("Cannot start a class with status '%(status)s'.") % {"status": live_class.status}},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -166,7 +167,7 @@ def live_class_start(request, pk):
     except livecraft.LiveCraftError:
         logger.exception("Failed to create LiveCraft room for live class %s", pk)
         return Response(
-            {"detail": "Failed to start video call. Please try again."},
+            {"detail": _("Failed to start video call. Please try again.")},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
@@ -182,7 +183,7 @@ def live_class_stop(request, pk):
     live_class = get_object_or_404(LiveClass, pk=pk)
     if live_class.status != "live":
         return Response(
-            {"detail": "Session is not live."},
+            {"detail": _("Session is not live.")},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -200,7 +201,7 @@ def live_class_token(request, pk):
     live_class = get_object_or_404(LiveClass, pk=pk)
     if live_class.status != "live":
         return Response(
-            {"detail": "Session is not live."},
+            {"detail": _("Session is not live.")},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -209,7 +210,7 @@ def live_class_token(request, pk):
     if not access_service.check_access(request.user, live_class):
         info = access_service.get_access_info(request.user, live_class)
         return Response(
-            {"detail": "You do not have access to this live session.", "access_info": asdict(info)},
+            {"detail": _("You do not have access to this live session."), "access_info": asdict(info)},
             status=status.HTTP_403_FORBIDDEN,
         )
 
@@ -230,7 +231,7 @@ def live_stream_list_create(request):
         return _serialize_list_response(request, qs, LiveStreamSerializer)
 
     if not is_coach_or_owner(request.user):
-        return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": _("Permission denied.")}, status=status.HTTP_403_FORBIDDEN)
 
     serializer = LiveStreamCreateSerializer(data=request.data, context={"request": request})
     serializer.is_valid(raise_exception=True)
@@ -250,7 +251,7 @@ def live_stream_detail(request, pk):
 
     if request.method == "PUT":
         if not is_coach_or_owner(request.user):
-            return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"detail": _("Permission denied.")}, status=status.HTTP_403_FORBIDDEN)
         serializer = LiveStreamCreateSerializer(
             live_stream, data=request.data, partial=True, context={"request": request}
         )
@@ -260,7 +261,7 @@ def live_stream_detail(request, pk):
 
     if request.method == "DELETE":
         if not request.user.is_authenticated or request.user.role != "owner":
-            return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"detail": _("Permission denied.")}, status=status.HTTP_403_FORBIDDEN)
         live_stream.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -271,7 +272,7 @@ def live_stream_start(request, pk):
     live_stream = get_object_or_404(LiveStream, pk=pk)
     if live_stream.status not in ("draft", "scheduled"):
         return Response(
-            {"detail": f"Cannot start a stream with status '{live_stream.status}'."},
+            {"detail": _("Cannot start a stream with status '%(status)s'.") % {"status": live_stream.status}},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -280,7 +281,7 @@ def live_stream_start(request, pk):
     except livecraft.LiveCraftError:
         logger.exception("Failed to create LiveCraft room for live stream %s", pk)
         return Response(
-            {"detail": "Failed to start live stream. Please try again."},
+            {"detail": _("Failed to start live stream. Please try again.")},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
@@ -296,7 +297,7 @@ def live_stream_stop(request, pk):
     live_stream = get_object_or_404(LiveStream, pk=pk)
     if live_stream.status != "live":
         return Response(
-            {"detail": "Stream is not live."},
+            {"detail": _("Stream is not live.")},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -314,7 +315,7 @@ def live_stream_token(request, pk):
     live_stream = get_object_or_404(LiveStream, pk=pk)
     if live_stream.status != "live":
         return Response(
-            {"detail": "Stream is not live."},
+            {"detail": _("Stream is not live.")},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -323,7 +324,7 @@ def live_stream_token(request, pk):
     if not access_service.check_access(request.user, live_stream):
         info = access_service.get_access_info(request.user, live_stream)
         return Response(
-            {"detail": "You do not have access to this live stream.", "access_info": asdict(info)},
+            {"detail": _("You do not have access to this live stream."), "access_info": asdict(info)},
             status=status.HTTP_403_FORBIDDEN,
         )
 
@@ -344,7 +345,7 @@ def zoom_class_list_create(request):
         return _serialize_list_response(request, qs, ZoomClassSerializer)
 
     if not is_coach_or_owner(request.user):
-        return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": _("Permission denied.")}, status=status.HTTP_403_FORBIDDEN)
 
     serializer = ZoomClassCreateSerializer(data=request.data, context={"request": request})
     serializer.is_valid(raise_exception=True)
@@ -367,7 +368,7 @@ def zoom_class_detail(request, pk):
 
     if request.method == "PUT":
         if not is_coach_or_owner(request.user):
-            return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"detail": _("Permission denied.")}, status=status.HTTP_403_FORBIDDEN)
         serializer = ZoomClassCreateSerializer(
             zoom_class, data=request.data, partial=True, context={"request": request}
         )
@@ -377,7 +378,7 @@ def zoom_class_detail(request, pk):
 
     if request.method == "DELETE":
         if not request.user.is_authenticated or request.user.role != "owner":
-            return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"detail": _("Permission denied.")}, status=status.HTTP_403_FORBIDDEN)
         zoom_class.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -396,7 +397,7 @@ def onsite_event_list_create(request):
         return _serialize_list_response(request, qs, OnsiteEventSerializer)
 
     if not is_coach_or_owner(request.user):
-        return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": _("Permission denied.")}, status=status.HTTP_403_FORBIDDEN)
 
     serializer = OnsiteEventCreateSerializer(data=request.data, context={"request": request})
     serializer.is_valid(raise_exception=True)
@@ -419,7 +420,7 @@ def onsite_event_detail(request, pk):
 
     if request.method == "PUT":
         if not is_coach_or_owner(request.user):
-            return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"detail": _("Permission denied.")}, status=status.HTTP_403_FORBIDDEN)
         serializer = OnsiteEventCreateSerializer(event, data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -427,7 +428,7 @@ def onsite_event_detail(request, pk):
 
     if request.method == "DELETE":
         if not request.user.is_authenticated or request.user.role != "owner":
-            return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"detail": _("Permission denied.")}, status=status.HTTP_403_FORBIDDEN)
         event.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -554,7 +555,7 @@ def calendar_event_detail(request, event_type, pk):
     # For the URL, live_class covers both LiveClass and ZoomClass
     model = MODEL_MAP.get(event_type)
     if not model:
-        return Response({"detail": "Invalid event type."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Invalid event type.")}, status=status.HTTP_404_NOT_FOUND)
 
     obj = get_object_or_404(model, pk=pk)
     if _hidden(request, obj):

@@ -1,6 +1,7 @@
 import uuid
 
 from django.conf import settings
+from django.utils.translation import gettext as _
 from rest_framework import serializers, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -21,7 +22,7 @@ PART_URL_EXPIRY = 12 * 60 * 60
 
 def _validate_tenant_s3_key(value):
     if not is_tenant_scoped_key(value):
-        raise serializers.ValidationError("s3_key must be within this tenant's storage.")
+        raise serializers.ValidationError(_("s3_key must be within this tenant's storage."))
     return value
 
 
@@ -34,7 +35,7 @@ class InitiateSerializer(serializers.Serializer):
 
     def validate_content_type(self, value):
         if is_blocked_content_type(value):
-            raise serializers.ValidationError("This content type is not allowed for uploads.")
+            raise serializers.ValidationError(_("This content type is not allowed for uploads."))
         return value
 
 
@@ -135,7 +136,7 @@ def complete(request):
     for part in parts:
         if "ETag" not in part or "PartNumber" not in part:
             return Response(
-                {"detail": "Each part must have ETag and PartNumber."},
+                {"detail": _("Each part must have ETag and PartNumber.")},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         multipart_parts.append({"ETag": part["ETag"], "PartNumber": int(part["PartNumber"])})
@@ -153,7 +154,7 @@ def complete(request):
         video_id = data.get("video_id")
         if not video_id:
             return Response(
-                {"detail": "video_id is required for library uploads."},
+                {"detail": _("video_id is required for library uploads.")},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         from apps.courses.models import Video
@@ -161,7 +162,7 @@ def complete(request):
         try:
             video = Video.objects.get(pk=video_id)
         except Video.DoesNotExist:
-            return Response({"detail": "Video not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": _("Video not found.")}, status=status.HTTP_404_NOT_FOUND)
         video.s3_key = s3_key
         if data.get("duration_seconds"):
             video.duration_seconds = data["duration_seconds"]
@@ -169,7 +170,7 @@ def complete(request):
             video.file_size = int(data["file_size"])
         video.save()
 
-    return Response({"detail": "Upload complete.", "s3_key": s3_key})
+    return Response({"detail": _("Upload complete."), "s3_key": s3_key})
 
 
 @api_view(["POST"])
@@ -187,4 +188,4 @@ def abort(request):
         UploadId=data["upload_id"],
     )
 
-    return Response({"detail": "Upload aborted."})
+    return Response({"detail": _("Upload aborted.")})

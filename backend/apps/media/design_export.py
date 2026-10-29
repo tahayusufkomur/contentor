@@ -14,6 +14,7 @@ import requests
 from django.conf import settings
 from django.core import signing
 from django.db import connection
+from django.utils.translation import gettext as _
 
 from . import designs
 from .design_recipe import SIZES, SOCIAL_SIZES
@@ -79,7 +80,7 @@ def render(design, size: str, fmt: str) -> bytes:
     """The design at `size` as a PNG or JPEG file. Raises ExportError."""
     host = connection.tenant.domains.order_by("-is_primary").values_list("domain", flat=True).first()
     if not host:
-        raise ExportError("this site has no address to draw the design on")
+        raise ExportError(_("this site has no address to draw the design on"))
     try:
         res = requests.post(
             f"{settings.SITE_QA_BROWSER_URL.rstrip('/')}/render",
@@ -94,4 +95,4 @@ def render(design, size: str, fmt: str) -> bytes:
         res.raise_for_status()
         return base64.b64decode(res.json()["image"])
     except (requests.RequestException, KeyError, ValueError) as exc:
-        raise ExportError("the design could not be drawn as a file right now") from exc
+        raise ExportError(_("the design could not be drawn as a file right now")) from exc

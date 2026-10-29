@@ -2,6 +2,7 @@ from dataclasses import asdict
 
 from django.db import transaction
 from django.db.models import Prefetch
+from django.utils.translation import gettext as _
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
@@ -342,13 +343,13 @@ class CourseCreateUpdateSerializer(ShorthandMixin, serializers.ModelSerializer):
                 empty = sum(not (x.get("content_html") or x.get("video") or x.get("video_url")) for x in lessons)
                 gap = publish_gap(empty, len(lessons))
             if gap:
-                raise serializers.ValidationError({"is_published": f"{gap.capitalize()}."})
+                raise serializers.ValidationError({"is_published": f"{gap[:1].upper()}{gap[1:]}."})
         return attrs
 
     def validate_modules(self, value):
         if self.instance is not None:
             raise serializers.ValidationError(
-                "Curriculum can only be set at creation. Use the module/lesson endpoints to edit."
+                _("Curriculum can only be set at creation. Use the module/lesson endpoints to edit.")
             )
         return value
 

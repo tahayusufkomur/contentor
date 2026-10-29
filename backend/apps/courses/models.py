@@ -1,22 +1,27 @@
 from django.conf import settings
 from django.db import models
 from django.db.models import F, Q
+from django.utils.translation import gettext as _
 
 from apps.core.slugs import slugify
 
 # A lesson with nothing for a student yet: no video, and no text of hers. Text
 # the AI drafted (``drafted_html``) and she has not touched does not count.
 EMPTY_LESSON = Q(video__isnull=True, video_url="") & (Q(content_html="") | Q(content_html=F("drafted_html")))
-GO_LIVE_RULE = "a course goes live once every lesson has a video, or text you wrote or edited"
 
 
 def publish_gap(empty: int, total: int) -> str | None:
     """Why a course with ``total`` lessons, ``empty`` of them empty, cannot go
     live yet; None when it can."""
     if not total:
-        return f"{GO_LIVE_RULE}, and it has no lessons yet"
+        return _(
+            "a course goes live once every lesson has a video, or text you wrote or edited, and it has no lessons yet"
+        )
     if empty:
-        return f"{GO_LIVE_RULE}, and {empty} of its {total} lessons have none yet"
+        return _(
+            "a course goes live once every lesson has a video, or text you wrote or edited, "
+            "and %(empty)s of its %(total)s lessons have none yet"
+        ) % {"empty": empty, "total": total}
     return None
 
 

@@ -3,6 +3,7 @@ from dataclasses import asdict
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext as _
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -38,7 +39,7 @@ def course_list_create(request):
         return _course_list(request)
     # POST requires coach or owner
     if not is_coach_or_owner(request.user):
-        return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": _("Permission denied.")}, status=status.HTTP_403_FORBIDDEN)
     return _course_create(request)
 
 
@@ -101,13 +102,13 @@ def course_detail(request, slug):
     if request.method == "GET":
         # Unpublished courses require coach or owner
         if not course.is_published and (not is_coach_or_owner(request.user)):
-            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": _("Not found.")}, status=status.HTTP_404_NOT_FOUND)
         serializer = CourseDetailSerializer(course, context={"request": request})
         return Response(serializer.data)
 
     if request.method == "PUT":
         if not is_coach_or_owner(request.user):
-            return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"detail": _("Permission denied.")}, status=status.HTTP_403_FORBIDDEN)
         serializer = CourseCreateUpdateSerializer(course, data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -115,7 +116,7 @@ def course_detail(request, slug):
 
     if request.method == "DELETE":
         if not request.user.is_authenticated or request.user.role != "owner":
-            return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"detail": _("Permission denied.")}, status=status.HTTP_403_FORBIDDEN)
         course.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -133,7 +134,7 @@ def enroll(request, slug):
     # A refund closes the enrollment (is_active=False); enrolling again opens it.
     if Enrollment.objects.filter(user=request.user, course=course, is_active=True).exists():
         return Response(
-            {"detail": "Already enrolled."},
+            {"detail": _("Already enrolled.")},
             status=status.HTTP_409_CONFLICT,
         )
 
@@ -142,7 +143,7 @@ def enroll(request, slug):
         info = access_service.get_access_info(request.user, course)
         if not info.has_access:
             return Response(
-                {"detail": "This course requires purchase or subscription.", "access_info": asdict(info)},
+                {"detail": _("This course requires purchase or subscription."), "access_info": asdict(info)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -182,7 +183,7 @@ def course_progress(request, slug):
         and not Enrollment.objects.filter(user=user, course=course).exists()
         and not _has_unlocked_access(user, course)
     ):
-        return Response({"detail": "Not enrolled."}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": _("Not enrolled.")}, status=status.HTTP_403_FORBIDDEN)
 
     if request.method == "GET":
         lessons = Lesson.objects.filter(module__course=course)
@@ -194,7 +195,7 @@ def course_progress(request, slug):
     # POST
     lesson_id = request.data.get("lesson")
     if not lesson_id:
-        return Response({"detail": "lesson field is required."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": _("lesson field is required.")}, status=status.HTTP_400_BAD_REQUEST)
     lesson = get_object_or_404(Lesson, pk=lesson_id, module__course=course)
     progress, _created = Progress.objects.get_or_create(user=user, lesson=lesson)
     serializer = ProgressUpdateSerializer(progress, data=request.data, partial=True)
@@ -217,7 +218,7 @@ def update_progress(request, slug, lesson_id):
         and not Enrollment.objects.filter(user=user, course=course).exists()
         and not _has_unlocked_access(user, course)
     ):
-        return Response({"detail": "Not enrolled."}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": _("Not enrolled.")}, status=status.HTTP_403_FORBIDDEN)
 
     progress, _created = Progress.objects.get_or_create(user=user, lesson=lesson)
     serializer = ProgressUpdateSerializer(progress, data=request.data, partial=True)
@@ -369,7 +370,7 @@ def lesson_captions(request, slug, lesson_id):
     has_access = is_coach_or_owner(request.user) or ContentAccessService().check_access(request.user, course)
     serializer = LessonSerializer(lesson, context={"request": request, "course_has_access": has_access})
     if not serializer.may_read_captions(lesson):
-        return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Not found.")}, status=status.HTTP_404_NOT_FOUND)
     return HttpResponse(lesson.video.captions_vtt, content_type="text/vtt; charset=utf-8")
 
 

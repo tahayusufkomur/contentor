@@ -12,6 +12,7 @@ from datetime import timedelta
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -105,12 +106,12 @@ def event_trial(request, kind, pk):
     GET -> {on, available, session_id, session_at}; PUT {"on": true|false} turns it on or off and answers the same.
     """
     if kind not in KINDS:
-        return Response({"detail": "Unknown kind of event."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Unknown kind of event.")}, status=status.HTTP_404_NOT_FOUND)
     row = get_object_or_404(KINDS[kind][0], pk=pk)
     if request.method == "PUT":
         on = request.data.get("on") if isinstance(request.data, dict) else None
         if not isinstance(on, bool):
-            return Response({"detail": "Say whether the trial is on or off."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": _("Say whether the trial is on or off.")}, status=status.HTTP_400_BAD_REQUEST)
         try:
             series.set_trial(row, on)
         except series.TrialError as error:

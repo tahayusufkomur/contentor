@@ -8,6 +8,8 @@ from django.db import connection, transaction
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import AllowAny
@@ -26,7 +28,7 @@ from .design_recipe import validate_recipe
 from .design_serializers import DesignSerializer
 from .models import Design, Photo
 
-KEPT_REFUSED = "a kept cover can't be changed; edit a copy"
+KEPT_REFUSED = gettext_lazy("a kept cover can't be changed; edit a copy")
 
 
 def _photo_url(row):
@@ -144,7 +146,7 @@ def design_list_create(request):
     if request.method == "GET":
         state = request.query_params.get("state")
         if state not in (None, "draft", "kept"):
-            return Response({"detail": "state is draft or kept."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": _("state is draft or kept.")}, status=status.HTTP_400_BAD_REQUEST)
         rows = Design.objects.exclude(state="retired")  # a retired design is history, not hers any more
         if state:
             rows = rows.filter(state=state)
@@ -217,12 +219,12 @@ def design_export_view(request, pk):
     """The design as an image file to download: `{"size": "story", "format": "png" | "jpeg"}`. Drawn from what
     is saved, so the studio saves first."""
     if not design_export.available():
-        return Response({"detail": "Downloads are not on for this site."}, status=503)
+        return Response({"detail": _("Downloads are not on for this site.")}, status=503)
     design = get_object_or_404(Design, pk=pk)
     data = request.data if isinstance(request.data, dict) else {}
     size, fmt = data.get("size"), data.get("format", "png")
     if size not in design_export.WIDTHS or fmt not in design_export.FORMATS:
-        return Response({"detail": "Choose a size and png or jpeg."}, status=400)
+        return Response({"detail": _("Choose a size and png or jpeg.")}, status=400)
     try:
         image = design_export.render(design, size, fmt)
     except design_export.ExportError as exc:
@@ -242,7 +244,7 @@ def design_render(request, token):
     found = design_export.read_token(token)
     design = Design.objects.filter(pk=found[0]).first() if found else None
     if design is None:
-        return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Not found.")}, status=status.HTTP_404_NOT_FOUND)
     return Response(
         {
             "design": designs.design_payload(design, {}),
@@ -261,13 +263,13 @@ def design_words(request, pk):
     design = get_object_or_404(Design, pk=pk)
     part = request.data.get("part") if isinstance(request.data, dict) else None
     if part not in design_ai.PARTS:
-        return Response({"detail": "part is label, title or subtitle."}, status=400)
+        return Response({"detail": _("part is label, title or subtitle.")}, status=400)
     try:
         options = design_ai.suggest_words(design, part)
     except design_ai.AiUnavailableError:
-        return Response({"detail": "Suggestions are not on for this site."}, status=503)
+        return Response({"detail": _("Suggestions are not on for this site.")}, status=503)
     except core_ai.AiError:
-        return Response({"detail": "No words came back. Try again."}, status=502)
+        return Response({"detail": _("No words came back. Try again.")}, status=502)
     return Response({"options": options})
 
 
