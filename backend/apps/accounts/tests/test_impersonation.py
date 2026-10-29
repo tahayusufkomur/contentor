@@ -73,6 +73,20 @@ def test_coach_impersonates_student_then_exits(owner, student):
     assert stopped.json()["user"]["email"] == "owner@imp.test"
 
 
+def test_exiting_restores_the_creators_language_cookie(owner, student):
+    """The redeem sets the student's (the site's) language; the exit gives the creator's back."""
+    User.objects.filter(pk=owner.pk).update(preferred_locale="tr")
+    owner.refresh_from_db()
+    client = _client(token=create_jwt(owner, owner_tenant()))
+    issued = client.post("/api/v1/studio-admin/users/actions/login_as/", {"ids": [student.pk]}, format="json")
+    token = _token_from_redirect(issued.json()["redirect"])
+    redeemed = client.post("/api/v1/auth/impersonate/verify/", {"token": token}, format="json")
+    assert redeemed.cookies["user-locale"].value != "tr"
+    stopped = client.post("/api/v1/auth/impersonate/stop/")
+    assert stopped.json()["restored"] is True
+    assert stopped.cookies["user-locale"].value == "tr"
+
+
 def test_login_as_rejects_non_students(owner):
     other = User.objects.create_user(email="coach2@imp.test", name="Coach Two", role="coach")
     client = _client(token=create_jwt(owner, owner_tenant()))

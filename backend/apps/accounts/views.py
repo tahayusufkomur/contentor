@@ -5,7 +5,7 @@ from urllib.parse import urlencode
 import jwt as jwt_lib
 import requests as http_requests
 from django.conf import settings
-from django.db import connection
+from django.db import DatabaseError, connection, transaction
 from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.utils import timezone, translation
@@ -346,6 +346,8 @@ def impersonate_stop(request):
         response = Response({"restored": True, "user": UserSerializer(user).data if user else None})
         _set_session_cookie(response, return_token)
         response.delete_cookie(IMPERSONATOR_RETURN_COOKIE)
+        if user:  # the redeem set the impersonated user's language; the creator's comes back with the session
+            _set_locale_cookie(response, user, tenant)
         return response
 
     response = Response({"restored": False})
@@ -389,18 +391,28 @@ def update_locale(request):
     if locale not in languages.enabled():
         return Response({"detail": _("Unsupported locale")}, status=400)
     user = request.user
-    schemas = {connection.schema_name, get_public_schema_name()}
-    with schema_context(get_public_schema_name()):
-        schemas.update(
-            Tenant.objects.filter(
-                owner_email__iexact=user.email, provisioning_status__in=("provisioned", "ready")
-            ).values_list("schema_name", flat=True)
-        )
-    for schema in schemas:
-        with schema_context(schema):
-            User.objects.filter(email__iexact=user.email, role__in=languages.CREATOR_ROLES).update(
-                preferred_locale=locale
-            )
+    public = get_public_schema_name()
+    with schema_context(public):
+        owned = Tenant.objects.filter(owner_email__iexact=user.email)
+        built = owned.filter(provisioning_status__in=("provisioned", "ready"))
+        schemas = list(built.values_list("schema_name", flat=True))
+        # A studio still being made seeds its owner row from the wizard's locale when it is provisioned.
+        for pk in owned.filter(provisioning_status__in=("pending", "provisioning")).values_list("pk", flat=True):
+            with transaction.atomic():
+                pending = Tenant.objects.select_for_update().get(pk=pk)
+                pending.wizard_state = {**(pending.wizard_state or {}), "locale": locale}
+                pending.save(update_fields=["wizard_state"])
+    # The public row and the row they are on first: a studio whose schema is broken (torn down, mid-migration)
+    # must never keep the creator from changing language, or leave the public row stale.
+    order = [public, connection.schema_name, *sorted(set(schemas) - {public, connection.schema_name})]
+    for schema in dict.fromkeys(order):
+        try:
+            with schema_context(schema), transaction.atomic():
+                User.objects.filter(email__iexact=user.email, role__in=languages.CREATOR_ROLES).update(
+                    preferred_locale=locale
+                )
+        except DatabaseError:
+            logger.warning("creator language not written on schema %s", schema, exc_info=True)
     user.preferred_locale = locale
     response = Response({"locale": locale})
     _set_locale_cookie(response, user, connection.tenant)
@@ -695,7 +707,9 @@ def google_callback(request):
             "role": default_role,
             "avatar_url": avatar,
             # A creator made on contentor.app speaks the page's language; a student row stays "" (the site's).
-            "preferred_locale": languages.resolve(translation.get_language()) if default_role == "coach" else "",
+            "preferred_locale": (
+                languages.resolve(translation.get_language()) if default_role in languages.CREATOR_ROLES else ""
+            ),
             "accessible_regions": [],
         },
     )
