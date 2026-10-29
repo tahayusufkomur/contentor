@@ -93,8 +93,8 @@ def hub(settings, monkeypatch):
     settings.AGENTC_HUB = "http://hub:39300/"
     settings.AGENTC_TIMEOUT_SECONDS = 60
     settings.AGENTC_LANE = "studio"
-    settings.AGENTC_MODEL = "gemini-3.8-flash-high"
-    settings.AGENTC_MODEL_LOW = "gemini-3.8-flash-low"
+    settings.AGENTC_MODEL = "text"
+    settings.AGENTC_MODEL_OPUS = "opus"
     monkeypatch.setattr(ai, "AGENTC_POLL_SECONDS", 0)
     fake = _Hub(results=['```json\n{"greeting": "hi"}\n```'])
     monkeypatch.setattr(ai.requests, "post", lambda *a, **k: fake.post(*a, **k))
@@ -149,12 +149,31 @@ def test_no_lane_configured_fails(hub, settings):
         _call()
 
 
-def test_low_effort_runs_the_low_variant(hub, settings):
-    hub.results = ['{"greeting": "hi"}'] * 2
-    _parsed, _cost, model = _call(effort="low")
-    assert hub.created[0]["model"] == model == settings.AGENTC_MODEL_LOW
+def test_opus_feature_runs_opus_and_effort_does_not_pick_the_model(hub, settings):
+    hub.results = ['{"greeting": "hi"}'] * 3
+    _call(effort="low")
     _call(effort="medium")
-    assert hub.created[1]["model"] == settings.AGENTC_MODEL
+    assert [b["model"] for b in hub.created] == [settings.AGENTC_MODEL] * 2
+    _parsed, _cost, model = ai.structured(
+        system="s",
+        user="u",
+        output_model=_Greeting,
+        model="claude-opus-5-5",
+        max_tokens=9,
+        effort="low",
+        language=None,
+    )
+    assert hub.created[2]["model"] == model == settings.AGENTC_MODEL_OPUS
+
+
+def test_stream_text_opus_feature_runs_opus(hub, settings):
+    hub.results = ["Hello coach"]
+    events = list(
+        ai.stream_text(
+            system="s", history=[{"role": "user", "content": "q"}], model="claude-opus-5-5", max_tokens=9, language=None
+        )
+    )
+    assert hub.created[0]["model"] == events[1][1]["model"] == settings.AGENTC_MODEL_OPUS
 
 
 def test_create_http_error(hub, monkeypatch):

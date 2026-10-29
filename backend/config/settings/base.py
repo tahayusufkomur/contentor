@@ -282,10 +282,11 @@ GEMINI_THINKING_LEVEL = os.environ.get("GEMINI_THINKING_LEVEL", "low")
 GEMINI_TIMEOUT_SECONDS = int(os.environ.get("GEMINI_TIMEOUT_SECONDS", "120"))
 AGENTC_HUB = os.environ.get("AGENTC_HUB", "http://host.docker.internal:39300")
 # Model names are the hub's aliases (agent-container server/accounts.json
-# "models": text, text-low, pro); a concrete `agy models` id works too.
+# lanes.contentor.models: text = Claude Sonnet 5.5, opus = Claude Opus 5.5,
+# both at high effort); a concrete `agy models` id works too. A feature whose
+# model is an Opus runs AGENTC_MODEL_OPUS, every other one AGENTC_MODEL.
 AGENTC_MODEL = os.environ.get("AGENTC_MODEL", "text")
-# effort="low" (interview turns, edits, picks): ~5 s against ~15 s on text (2026-10-08).
-AGENTC_MODEL_LOW = os.environ.get("AGENTC_MODEL_LOW", "text-low")
+AGENTC_MODEL_OPUS = os.environ.get("AGENTC_MODEL_OPUS", "opus")
 # Working dir on the HUB host (must already exist there), not in this container.
 AGENTC_CWD = os.environ.get("AGENTC_CWD", "/Users/tahayusufkomur/ws/agent-studio-runs")
 # Hub lane that takes our runs; the hub picks an idle account in it. Studio

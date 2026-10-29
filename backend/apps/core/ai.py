@@ -189,7 +189,8 @@ def structured(
     whole call, retries included) below the provider default. ``effort``
     (low | medium | high | xhigh | max) sets how much the model thinks on
     the anthropic and cli providers; None keeps the model default (high on
-    Sonnet 5.5). On agentc, "low" picks the -low variant of AGENTC_MODEL.
+    Sonnet 5.5). On agentc, ``model`` picks Opus or Sonnet (_agentc_model)
+    and effort is always high.
     Thinking counts toward ``max_tokens``, so size it for both. Haiku 4.5
     rejects effort: pass None for haiku models. ``language``: see the module
     note."""
@@ -197,7 +198,7 @@ def structured(
     if settings.AI_PROVIDER == "gemini":
         return _gemini_structured(system, user, output_model, timeout_seconds)
     if settings.AI_PROVIDER == "agentc":
-        return _agentc_structured(system, user, output_model, label, timeout_seconds, effort)
+        return _agentc_structured(system, user, output_model, model, label, timeout_seconds)
     if settings.AI_PROVIDER == "cli":
         return _cli_structured(system, user, output_model, model, effort)
     return _anthropic_structured(system, user, output_model, model, max_tokens, timeout_seconds, effort)
@@ -315,11 +316,12 @@ _AGENTC_BACKGROUND_LABELS = (
 )
 
 
-def _agentc_model(effort):
-    """AGENTC_MODEL, AGENTC_MODEL_LOW for effort="low" (interview turns, edits,
-    picks)."""
-    if effort == "low":
-        return settings.AGENTC_MODEL_LOW
+def _agentc_model(model):
+    """The hub alias for a feature's configured Claude model: AGENTC_MODEL_OPUS
+    for an Opus, AGENTC_MODEL (Sonnet) for any other. The hub runs both at high
+    effort, so a caller's effort does not change the model."""
+    if "opus" in (model or "").lower():
+        return settings.AGENTC_MODEL_OPUS
     return settings.AGENTC_MODEL
 
 
@@ -425,7 +427,7 @@ def _agentc_used_tool(run_id):
         raise AiError(f"agentc run {run_id} events unreadable: {exc}") from exc
 
 
-def _agentc_structured(system, user, output_model, label, timeout_seconds=None, effort=None):
+def _agentc_structured(system, user, output_model, model, label, timeout_seconds=None):
     """One retry (a fresh run) absorbs invalid JSON, like the cli path. A
     tool-use AiError is not retried. Both attempts share one deadline."""
     from pydantic import ValidationError
@@ -435,7 +437,7 @@ def _agentc_structured(system, user, output_model, label, timeout_seconds=None, 
     )
     seconds = settings.AGENTC_TIMEOUT_SECONDS if timeout_seconds is None else timeout_seconds
     deadline = time.monotonic() + seconds
-    model = _agentc_model(effort)
+    model = _agentc_model(model)
     last_error = None
     for _attempt in range(2):
         text = _strip_fences(_agentc_run(prompt, label, deadline, model))
@@ -645,7 +647,7 @@ def structured_stream(*, system, user, output_model, model, max_tokens, language
         yield ("done", _gemini_structured(system, user, output_model))
         return
     if settings.AI_PROVIDER == "agentc":
-        yield ("done", _agentc_structured(system, user, output_model, label))
+        yield ("done", _agentc_structured(system, user, output_model, model, label))
         return
     if settings.AI_PROVIDER == "cli":
         yield ("done", _cli_structured(system, user, output_model, model))
@@ -766,18 +768,19 @@ def stream_text(*, system, history, model, max_tokens, language, label=None):
     if settings.AI_PROVIDER == "gemini":
         yield from _stream_gemini(system, history)
     elif settings.AI_PROVIDER == "agentc":
-        yield from _stream_agentc(system, history, label)
+        yield from _stream_agentc(system, history, model, label)
     elif settings.AI_PROVIDER == "cli":
         yield from _stream_cli(system, history, model)
     else:
         yield from _stream_anthropic(system, history, model, max_tokens)
 
 
-def _stream_agentc(system, history, label):
+def _stream_agentc(system, history, model, label):
     """Not a real stream: the whole answer arrives as one delta."""
     prompt = system + _AGENTC_RULES.format(reply="your answer text") + _cli_prompt(history)
-    yield ("delta", _agentc_run(prompt, label))
-    yield ("done", {"cost_usd": Decimal("0"), "provider": "agentc", "model": settings.AGENTC_MODEL})
+    model = _agentc_model(model)
+    yield ("delta", _agentc_run(prompt, label, model=model))
+    yield ("done", {"cost_usd": Decimal("0"), "provider": "agentc", "model": model})
 
 
 def _stream_gemini(system, history):
