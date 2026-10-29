@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Check, CircleAlert, RefreshCw } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -11,17 +12,17 @@ import {
   type CustomDomainStatus,
 } from "@/lib/domains";
 
-const STEPS: { key: string; label: string }[] = [
-  { key: "registering", label: "Registering the domain" },
-  { key: "dns_zone", label: "Creating the DNS zone" },
-  { key: "dns_records", label: "Pointing DNS at your site" },
-  { key: "email_auth", label: "Configuring email" },
-  { key: "ssl", label: "Issuing the SSL certificate" },
-  { key: "live", label: "Going live" },
-];
+const STEPS = [
+  "registering",
+  "dns_zone",
+  "dns_records",
+  "email_auth",
+  "ssl",
+  "live",
+] as const;
 
 function stepIndex(status: string): number {
-  const i = STEPS.findIndex((s) => s.key === status);
+  const i = STEPS.findIndex((s) => s === status);
   return i === -1 ? 0 : i;
 }
 
@@ -34,6 +35,7 @@ export function ProvisioningStatus({
   host: string;
   onLive: (d: CustomDomainStatus) => void;
 }) {
+  const t = useTranslations("domain.status");
   const [cd, setCd] = useState<CustomDomainStatus | null>(null);
   const [pollKey, setPollKey] = useState(0);
   const onLiveRef = useRef(onLive);
@@ -79,12 +81,12 @@ export function ProvisioningStatus({
   return (
     <div className="space-y-4">
       <ol className="space-y-2">
-        {STEPS.map((s, i) => {
+        {STEPS.map((step, i) => {
           const done = i < current || cd?.provisioning_status === "live";
           const active =
             i === current && !failed && cd?.provisioning_status !== "live";
           return (
-            <li key={s.key} className="flex items-center gap-3 text-sm">
+            <li key={step} className="flex items-center gap-3 text-sm">
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-foreground/[0.06]">
                 {done ? (
                   <Check className="h-4 w-4 text-primary" />
@@ -99,7 +101,7 @@ export function ProvisioningStatus({
                   done || active ? "text-foreground" : "text-muted-foreground"
                 }
               >
-                {s.label}
+                {t(`steps.${step}`)}
               </span>
             </li>
           );
@@ -111,7 +113,9 @@ export function ProvisioningStatus({
           <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" />
           <div className="flex-1">
             <p>
-              Setup failed{cd?.failed_step ? ` at: ${cd.failed_step}` : ""}.
+              {cd?.failed_step
+                ? t("failedAt", { step: cd.failed_step })
+                : t("failed")}
             </p>
             <Button
               size="sm"
@@ -119,9 +123,9 @@ export function ProvisioningStatus({
               className="mt-2"
               onClick={retry}
               loading={retrying}
-              loadingText="Retrying…"
+              loadingText={t("retrying")}
             >
-              <RefreshCw className="h-4 w-4" /> Retry
+              <RefreshCw className="h-4 w-4" /> {t("retry")}
             </Button>
           </div>
         </div>

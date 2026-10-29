@@ -16,7 +16,7 @@ import {
   type DomainResult,
   type RegistrantContact,
 } from "@/lib/domains";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 type Phase =
   | "loading"
@@ -38,6 +38,7 @@ export function DomainWizard({
   defaultName: string;
 }) {
   const locale = useLocale();
+  const t = useTranslations("domain.wizard");
   const params = useSearchParams();
   const [phase, setPhase] = useState<Phase>("loading");
   const [picked, setPicked] = useState<DomainResult | null>(null);
@@ -79,9 +80,7 @@ export function DomainWizard({
     },
     {
       onError: (err) =>
-        setError(
-          err instanceof Error ? err.message : "Could not start checkout",
-        ),
+        setError(err instanceof Error ? err.message : t("checkoutFailed")),
     },
   );
 
@@ -138,14 +137,18 @@ export function DomainWizard({
     return (
       <div className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          Registering{" "}
-          <span className="font-medium text-foreground">{picked.domain}</span> —{" "}
-          {formatPrice(picked.price_minor, picked.currency, locale)} / year.
+          {t.rich("registering", {
+            domain: picked.domain,
+            price: formatPrice(picked.price_minor, picked.currency, locale),
+            name: (chunks) => (
+              <span className="font-medium text-foreground">{chunks}</span>
+            ),
+          })}
         </p>
         <RegistrantForm
           defaultEmail={defaultEmail}
           defaultName={defaultName}
-          submitLabel="Continue to payment"
+          submitLabel={t("continueToPayment")}
           onBack={() => setPhase("search")}
           onSubmit={(c) => {
             setContact(c);
@@ -155,8 +158,7 @@ export function DomainWizard({
         {error && <p className="text-sm text-destructive">{error}</p>}
         {paying && (
           <p className="text-sm text-muted-foreground">
-            <Spinner size="sm" className="mr-1" /> Redirecting to secure
-            payment…
+            <Spinner size="sm" className="mr-1" /> {t("redirecting")}
           </p>
         )}
       </div>

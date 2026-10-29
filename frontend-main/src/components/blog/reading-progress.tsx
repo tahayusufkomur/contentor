@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { ProgressLine } from "@/components/ui/progress-line";
 import { readingProgress } from "@/lib/reading-progress";
 
@@ -11,6 +12,7 @@ const HEADER_PX = 48;
  * scrolls past (spec 5.5). Measured on scroll and resize in one rAF; no
  * layout cost (transform only). Labelled so it never reads as "Loading". */
 export function ReadingProgress({ targetId }: { targetId: string }) {
+  const t = useTranslations("common.ui");
   const [value, setValue] = useState(0);
 
   useEffect(() => {
@@ -38,7 +40,7 @@ export function ReadingProgress({ targetId }: { targetId: string }) {
   return (
     <ProgressLine
       value={value}
-      label="Reading progress"
+      label={t("readingProgress")}
       className="fixed inset-x-0 top-12 z-40 h-0.5 bg-transparent"
     />
   );

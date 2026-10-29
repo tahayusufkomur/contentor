@@ -9,7 +9,8 @@
     "getStarted": "Hemen başla",
     "signOut": "Çıkış yap",
     "dashboard": "Panel",
-    "myPlatforms": "Platformlarım"
+    "myPlatforms": "Platformlarım",
+    "toggleNavigation": "Gezinmeyi aç/kapat"
   },
   "language": {
     "label": "Dil"
@@ -43,7 +44,8 @@
       "cycleTitle": "Tema: {current} — {next} için tıkla",
       "switchToLight": "Açık moda geç",
       "switchToDark": "Koyu moda geç"
-    }
+    },
+    "readingProgress": "Okuma ilerlemesi"
   },
   "checkout": {
     "dialog": "Ödeme",
@@ -61,6 +63,7 @@
     "beginsAtFallback": "{name} aylık ücretiyle başlıyor."
   },
   "meta": {
-    "ogAlt": "Contentor — evde yoga dersi çeken bir içerik üreticisi, kamera ve ışık kurulmuş"
+    "ogAlt": "Contentor — evde yoga dersi çeken bir içerik üreticisi, kamera ve ışık kurulmuş",
+    "postTitle": "{title} — Contentor"
   }
 }

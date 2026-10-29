@@ -5,7 +5,7 @@ import { BlogCover } from "@/components/blog/blog-cover";
 import { getAuthUser } from "@/lib/auth";
 import { fetchPlatformPosts } from "@/lib/platform-blog";
 import { pageMetadata } from "@/lib/seo";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +22,7 @@ const formatDate = (iso: string, locale: string) =>
 
 export default async function PlatformBlogIndexPage() {
   const locale = await getLocale();
+  const t = await getTranslations("marketing.blog");
   const [user, posts] = await Promise.all([
     getAuthUser(),
     fetchPlatformPosts(),
@@ -34,12 +35,12 @@ export default async function PlatformBlogIndexPage() {
       <PlatformHeader user={user} />
       <main className="flex-1 pb-20 pt-10 md:pt-14">
         <h1 className="mx-auto max-w-media px-6 text-eyebrow text-muted-foreground">
-          Blog
+          {t("title")}
         </h1>
 
         {!latest && (
           <p className="mx-auto max-w-text px-6 pt-16 text-body text-muted-foreground">
-            No posts yet.
+            {t("empty")}
           </p>
         )}
 

@@ -9,7 +9,9 @@ import {
   Play,
   Sparkles,
 } from "lucide-react";
+import { useFormatter, useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
+import { COACH, STUDENT } from "./demo-people";
 
 // Mara Lindqvist is the landing's demo coach (seed_footage_coach); the course
 // and prices are her seeded catalogue, the students are made up.
@@ -79,6 +81,7 @@ function Stage({
   children: ReactNode;
 }) {
   const { stage, on, reduced, paused, setPaused } = clock;
+  const msg = useTranslations("marketing.scenes");
   return (
     <div className="relative h-full">
       <div
@@ -101,7 +104,7 @@ function Stage({
         <button
           type="button"
           onClick={() => setPaused((p) => !p)}
-          aria-label={paused ? "Play animation" : "Pause animation"}
+          aria-label={paused ? msg("play") : msg("pause")}
           className="absolute bottom-3 right-3 inline-flex size-8 items-center justify-center rounded-full bg-background text-foreground transition-colors hover:bg-muted"
         >
           {paused ? (
@@ -164,26 +167,33 @@ const N = {
   fade: 12500,
   end: 13000,
 };
-const QUESTION =
-  "My lower back hurts after long days at my desk. Where do I start?".split("");
-const REPLY =
-  "Start with A Kinder Back: short, gentle sessions made for desk days. You can do lesson one tonight.".split(
-    " ",
-  );
 
 /** "A sale while you sleep": at night a student asks the assistant on the
  * coach's site, it suggests a course, the student buys it, and the payment
  * lands silently on the sleeping coach's phone. The assistant is real (the
  * student layout's SiteAssistantBubble); this conversation is illustrative. */
 export function NightSale({ label }: { label: string }) {
+  const msg = useTranslations("marketing.scenes.night");
+  const format = useFormatter();
+  const QUESTION = msg("question").split("");
+  const REPLY = msg("reply").split(" ");
+  const money = (amount: number, digits: number) =>
+    format.number(amount, {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: digits,
+      maximumFractionDigits: digits,
+    });
   const clock = useSceneClock(N.end, 10000);
   const { t, on, move, rise } = clock;
   const paid = on(N.paid);
   return (
     <Stage clock={clock} label={label} fade={N.fade}>
       <Status icon={<Moon className="size-[1.1em] text-marketing-accent" />}>
-        <span className="tabular-nums">3:12 AM</span>
-        <span className="text-muted-foreground">Mara is asleep</span>
+        <span className="tabular-nums">{msg("time")}</span>
+        <span className="text-muted-foreground">
+          {msg("asleep", { coach: COACH.first })}
+        </span>
         <span className="text-muted-foreground">
           {["z", "z", "z"].map((z, i) => (
             <span
@@ -204,7 +214,7 @@ export function NightSale({ label }: { label: string }) {
           <span className="grid size-[1.7em] place-items-center rounded-full bg-foreground text-background">
             <Sparkles className="size-[0.9em]" />
           </span>
-          Ask Mara&rsquo;s assistant
+          {msg("askAssistant", { coach: COACH.first })}
         </p>
         <p
           className={cn(
@@ -251,10 +261,13 @@ export function NightSale({ label }: { label: string }) {
           <span className="size-[3em] shrink-0 rounded-lg bg-[linear-gradient(135deg,#e9c9a8,#b07a52)]" />
           <span className="min-w-0 flex-1 leading-tight">
             <span className="block truncate font-semibold text-foreground">
-              A Kinder Back
+              {msg("course")}
             </span>
             <span className="block text-[0.85em] text-muted-foreground">
-              Course · <span className="tabular-nums">$59</span>
+              {msg.rich("courseMeta", {
+                price: money(59, 0),
+                num: (chunks) => <span className="tabular-nums">{chunks}</span>,
+              })}
             </span>
           </span>
           <span
@@ -268,7 +281,7 @@ export function NightSale({ label }: { label: string }) {
             )}
           >
             {paid && <Check className="size-[1em]" />}
-            {paid ? "Paid" : "Buy now"}
+            {paid ? msg("paid") : msg("buyNow")}
           </span>
           <MousePointer2
             className={cn(
@@ -297,18 +310,24 @@ export function NightSale({ label }: { label: string }) {
         <span className="min-w-0 flex-1 leading-snug">
           <span className="flex items-baseline justify-between gap-2">
             <span className="font-semibold text-foreground">
-              Payment received
+              {msg("paymentReceived")}
             </span>
             <span className="inline-flex items-center gap-1 text-[0.8em] text-muted-foreground">
               <Moon className="size-[1em]" />
-              Sleep
+              {msg("sleep")}
             </span>
           </span>
           <span className="block truncate text-muted-foreground">
-            <span className="font-medium tabular-nums text-foreground">
-              $59.00
-            </span>{" "}
-            from Priya S. · A Kinder Back
+            {msg.rich("paymentFrom", {
+              amount: (chunks) => (
+                <span className="font-medium tabular-nums text-foreground">
+                  {chunks}
+                </span>
+              ),
+              price: money(59, 2),
+              student: STUDENT.short,
+              course: msg("course"),
+            })}
           </span>
         </span>
       </div>

@@ -1,3 +1,52 @@
 {
-  "language": "Język"
+  "language": "Język",
+  "status": {
+    "live": "Na żywo",
+    "settingUp": "Konfigurowanie",
+    "pending": "Oczekujące",
+    "setupFailed": "Konfiguracja nie powiodła się"
+  },
+  "plan": "Plan",
+  "freePlan": "Bezpłatny",
+  "openStudio": "Otwórz studio",
+  "preview": "Podgląd",
+  "newPlatform": "Nowa platforma",
+  "emptyTitle": "Uruchom swoją pierwszą platformę",
+  "emptyBody": "Stwórz pięknie zaprojektowane studio dla swoich kursów, sesji na żywo i kampanii e-mailowych — wszystko pod własną marką.",
+  "greeting": "Cześć, {name}",
+  "greetingFallback": "Twoje studio",
+  "title": "Twoje platformy",
+  "intro": "Zarządzaj każdym studiem stworzonym w Contentor i otwieraj je. Uruchamiaj kolejne, kiedy tylko pojawi się inspiracja.",
+  "delete": {
+    "button": "Usuń",
+    "cancel": "Anuluj",
+    "deleted": "Usunięto {name}.",
+    "failed": "Nie udało się usunąć tej platformy. Spróbuj ponownie.",
+    "confirmTitle": "Usunąć {name}?",
+    "confirmBody": "To trwale usunie stronę, jej kursy, zajęcia, uczestników i pliki oraz zwolni <strong>{slug}</strong>. Tej operacji nie można cofnąć.",
+    "typeToConfirm": "Wpisz <mono>{slug}</mono>, aby potwierdzić",
+    "deleting": "Usuwanie…",
+    "confirm": "Usuń platformę",
+    "blocked": {
+      "paid_plan": "Najpierw anuluj płatny plan — płatnych platform nie można usunąć.",
+      "payments_connected": "Ta platforma ma połączone konto płatności. Skontaktuj się ze wsparciem, aby je usunąć.",
+      "custom_domain": "Najpierw usuń własną domenę.",
+      "provisioning": "Nadal trwa konfiguracja — spróbuj ponownie za kilka minut.",
+      "not_deletable": "Tej platformy nie można usunąć."
+    }
+  },
+  "customDomain": "Własna domena",
+  "publish": {
+    "liveTitle": "Widoczna dla wszystkich",
+    "hiddenTitle": "Ukryta — tylko podgląd",
+    "liveHint": "Twoja strona jest publiczna.",
+    "hiddenHint": "Odwiedzający widzą ekran podglądu, dopóki jej nie opublikujesz.",
+    "gateLabel": "Hasło podglądu",
+    "gateSet": "· ustawione",
+    "gateNew": "Ustaw nowe hasło",
+    "gateAdd": "Dodaj hasło",
+    "save": "Zapisz",
+    "gateHint": "Udostępnij to hasło, aby umożliwić innym podgląd przed uruchomieniem. Pozostaw puste i zapisz, aby je usunąć.",
+    "failed": "Nie udało się zapisać. Spróbuj ponownie."
+  }
 }

@@ -3,6 +3,12 @@ import { cn } from "@/lib/utils";
 
 export { Mark };
 
+/** The product's name: a brand name, the same in every language. */
+export const BRAND_NAME = "Contentor";
+
+// The letters after the mark, which is the word's C: a logotype, not text to translate.
+const LOGOTYPE_TAIL = "ontent";
+
 interface WordmarkProps {
   className?: string;
 }
@@ -35,14 +41,14 @@ export function Wordmark({ className }: WordmarkProps) {
   return (
     <span
       role="img"
-      aria-label="Contentor"
+      aria-label={BRAND_NAME}
       className={cn(
         "whitespace-nowrap font-semibold tracking-tight text-foreground select-none",
         className,
       )}
     >
       <Mark className="mr-[0.08em] inline-block size-[1.3em] align-[-0.3em]" />
-      ontent
+      {LOGOTYPE_TAIL}
       <span className="text-marketing-accent">
         <PlayO />r
       </span>

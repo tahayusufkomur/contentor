@@ -1,0 +1,65 @@
+{
+  "registrant": {
+    "intro": "Alan adı kayıt kuruluşları bir alan adını kaydetmek için sahibinin iletişim bilgilerini talep eder. Bunları yalnızca kayıt işlemi için kullanırız.",
+    "firstName": "Ad",
+    "lastName": "Soyad",
+    "company": "Şirket (isteğe bağlı)",
+    "address": "Sokak adresi",
+    "city": "Şehir",
+    "state": "Eyalet / bölge",
+    "zip": "Posta kodu",
+    "country": "Ülke",
+    "phone": "Telefon numarası",
+    "email": "E-posta",
+    "back": "Geri",
+    "fillRequired": "Lütfen tüm zorunlu alanları doldur.",
+    "invalidPhone": "Lütfen geçerli bir telefon numarası gir.",
+    "dialingCode": "Ülke telefon kodu"
+  },
+  "page": {
+    "title": "Özel alan adı",
+    "forSite": "<name>{name}</name> ({domain}) için"
+  },
+  "wizard": {
+    "registering": "<name>{domain}</name> kaydediliyor — {price} / yıl.",
+    "continueToPayment": "Ödemeye devam et",
+    "redirecting": "Güvenli ödemeye yönlendiriliyorsun…",
+    "checkoutFailed": "Ödeme başlatılamadı"
+  },
+  "manage": {
+    "live": "Yayında",
+    "yearlyPrice": "Yıllık fiyat",
+    "renews": "Yenilenir",
+    "confirmRemove": "Bu alan adı kaldırılsın mı? Siten contentor.app adresine geri döner.",
+    "cancel": "İptal",
+    "removing": "Kaldırılıyor…",
+    "remove": "Kaldır",
+    "removeDomain": "Alan adını kaldır",
+    "removeFailed": "Kaldırılamadı"
+  },
+  "search": {
+    "choose": "Seç",
+    "taken": "Alınmış",
+    "unavailable": "Uygun değil",
+    "perYear": "{price} / yıl",
+    "placeholder": "markan.com",
+    "searchAria": "Bir alan adı ara",
+    "search": "Ara",
+    "suggestions": "Öneriler",
+    "failed": "Arama başarısız oldu"
+  },
+  "status": {
+    "failed": "Kurulum başarısız oldu.",
+    "failedAt": "Kurulum şu adımda başarısız oldu: {step}.",
+    "retry": "Yeniden dene",
+    "retrying": "Yeniden deneniyor…",
+    "steps": {
+      "registering": "Alan adı kaydediliyor",
+      "dns_zone": "DNS bölgesi oluşturuluyor",
+      "dns_records": "DNS sitene yönlendiriliyor",
+      "email_auth": "E-posta yapılandırılıyor",
+      "ssl": "SSL sertifikası düzenleniyor",
+      "live": "Yayına alınıyor"
+    }
+  }
+}

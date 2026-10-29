@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Mail } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { languageHeader } from "@/lib/api/page-language";
 
 export function MagicLinkForm() {
+  const t = useTranslations("auth.magicLink");
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
@@ -25,14 +27,14 @@ export function MagicLinkForm() {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(data.detail || "Something went wrong");
+        setError(data.detail || t("genericError"));
         return;
       }
       setSent(true);
     },
     {
       // Inline field-adjacent error, not a toast, for this auth form.
-      onError: () => setError("Network error. Please try again."),
+      onError: () => setError(t("networkError")),
     },
   );
 
@@ -43,11 +45,15 @@ export function MagicLinkForm() {
           <Mail className="h-5 w-5 text-primary" />
         </div>
         <h2 className="mt-5 text-[17px] font-semibold tracking-[-0.015em]">
-          Check your email
+          {t("checkEmail")}
         </h2>
         <p className="mt-2 text-[13.5px] text-muted-foreground">
-          We sent a login link to{" "}
-          <strong className="text-foreground">{email}</strong>
+          {t.rich("sentTo", {
+            email,
+            strong: (chunks) => (
+              <strong className="text-foreground">{chunks}</strong>
+            ),
+          })}
         </p>
       </div>
     );
@@ -60,12 +66,12 @@ export function MagicLinkForm() {
           htmlFor="magic-email"
           className="text-caption font-medium text-foreground"
         >
-          Email
+          {t("emailLabel")}
         </Label>
         <Input
           id="magic-email"
           type="email"
-          placeholder="you@example.com"
+          placeholder={t("emailPlaceholder")}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -78,9 +84,9 @@ export function MagicLinkForm() {
         size="lg"
         className="w-full rounded-full"
         loading={loading}
-        loadingText="Sending…"
+        loadingText={t("sending")}
       >
-        Send Magic Link
+        {t("submit")}
       </Button>
     </form>
   );

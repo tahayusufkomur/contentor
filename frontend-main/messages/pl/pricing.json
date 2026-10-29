@@ -115,5 +115,12 @@
   "meta": {
     "title": "Cennik — Contentor",
     "description": "Wypróbuj Starter za darmo przez 14 dni. Brak ukrytych opłat i możesz zrezygnować w dowolnym momencie."
+  },
+  "labels": {
+    "pricing": "Cennik",
+    "questions": "Pytania"
+  },
+  "checkout": {
+    "asideTitle": "Wszystko, czego uczysz, w jednym miejscu"
   }
 }

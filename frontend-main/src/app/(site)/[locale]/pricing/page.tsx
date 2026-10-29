@@ -123,7 +123,9 @@ export default async function PricingPage() {
         {/* Hero */}
         <section className="px-6 pb-16 pt-24 md:pb-24 md:pt-32">
           <div className="mx-auto max-w-text text-center">
-            <p className="text-eyebrow text-muted-foreground">Pricing</p>
+            <p className="text-eyebrow text-muted-foreground">
+              {t("labels.pricing")}
+            </p>
             <h1 className="mt-4 text-display text-balance text-foreground">
               {t("title")}
             </h1>
@@ -252,7 +254,9 @@ export default async function PricingPage() {
         <section className="px-6 py-20 md:py-28">
           <div className="mx-auto max-w-[760px]">
             <div className="text-center">
-              <p className="text-eyebrow text-muted-foreground">Questions</p>
+              <p className="text-eyebrow text-muted-foreground">
+                {t("labels.questions")}
+              </p>
               <h2 className="mt-4 text-title text-foreground">
                 {t("faq.title")}
               </h2>

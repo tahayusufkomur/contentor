@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { searchDomains, formatPrice, type DomainResult } from "@/lib/domains";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 function ResultRow({
   r,
@@ -17,22 +17,27 @@ function ResultRow({
   onPick: (d: DomainResult) => void;
 }) {
   const locale = useLocale();
+  const t = useTranslations("domain.search");
   return (
     <div className="flex items-center justify-between rounded-lg border border-border px-4 py-3">
       <div className="min-w-0">
         <p className="truncate font-medium">{r.domain}</p>
         <p className="text-xs text-muted-foreground">
           {r.available
-            ? `${formatPrice(r.price_minor, r.currency, locale)} / year`
-            : "Taken"}
+            ? t("perYear", {
+                price: formatPrice(r.price_minor, r.currency, locale),
+              })
+            : t("taken")}
         </p>
       </div>
       {r.available ? (
         <Button size="sm" variant="brand" onClick={() => onPick(r)}>
-          <Check className="h-4 w-4" /> Choose
+          <Check className="h-4 w-4" /> {t("choose")}
         </Button>
       ) : (
-        <span className="text-xs text-muted-foreground">Unavailable</span>
+        <span className="text-xs text-muted-foreground">
+          {t("unavailable")}
+        </span>
       )}
     </div>
   );
@@ -47,6 +52,7 @@ export function DomainSearch({
   host: string;
   onPick: (d: DomainResult) => void;
 }) {
+  const t = useTranslations("domain.search");
   const [q, setQ] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<DomainResult[]>([]);
@@ -66,7 +72,7 @@ export function DomainSearch({
     },
     {
       onError: (err) =>
-        setError(err instanceof Error ? err.message : "Search failed"),
+        setError(err instanceof Error ? err.message : t("failed")),
     },
   );
 
@@ -76,12 +82,12 @@ export function DomainSearch({
         <Input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="yourbrand.com"
-          aria-label="Search for a domain"
+          placeholder={t("placeholder")}
+          aria-label={t("searchAria")}
         />
         <Button type="submit" variant="brand" loading={loading}>
           <Search className="h-4 w-4" />
-          Search
+          {t("search")}
         </Button>
       </form>
 
@@ -102,7 +108,7 @@ export function DomainSearch({
           {suggestions.length > 0 && (
             <>
               <p className="pt-2 text-xs font-medium text-muted-foreground">
-                Suggestions
+                {t("suggestions")}
               </p>
               {suggestions.map((r) => (
                 <ResultRow key={r.domain} r={r} onPick={onPick} />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Eye, EyeOff, Check } from "lucide-react";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ export function PublishControls({
   initialPublished,
   initialHasPassword,
 }: PublishControlsProps) {
+  const t = useTranslations("dashboard.publish");
   const [published, setPublished] = useState(initialPublished);
   const [hasPassword, setHasPassword] = useState(initialHasPassword);
   const [password, setPassword] = useState("");
@@ -73,12 +75,10 @@ export function PublishControls({
           )}
           <div>
             <p className="text-sm font-medium">
-              {published ? "Live to everyone" : "Hidden — preview only"}
+              {published ? t("liveTitle") : t("hiddenTitle")}
             </p>
             <p className="text-[12px] text-muted-foreground">
-              {published
-                ? "Your site is public."
-                : "Visitors see a preview gate until you publish."}
+              {published ? t("liveHint") : t("hiddenHint")}
             </p>
           </div>
         </div>
@@ -95,9 +95,9 @@ export function PublishControls({
       {!published && (
         <div className="space-y-1.5 border-t pt-3">
           <label className="text-[12px] font-medium text-muted-foreground">
-            Preview password{" "}
+            {t("gateLabel")}{" "}
             {hasPassword && (
-              <span className="text-muted-foreground">· set</span>
+              <span className="text-muted-foreground">{t("gateSet")}</span>
             )}
           </label>
           <div className="flex gap-2">
@@ -105,9 +105,7 @@ export function PublishControls({
               type="text"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder={
-                hasPassword ? "Set a new password" : "Add a password"
-              }
+              placeholder={hasPassword ? t("gateNew") : t("gateAdd")}
               className="h-8 text-sm"
             />
             <Button
@@ -116,21 +114,14 @@ export function PublishControls({
               onClick={savePassword}
               loading={savingPassword}
             >
-              {savedPassword ? <Check className="h-3.5 w-3.5" /> : "Save"}
+              {savedPassword ? <Check className="h-3.5 w-3.5" /> : t("save")}
             </Button>
           </div>
-          <p className="text-[12px] text-muted-foreground">
-            Share this password to let others preview before launch. Leave empty
-            and save to clear it.
-          </p>
+          <p className="text-[12px] text-muted-foreground">{t("gateHint")}</p>
         </div>
       )}
 
-      {error && (
-        <p className="text-[12px] text-destructive">
-          Couldn&apos;t save. Try again.
-        </p>
-      )}
+      {error && <p className="text-[12px] text-destructive">{t("failed")}</p>}
     </div>
   );
 }

@@ -1,3 +1,52 @@
 {
-  "language": "Dil"
+  "language": "Dil",
+  "status": {
+    "live": "Yayında",
+    "settingUp": "Kuruluyor",
+    "pending": "Beklemede",
+    "setupFailed": "Kurulum başarısız"
+  },
+  "plan": "Plan",
+  "freePlan": "Ücretsiz",
+  "openStudio": "Stüdyoyu aç",
+  "preview": "Önizleme",
+  "newPlatform": "Yeni platform",
+  "emptyTitle": "İlk platformunu başlat",
+  "emptyBody": "Kursların, canlı oturumların ve e-posta kampanyaların için harika tasarlanmış bir stüdyo oluştur — hepsi kendi markanın altında.",
+  "greeting": "Selam, {name}",
+  "greetingFallback": "Stüdyon",
+  "title": "Platformların",
+  "intro": "Contentor ile oluşturduğun her stüdyoyu yönet ve aç. İlham geldikçe daha fazlasını başlat.",
+  "delete": {
+    "button": "Sil",
+    "cancel": "İptal",
+    "deleted": "{name} silindi.",
+    "failed": "Bu platform silinemedi. Tekrar dene.",
+    "confirmTitle": "{name} silinsin mi?",
+    "confirmBody": "Bu işlem siteyi, kurslarını, sınıflarını, öğrencilerini ve dosyalarını kalıcı olarak siler ve <strong>{slug}</strong> alanını boşa çıkarır. Geri alınamaz.",
+    "typeToConfirm": "Onaylamak için <mono>{slug}</mono> yaz",
+    "deleting": "Siliniyor…",
+    "confirm": "Platformu sil",
+    "blocked": {
+      "paid_plan": "Önce ücretli planı iptal et — ücretli platformlar silinemez.",
+      "payments_connected": "Bu platforma bağlı bir ödeme hesabı var. Kaldırmak için destek ekibiyle iletişime geç.",
+      "custom_domain": "Önce özel alan adını kaldır.",
+      "provisioning": "Hâlâ kuruluyor — birkaç dakika içinde tekrar dene.",
+      "not_deletable": "Bu platform silinemez."
+    }
+  },
+  "customDomain": "Özel alan adı",
+  "publish": {
+    "liveTitle": "Herkese yayında",
+    "hiddenTitle": "Gizli — yalnızca önizleme",
+    "liveHint": "Siten herkese açık.",
+    "hiddenHint": "Ziyaretçiler sen yayınlayana kadar bir önizleme ekranı görür.",
+    "gateLabel": "Önizleme şifresi",
+    "gateSet": "· ayarlandı",
+    "gateNew": "Yeni bir şifre belirle",
+    "gateAdd": "Şifre ekle",
+    "save": "Kaydet",
+    "gateHint": "Yayından önce başkalarının önizleme yapabilmesi için bu şifreyi paylaş. Temizlemek için boş bırak ve kaydet.",
+    "failed": "Kaydedilemedi. Tekrar dene."
+  }
 }

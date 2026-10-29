@@ -238,5 +238,39 @@
   "blogMeta": {
     "title": "Blog — Contentor",
     "description": "Poradniki i pomysły dla twórców budujących biznes online z Contentor."
+  },
+  "blog": {
+    "title": "Blog",
+    "empty": "Nie ma jeszcze wpisów."
+  },
+  "scenes": {
+    "play": "Odtwórz animację",
+    "pause": "Wstrzymaj animację",
+    "found": {
+      "askedGoogle": "Zadane w Google",
+      "query": "why are my hips so tight after sitting",
+      "resultUrl": "{site} › artykuły",
+      "resultTitle": "Dlaczego po całym dniu przy biurku czujesz napięcie w biodrach",
+      "resultSnippet": "Siedzenie skraca przód bioder. Oto co to oznacza i dwuminutowe rozwiązanie.",
+      "askedChatGpt": "Zapytano na ChatGPT",
+      "question": "Gdzie znajdę jogę online dla zesztywniałych pracowników biurowych?",
+      "answer": "Wypróbuj {coach}. Prowadzi spokojne zajęcia vinyasy i yin dla osób, które cały dzień siedzą przy biurku, z zajęciami na żywo i łagodnym kursem na spięte plecy.",
+      "newStudent": "Nowy uczestnik",
+      "joined": "{student} dołączył do platformy {coach}"
+    },
+    "night": {
+      "time": "03:12",
+      "asleep": "{coach} śpi",
+      "askAssistant": "Zapytaj asystenta {coach}",
+      "question": "Boli mnie dół pleców po długich dniach przy biurku. Od czego zacząć?",
+      "reply": "Zacznij od A Kinder Back: krótkie, łagodne sesje stworzone na dni przy biurku. Pierwszą lekcję możesz zrobić dziś wieczorem.",
+      "course": "A Kinder Back",
+      "courseMeta": "Kurs · <num>{price}</num>",
+      "paid": "Opłacono",
+      "buyNow": "Kup teraz",
+      "paymentReceived": "Otrzymano płatność",
+      "sleep": "Sen",
+      "paymentFrom": "<amount>{price}</amount> od {student} · {course}"
+    }
   }
 }

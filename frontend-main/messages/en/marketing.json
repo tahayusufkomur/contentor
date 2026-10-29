@@ -238,5 +238,39 @@
   "blogMeta": {
     "title": "Blog — Contentor",
     "description": "Guides and ideas for creators building an online business with Contentor."
+  },
+  "blog": {
+    "title": "Blog",
+    "empty": "No posts yet."
+  },
+  "scenes": {
+    "play": "Play animation",
+    "pause": "Pause animation",
+    "found": {
+      "askedGoogle": "Asked on Google",
+      "query": "why are my hips so tight after sitting",
+      "resultUrl": "{site} › articles",
+      "resultTitle": "Why your hips feel tight after a day at the desk",
+      "resultSnippet": "Sitting shortens the front of the hips. Here is what that means, and the two-minute fix.",
+      "askedChatGpt": "Asked on ChatGPT",
+      "question": "Where can I find online yoga for stiff office workers?",
+      "answer": "Try {coach}. She runs slow vinyasa and yin classes for people who sit at a desk all day, with live classes and a gentle course for tight backs.",
+      "newStudent": "New student",
+      "joined": "{student} joined {coach}’s platform"
+    },
+    "night": {
+      "time": "3:12 AM",
+      "asleep": "{coach} is asleep",
+      "askAssistant": "Ask {coach}’s assistant",
+      "question": "My lower back hurts after long days at my desk. Where do I start?",
+      "reply": "Start with A Kinder Back: short, gentle sessions made for desk days. You can do lesson one tonight.",
+      "course": "A Kinder Back",
+      "courseMeta": "Course · <num>{price}</num>",
+      "paid": "Paid",
+      "buyNow": "Buy now",
+      "paymentReceived": "Payment received",
+      "sleep": "Sleep",
+      "paymentFrom": "<amount>{price}</amount> from {student} · {course}"
+    }
   }
 }

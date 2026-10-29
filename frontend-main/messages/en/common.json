@@ -9,7 +9,8 @@
     "getStarted": "Get started",
     "signOut": "Sign out",
     "dashboard": "Dashboard",
-    "myPlatforms": "My platforms"
+    "myPlatforms": "My platforms",
+    "toggleNavigation": "Toggle navigation"
   },
   "language": {
     "label": "Language"
@@ -43,7 +44,8 @@
       "cycleTitle": "Theme: {current} — click for {next}",
       "switchToLight": "Switch to light mode",
       "switchToDark": "Switch to dark mode"
-    }
+    },
+    "readingProgress": "Reading progress"
   },
   "checkout": {
     "dialog": "Checkout",
@@ -61,6 +63,7 @@
     "beginsAtFallback": "{name} begins at its monthly price."
   },
   "meta": {
-    "ogAlt": "Contentor — a creator filming a yoga class at home, camera and light set up"
+    "ogAlt": "Contentor — a creator filming a yoga class at home, camera and light set up",
+    "postTitle": "{title} — Contentor"
   }
 }

@@ -238,5 +238,39 @@
   "blogMeta": {
     "title": "Blog — Contentor",
     "description": "Contentor ile çevrim içi bir iş kuran içerik üreticileri için rehberler ve fikirler."
+  },
+  "blog": {
+    "title": "Blog",
+    "empty": "Henüz yazı yok."
+  },
+  "scenes": {
+    "play": "Animasyonu oynat",
+    "pause": "Animasyonu duraklat",
+    "found": {
+      "askedGoogle": "Google'da soruldu",
+      "query": "why are my hips so tight after sitting",
+      "resultUrl": "{site} › makaleler",
+      "resultTitle": "Masa başında geçen bir günün ardından kalçaların neden gergin hissettirir",
+      "resultSnippet": "Oturmak, kalçaların ön kısmını kısaltır. Bunun ne anlama geldiği ve iki dakikalık çözümü burada.",
+      "askedChatGpt": "ChatGPT'de soruldu",
+      "question": "Vücudu tutulmuş ofis çalışanları için online yogayı nerede bulabilirim?",
+      "answer": "{coach}’u dene. Bütün gün masa başında oturanlar için canlı dersler ve gergin sırtlar için nazik bir kursla birlikte yavaş vinyasa ve yin dersleri veriyor.",
+      "newStudent": "Yeni öğrenci",
+      "joined": "{student}, {coach}’un platformuna katıldı"
+    },
+    "night": {
+      "time": "3:12 ÖÖ",
+      "asleep": "{coach} uyuyor",
+      "askAssistant": "{coach}’un asistanına sor",
+      "question": "Masa başında geçen uzun günlerin ardından belim ağrıyor. Nereden başlamalıyım?",
+      "reply": "A Kinder Back ile başla: masa başında geçen günler için tasarlanmış kısa, nazik oturumlar. Birinci dersi bu gece yapabilirsin.",
+      "course": "A Kinder Back",
+      "courseMeta": "Kurs · <num>{price}</num>",
+      "paid": "Ödendi",
+      "buyNow": "Şimdi satın al",
+      "paymentReceived": "Ödeme alındı",
+      "sleep": "Uyku",
+      "paymentFrom": "<amount>{price}</amount> {student}’den · {course}"
+    }
   }
 }

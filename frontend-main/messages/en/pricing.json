@@ -115,5 +115,12 @@
   "meta": {
     "title": "Pricing — Contentor",
     "description": "Try Starter free for 14 days. No hidden fees, and you can cancel any time."
+  },
+  "labels": {
+    "pricing": "Pricing",
+    "questions": "Questions"
+  },
+  "checkout": {
+    "asideTitle": "Everything you teach, in one place"
   }
 }

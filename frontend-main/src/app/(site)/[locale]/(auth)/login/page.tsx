@@ -24,7 +24,11 @@ export default function LoginPage() {
   const [googleLoading, setGoogleLoading] = useState(false);
 
   return (
-    <AuthShell eyebrow="Sign in" title={t("title")} subtitle={t("subtitle")}>
+    <AuthShell
+      eyebrow={t("eyebrow")}
+      title={t("title")}
+      subtitle={t("subtitle")}
+    >
       <div className="space-y-4">
         {googleError && (
           <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-2.5 text-center">

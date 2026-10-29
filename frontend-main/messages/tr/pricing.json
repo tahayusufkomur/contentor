@@ -115,5 +115,12 @@
   "meta": {
     "title": "Fiyatlandırma — Contentor",
     "description": "Starter'ı 14 gün ücretsiz dene. Gizli ücret yok, ve istediğin zaman iptal edebilirsin."
+  },
+  "labels": {
+    "pricing": "Fiyatlandırma",
+    "questions": "Sorular"
+  },
+  "checkout": {
+    "asideTitle": "Öğrettiğin her şey, tek bir yerde"
   }
 }

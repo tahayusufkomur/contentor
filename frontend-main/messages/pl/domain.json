@@ -1,0 +1,65 @@
+{
+  "registrant": {
+    "intro": "Rejestratorzy domen wymagają danych kontaktowych właściciela do zarejestrowania domeny. Używamy ich wyłącznie do rejestracji.",
+    "firstName": "Imię",
+    "lastName": "Nazwisko",
+    "company": "Firma (opcjonalnie)",
+    "address": "Ulica i numer",
+    "city": "Miasto",
+    "state": "Stan / region",
+    "zip": "Kod pocztowy",
+    "country": "Kraj",
+    "phone": "Numer telefonu",
+    "email": "Adres e-mail",
+    "back": "Wstecz",
+    "fillRequired": "Wypełnij wszystkie wymagane pola.",
+    "invalidPhone": "Podaj prawidłowy numer telefonu.",
+    "dialingCode": "Kod kierunkowy kraju"
+  },
+  "page": {
+    "title": "Własna domena",
+    "forSite": "Dla <name>{name}</name> ({domain})"
+  },
+  "wizard": {
+    "registering": "Rejestracja <name>{domain}</name> — {price} / rok.",
+    "continueToPayment": "Przejdź do płatności",
+    "redirecting": "Przekierowywanie do bezpiecznej płatności…",
+    "checkoutFailed": "Nie udało się rozpocząć realizacji zakupu"
+  },
+  "manage": {
+    "live": "Aktywna",
+    "yearlyPrice": "Cena roczna",
+    "renews": "Odnawia się",
+    "confirmRemove": "Usunąć tę domenę? Twoja strona powróci do swojego adresu contentor.app.",
+    "cancel": "Anuluj",
+    "removing": "Usuwanie…",
+    "remove": "Usuń",
+    "removeDomain": "Usuń domenę",
+    "removeFailed": "Nie udało się usunąć"
+  },
+  "search": {
+    "choose": "Wybierz",
+    "taken": "Zajęta",
+    "unavailable": "Niedostępna",
+    "perYear": "{price} / rok",
+    "placeholder": "twojamarka.com",
+    "searchAria": "Wyszukaj domenę",
+    "search": "Szukaj",
+    "suggestions": "Sugestie",
+    "failed": "Wyszukiwanie nie powiodło się"
+  },
+  "status": {
+    "failed": "Konfiguracja nie powiodła się.",
+    "failedAt": "Konfiguracja nie powiodła się na etapie: {step}.",
+    "retry": "Ponów próbę",
+    "retrying": "Ponawianie próby…",
+    "steps": {
+      "registering": "Rejestrowanie domeny",
+      "dns_zone": "Tworzenie strefy DNS",
+      "dns_records": "Kierowanie DNS na Twoją stronę",
+      "email_auth": "Konfigurowanie poczty e-mail",
+      "ssl": "Wystawianie certyfikatu SSL",
+      "live": "Uruchamianie"
+    }
+  }
+}

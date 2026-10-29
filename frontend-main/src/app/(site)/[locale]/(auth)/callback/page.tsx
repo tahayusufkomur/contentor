@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AlertCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Spinner } from "@/components/ui/spinner";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { useLocaleNavigate } from "@/i18n/navigation";
@@ -11,6 +12,7 @@ import { resolveLocale } from "@shared/i18n/locales";
 import { localizedHref } from "@/lib/locale-href";
 
 export default function CallbackPage() {
+  const t = useTranslations("auth.callback");
   const navigate = useLocaleNavigate();
   const goTo = useNavigate();
   const searchParams = useSearchParams();
@@ -20,7 +22,7 @@ export default function CallbackPage() {
     const token = searchParams.get("token");
     const source = searchParams.get("source");
     if (!token) {
-      setError("No token provided");
+      setError(t("noToken"));
       return;
     }
 
@@ -33,12 +35,12 @@ export default function CallbackPage() {
       })
         .then(async (res) => {
           if (!res.ok) {
-            setError("Authentication failed");
+            setError(t("authFailed"));
             return;
           }
           navigate("/dashboard");
         })
-        .catch(() => setError("Network error"));
+        .catch(() => setError(t("networkError")));
       return;
     }
 
@@ -51,7 +53,7 @@ export default function CallbackPage() {
       .then(async (res) => {
         if (!res.ok) {
           const data = await res.json();
-          setError(data.detail || "Verification failed");
+          setError(data.detail || t("verificationFailed"));
           return;
         }
         // A creator lands on their dashboard in their own language.
@@ -60,12 +62,16 @@ export default function CallbackPage() {
           localizedHref("/dashboard", resolveLocale(user?.preferred_locale)),
         );
       })
-      .catch(() => setError("Network error"));
-  }, [searchParams, navigate, goTo]);
+      .catch(() => setError(t("networkError")));
+  }, [searchParams, navigate, goTo, t]);
 
   if (error) {
     return (
-      <AuthShell eyebrow="Error" title="Something went wrong" subtitle={error}>
+      <AuthShell
+        eyebrow={t("errorEyebrow")}
+        title={t("somethingWrong")}
+        subtitle={error}
+      >
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-muted text-destructive">
           <AlertCircle className="h-6 w-6" />
         </div>
@@ -75,9 +81,9 @@ export default function CallbackPage() {
 
   return (
     <AuthShell
-      eyebrow="One moment"
-      title="Verifying"
-      subtitle="Signing you in securely…"
+      eyebrow={t("oneMoment")}
+      title={t("verifyingTitle")}
+      subtitle={t("verifyingSubtitle")}
     >
       <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-muted text-primary">
         <Spinner />

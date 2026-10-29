@@ -4,6 +4,7 @@ import { useEffect, useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,14 +14,13 @@ import { ApiError } from "@/types/api";
 
 type Blocker = NonNullable<MyTenant["delete_blocker"]>;
 
-const BLOCKED_COPY: Record<Blocker, string> = {
-  paid_plan: "Cancel the paid plan first — paid platforms can't be deleted.",
-  payments_connected:
-    "This platform has a connected payments account. Contact support to remove it.",
-  custom_domain: "Remove the custom domain first.",
-  provisioning: "Still being set up — try again in a few minutes.",
-  not_deletable: "This platform can't be deleted.",
-};
+const BLOCKERS: readonly Blocker[] = [
+  "paid_plan",
+  "payments_connected",
+  "custom_domain",
+  "provisioning",
+  "not_deletable",
+];
 
 async function deletePlatform(slug: string): Promise<void> {
   const res = await fetch(`/api/tenants/${slug}`, {
@@ -33,14 +33,6 @@ async function deletePlatform(slug: string): Promise<void> {
   throw new ApiError(res.status, body as Record<string, unknown>);
 }
 
-function failureMessage(err: unknown): string {
-  if (err instanceof ApiError) {
-    const copy = BLOCKED_COPY[err.message as Blocker];
-    if (copy) return copy;
-  }
-  return "Couldn't delete this platform. Try again.";
-}
-
 /** Delete a platform that was never paid for. Typing its address confirms. */
 export function DeletePlatform({
   slug,
@@ -51,16 +43,23 @@ export function DeletePlatform({
   name: string;
   blocker: MyTenant["delete_blocker"];
 }) {
+  const t = useTranslations("dashboard.delete");
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [typed, setTyped] = useState("");
   const inputId = useId();
 
+  const failureMessage = (err: unknown): string => {
+    if (err instanceof ApiError && BLOCKERS.includes(err.message as Blocker))
+      return t(`blocked.${err.message as Blocker}`);
+    return t("failed");
+  };
+
   const { run: confirm, loading } = useAsyncAction(
     async () => {
       await deletePlatform(slug);
       setOpen(false);
-      toast.success(`${name} was deleted.`);
+      toast.success(t("deleted", { name }));
       router.refresh();
     },
     { onError: (err) => toast.error(failureMessage(err)) },
@@ -88,11 +87,11 @@ export function DeletePlatform({
         size="sm"
         className="gap-1.5 text-destructive hover:bg-destructive/10 hover:text-destructive"
         disabled={blocker !== null}
-        title={blocker ? BLOCKED_COPY[blocker] : undefined}
+        title={blocker ? t(`blocked.${blocker}`) : undefined}
         onClick={() => setOpen(true)}
       >
         <Trash2 className="h-3.5 w-3.5" />
-        Delete
+        {t("button")}
       </Button>
 
       {open && (
@@ -100,7 +99,7 @@ export function DeletePlatform({
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
             <button
               type="button"
-              aria-label="Cancel"
+              aria-label={t("cancel")}
               onClick={close}
               disabled={loading}
               className="absolute inset-0 bg-black/50"
@@ -114,20 +113,25 @@ export function DeletePlatform({
               <div className="mb-3 flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5 text-destructive" />
                 <h3 id={`${inputId}-title`} className="text-base font-semibold">
-                  Delete {name}?
+                  {t("confirmTitle", { name })}
                 </h3>
               </div>
               <p className="mb-3 text-sm text-muted-foreground">
-                This permanently deletes the site, its courses, classes,
-                students and files, and frees up{" "}
-                <strong className="text-foreground">{slug}</strong>. It
-                can&apos;t be undone.
+                {t.rich("confirmBody", {
+                  slug,
+                  strong: (chunks) => (
+                    <strong className="text-foreground">{chunks}</strong>
+                  ),
+                })}
               </p>
               <label
                 htmlFor={inputId}
                 className="mb-1.5 block text-[12.5px] font-medium"
               >
-                Type <span className="font-mono">{slug}</span> to confirm
+                {t.rich("typeToConfirm", {
+                  slug,
+                  mono: (chunks) => <span className="font-mono">{chunks}</span>,
+                })}
               </label>
               <Input
                 id={inputId}
@@ -144,7 +148,7 @@ export function DeletePlatform({
                   onClick={close}
                   disabled={loading}
                 >
-                  Cancel
+                  {t("cancel")}
                 </Button>
                 <Button
                   type="button"
@@ -152,9 +156,9 @@ export function DeletePlatform({
                   onClick={() => void confirm()}
                   disabled={typed.trim() !== slug}
                   loading={loading}
-                  loadingText="Deleting…"
+                  loadingText={t("deleting")}
                 >
-                  Delete platform
+                  {t("confirm")}
                 </Button>
               </div>
             </div>

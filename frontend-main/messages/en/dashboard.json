@@ -1,3 +1,52 @@
 {
-  "language": "Language"
+  "language": "Language",
+  "status": {
+    "live": "Live",
+    "settingUp": "Setting up",
+    "pending": "Pending",
+    "setupFailed": "Setup failed"
+  },
+  "plan": "Plan",
+  "freePlan": "Free",
+  "openStudio": "Open studio",
+  "preview": "Preview",
+  "newPlatform": "New platform",
+  "emptyTitle": "Launch your first platform",
+  "emptyBody": "Create a beautifully designed studio for your courses, live sessions, and email campaigns — all under your own brand.",
+  "greeting": "Hi, {name}",
+  "greetingFallback": "Your studio",
+  "title": "Your platforms",
+  "intro": "Manage and open each studio you've created with Contentor. Launch more whenever inspiration strikes.",
+  "delete": {
+    "button": "Delete",
+    "cancel": "Cancel",
+    "deleted": "{name} was deleted.",
+    "failed": "Couldn't delete this platform. Try again.",
+    "confirmTitle": "Delete {name}?",
+    "confirmBody": "This permanently deletes the site, its courses, classes, students and files, and frees up <strong>{slug}</strong>. It can't be undone.",
+    "typeToConfirm": "Type <mono>{slug}</mono> to confirm",
+    "deleting": "Deleting…",
+    "confirm": "Delete platform",
+    "blocked": {
+      "paid_plan": "Cancel the paid plan first — paid platforms can't be deleted.",
+      "payments_connected": "This platform has a connected payments account. Contact support to remove it.",
+      "custom_domain": "Remove the custom domain first.",
+      "provisioning": "Still being set up — try again in a few minutes.",
+      "not_deletable": "This platform can't be deleted."
+    }
+  },
+  "customDomain": "Custom domain",
+  "publish": {
+    "liveTitle": "Live to everyone",
+    "hiddenTitle": "Hidden — preview only",
+    "liveHint": "Your site is public.",
+    "hiddenHint": "Visitors see a preview gate until you publish.",
+    "gateLabel": "Preview password",
+    "gateSet": "· set",
+    "gateNew": "Set a new password",
+    "gateAdd": "Add a password",
+    "save": "Save",
+    "gateHint": "Share this password to let others preview before launch. Leave empty and save to clear it.",
+    "failed": "Couldn't save. Try again."
+  }
 }

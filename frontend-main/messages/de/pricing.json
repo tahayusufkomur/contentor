@@ -115,5 +115,12 @@
   "meta": {
     "title": "Preise — Contentor",
     "description": "Teste Starter 14 Tage lang kostenlos. Keine versteckten Gebühren und du kannst jederzeit kündigen."
+  },
+  "labels": {
+    "pricing": "Preise",
+    "questions": "Fragen"
+  },
+  "checkout": {
+    "asideTitle": "Alles, was du lehrst, an einem Ort"
   }
 }

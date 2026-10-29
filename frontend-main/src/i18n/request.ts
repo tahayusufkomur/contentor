@@ -17,6 +17,7 @@ const NAMESPACES = [
   "auth",
   "common",
   "dashboard",
+  "domain",
   "site",
   "studio",
 ];

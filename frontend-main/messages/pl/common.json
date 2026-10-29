@@ -9,7 +9,8 @@
     "getStarted": "Zacznij teraz",
     "signOut": "Wyloguj się",
     "dashboard": "Panel",
-    "myPlatforms": "Moje platformy"
+    "myPlatforms": "Moje platformy",
+    "toggleNavigation": "Przełącz nawigację"
   },
   "language": {
     "label": "Język"
@@ -43,7 +44,8 @@
       "cycleTitle": "Motyw: {current} — kliknij, aby przełączyć na {next}",
       "switchToLight": "Przełącz na tryb jasny",
       "switchToDark": "Przełącz na tryb ciemny"
-    }
+    },
+    "readingProgress": "Postęp czytania"
   },
   "checkout": {
     "dialog": "Płatność",
@@ -61,6 +63,7 @@
     "beginsAtFallback": "{name} rozpoczyna się od swojej ceny miesięcznej."
   },
   "meta": {
-    "ogAlt": "Contentor — twórca nagrywający zajęcia jogi w domu, ustawiona kamera i oświetlenie"
+    "ogAlt": "Contentor — twórca nagrywający zajęcia jogi w domu, ustawiona kamera i oświetlenie",
+    "postTitle": "{title} — Contentor"
   }
 }

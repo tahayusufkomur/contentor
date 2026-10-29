@@ -10,7 +10,7 @@ import {
   formatPrice,
   type CustomDomainStatus,
 } from "@/lib/domains";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 export function DomainManageCard({
   slug,
@@ -24,6 +24,7 @@ export function DomainManageCard({
   onRemoved: () => void;
 }) {
   const locale = useLocale();
+  const t = useTranslations("domain.manage");
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,7 +36,7 @@ export function DomainManageCard({
     },
     {
       onError: (err) =>
-        setError(err instanceof Error ? err.message : "Failed to remove"),
+        setError(err instanceof Error ? err.message : t("removeFailed")),
     },
   );
 
@@ -46,14 +47,14 @@ export function DomainManageCard({
           <Globe2 className="h-5 w-5 text-muted-foreground" />
           {domain.domain}
         </span>
-        <Badge>Live</Badge>
+        <Badge>{t("live")}</Badge>
       </div>
       <dl className="grid grid-cols-2 gap-2 text-sm">
-        <dt className="text-muted-foreground">Yearly price</dt>
+        <dt className="text-muted-foreground">{t("yearlyPrice")}</dt>
         <dd className="text-right">
           {formatPrice(domain.price_minor, domain.currency, locale)}
         </dd>
-        <dt className="text-muted-foreground">Renews</dt>
+        <dt className="text-muted-foreground">{t("renews")}</dt>
         <dd className="text-right">
           {domain.expires_at
             ? new Date(domain.expires_at).toLocaleDateString(locale)
@@ -65,10 +66,7 @@ export function DomainManageCard({
 
       {confirming ? (
         <div className="flex items-center justify-between gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-3">
-          <span className="text-sm text-destructive">
-            Remove this domain? Your site falls back to its contentor.app
-            address.
-          </span>
+          <span className="text-sm text-destructive">{t("confirmRemove")}</span>
           <div className="flex gap-2">
             <Button
               size="sm"
@@ -76,22 +74,22 @@ export function DomainManageCard({
               onClick={() => setConfirming(false)}
               disabled={busy}
             >
-              Cancel
+              {t("cancel")}
             </Button>
             <Button
               size="sm"
               variant="destructive"
               onClick={remove}
               loading={busy}
-              loadingText="Removing…"
+              loadingText={t("removing")}
             >
-              <Trash2 className="h-4 w-4" /> Remove
+              <Trash2 className="h-4 w-4" /> {t("remove")}
             </Button>
           </div>
         </div>
       ) : (
         <Button variant="outline" size="sm" onClick={() => setConfirming(true)}>
-          <Trash2 className="h-4 w-4" /> Remove domain
+          <Trash2 className="h-4 w-4" /> {t("removeDomain")}
         </Button>
       )}
     </div>

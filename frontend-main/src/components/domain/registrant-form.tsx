@@ -1,66 +1,68 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ArrowLeft } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { RegistrantContact } from "@/lib/domains";
 
-// Country code (ISO 3166 alpha-2) + international dialing code, sorted by name.
-const COUNTRIES: { code: string; name: string; dial: string }[] = [
-  { code: "AR", name: "Argentina", dial: "+54" },
-  { code: "AU", name: "Australia", dial: "+61" },
-  { code: "AT", name: "Austria", dial: "+43" },
-  { code: "BE", name: "Belgium", dial: "+32" },
-  { code: "BR", name: "Brazil", dial: "+55" },
-  { code: "CA", name: "Canada", dial: "+1" },
-  { code: "CL", name: "Chile", dial: "+56" },
-  { code: "CN", name: "China", dial: "+86" },
-  { code: "CO", name: "Colombia", dial: "+57" },
-  { code: "CZ", name: "Czechia", dial: "+420" },
-  { code: "DK", name: "Denmark", dial: "+45" },
-  { code: "EG", name: "Egypt", dial: "+20" },
-  { code: "FI", name: "Finland", dial: "+358" },
-  { code: "FR", name: "France", dial: "+33" },
-  { code: "DE", name: "Germany", dial: "+49" },
-  { code: "GR", name: "Greece", dial: "+30" },
-  { code: "HK", name: "Hong Kong", dial: "+852" },
-  { code: "HU", name: "Hungary", dial: "+36" },
-  { code: "IN", name: "India", dial: "+91" },
-  { code: "ID", name: "Indonesia", dial: "+62" },
-  { code: "IE", name: "Ireland", dial: "+353" },
-  { code: "IL", name: "Israel", dial: "+972" },
-  { code: "IT", name: "Italy", dial: "+39" },
-  { code: "JP", name: "Japan", dial: "+81" },
-  { code: "KE", name: "Kenya", dial: "+254" },
-  { code: "MY", name: "Malaysia", dial: "+60" },
-  { code: "MX", name: "Mexico", dial: "+52" },
-  { code: "MA", name: "Morocco", dial: "+212" },
-  { code: "NL", name: "Netherlands", dial: "+31" },
-  { code: "NZ", name: "New Zealand", dial: "+64" },
-  { code: "NG", name: "Nigeria", dial: "+234" },
-  { code: "NO", name: "Norway", dial: "+47" },
-  { code: "PK", name: "Pakistan", dial: "+92" },
-  { code: "PH", name: "Philippines", dial: "+63" },
-  { code: "PL", name: "Poland", dial: "+48" },
-  { code: "PT", name: "Portugal", dial: "+351" },
-  { code: "QA", name: "Qatar", dial: "+974" },
-  { code: "RO", name: "Romania", dial: "+40" },
-  { code: "SA", name: "Saudi Arabia", dial: "+966" },
-  { code: "SG", name: "Singapore", dial: "+65" },
-  { code: "ZA", name: "South Africa", dial: "+27" },
-  { code: "KR", name: "South Korea", dial: "+82" },
-  { code: "ES", name: "Spain", dial: "+34" },
-  { code: "SE", name: "Sweden", dial: "+46" },
-  { code: "CH", name: "Switzerland", dial: "+41" },
-  { code: "TH", name: "Thailand", dial: "+66" },
-  { code: "TR", name: "Türkiye", dial: "+90" },
-  { code: "UA", name: "Ukraine", dial: "+380" },
-  { code: "AE", name: "United Arab Emirates", dial: "+971" },
-  { code: "GB", name: "United Kingdom", dial: "+44" },
-  { code: "US", name: "United States", dial: "+1" },
-  { code: "VN", name: "Vietnam", dial: "+84" },
+// Country code (ISO 3166 alpha-2) + international dialing code. The names come from Intl, in the
+// page's language, and the list is sorted by them.
+const COUNTRIES: { code: string; dial: string }[] = [
+  { code: "AR", dial: "+54" },
+  { code: "AU", dial: "+61" },
+  { code: "AT", dial: "+43" },
+  { code: "BE", dial: "+32" },
+  { code: "BR", dial: "+55" },
+  { code: "CA", dial: "+1" },
+  { code: "CL", dial: "+56" },
+  { code: "CN", dial: "+86" },
+  { code: "CO", dial: "+57" },
+  { code: "CZ", dial: "+420" },
+  { code: "DK", dial: "+45" },
+  { code: "EG", dial: "+20" },
+  { code: "FI", dial: "+358" },
+  { code: "FR", dial: "+33" },
+  { code: "DE", dial: "+49" },
+  { code: "GR", dial: "+30" },
+  { code: "HK", dial: "+852" },
+  { code: "HU", dial: "+36" },
+  { code: "IN", dial: "+91" },
+  { code: "ID", dial: "+62" },
+  { code: "IE", dial: "+353" },
+  { code: "IL", dial: "+972" },
+  { code: "IT", dial: "+39" },
+  { code: "JP", dial: "+81" },
+  { code: "KE", dial: "+254" },
+  { code: "MY", dial: "+60" },
+  { code: "MX", dial: "+52" },
+  { code: "MA", dial: "+212" },
+  { code: "NL", dial: "+31" },
+  { code: "NZ", dial: "+64" },
+  { code: "NG", dial: "+234" },
+  { code: "NO", dial: "+47" },
+  { code: "PK", dial: "+92" },
+  { code: "PH", dial: "+63" },
+  { code: "PL", dial: "+48" },
+  { code: "PT", dial: "+351" },
+  { code: "QA", dial: "+974" },
+  { code: "RO", dial: "+40" },
+  { code: "SA", dial: "+966" },
+  { code: "SG", dial: "+65" },
+  { code: "ZA", dial: "+27" },
+  { code: "KR", dial: "+82" },
+  { code: "ES", dial: "+34" },
+  { code: "SE", dial: "+46" },
+  { code: "CH", dial: "+41" },
+  { code: "TH", dial: "+66" },
+  { code: "TR", dial: "+90" },
+  { code: "UA", dial: "+380" },
+  { code: "AE", dial: "+971" },
+  { code: "GB", dial: "+44" },
+  { code: "US", dial: "+1" },
+  { code: "VN", dial: "+84" },
 ];
 
 const SELECT_CLASS =
@@ -77,59 +79,28 @@ function splitName(full: string): { first: string; last: string } {
   return { first: parts[0], last: parts.slice(1).join(" ") };
 }
 
-/** Every user-facing string in the form. The dashboard renders the English
- * defaults; the localized onboarding wizard passes translated overrides. */
-export interface RegistrantFormLabels {
-  intro: string;
-  firstName: string;
-  lastName: string;
-  company: string;
-  address: string;
-  city: string;
-  state: string;
-  zip: string;
-  country: string;
-  phone: string;
-  email: string;
-  back: string;
-  fillRequired: string;
-  invalidPhone: string;
-}
-
-const DEFAULT_LABELS: RegistrantFormLabels = {
-  intro:
-    "Domain registrars require the owner's contact details to register a domain. We only use them for the registration.",
-  firstName: "First name",
-  lastName: "Last name",
-  company: "Company (optional)",
-  address: "Street address",
-  city: "City",
-  state: "State / region",
-  zip: "Postal code",
-  country: "Country",
-  phone: "Phone number",
-  email: "Email",
-  back: "Back",
-  fillRequired: "Please fill in all required fields.",
-  invalidPhone: "Please enter a valid phone number.",
-};
-
 export function RegistrantForm({
   defaultEmail,
   defaultName,
   onSubmit,
   onBack,
   submitLabel,
-  labels,
 }: {
   defaultEmail: string;
   defaultName: string;
   onSubmit: (c: RegistrantContact) => void;
   onBack: () => void;
   submitLabel: string;
-  labels?: Partial<RegistrantFormLabels>;
 }) {
-  const L = { ...DEFAULT_LABELS, ...labels };
+  const t = useTranslations("domain.registrant");
+  const locale = useLocale();
+  const countries = useMemo(() => {
+    const names = new Intl.DisplayNames([locale], { type: "region" });
+    return COUNTRIES.map((c) => ({
+      ...c,
+      name: names.of(c.code) ?? c.code,
+    })).sort((a, b) => a.name.localeCompare(b.name, locale));
+  }, [locale]);
   const seed = splitName(defaultName || "");
   const [firstName, setFirstName] = useState(seed.first);
   const [lastName, setLastName] = useState(seed.last);
@@ -155,11 +126,11 @@ export function RegistrantForm({
     setError(null);
     const phoneDigits = phone.replace(/\D/g, "");
     if (!firstName || !lastName || !address1 || !city || !zip || !email) {
-      setError(L.fillRequired);
+      setError(t("fillRequired"));
       return;
     }
     if (phoneDigits.length < 4) {
-      setError(L.invalidPhone);
+      setError(t("invalidPhone"));
       return;
     }
     onSubmit({
@@ -181,11 +152,11 @@ export function RegistrantForm({
   const field = "space-y-1.5";
   return (
     <form onSubmit={submit} className="space-y-4">
-      <p className="text-xs text-muted-foreground">{L.intro}</p>
+      <p className="text-xs text-muted-foreground">{t("intro")}</p>
 
       <div className="grid grid-cols-2 gap-3">
         <div className={field}>
-          <Label htmlFor="fn">{L.firstName} *</Label>
+          <Label htmlFor="fn">{t("firstName")} *</Label>
           <Input
             id="fn"
             value={firstName}
@@ -193,7 +164,7 @@ export function RegistrantForm({
           />
         </div>
         <div className={field}>
-          <Label htmlFor="ln">{L.lastName} *</Label>
+          <Label htmlFor="ln">{t("lastName")} *</Label>
           <Input
             id="ln"
             value={lastName}
@@ -203,7 +174,7 @@ export function RegistrantForm({
       </div>
 
       <div className={field}>
-        <Label htmlFor="org">{L.company}</Label>
+        <Label htmlFor="org">{t("company")}</Label>
         <Input
           id="org"
           value={organization}
@@ -212,7 +183,7 @@ export function RegistrantForm({
       </div>
 
       <div className={field}>
-        <Label htmlFor="addr">{L.address} *</Label>
+        <Label htmlFor="addr">{t("address")} *</Label>
         <Input
           id="addr"
           value={address1}
@@ -222,7 +193,7 @@ export function RegistrantForm({
 
       <div className="grid grid-cols-2 gap-3">
         <div className={field}>
-          <Label htmlFor="city">{L.city} *</Label>
+          <Label htmlFor="city">{t("city")} *</Label>
           <Input
             id="city"
             value={city}
@@ -230,7 +201,7 @@ export function RegistrantForm({
           />
         </div>
         <div className={field}>
-          <Label htmlFor="state">{L.state}</Label>
+          <Label htmlFor="state">{t("state")}</Label>
           <Input
             id="state"
             value={stateRegion}
@@ -241,7 +212,7 @@ export function RegistrantForm({
 
       <div className="grid grid-cols-2 gap-3">
         <div className={field}>
-          <Label htmlFor="zip">{L.zip} *</Label>
+          <Label htmlFor="zip">{t("zip")} *</Label>
           <Input
             id="zip"
             value={zip}
@@ -249,14 +220,14 @@ export function RegistrantForm({
           />
         </div>
         <div className={field}>
-          <Label htmlFor="country">{L.country} *</Label>
+          <Label htmlFor="country">{t("country")} *</Label>
           <select
             id="country"
             value={country}
             onChange={(e) => onCountryChange(e.target.value)}
             className={SELECT_CLASS}
           >
-            {COUNTRIES.map((c) => (
+            {countries.map((c) => (
               <option key={c.code} value={c.code}>
                 {c.name}
               </option>
@@ -266,15 +237,15 @@ export function RegistrantForm({
       </div>
 
       <div className={field}>
-        <Label htmlFor="phone">{L.phone} *</Label>
+        <Label htmlFor="phone">{t("phone")} *</Label>
         <div className="flex gap-2">
           <select
-            aria-label="Country dialing code"
+            aria-label={t("dialingCode")}
             value={dialCode}
             onChange={(e) => setDialCode(e.target.value)}
             className={`${SELECT_CLASS} w-28 shrink-0`}
           >
-            {COUNTRIES.map((c) => (
+            {countries.map((c) => (
               <option key={c.code} value={c.dial}>
                 {c.dial} ({c.code})
               </option>
@@ -293,7 +264,7 @@ export function RegistrantForm({
       </div>
 
       <div className={field}>
-        <Label htmlFor="email">{L.email} *</Label>
+        <Label htmlFor="email">{t("email")} *</Label>
         <Input
           id="email"
           type="email"
@@ -306,7 +277,7 @@ export function RegistrantForm({
 
       <div className="flex justify-between gap-2 pt-2">
         <Button type="button" variant="outline" onClick={onBack}>
-          <ArrowLeft className="h-4 w-4" /> {L.back}
+          <ArrowLeft className="h-4 w-4" /> {t("back")}
         </Button>
         <Button type="submit" variant="brand">
           {submitLabel}

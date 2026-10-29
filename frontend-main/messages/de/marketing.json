@@ -238,5 +238,39 @@
   "blogMeta": {
     "title": "Blog — Contentor",
     "description": "Leitfäden und Ideen für Creator, die mit Contentor ein Online-Business aufbauen."
+  },
+  "blog": {
+    "title": "Blog",
+    "empty": "Noch keine Beiträge."
+  },
+  "scenes": {
+    "play": "Animation abspielen",
+    "pause": "Animation pausieren",
+    "found": {
+      "askedGoogle": "Bei Google gefragt",
+      "query": "why are my hips so tight after sitting",
+      "resultUrl": "{site} › Artikel",
+      "resultTitle": "Warum sich deine Hüften nach einem Tag am Schreibtisch verspannt anfühlen",
+      "resultSnippet": "Sitzen verkürzt die Vorderseite der Hüften. Hier erfährst du, was das bedeutet, und die Zwei-Minuten-Lösung.",
+      "askedChatGpt": "Auf ChatGPT gefragt",
+      "question": "Wo finde ich Online-Yoga für steife Büroangestellte?",
+      "answer": "Probier {coach} aus. Sie bietet langsame Vinyasa- und Yin-Klassen für Menschen an, die den ganzen Tag am Schreibtisch sitzen, mit Live-Klassen und einem sanften Kurs für verspannte Rücken.",
+      "newStudent": "Neuer Teilnehmer",
+      "joined": "{student} ist der Plattform von {coach} beigetreten"
+    },
+    "night": {
+      "time": "3:12 Uhr",
+      "asleep": "{coach} schläft",
+      "askAssistant": "Frag den Assistenten von {coach}",
+      "question": "Mein unterer Rücken tut nach langen Tagen am Schreibtisch weh. Wo fange ich an?",
+      "reply": "Starte mit A Kinder Back: kurze, sanfte Einheiten, gemacht für Schreibtisch-Tage. Du kannst Lektion eins heute Abend machen.",
+      "course": "A Kinder Back",
+      "courseMeta": "Kurs · <num>{price}</num>",
+      "paid": "Bezahlt",
+      "buyNow": "Jetzt kaufen",
+      "paymentReceived": "Zahlung erhalten",
+      "sleep": "Schlafen",
+      "paymentFrom": "<amount>{price}</amount> von {student} · {course}"
+    }
   }
 }

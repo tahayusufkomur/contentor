@@ -11,7 +11,7 @@ import { PublishControls } from "@/components/dashboard/publish-controls";
 import { PlatformCardDomainCta } from "@/components/dashboard/platform-card-domain-cta";
 import { DeletePlatform } from "@/components/dashboard/delete-platform";
 import { useLocale, useTranslations } from "next-intl";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { localizedHref } from "@/lib/locale-href";
 import { nativeName } from "@shared/i18n/locales";
 
@@ -19,13 +19,13 @@ import { nativeName } from "@shared/i18n/locales";
  * chart-2 is the system's green, marketing-accent its brass. */
 const STATUS: Record<
   MyTenant["provisioning_status"],
-  { label: string; dot: string }
+  { key: "live" | "settingUp" | "pending" | "setupFailed"; dot: string }
 > = {
-  ready: { label: "Live", dot: "bg-chart-2" },
-  provisioning: { label: "Setting up", dot: "bg-marketing-accent" },
-  provisioned: { label: "Setting up", dot: "bg-marketing-accent" },
-  pending: { label: "Pending", dot: "bg-muted-foreground" },
-  failed: { label: "Setup failed", dot: "bg-destructive" },
+  ready: { key: "live", dot: "bg-chart-2" },
+  provisioning: { key: "settingUp", dot: "bg-marketing-accent" },
+  provisioned: { key: "settingUp", dot: "bg-marketing-accent" },
+  pending: { key: "pending", dot: "bg-muted-foreground" },
+  failed: { key: "setupFailed", dot: "bg-destructive" },
 };
 
 function PlatformCard({ tenant }: { tenant: MyTenant }) {
@@ -34,6 +34,7 @@ function PlatformCard({ tenant }: { tenant: MyTenant }) {
   // Fallback: an unknown backend value must never 500 the dashboard.
   const status = STATUS[tenant.provisioning_status] ?? STATUS.pending;
   const isReady = tenant.provisioning_status === "ready" && tenant.is_active;
+  const statusLabel = t(`status.${status.key}`);
 
   return (
     <div className="flex flex-col rounded-tile border bg-card p-7">
@@ -46,7 +47,7 @@ function PlatformCard({ tenant }: { tenant: MyTenant }) {
         />
         <span className="inline-flex items-center gap-1.5 text-caption text-muted-foreground">
           <span aria-hidden className={`size-2 rounded-full ${status.dot}`} />
-          {status.label}
+          {statusLabel}
         </span>
       </div>
 
@@ -58,9 +59,9 @@ function PlatformCard({ tenant }: { tenant: MyTenant }) {
 
       <div className="mt-5 flex items-center gap-4 text-caption text-muted-foreground">
         <span>
-          Plan{" "}
+          {t("plan")}{" "}
           <span className="font-medium text-foreground">
-            {tenant.plan_name ?? "Free"}
+            {tenant.plan_name ?? t("freePlan")}
           </span>
         </span>
         <span>
@@ -88,17 +89,17 @@ function PlatformCard({ tenant }: { tenant: MyTenant }) {
             className="gap-1.5 rounded-full"
           >
             <a href={tenant.studio_url}>
-              Open studio
+              {t("openStudio")}
               <ArrowUpRight className="size-3.5" />
             </a>
           </Button>
         ) : (
           <Button variant="outline" size="sm" className="rounded-full" disabled>
-            {status.label}
+            {statusLabel}
           </Button>
         )}
         <Button asChild variant="ghost" size="sm" className="rounded-full">
-          <a href={tenant.studio_url}>Preview</a>
+          <a href={tenant.studio_url}>{t("preview")}</a>
         </Button>
         <PlatformCardDomainCta slug={tenant.slug} />
         <DeletePlatform
@@ -120,17 +121,15 @@ function PlatformCard({ tenant }: { tenant: MyTenant }) {
 }
 
 function EmptyState() {
+  const t = useTranslations("dashboard");
   return (
     <div className="mx-auto max-w-2xl rounded-tile border bg-card p-12 text-center">
       <div className="mx-auto flex size-16 items-center justify-center rounded-3xl bg-muted">
         <Sparkles className="size-7 text-foreground" />
       </div>
-      <h2 className="mt-6 text-title-2 text-foreground">
-        Launch your first platform
-      </h2>
+      <h2 className="mt-6 text-title-2 text-foreground">{t("emptyTitle")}</h2>
       <p className="mx-auto mt-3 max-w-md text-body text-muted-foreground">
-        Create a beautifully designed studio for your courses, live sessions,
-        and email campaigns — all under your own brand.
+        {t("emptyBody")}
       </p>
       <Button
         asChild
@@ -140,7 +139,7 @@ function EmptyState() {
       >
         <LocaleNavLink href="/signup">
           <Plus className="size-4" />
-          New platform
+          {t("newPlatform")}
         </LocaleNavLink>
       </Button>
     </div>
@@ -154,6 +153,7 @@ export default async function DashboardPage() {
   if (user.is_superuser) redirect("/admin");
 
   const tenants = await getMyTenants();
+  const t = await getTranslations("dashboard");
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -163,12 +163,13 @@ export default async function DashboardPage() {
         <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 md:flex-row md:items-end">
           <div>
             <p className="text-eyebrow text-muted-foreground">
-              {user.name ? `Hi, ${user.name.split(" ")[0]}` : "Your studio"}
+              {user.name
+                ? t("greeting", { name: user.name.split(" ")[0] })
+                : t("greetingFallback")}
             </p>
-            <h1 className="mt-3 text-title text-foreground">Your platforms</h1>
+            <h1 className="mt-3 text-title text-foreground">{t("title")}</h1>
             <p className="mt-4 max-w-xl text-body text-muted-foreground">
-              Manage and open each studio you&apos;ve created with Contentor.
-              Launch more whenever inspiration strikes.
+              {t("intro")}
             </p>
           </div>
 
@@ -181,7 +182,7 @@ export default async function DashboardPage() {
             >
               <LocaleNavLink href="/signup">
                 <Plus className="size-4" />
-                New platform
+                {t("newPlatform")}
               </LocaleNavLink>
             </Button>
           )}

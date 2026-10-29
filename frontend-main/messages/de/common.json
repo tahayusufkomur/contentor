@@ -9,7 +9,8 @@
     "getStarted": "Jetzt starten",
     "signOut": "Abmelden",
     "dashboard": "Dashboard",
-    "myPlatforms": "Meine Plattformen"
+    "myPlatforms": "Meine Plattformen",
+    "toggleNavigation": "Navigation umschalten"
   },
   "language": {
     "label": "Sprache"
@@ -43,7 +44,8 @@
       "cycleTitle": "Design: {current} — klicken für {next}",
       "switchToLight": "Zum hellen Modus wechseln",
       "switchToDark": "Zum dunklen Modus wechseln"
-    }
+    },
+    "readingProgress": "Lesefortschritt"
   },
   "checkout": {
     "dialog": "Kasse",
@@ -61,6 +63,7 @@
     "beginsAtFallback": "{name} beginnt zum monatlichen Preis."
   },
   "meta": {
-    "ogAlt": "Contentor — ein Creator filmt zu Hause einen Yogakurs, Kamera und Licht aufgebaut"
+    "ogAlt": "Contentor — ein Creator filmt zu Hause einen Yogakurs, Kamera und Licht aufgebaut",
+    "postTitle": "{title} — Contentor"
   }
 }

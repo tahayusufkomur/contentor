@@ -6,7 +6,7 @@ import { BlogCover } from "@/components/blog/blog-cover";
 import { ReadingProgress } from "@/components/blog/reading-progress";
 import { getAuthUser } from "@/lib/auth";
 import { fetchPlatformPost } from "@/lib/platform-blog";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { ogLocale } from "@shared/i18n/locales";
 
 export const dynamic = "force-dynamic";
@@ -14,13 +14,14 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: string; slug: string }>;
 }) {
-  const { slug } = await params;
+  const { locale, slug } = await params;
   const post = await fetchPlatformPost(slug);
   if (!post) return {};
+  const t = await getTranslations({ locale, namespace: "common.meta" });
   return {
-    title: `${post.title} — Contentor`,
+    title: t("postTitle", { title: post.title }),
     description: post.meta_description || post.excerpt,
     // Posts are written in English only: /tr/blog/x is the same article in a
     // translated frame, so every language points at the English address.

@@ -10,7 +10,9 @@ import {
   Search,
   Sparkles,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
+import { COACH, STUDENT } from "./demo-people";
 
 /** The story's beats on one clock, in ms. Everything on screen is a pure
  * function of `t`, so the finished frame (FINAL) is also the server render,
@@ -34,13 +36,9 @@ const TICK = 50;
 
 // Mara Lindqvist is the landing's demo coach (seed_footage_coach); the
 // article is hers. No search engine has seen her: this is an illustration.
-const QUERY = "why are my hips so tight after sitting";
-const QUESTION = "Where can I find online yoga for stiff office workers?";
-const ANSWER =
-  "Try Mara Lindqvist. She runs slow vinyasa and yin classes for people who sit at a desk all day, with live classes and a gentle course for tight backs.".split(
-    " ",
-  );
-const NAME_WORDS = [1, 2]; // "Mara Lindqvist." in bold
+// The words that are her name stay bold in every language (a suffix may follow).
+const isCoachName = (word: string) =>
+  COACH.full.split(" ").some((part) => word.startsWith(part));
 
 /** `text` typed out by `t`; the untyped rest keeps its place, so nothing reflows. */
 function Typed({
@@ -104,6 +102,10 @@ function OtherResult({
  * both land on the coach's site; then she joins. A live scene rather than
  * footage so the type stays sharp and follows the colour scheme. */
 export function FoundScene({ label }: { label: string }) {
+  const msg = useTranslations("marketing.scenes");
+  const QUERY = msg("found.query");
+  const QUESTION = msg("found.question");
+  const ANSWER = msg("found.answer", { coach: COACH.full }).split(" ");
   const stage = useRef<HTMLDivElement>(null);
   const [t, setT] = useState(FINAL);
   const [reduced, setReduced] = useState(false);
@@ -165,7 +167,7 @@ export function FoundScene({ label }: { label: string }) {
           )}
         >
           <div className="rounded-2xl bg-card p-4 shadow-[0_24px_60px_-28px_rgba(0,0,0,0.35)] ring-1 ring-border md:w-[86%] md:p-5">
-            <Where icon={Search}>Asked on Google</Where>
+            <Where icon={Search}>{msg("found.askedGoogle")}</Where>
             <p className="mt-3 flex items-start gap-2.5 rounded-2xl border border-border bg-background px-4 py-2.5 text-foreground">
               <Search className="mt-[0.2em] size-[1.1em] shrink-0 text-muted-foreground" />
               <span>
@@ -187,10 +189,10 @@ export function FoundScene({ label }: { label: string }) {
                   </span>
                   <span className="leading-tight">
                     <span className="block text-[0.85em] font-medium text-foreground">
-                      Mara Lindqvist
+                      {COACH.full}
                     </span>
                     <span className="block text-[0.8em] text-muted-foreground">
-                      maralindqvist.com › articles
+                      {msg("found.resultUrl", { site: COACH.site })}
                     </span>
                   </span>
                 </span>
@@ -200,11 +202,10 @@ export function FoundScene({ label }: { label: string }) {
                     on(T.click) && "underline decoration-marketing-accent",
                   )}
                 >
-                  Why your hips feel tight after a day at the desk
+                  {msg("found.resultTitle")}
                 </span>
                 <span className="mt-0.5 block text-muted-foreground">
-                  Sitting shortens the front of the hips. Here is what that
-                  means, and the two-minute fix.
+                  {msg("found.resultSnippet")}
                 </span>
                 <MousePointer2
                   aria-hidden
@@ -230,7 +231,7 @@ export function FoundScene({ label }: { label: string }) {
                 : "translate-y-6 opacity-0",
             )}
           >
-            <Where icon={MessageCircle}>Asked on ChatGPT</Where>
+            <Where icon={MessageCircle}>{msg("found.askedChatGpt")}</Where>
             <p
               className={cn(
                 "ml-auto mt-3 w-fit max-w-[88%] rounded-2xl rounded-br-md bg-muted px-3.5 py-2 text-foreground",
@@ -250,7 +251,7 @@ export function FoundScene({ label }: { label: string }) {
                       key={i}
                       className={cn(!(on(T.reply) && i < words) && "invisible")}
                     >
-                      {NAME_WORDS.includes(i) ? (
+                      {isCoachName(w) ? (
                         <strong className="font-semibold">{w}</strong>
                       ) : (
                         w
@@ -281,7 +282,7 @@ export function FoundScene({ label }: { label: string }) {
                   )}
                 >
                   <Globe className="size-[1em] text-marketing-accent" />
-                  maralindqvist.com
+                  {COACH.site}
                 </span>
               </div>
             </div>
@@ -306,10 +307,13 @@ export function FoundScene({ label }: { label: string }) {
             />
             <span className="leading-tight">
               <span className="block text-[0.8em] text-muted-foreground">
-                New student
+                {msg("found.newStudent")}
               </span>
               <span className="block font-medium text-foreground">
-                Priya joined Mara&rsquo;s platform
+                {msg("found.joined", {
+                  student: STUDENT.first,
+                  coach: COACH.first,
+                })}
               </span>
             </span>
           </div>
@@ -319,7 +323,7 @@ export function FoundScene({ label }: { label: string }) {
         <button
           type="button"
           onClick={() => setPaused((p) => !p)}
-          aria-label={paused ? "Play animation" : "Pause animation"}
+          aria-label={paused ? msg("play") : msg("pause")}
           className="absolute bottom-3 right-3 inline-flex size-8 items-center justify-center rounded-full bg-background text-foreground transition-colors hover:bg-muted"
         >
           {paused ? (

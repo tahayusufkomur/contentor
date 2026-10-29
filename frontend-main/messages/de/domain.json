@@ -1,0 +1,65 @@
+{
+  "registrant": {
+    "intro": "Domain-Registrare benötigen die Kontaktdaten des Inhabers, um eine Domain zu registrieren. Wir verwenden sie nur für die Registrierung.",
+    "firstName": "Vorname",
+    "lastName": "Nachname",
+    "company": "Unternehmen (optional)",
+    "address": "Straße und Hausnummer",
+    "city": "Stadt",
+    "state": "Bundesland / Region",
+    "zip": "Postleitzahl",
+    "country": "Land",
+    "phone": "Telefonnummer",
+    "email": "E-Mail",
+    "back": "Zurück",
+    "fillRequired": "Bitte fülle alle Pflichtfelder aus.",
+    "invalidPhone": "Bitte gib eine gültige Telefonnummer ein.",
+    "dialingCode": "Ländervorwahl"
+  },
+  "page": {
+    "title": "Eigene Domain",
+    "forSite": "Für <name>{name}</name> ({domain})"
+  },
+  "wizard": {
+    "registering": "<name>{domain}</name> wird registriert — {price} / Jahr.",
+    "continueToPayment": "Weiter zur Zahlung",
+    "redirecting": "Weiterleitung zur sicheren Zahlung…",
+    "checkoutFailed": "Bezahlvorgang konnte nicht gestartet werden"
+  },
+  "manage": {
+    "live": "Live",
+    "yearlyPrice": "Jahrespreis",
+    "renews": "Verlängert sich",
+    "confirmRemove": "Diese Domain entfernen? Deine Website fällt auf ihre contentor.app-Adresse zurück.",
+    "cancel": "Abbrechen",
+    "removing": "Wird entfernt…",
+    "remove": "Entfernen",
+    "removeDomain": "Domain entfernen",
+    "removeFailed": "Entfernen fehlgeschlagen"
+  },
+  "search": {
+    "choose": "Auswählen",
+    "taken": "Vergeben",
+    "unavailable": "Nicht verfügbar",
+    "perYear": "{price} / Jahr",
+    "placeholder": "deinemarke.com",
+    "searchAria": "Nach einer Domain suchen",
+    "search": "Suchen",
+    "suggestions": "Vorschläge",
+    "failed": "Suche fehlgeschlagen"
+  },
+  "status": {
+    "failed": "Einrichtung fehlgeschlagen.",
+    "failedAt": "Einrichtung fehlgeschlagen bei: {step}.",
+    "retry": "Erneut versuchen",
+    "retrying": "Wird erneut versucht…",
+    "steps": {
+      "registering": "Domain registrieren",
+      "dns_zone": "DNS-Zone erstellen",
+      "dns_records": "DNS auf deine Website verweisen",
+      "email_auth": "E-Mail konfigurieren",
+      "ssl": "SSL-Zertifikat ausstellen",
+      "live": "Live gehen"
+    }
+  }
+}

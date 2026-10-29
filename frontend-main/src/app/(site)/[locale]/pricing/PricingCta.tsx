@@ -100,10 +100,7 @@ export function PricingCta({
           session={session}
           onClose={() => setSession(null)}
           aside={
-            <PlanCheckoutAside
-              title="Everything you teach, in one place"
-              plan={terms}
-            />
+            <PlanCheckoutAside title={t("checkout.asideTitle")} plan={terms} />
           }
         />
       )}

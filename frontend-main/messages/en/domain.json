@@ -1,0 +1,65 @@
+{
+  "registrant": {
+    "intro": "Domain registrars require the owner's contact details to register a domain. We only use them for the registration.",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "company": "Company (optional)",
+    "address": "Street address",
+    "city": "City",
+    "state": "State / region",
+    "zip": "Postal code",
+    "country": "Country",
+    "phone": "Phone number",
+    "email": "Email",
+    "back": "Back",
+    "fillRequired": "Please fill in all required fields.",
+    "invalidPhone": "Please enter a valid phone number.",
+    "dialingCode": "Country dialing code"
+  },
+  "page": {
+    "title": "Custom domain",
+    "forSite": "For <name>{name}</name> ({domain})"
+  },
+  "wizard": {
+    "registering": "Registering <name>{domain}</name> — {price} / year.",
+    "continueToPayment": "Continue to payment",
+    "redirecting": "Redirecting to secure payment…",
+    "checkoutFailed": "Could not start checkout"
+  },
+  "manage": {
+    "live": "Live",
+    "yearlyPrice": "Yearly price",
+    "renews": "Renews",
+    "confirmRemove": "Remove this domain? Your site falls back to its contentor.app address.",
+    "cancel": "Cancel",
+    "removing": "Removing…",
+    "remove": "Remove",
+    "removeDomain": "Remove domain",
+    "removeFailed": "Failed to remove"
+  },
+  "search": {
+    "choose": "Choose",
+    "taken": "Taken",
+    "unavailable": "Unavailable",
+    "perYear": "{price} / year",
+    "placeholder": "yourbrand.com",
+    "searchAria": "Search for a domain",
+    "search": "Search",
+    "suggestions": "Suggestions",
+    "failed": "Search failed"
+  },
+  "status": {
+    "failed": "Setup failed.",
+    "failedAt": "Setup failed at: {step}.",
+    "retry": "Retry",
+    "retrying": "Retrying…",
+    "steps": {
+      "registering": "Registering the domain",
+      "dns_zone": "Creating the DNS zone",
+      "dns_records": "Pointing DNS at your site",
+      "email_auth": "Configuring email",
+      "ssl": "Issuing the SSL certificate",
+      "live": "Going live"
+    }
+  }
+}

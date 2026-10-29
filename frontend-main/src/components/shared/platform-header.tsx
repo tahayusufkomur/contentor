@@ -6,7 +6,7 @@ import { LocaleNavLink, useLocaleNavigate } from "@/i18n/navigation";
 import { LogOut, Menu, User as UserIcon, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { LanguageSwitcher } from "@/components/shared/language-switcher";
-import { Wordmark } from "@/components/shared/logo-mark";
+import { BRAND_NAME, Wordmark } from "@/components/shared/logo-mark";
 import { ThemeToggle } from "@shared/ui/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -17,7 +17,7 @@ function Logo() {
     <LocaleNavLink
       href="/"
       className="flex items-center select-none"
-      aria-label="Contentor"
+      aria-label={BRAND_NAME}
     >
       <Wordmark className="text-xl" />
     </LocaleNavLink>
@@ -138,7 +138,7 @@ export function PlatformHeader({ user }: { user?: User | null }) {
           <button
             className="inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground md:hidden"
             onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="Toggle navigation"
+            aria-label={t("toggleNavigation")}
           >
             {mobileOpen ? (
               <X className="h-5 w-5" />
