@@ -15,13 +15,14 @@ from decimal import Decimal
 from django.conf import settings
 from django.db import transaction
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy, ngettext
 
 
 class ContentOpError(Exception):
     """User-safe message describing why a create was refused."""
 
 
-_GENERIC_INVALID_MESSAGE = "Some details were invalid — could you rephrase?"
+_GENERIC_INVALID_MESSAGE = gettext_lazy("Some details were invalid — could you rephrase?")
 
 
 def _fail(errors):
@@ -37,7 +38,7 @@ def _fail(errors):
         path.append(str(field))
         current = messages[0] if isinstance(messages, list) and messages else messages
     if not isinstance(current, str):
-        raise ContentOpError(_GENERIC_INVALID_MESSAGE)
+        raise ContentOpError(str(_GENERIC_INVALID_MESSAGE))
     raise ContentOpError(f"{'.'.join(path)}: {current}" if path else current)
 
 
@@ -320,8 +321,7 @@ def curriculum_steps(course_id, ops):
     if len(ops) > MAX_CURRICULUM_OPS:
         # Never apply a silent subset of what was asked.
         raise ContentOpError(
-            _("that is more than %(MAX_CURRICULUM_OPS)s changes at once — split it into two requests")
-            % {"MAX_CURRICULUM_OPS": MAX_CURRICULUM_OPS}
+            _("that is more than %(max)d changes at once — split it into two requests") % {"max": MAX_CURRICULUM_OPS}
         )
     steps = []
     for op in ops:
@@ -331,40 +331,63 @@ def curriculum_steps(course_id, ops):
             new = [" ".join(str(t).split())[:200] for t in (op.get("lessons") or [])[:MAX_NEW_LESSONS]]
             new = [t for t in new if t]
             steps.append(
-                ({"op": kind, "title": title, "lessons": new}, f"Add module '{title}' with {len(new)} lesson(s)")
+                (
+                    {"op": kind, "title": title, "lessons": new},
+                    ngettext(
+                        "Add module '%(title)s' with %(n)d lesson",
+                        "Add module '%(title)s' with %(n)d lessons",
+                        len(new),
+                    )
+                    % {"title": title, "n": len(new)},
+                )
             )
         elif kind == "add_lesson":
             module, title = module_of(op), _title(op)
             steps.append(
-                ({"op": kind, "module_id": module.id, "title": title}, f"Add lesson '{title}' to '{module.title}'")
+                (
+                    {"op": kind, "module_id": module.id, "title": title},
+                    _("Add lesson '%(title)s' to '%(module)s'") % {"title": title, "module": module.title},
+                )
             )
         elif kind == "rename_module":
             module, title = module_of(op), _title(op)
             steps.append(
-                ({"op": kind, "module_id": module.id, "title": title}, f"Rename module '{module.title}' to '{title}'")
+                (
+                    {"op": kind, "module_id": module.id, "title": title},
+                    _("Rename module '%(old)s' to '%(new)s'") % {"old": module.title, "new": title},
+                )
             )
         elif kind == "rename_lesson":
             lesson, title = lesson_of(op), _title(op)
             steps.append(
-                ({"op": kind, "lesson_id": lesson.id, "title": title}, f"Rename lesson '{lesson.title}' to '{title}'")
+                (
+                    {"op": kind, "lesson_id": lesson.id, "title": title},
+                    _("Rename lesson '%(old)s' to '%(new)s'") % {"old": lesson.title, "new": title},
+                )
             )
         elif kind == "remove_lesson":
             lesson = lesson_of(op)
             if _kept_work(lesson):
                 raise ContentOpError(
-                    f"lesson '{lesson.title}' has a video or student progress — remove it from the course page"
+                    _("lesson '%(title)s' has a video or student progress — remove it from the course page")
+                    % {"title": lesson.title}
                 )
             # Gone for the ops after it: a later rename of it is refused here,
             # on the card, not halfway through applying.
             del lessons[lesson.id]
-            steps.append(({"op": kind, "lesson_id": lesson.id}, f"Remove lesson '{lesson.title}'"))
+            steps.append(
+                ({"op": kind, "lesson_id": lesson.id}, _("Remove lesson '%(title)s'") % {"title": lesson.title})
+            )
         elif kind == "remove_module":
             module = module_of(op)
             inside = [lesson for lesson in module.lessons.all() if lesson.id in lessons]
             if any(_kept_work(lesson) for lesson in inside):
                 raise ContentOpError(
-                    f"module '{module.title}' has lessons with a video or student progress — "
-                    "remove it from the course page"
+                    _(
+                        "module '%(title)s' has lessons with a video or student progress — "
+                        "remove it from the course page"
+                    )
+                    % {"title": module.title}
                 )
             del modules[module.id]
             for lesson in inside:
@@ -372,7 +395,12 @@ def curriculum_steps(course_id, ops):
             steps.append(
                 (
                     {"op": kind, "module_id": module.id},
-                    f"Remove module '{module.title}' and its {len(inside)} lesson(s)",
+                    ngettext(
+                        "Remove module '%(title)s' and its %(n)d lesson",
+                        "Remove module '%(title)s' and its %(n)d lessons",
+                        len(inside),
+                    )
+                    % {"title": module.title, "n": len(inside)},
                 )
             )
         else:

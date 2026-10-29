@@ -9,6 +9,7 @@ from functools import cache
 
 from django.conf import settings
 from django.db import transaction
+from django.utils.translation import gettext_lazy
 from pydantic import BaseModel
 
 from apps.core import ai as core_ai
@@ -58,8 +59,20 @@ def specialist(kind: str, slot: str) -> str:
     return SPECIALIST.get(slot) or recipe.specialists[next(q.id for q in recipe.questions if q.kind == "review")]
 
 
+# Whole sentences by the kind's word: a translated noun dropped into one needs its own case.
+THINKING = {
+    "bundle": gettext_lazy("Thinking about your bundle"),
+    "course": gettext_lazy("Thinking about your course"),
+    "download": gettext_lazy("Thinking about your download"),
+    "membership": gettext_lazy("Thinking about your membership"),
+    "message": gettext_lazy("Thinking about your message"),
+    "post": gettext_lazy("Thinking about your post"),
+    "session": gettext_lazy("Thinking about your session"),
+}
+
+
 def label(kind: str) -> str:
-    return f"Thinking about your {kinds.get(kind).NOUN}"
+    return str(THINKING[kinds.get(kind).NOUN])
 
 
 class FollowUp(BaseModel):

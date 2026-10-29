@@ -14,7 +14,7 @@ from uuid import uuid4
 
 from django.utils import translation
 from django.utils.translation import gettext as _
-from django.utils.translation import gettext_lazy
+from django.utils.translation import gettext_lazy, ngettext
 
 from apps.core import languages
 from apps.core.onboarding.ai_compose import MAX_FAQ_ITEMS
@@ -339,7 +339,7 @@ def _preview(value):
     if value is None:
         return None
     if isinstance(value, list):
-        return f"{len(value)} item(s)"
+        return ngettext("%(n)d item", "%(n)d items", len(value)) % {"n": len(value)}
     return str(value)[:200]
 
 

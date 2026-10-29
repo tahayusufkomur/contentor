@@ -4,6 +4,7 @@ worker; ``execute`` claims it and calls its handler module's ``carry_out``.
 A handler module may define ``on_failure(tenant, run_id)``, called when its
 ``carry_out`` raises, before the run is failed. Call inside her tenant's context."""
 
+import contextlib
 import logging
 from importlib import import_module
 
@@ -94,15 +95,17 @@ def execute(schema_name, run_id) -> None:
     with tenant_context(tenant):
         if not runs.claim(run_id):  # stopped, swept, or a second delivery of the task
             return
-        run = CopilotRun.objects.get(pk=run_id)
-        handler = None
-        # What the job says to her (steps, the closing line, the cards it drafts) is in her language.
-        with translation.override(languages.creator_language(run.actor)):
-            try:
+        handler, language = None, None
+        try:
+            run = CopilotRun.objects.get(pk=run_id)
+            # What the job says to her (steps, the closing line, the cards it drafts) is in her language.
+            language = languages.creator_language(run.actor)
+            with translation.override(language):
                 handler = import_module(HANDLERS[(run.request or {}).get("job")])
                 handler.carry_out(tenant, run_id)
-            except Exception:
-                logger.exception("focus job failed schema=%s run=%s", schema_name, run_id)
+        except Exception:
+            logger.exception("focus job failed schema=%s run=%s", schema_name, run_id)
+            with translation.override(language) if language else contextlib.nullcontext():
                 try:
                     if hasattr(handler, "on_failure"):
                         handler.on_failure(tenant, run_id)

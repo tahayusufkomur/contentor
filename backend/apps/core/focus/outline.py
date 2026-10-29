@@ -10,6 +10,7 @@ import logging
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Max
+from django.utils import translation
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from pydantic import BaseModel
@@ -33,13 +34,33 @@ CAPPED = " I drafted the first 12 modules; add the rest on the page."
 STEP = {"specialist": "content", "label": gettext_lazy("Writing your outline")}
 # Honest and generic when the model is down: no invented facts, she renames them.
 FALLBACK_MODULES = (
-    "Getting started",
-    "Building the basics",
-    "Putting it into practice",
-    "Going deeper",
-    "Making it yours",
-    "Bringing it together",
+    gettext_lazy("Getting started"),
+    gettext_lazy("Building the basics"),
+    gettext_lazy("Putting it into practice"),
+    gettext_lazy("Going deeper"),
+    gettext_lazy("Making it yours"),
+    gettext_lazy("Bringing it together"),
 )
+
+
+# The titles below land in the course students read, so they are in the SITE's language whoever drafts it.
+def module_title(n: int) -> str:
+    """Module ``n`` (from 1): the usual name while there is one, else "Module n"."""
+    with translation.override(languages.site_language()):
+        if n <= len(FALLBACK_MODULES):
+            return str(FALLBACK_MODULES[n - 1])
+        return _("Module %(n)d") % {"n": n}
+
+
+def numbered_module(n: int) -> str:
+    with translation.override(languages.site_language()):
+        return _("Module %(n)d") % {"n": n}
+
+
+def lesson_title(n: int) -> str:
+    with translation.override(languages.site_language()):
+        return _("Lesson %(n)d") % {"n": n}
+
 
 # Static, byte-identical across tenants (prompt caching); her answers ride the user turn.
 SYSTEM = _DRAFT_RULES + (
@@ -211,20 +232,20 @@ def conform(draft: OutlineDraft, brief: dict, *, first: bool, kept: int = 0) -> 
         while len(modules) < min(max(count - kept, 0), MAX_MODULES):
             n = len(modules) + 1
             modules.append(
-                (f"Module {n}", [f"Lesson {k}" for k in range(1, (len(modules[-1][1]) if modules else 3) + 1)])
+                (numbered_module(n), [lesson_title(k) for k in range(1, (len(modules[-1][1]) if modules else 3) + 1)])
             )
     modules = modules[:MAX_MODULES]
     for _title, lessons in modules:
         if per:
             del lessons[per:]
-            lessons.extend(f"Lesson {k}" for k in range(len(lessons) + 1, min(per, MAX_LESSONS) + 1))
+            lessons.extend(lesson_title(k) for k in range(len(lessons) + 1, min(per, MAX_LESSONS) + 1))
         del lessons[MAX_LESSONS:]
 
     named = brief.get("named") or []
     if first:
         for index, item in enumerate(named[:MAX_MODULES]):
             if index == len(modules):
-                modules.append((f"Module {index + 1}", [f"Lesson {k}" for k in range(1, (per or 2) + 1)]))
+                modules.append((numbered_module(index + 1), [lesson_title(k) for k in range(1, (per or 2) + 1)]))
             title, lessons = modules[index]
             theirs = [t for t in item.get("lessons") or [] if t][:MAX_LESSONS]
             modules[index] = (item.get("title") or title, [*theirs, *lessons[len(theirs) :]])
@@ -270,11 +291,11 @@ def _fit_total(modules: list, total: int, *, resize: bool) -> None:
         else:
             room = next((m for m in reversed(modules) if len(m[1]) < MAX_LESSONS), None)
             if room is None and resize and len(modules) < MAX_MODULES:
-                room = (f"Module {len(modules) + 1}", [])
+                room = (numbered_module(len(modules) + 1), [])
                 modules.append(room)
             if room is None:
                 return
-            room[1].append(f"Lesson {len(room[1]) + 1}")
+            room[1].append(lesson_title(len(room[1]) + 1))
 
 
 def site(tenant, course_id=None) -> dict:
@@ -351,8 +372,8 @@ def fallback(answers: dict, title: str, brief: dict | None = None) -> OutlineDra
         description="",
         modules=[
             _Module(
-                title=FALLBACK_MODULES[i] if i < len(FALLBACK_MODULES) else _("Module %(n)d") % {"n": i + 1},
-                lessons=[_("Lesson %(n)d") % {"n": n} for n in range(1, size + 1)],
+                title=module_title(i + 1),
+                lessons=[lesson_title(n) for n in range(1, size + 1)],
             )
             for i, size in enumerate(sizes)
         ],
@@ -389,7 +410,7 @@ def write(course, draft: OutlineDraft, working_title: str, *, drafted: dict, red
     if redraft or not course.modules.exists():
         top = course.modules.aggregate(top=Max("order"))["top"] or 0
         for index, module_draft in enumerate(draft.modules, start=1):
-            title = module_draft.title.strip()[:TITLE_MAX] or f"Module {index}"
+            title = module_draft.title.strip()[:TITLE_MAX] or numbered_module(index)
             lessons = [t.strip()[:TITLE_MAX] for t in module_draft.lessons if t.strip()][:MAX_LESSONS]
             module = Module.objects.create(course=course, title=title, order=top + index)
             Lesson.objects.bulk_create(

@@ -381,36 +381,103 @@ def stamp(item, paid_at: datetime) -> tuple[datetime, datetime | None]:
 # ---- plain words -------------------------------------------------------------
 
 
-def span_text(days: int) -> str:
+# Each phrase with a span is its own plural entry: a number and its unit take a case in tr, de and pl.
+_SPANS = {
+    ("free_opens", "year"): lambda n: ngettext("after %(n)d year of joining", "after %(n)d years of joining", n),
+    ("free_opens", "month"): lambda n: ngettext("after %(n)d month of joining", "after %(n)d months of joining", n),
+    ("free_opens", "week"): lambda n: ngettext("after %(n)d week of joining", "after %(n)d weeks of joining", n),
+    ("free_opens", "day"): lambda n: ngettext("after %(n)d day of joining", "after %(n)d days of joining", n),
+    ("free_closes", "year"): lambda n: ngettext("for %(n)d year after joining", "for %(n)d years after joining", n),
+    ("free_closes", "month"): lambda n: ngettext("for %(n)d month after joining", "for %(n)d months after joining", n),
+    ("free_closes", "week"): lambda n: ngettext("for %(n)d week after joining", "for %(n)d weeks after joining", n),
+    ("free_closes", "day"): lambda n: ngettext("for %(n)d day after joining", "for %(n)d days after joining", n),
+    ("free_until", "year"): lambda n: ngettext("until %(n)d year after joining", "until %(n)d years after joining", n),
+    ("free_until", "month"): lambda n: ngettext(
+        "until %(n)d month after joining", "until %(n)d months after joining", n
+    ),
+    ("free_until", "week"): lambda n: ngettext("until %(n)d week after joining", "until %(n)d weeks after joining", n),
+    ("free_until", "day"): lambda n: ngettext("until %(n)d day after joining", "until %(n)d days after joining", n),
+    ("buy_opens", "year"): lambda n: ngettext(
+        "opening %(n)d year after purchase", "opening %(n)d years after purchase", n
+    ),
+    ("buy_opens", "month"): lambda n: ngettext(
+        "opening %(n)d month after purchase", "opening %(n)d months after purchase", n
+    ),
+    ("buy_opens", "week"): lambda n: ngettext(
+        "opening %(n)d week after purchase", "opening %(n)d weeks after purchase", n
+    ),
+    ("buy_opens", "day"): lambda n: ngettext(
+        "opening %(n)d day after purchase", "opening %(n)d days after purchase", n
+    ),
+    ("buy_closes", "year"): lambda n: ngettext("with %(n)d year of access", "with %(n)d years of access", n),
+    ("buy_closes", "month"): lambda n: ngettext("with %(n)d month of access", "with %(n)d months of access", n),
+    ("buy_closes", "week"): lambda n: ngettext("with %(n)d week of access", "with %(n)d weeks of access", n),
+    ("buy_closes", "day"): lambda n: ngettext("with %(n)d day of access", "with %(n)d days of access", n),
+    ("buy_until", "year"): lambda n: ngettext("until %(n)d year after purchase", "until %(n)d years after purchase", n),
+    ("buy_until", "month"): lambda n: ngettext(
+        "until %(n)d month after purchase", "until %(n)d months after purchase", n
+    ),
+    ("buy_until", "week"): lambda n: ngettext("until %(n)d week after purchase", "until %(n)d weeks after purchase", n),
+    ("buy_until", "day"): lambda n: ngettext("until %(n)d day after purchase", "until %(n)d days after purchase", n),
+    ("plans_opens", "year"): lambda n: ngettext("after %(n)d year of membership", "after %(n)d years of membership", n),
+    ("plans_opens", "month"): lambda n: ngettext(
+        "after %(n)d month of membership", "after %(n)d months of membership", n
+    ),
+    ("plans_opens", "week"): lambda n: ngettext("after %(n)d week of membership", "after %(n)d weeks of membership", n),
+    ("plans_opens", "day"): lambda n: ngettext("after %(n)d day of membership", "after %(n)d days of membership", n),
+    ("plans_closes", "year"): lambda n: ngettext("for %(n)d year of membership", "for %(n)d years of membership", n),
+    ("plans_closes", "month"): lambda n: ngettext("for %(n)d month of membership", "for %(n)d months of membership", n),
+    ("plans_closes", "week"): lambda n: ngettext("for %(n)d week of membership", "for %(n)d weeks of membership", n),
+    ("plans_closes", "day"): lambda n: ngettext("for %(n)d day of membership", "for %(n)d days of membership", n),
+    ("plans_until", "year"): lambda n: ngettext(
+        "until %(n)d year into membership", "until %(n)d years into membership", n
+    ),
+    ("plans_until", "month"): lambda n: ngettext(
+        "until %(n)d month into membership", "until %(n)d months into membership", n
+    ),
+    ("plans_until", "week"): lambda n: ngettext(
+        "until %(n)d week into membership", "until %(n)d weeks into membership", n
+    ),
+    ("plans_until", "day"): lambda n: ngettext(
+        "until %(n)d day into membership", "until %(n)d days into membership", n
+    ),
+    ("pill_opens", "year"): lambda n: ngettext("After %(n)d year of membership", "After %(n)d years of membership", n),
+    ("pill_opens", "month"): lambda n: ngettext(
+        "After %(n)d month of membership", "After %(n)d months of membership", n
+    ),
+    ("pill_opens", "week"): lambda n: ngettext("After %(n)d week of membership", "After %(n)d weeks of membership", n),
+    ("pill_opens", "day"): lambda n: ngettext("After %(n)d day of membership", "After %(n)d days of membership", n),
+    ("pill_closes", "year"): lambda n: ngettext("closes after %(n)d year", "closes after %(n)d years", n),
+    ("pill_closes", "month"): lambda n: ngettext("closes after %(n)d month", "closes after %(n)d months", n),
+    ("pill_closes", "week"): lambda n: ngettext("closes after %(n)d week", "closes after %(n)d weeks", n),
+    ("pill_closes", "day"): lambda n: ngettext("closes after %(n)d day", "closes after %(n)d days", n),
+}
+
+
+def _span_phrase(key: str, days: int) -> str:
+    """The phrase ``key`` with the span of ``days`` (whole years, months, weeks or days) in it."""
     for size, unit in ((365, "year"), (30, "month"), (7, "week"), (1, "day")):
         if days % size == 0:
             n = days // size
-            if unit == "year":
-                return ngettext("%(n)d year", "%(n)d years", n) % {"n": n}
-            if unit == "month":
-                return ngettext("%(n)d month", "%(n)d months", n) % {"n": n}
-            if unit == "week":
-                return ngettext("%(n)d week", "%(n)d weeks", n) % {"n": n}
-            return ngettext("%(n)d day", "%(n)d days", n) % {"n": n}
+            return _SPANS[(key, unit)](n) % {"n": n}
 
 
 def _day(value: str) -> str:
     return date_format(date.fromisoformat(value), "j M Y")
 
 
-def _clauses(window: dict | None, opens_after: str, closes_after: str, closes_until: str) -> list[str]:
-    """The window as phrases; the templates (already translated) take a ``%(span)s`` such as "1 month". A span
-    to the close still counts from when they got in, so once an opening is set it reads ``closes_until``,
-    not a length."""
+def _clauses(window: dict | None, kind: str) -> list[str]:
+    """The window as phrases (``kind``: free, buy or plans). A span to the close still counts from when they
+    got in, so once an opening is set it reads "until", not a length."""
     w = window or {}
     out = []
     if "opens_after_days" in w:
-        out.append(opens_after % {"span": span_text(w["opens_after_days"])})
+        out.append(_span_phrase(f"{kind}_opens", w["opens_after_days"]))
     if "opens_on" in w:
         out.append(_("from %(date)s") % {"date": _day(w["opens_on"])})
     if "closes_after_days" in w:
         opens = "opens_after_days" in w or "opens_on" in w
-        out.append((closes_until if opens else closes_after) % {"span": span_text(w["closes_after_days"])})
+        out.append(_span_phrase(f"{kind}_{'until' if opens else 'closes'}", w["closes_after_days"]))
     if "closes_on" in w:
         out.append(_("until %(date)s") % {"date": _day(w["closes_on"])})
     return out
@@ -420,13 +487,13 @@ def membership_text(link) -> str:
     """A plan link's window as the Access section's pill says it (``linkPill``): "<opens> · <closes>"."""
     w = _window_of(link) or {}
     if "opens_after_days" in w:
-        opens = _("After %(span)s of membership") % {"span": span_text(w["opens_after_days"])}
+        opens = _span_phrase("pill_opens", w["opens_after_days"])
     elif "opens_on" in w:
         opens = _("From %(date)s") % {"date": _day(w["opens_on"])}
     else:
         opens = _("Right away")
     if "closes_after_days" in w:
-        closes = _("closes after %(span)s") % {"span": span_text(w["closes_after_days"])}
+        closes = _span_phrase("pill_closes", w["closes_after_days"])
     elif "closes_on" in w:
         closes = _("closes %(date)s") % {"date": _day(w["closes_on"])}
     else:
@@ -440,23 +507,17 @@ def describe(ways: dict) -> str:
 
     parts = []
     if ways.get("free"):
-        clauses = _clauses(
-            ways["free"].get("window"),
-            _("after %(span)s of joining"),
-            _("for %(span)s after joining"),
-            _("until %(span)s after joining"),
-        )
-        parts.append(" ".join([_("Free"), *clauses]) if clauses else _("Free for everyone"))
+        clauses = _clauses(ways["free"].get("window"), "free")
+        parts.append(_("Free %(window)s") % {"window": " ".join(clauses)} if clauses else _("Free for everyone"))
     if ways.get("buy"):
         buy = ways["buy"]
-        clauses = _clauses(
-            buy.get("window"),
-            _("opening %(span)s after purchase"),
-            _("with %(span)s of access"),
-            _("until %(span)s after purchase"),
+        clauses = _clauses(buy.get("window"), "buy")
+        price = money(buy["price"])
+        parts.append(
+            _("%(price)s once %(window)s") % {"price": price, "window": ", ".join(clauses)}
+            if clauses
+            else _("%(price)s once, theirs to keep") % {"price": price}
         )
-        once = _("%(price)s once") % {"price": money(buy["price"])}
-        parts.append(once + (" " + ", ".join(clauses) if clauses else _(", theirs to keep")))
     if ways.get("plans"):
         ids = [p["plan_id"] for p in ways["plans"]]
         names = dict(SubscriptionPlan.objects.filter(pk__in=ids).values_list("pk", "name"))
@@ -464,18 +525,12 @@ def describe(ways: dict) -> str:
         for p in ways["plans"]:
             if p["plan_id"] not in names:
                 raise WaysError("plan", _("One of those subscriptions no longer exists."))
-            clauses = tuple(
-                _clauses(
-                    p.get("window"),
-                    _("after %(span)s of membership"),
-                    _("for %(span)s of membership"),
-                    _("until %(span)s into membership"),
-                )
-            )
-            groups.setdefault(clauses, []).append(names[p["plan_id"]])
+            groups.setdefault(tuple(_clauses(p.get("window"), "plans")), []).append(names[p["plan_id"]])
         parts.append(
             ", ".join(
-                _("in %(plans)s") % {"plans": get_text_list(n, _("and"))} + "".join(f" {c}" for c in cl)
+                _("in %(plans)s %(window)s") % {"plans": get_text_list(n, _("and")), "window": " ".join(cl)}
+                if cl
+                else _("in %(plans)s") % {"plans": get_text_list(n, _("and"))}
                 for cl, n in groups.items()
             )
         )

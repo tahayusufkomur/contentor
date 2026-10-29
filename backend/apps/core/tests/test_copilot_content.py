@@ -529,8 +529,8 @@ def test_curriculum_steps_say_each_change_in_plain_words(course):
         ],
     )
     assert [label for _op, label in steps] == [
-        "Add module 'Flow' with 1 lesson(s)",
-        "Remove module 'Basics' and its 2 lesson(s)",
+        "Add module 'Flow' with 1 lesson",
+        "Remove module 'Basics' and its 2 lessons",
     ]
 
 

@@ -173,7 +173,7 @@ msgid "Deleting is not allowed."
 msgstr "Usuwanie jest niedozwolone."
 
 #: apps/adminkit/views.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "This %(label)s is referenced by other records and cannot be deleted."
 msgstr ""
 "Obiekt %(label)s jest używany przez inne rekordy i nie można go usunąć."
@@ -475,36 +475,356 @@ msgid "Pick a subscription first, then include this in it."
 msgstr "Najpierw wybierz subskrypcję, a potem dołącz to do niej."
 
 #: apps/billing/ways.py
-#, fuzzy, python-format
-msgid "%(n)d year"
-msgid_plural "%(n)d years"
-msgstr[0] "%(n)d rok"
-msgstr[1] "%(n)d lata"
-msgstr[2] "%(n)d lat"
+#, python-format, fuzzy
+msgid "after %(n)d year of joining"
+msgid_plural "after %(n)d years of joining"
+msgstr[0] "po %(n)d roku od dołączenia"
+msgstr[1] "po %(n)d latach od dołączenia"
+msgstr[2] "po %(n)d latach od dołączenia"
 
 #: apps/billing/ways.py
-#, fuzzy, python-format
-msgid "%(n)d month"
-msgid_plural "%(n)d months"
-msgstr[0] "%(n)d miesiąc"
-msgstr[1] "%(n)d miesiące"
-msgstr[2] "%(n)d miesięcy"
+#, python-format, fuzzy
+msgid "after %(n)d month of joining"
+msgid_plural "after %(n)d months of joining"
+msgstr[0] "po %(n)d miesiącu od dołączenia"
+msgstr[1] "po %(n)d miesiącach od dołączenia"
+msgstr[2] "po %(n)d miesiącach od dołączenia"
 
 #: apps/billing/ways.py
-#, fuzzy, python-format
-msgid "%(n)d week"
-msgid_plural "%(n)d weeks"
-msgstr[0] "%(n)d tydzień"
-msgstr[1] "%(n)d tygodnie"
-msgstr[2] "%(n)d tygodni"
+#, python-format, fuzzy
+msgid "after %(n)d week of joining"
+msgid_plural "after %(n)d weeks of joining"
+msgstr[0] "po %(n)d tygodniu od dołączenia"
+msgstr[1] "po %(n)d tygodniach od dołączenia"
+msgstr[2] "po %(n)d tygodniach od dołączenia"
 
 #: apps/billing/ways.py
-#, fuzzy, python-format
-msgid "%(n)d day"
-msgid_plural "%(n)d days"
-msgstr[0] "%(n)d dzień"
-msgstr[1] "%(n)d dni"
-msgstr[2] "%(n)d dni"
+#, python-format, fuzzy
+msgid "after %(n)d day of joining"
+msgid_plural "after %(n)d days of joining"
+msgstr[0] "po %(n)d dniu od dołączenia"
+msgstr[1] "po %(n)d dniach od dołączenia"
+msgstr[2] "po %(n)d dniach od dołączenia"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "for %(n)d year after joining"
+msgid_plural "for %(n)d years after joining"
+msgstr[0] "przez %(n)d rok po dołączeniu"
+msgstr[1] "przez %(n)d lata po dołączeniu"
+msgstr[2] "przez %(n)d lat po dołączeniu"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "for %(n)d month after joining"
+msgid_plural "for %(n)d months after joining"
+msgstr[0] "przez %(n)d miesiąc po dołączeniu"
+msgstr[1] "przez %(n)d miesiące po dołączeniu"
+msgstr[2] "przez %(n)d miesięcy po dołączeniu"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "for %(n)d week after joining"
+msgid_plural "for %(n)d weeks after joining"
+msgstr[0] "przez %(n)d tydzień po dołączeniu"
+msgstr[1] "przez %(n)d tygodnie po dołączeniu"
+msgstr[2] "przez %(n)d tygodni po dołączeniu"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "for %(n)d day after joining"
+msgid_plural "for %(n)d days after joining"
+msgstr[0] "przez %(n)d dzień po dołączeniu"
+msgstr[1] "przez %(n)d dni po dołączeniu"
+msgstr[2] "przez %(n)d dni po dołączeniu"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "until %(n)d year after joining"
+msgid_plural "until %(n)d years after joining"
+msgstr[0] "do %(n)d roku po dołączeniu"
+msgstr[1] "do %(n)d lat po dołączeniu"
+msgstr[2] "do %(n)d lat po dołączeniu"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "until %(n)d month after joining"
+msgid_plural "until %(n)d months after joining"
+msgstr[0] "do %(n)d miesiąca po dołączeniu"
+msgstr[1] "do %(n)d miesięcy po dołączeniu"
+msgstr[2] "do %(n)d miesięcy po dołączeniu"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "until %(n)d week after joining"
+msgid_plural "until %(n)d weeks after joining"
+msgstr[0] "do %(n)d tygodnia po dołączeniu"
+msgstr[1] "do %(n)d tygodni po dołączeniu"
+msgstr[2] "do %(n)d tygodni po dołączeniu"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "until %(n)d day after joining"
+msgid_plural "until %(n)d days after joining"
+msgstr[0] "do %(n)d dnia po dołączeniu"
+msgstr[1] "do %(n)d dni po dołączeniu"
+msgstr[2] "do %(n)d dni po dołączeniu"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "opening %(n)d year after purchase"
+msgid_plural "opening %(n)d years after purchase"
+msgstr[0] "otwarcie %(n)d rok po zakupie"
+msgstr[1] "otwarcie %(n)d lata po zakupie"
+msgstr[2] "otwarcie %(n)d lat po zakupie"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "opening %(n)d month after purchase"
+msgid_plural "opening %(n)d months after purchase"
+msgstr[0] "otwarcie %(n)d miesiąc po zakupie"
+msgstr[1] "otwiera się %(n)d miesiące po zakupie"
+msgstr[2] "otwiera się %(n)d miesięcy po zakupie"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "opening %(n)d week after purchase"
+msgid_plural "opening %(n)d weeks after purchase"
+msgstr[0] "otwiera się %(n)d tydzień po zakupie"
+msgstr[1] "otwiera się %(n)d tygodnie po zakupie"
+msgstr[2] "otwiera się %(n)d tygodni po zakupie"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "opening %(n)d day after purchase"
+msgid_plural "opening %(n)d days after purchase"
+msgstr[0] "otwiera się %(n)d dzień po zakupie"
+msgstr[1] "otwiera się %(n)d dni po zakupie"
+msgstr[2] "otwiera się %(n)d dni po zakupie"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "with %(n)d year of access"
+msgid_plural "with %(n)d years of access"
+msgstr[0] "z %(n)d rokiem dostępu"
+msgstr[1] "z %(n)d latami dostępu"
+msgstr[2] "z %(n)d latami dostępu"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "with %(n)d month of access"
+msgid_plural "with %(n)d months of access"
+msgstr[0] "z %(n)d miesiącem dostępu"
+msgstr[1] "z %(n)d miesiącami dostępu"
+msgstr[2] "z %(n)d miesiącami dostępu"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "with %(n)d week of access"
+msgid_plural "with %(n)d weeks of access"
+msgstr[0] "z %(n)d tygodniem dostępu"
+msgstr[1] "z %(n)d tygodniami dostępu"
+msgstr[2] "z %(n)d tygodniami dostępu"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "with %(n)d day of access"
+msgid_plural "with %(n)d days of access"
+msgstr[0] "z %(n)d dniem dostępu"
+msgstr[1] "z %(n)d dniami dostępu"
+msgstr[2] "z %(n)d dniami dostępu"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "until %(n)d year after purchase"
+msgid_plural "until %(n)d years after purchase"
+msgstr[0] "do %(n)d roku po zakupie"
+msgstr[1] "do %(n)d lat po zakupie"
+msgstr[2] "do %(n)d lat po zakupie"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "until %(n)d month after purchase"
+msgid_plural "until %(n)d months after purchase"
+msgstr[0] "do %(n)d miesiąca po zakupie"
+msgstr[1] "do %(n)d miesięcy po zakupie"
+msgstr[2] "do %(n)d miesięcy po zakupie"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "until %(n)d week after purchase"
+msgid_plural "until %(n)d weeks after purchase"
+msgstr[0] "do %(n)d tygodnia po zakupie"
+msgstr[1] "do %(n)d tygodni po zakupie"
+msgstr[2] "do %(n)d tygodni po zakupie"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "until %(n)d day after purchase"
+msgid_plural "until %(n)d days after purchase"
+msgstr[0] "do %(n)d dnia po zakupie"
+msgstr[1] "do %(n)d dni po zakupie"
+msgstr[2] "do %(n)d dni po zakupie"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "after %(n)d year of membership"
+msgid_plural "after %(n)d years of membership"
+msgstr[0] "po %(n)d roku członkostwa"
+msgstr[1] "po %(n)d latach członkostwa"
+msgstr[2] "po %(n)d latach członkostwa"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "after %(n)d month of membership"
+msgid_plural "after %(n)d months of membership"
+msgstr[0] "po %(n)d miesiącu członkostwa"
+msgstr[1] "po %(n)d miesiącach członkostwa"
+msgstr[2] "po %(n)d miesiącach członkostwa"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "after %(n)d week of membership"
+msgid_plural "after %(n)d weeks of membership"
+msgstr[0] "po %(n)d tygodniu członkostwa"
+msgstr[1] "po %(n)d tygodniach członkostwa"
+msgstr[2] "po %(n)d tygodniach członkostwa"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "after %(n)d day of membership"
+msgid_plural "after %(n)d days of membership"
+msgstr[0] "po %(n)d dniu członkostwa"
+msgstr[1] "po %(n)d dniach członkostwa"
+msgstr[2] "po %(n)d dniach członkostwa"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "for %(n)d year of membership"
+msgid_plural "for %(n)d years of membership"
+msgstr[0] "przez %(n)d rok członkostwa"
+msgstr[1] "przez %(n)d lata członkostwa"
+msgstr[2] "przez %(n)d lat członkostwa"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "for %(n)d month of membership"
+msgid_plural "for %(n)d months of membership"
+msgstr[0] "przez %(n)d miesiąc członkostwa"
+msgstr[1] "przez %(n)d miesiące członkostwa"
+msgstr[2] "przez %(n)d miesięcy członkostwa"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "for %(n)d week of membership"
+msgid_plural "for %(n)d weeks of membership"
+msgstr[0] "przez %(n)d tydzień członkostwa"
+msgstr[1] "przez %(n)d tygodnie członkostwa"
+msgstr[2] "przez %(n)d tygodni członkostwa"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "for %(n)d day of membership"
+msgid_plural "for %(n)d days of membership"
+msgstr[0] "przez %(n)d dzień członkostwa"
+msgstr[1] "przez %(n)d dni członkostwa"
+msgstr[2] "przez %(n)d dni członkostwa"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "until %(n)d year into membership"
+msgid_plural "until %(n)d years into membership"
+msgstr[0] "do %(n)d roku członkostwa"
+msgstr[1] "do %(n)d lat członkostwa"
+msgstr[2] "do %(n)d lat członkostwa"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "until %(n)d month into membership"
+msgid_plural "until %(n)d months into membership"
+msgstr[0] "do %(n)d miesiąca członkostwa"
+msgstr[1] "do %(n)d miesięcy członkostwa"
+msgstr[2] "do %(n)d miesięcy członkostwa"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "until %(n)d week into membership"
+msgid_plural "until %(n)d weeks into membership"
+msgstr[0] "do %(n)d tygodnia członkostwa"
+msgstr[1] "do %(n)d tygodni członkostwa"
+msgstr[2] "do %(n)d tygodni członkostwa"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "until %(n)d day into membership"
+msgid_plural "until %(n)d days into membership"
+msgstr[0] "do %(n)d dnia członkostwa"
+msgstr[1] "do %(n)d dni członkostwa"
+msgstr[2] "do %(n)d dni członkostwa"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "After %(n)d year of membership"
+msgid_plural "After %(n)d years of membership"
+msgstr[0] "Po %(n)d roku członkostwa"
+msgstr[1] "Po %(n)d latach członkostwa"
+msgstr[2] "Po %(n)d latach członkostwa"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "After %(n)d month of membership"
+msgid_plural "After %(n)d months of membership"
+msgstr[0] "Po %(n)d miesiącu członkostwa"
+msgstr[1] "Po %(n)d miesiącach członkostwa"
+msgstr[2] "Po %(n)d miesiącach członkostwa"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "After %(n)d week of membership"
+msgid_plural "After %(n)d weeks of membership"
+msgstr[0] "Po %(n)d tygodniu członkostwa"
+msgstr[1] "Po %(n)d tygodniach członkostwa"
+msgstr[2] "Po %(n)d tygodniach członkostwa"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "After %(n)d day of membership"
+msgid_plural "After %(n)d days of membership"
+msgstr[0] "Po %(n)d dniu członkostwa"
+msgstr[1] "Po %(n)d dniach członkostwa"
+msgstr[2] "Po %(n)d dniach członkostwa"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "closes after %(n)d year"
+msgid_plural "closes after %(n)d years"
+msgstr[0] "zamyka się po %(n)d roku"
+msgstr[1] "zamyka się po %(n)d latach"
+msgstr[2] "zamyka się po %(n)d latach"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "closes after %(n)d month"
+msgid_plural "closes after %(n)d months"
+msgstr[0] "zamyka się po %(n)d miesiącu"
+msgstr[1] "zamyka się po %(n)d miesiącach"
+msgstr[2] "zamyka się po %(n)d miesiącach"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "closes after %(n)d week"
+msgid_plural "closes after %(n)d weeks"
+msgstr[0] "zamyka się po %(n)d tygodniu"
+msgstr[1] "zamyka się po %(n)d tygodniach"
+msgstr[2] "zamyka się po %(n)d tygodniach"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "closes after %(n)d day"
+msgid_plural "closes after %(n)d days"
+msgstr[0] "zamyka się po %(n)d dniu"
+msgstr[1] "zamyka się po %(n)d dniach"
+msgstr[2] "zamyka się po %(n)d dniach"
 
 #: apps/billing/ways.py
 #, fuzzy, python-format
@@ -518,11 +838,6 @@ msgstr "do %(date)s"
 
 #: apps/billing/ways.py
 #, fuzzy, python-format
-msgid "After %(span)s of membership"
-msgstr "Po %(span)s członkostwa"
-
-#: apps/billing/ways.py
-#, fuzzy, python-format
 msgid "From %(date)s"
 msgstr "Od %(date)s"
 
@@ -530,11 +845,6 @@ msgstr "Od %(date)s"
 #, fuzzy
 msgid "Right away"
 msgstr "Od razu"
-
-#: apps/billing/ways.py
-#, fuzzy, python-format
-msgid "closes after %(span)s"
-msgstr "zamyka się po %(span)s"
 
 #: apps/billing/ways.py
 #, fuzzy, python-format
@@ -547,25 +857,9 @@ msgid "never closes"
 msgstr "nigdy się nie zamyka"
 
 #: apps/billing/ways.py
-#, fuzzy, python-format
-msgid "after %(span)s of joining"
-msgstr "po %(span)s od dołączenia"
-
-#: apps/billing/ways.py
-#, fuzzy, python-format
-msgid "for %(span)s after joining"
-msgstr "przez %(span)s po dołączeniu"
-
-#: apps/billing/ways.py
-#, fuzzy, python-format
-msgid "until %(span)s after joining"
-msgstr "do %(span)s po dołączeniu"
-
-#: apps/billing/ways.py apps/core/focus/flow.py apps/core/focus/kinds/event.py
-#: apps/email_campaigns/catalog.py
-#, fuzzy
-msgid "Free"
-msgstr "Bezpłatnie"
+#, python-format, fuzzy
+msgid "Free %(window)s"
+msgstr "Bezpłatnie %(window)s"
 
 #: apps/billing/ways.py
 #, fuzzy
@@ -573,54 +867,29 @@ msgid "Free for everyone"
 msgstr "Bezpłatne dla wszystkich"
 
 #: apps/billing/ways.py
-#, fuzzy, python-format
-msgid "opening %(span)s after purchase"
-msgstr "otwiera się %(span)s po zakupie"
+#, python-format, fuzzy
+msgid "%(price)s once %(window)s"
+msgstr "%(price)s jednorazowo %(window)s"
 
 #: apps/billing/ways.py
-#, fuzzy, python-format
-msgid "with %(span)s of access"
-msgstr "z dostępem przez %(span)s"
+#, python-format, fuzzy
+msgid "%(price)s once, theirs to keep"
+msgstr "%(price)s jednorazowo, na zawsze"
 
 #: apps/billing/ways.py
-#, fuzzy, python-format
-msgid "until %(span)s after purchase"
-msgstr "do %(span)s po zakupie"
-
-#: apps/billing/ways.py
-#, fuzzy, python-format
-msgid "%(price)s once"
-msgstr "%(price)s jednorazowo"
-
-#: apps/billing/ways.py
-#, fuzzy
-msgid ", theirs to keep"
-msgstr ", na własność"
-
-#: apps/billing/ways.py
-#, fuzzy, python-format
-msgid "after %(span)s of membership"
-msgstr "po %(span)s członkostwa"
-
-#: apps/billing/ways.py
-#, fuzzy, python-format
-msgid "for %(span)s of membership"
-msgstr "przez %(span)s członkostwa"
-
-#: apps/billing/ways.py
-#, fuzzy, python-format
-msgid "until %(span)s into membership"
-msgstr "do %(span)s członkostwa"
-
-#: apps/billing/ways.py
-#, fuzzy, python-format
-msgid "in %(plans)s"
-msgstr "w %(plans)s"
+#, python-format, fuzzy
+msgid "in %(plans)s %(window)s"
+msgstr "w %(plans)s %(window)s"
 
 #: apps/billing/ways.py
 #, fuzzy
 msgid "and"
 msgstr "i"
+
+#: apps/billing/ways.py
+#, fuzzy, python-format
+msgid "in %(plans)s"
+msgstr "w %(plans)s"
 
 #: apps/blog/serializers.py
 #, fuzzy
@@ -708,7 +977,7 @@ msgid "bad token"
 msgstr "nieprawidłowy token"
 
 #: apps/core/contact/views.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "New message from %(name)s"
 msgstr "Nowa wiadomość od %(name)s"
 
@@ -845,6 +1114,14 @@ msgstr "%(id)s jest już widoczny"
 msgid "%(id)s is already hidden"
 msgstr "%(id)s jest już ukryty"
 
+#: apps/core/copilot/blocks.py apps/core/focus/kinds/membership.py
+#, fuzzy, python-format
+msgid "%(n)d item"
+msgid_plural "%(n)d items"
+msgstr[0] "%(n)d element"
+msgstr[1] "%(n)d elementy"
+msgstr[2] "%(n)d elementów"
+
 #: apps/core/copilot/blocks.py
 #, fuzzy
 msgid "no fields to change"
@@ -889,6 +1166,11 @@ msgstr "każdy link w pasku nawigacji wymaga etykiety i bezpiecznego linku"
 #, fuzzy
 msgid "the description cannot be empty"
 msgstr "opis nie może być pusty"
+
+#: apps/core/copilot/content.py
+#, fuzzy
+msgid "Some details were invalid — could you rephrase?"
+msgstr "Niektóre szczegóły były nieprawidłowe — czy możesz to przeformułować?"
 
 #: apps/core/copilot/content.py apps/core/copilot/engine.py
 #, fuzzy, python-format
@@ -941,12 +1223,63 @@ msgid "that lesson is not in this course"
 msgstr "ta lekcja nie znajduje się w tym kursie"
 
 #: apps/core/copilot/content.py
-#, fuzzy, python-format
+#, python-format, fuzzy
+msgid "that is more than %(max)d changes at once — split it into two requests"
+msgstr "to więcej niż %(max)d zmian naraz — podziel to na dwa zapytania"
+
+#: apps/core/copilot/content.py apps/core/tests/test_copilot_language.py
+#, python-format, fuzzy
+msgid "Add module '%(title)s' with %(n)d lesson"
+msgid_plural "Add module '%(title)s' with %(n)d lessons"
+msgstr[0] "Dodaj moduł '%(title)s' z %(n)d lekcją"
+msgstr[1] "Dodaj moduł '%(title)s' z %(n)d lekcjami"
+msgstr[2] "Dodaj moduł '%(title)s' z %(n)d lekcjami"
+
+#: apps/core/copilot/content.py
+#, python-format, fuzzy
+msgid "Add lesson '%(title)s' to '%(module)s'"
+msgstr "Dodaj lekcję '%(title)s' do '%(module)s'"
+
+#: apps/core/copilot/content.py
+#, python-format, fuzzy
+msgid "Rename module '%(old)s' to '%(new)s'"
+msgstr "Zmień nazwę modułu '%(old)s' na '%(new)s'"
+
+#: apps/core/copilot/content.py
+#, python-format, fuzzy
+msgid "Rename lesson '%(old)s' to '%(new)s'"
+msgstr "Zmień nazwę lekcji '%(old)s' na '%(new)s'"
+
+#: apps/core/copilot/content.py
+#, python-format, fuzzy
 msgid ""
-"that is more than %(MAX_CURRICULUM_OPS)s changes at once — split it into two"
-" requests"
+"lesson '%(title)s' has a video or student progress — remove it from the "
+"course page"
 msgstr ""
-"to więcej niż %(MAX_CURRICULUM_OPS)s zmian naraz — podziel to na dwa żądania"
+"lekcja '%(title)s' ma wideo lub postępy uczestników — usuń ją ze strony "
+"kursu"
+
+#: apps/core/copilot/content.py
+#, python-format, fuzzy
+msgid "Remove lesson '%(title)s'"
+msgstr "Usuń lekcję '%(title)s'"
+
+#: apps/core/copilot/content.py
+#, python-format, fuzzy
+msgid ""
+"module '%(title)s' has lessons with a video or student progress — remove it "
+"from the course page"
+msgstr ""
+"moduł '%(title)s' ma lekcje z wideo lub postępami uczestników — usuń go ze "
+"strony kursu"
+
+#: apps/core/copilot/content.py
+#, python-format, fuzzy
+msgid "Remove module '%(title)s' and its %(n)d lesson"
+msgid_plural "Remove module '%(title)s' and its %(n)d lessons"
+msgstr[0] "Usuń moduł '%(title)s' i jego %(n)d lekcję"
+msgstr[1] "Usuń moduł '%(title)s' i jego %(n)d lekcje"
+msgstr[2] "Usuń moduł '%(title)s' i jego %(n)d lekcji"
 
 #: apps/core/copilot/content.py
 #, fuzzy
@@ -1721,6 +2054,12 @@ msgstr "W %(plan)s"
 msgid "One-time price: %(price)s"
 msgstr "Cena jednorazowa: %(price)s"
 
+#: apps/core/focus/flow.py apps/core/focus/kinds/event.py
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Free"
+msgstr "Bezpłatnie"
+
 #: apps/core/focus/flow.py
 #, fuzzy, python-format
 msgid "Sell it for %(price)s"
@@ -1731,18 +2070,45 @@ msgstr "Sprzedaj za %(price)s"
 msgid "In your membership"
 msgstr "W twoim członkostwie"
 
+#: apps/core/focus/followup.py
+#, fuzzy
+msgid "Thinking about your bundle"
+msgstr "Myślisz o swoim pakiecie"
+
+#: apps/core/focus/followup.py
+#, fuzzy
+msgid "Thinking about your course"
+msgstr "Myślisz o swoim kursie"
+
+#: apps/core/focus/followup.py
+#, fuzzy
+msgid "Thinking about your download"
+msgstr "Myślisz o swoim pliku do pobrania"
+
+#: apps/core/focus/followup.py
+#, fuzzy
+msgid "Thinking about your membership"
+msgstr "Myślisz o swoim członkostwie"
+
+#: apps/core/focus/followup.py
+#, fuzzy
+msgid "Thinking about your message"
+msgstr "Myślisz o swojej wiadomości"
+
+#: apps/core/focus/followup.py
+#, fuzzy
+msgid "Thinking about your post"
+msgstr "Myślisz o swoim wpisie"
+
+#: apps/core/focus/followup.py
+#, fuzzy
+msgid "Thinking about your session"
+msgstr "Myślisz o swojej sesji"
+
 #: apps/core/focus/kinds/event.py
 #, fuzzy
 msgid "Add it later"
 msgstr "Dodaj później"
-
-#: apps/core/focus/kinds/membership.py
-#, fuzzy, python-format
-msgid "%(n)d item"
-msgid_plural "%(n)d items"
-msgstr[0] "%(n)d element"
-msgstr[1] "%(n)d elementy"
-msgstr[2] "%(n)d elementów"
 
 #: apps/core/focus/kinds/membership.py apps/email_campaigns/catalog.py
 #, fuzzy, python-format
@@ -1784,6 +2150,36 @@ msgstr "Uczestnicy %(name)s"
 #, fuzzy
 msgid "Writing your outline"
 msgstr "Pisanie twojego konspektu"
+
+#: apps/core/focus/outline.py
+#, fuzzy
+msgid "Getting started"
+msgstr "Pierwsze kroki"
+
+#: apps/core/focus/outline.py
+#, fuzzy
+msgid "Building the basics"
+msgstr "Budowanie podstaw"
+
+#: apps/core/focus/outline.py
+#, fuzzy
+msgid "Putting it into practice"
+msgstr "Zastosowanie w praktyce"
+
+#: apps/core/focus/outline.py
+#, fuzzy
+msgid "Going deeper"
+msgstr "Wchodzenie głębiej"
+
+#: apps/core/focus/outline.py
+#, fuzzy
+msgid "Making it yours"
+msgstr "Dostosowywanie do siebie"
+
+#: apps/core/focus/outline.py
+#, fuzzy
+msgid "Bringing it together"
+msgstr "Łączenie w całość"
 
 #: apps/core/focus/outline.py
 #, fuzzy, python-format
@@ -3408,7 +3804,7 @@ msgid "Slug is required."
 msgstr "Slug jest wymagany."
 
 #: apps/core/validators.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "'%(slug)s' is a reserved subdomain and cannot be used."
 msgstr "'%(slug)s' to zarezerwowana subdomena i nie można jej użyć."
 
@@ -4177,7 +4573,7 @@ msgid "bad signature"
 msgstr "nieprawidłowy podpis"
 
 #: apps/logbook/views/panel.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "invalid '%(name)s' timestamp"
 msgstr "nieprawidłowy znacznik czasu '%(name)s'"
 
@@ -4945,7 +5341,7 @@ msgid "You've been unsubscribed from these emails."
 msgstr "Wypisano Cię z tych wiadomości e-mail."
 
 #: apps/platform_email/serializers.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Invalid filter type. Must be one of: %(types)s."
 msgstr "Nieprawidłowy typ filtra. Dozwolone wartości: %(types)s."
 
@@ -4955,7 +5351,7 @@ msgid "Invalid language. Must be one of: %(codes)s."
 msgstr "Nieprawidłowy język. Musi być jednym z: %(codes)s."
 
 #: apps/platform_email/serializers.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(field)s must be a non-empty list."
 msgstr "%(field)s musi być niepustą listą."
 
@@ -5152,18 +5548,18 @@ msgid "A visitor"
 msgstr "Osoba odwiedzająca"
 
 #: apps/tenant_config/assistant_views.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(label)s asked to talk to a human on your site"
 msgstr "%(label)s prosi o rozmowę z człowiekiem na twojej stronie"
 
 #: apps/tenant_config/assistant_views.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(label)s asked to talk to a human in your site assistant chat."
 msgstr ""
 "%(label)s prosi o rozmowę z człowiekiem na czacie asystenta twojej strony."
 
 #: apps/tenant_config/assistant_views.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "<a href=\"%(url)s\">Open your conversations</a> to reply — the assistant "
 "pauses while you chat."
@@ -5187,12 +5583,12 @@ msgid "1-120 characters"
 msgstr "1-120 znaków"
 
 #: apps/tenant_config/assistant_views.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "1-%(max)s characters"
 msgstr "1-%(max)s znaków"
 
 #: apps/tenant_config/assistant_views.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "limit of %(max)s entries reached"
 msgstr "osiągnięto limit wpisów (%(max)s)"
 

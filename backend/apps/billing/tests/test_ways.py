@@ -6,7 +6,7 @@ import pytest
 
 from apps.accounts.models import User
 from apps.billing.models import AccessWindow, Bundle, SubscriptionPlan, SubscriptionPlanAccess
-from apps.billing.ways import WaysError, apply_shorthand, describe, item_for, kind_of, set_ways, span_text, ways_of
+from apps.billing.ways import WaysError, apply_shorthand, describe, item_for, kind_of, set_ways, ways_of
 from apps.courses.models import Course
 from apps.live.models import ZoomClass
 
@@ -299,16 +299,18 @@ def test_shorthand_price_zero_drops_buy_and_falls_back_to_free(course, gold, own
         assert e.value.code == "price", bad
 
 
-def test_span_text_uses_the_largest_exact_unit():
-    assert [span_text(d) for d in (365, 730, 30, 60, 14, 7, 10, 1)] == [
-        "1 year",
-        "2 years",
-        "1 month",
-        "2 months",
-        "2 weeks",
-        "1 week",
-        "10 days",
-        "1 day",
+def test_a_span_phrase_uses_the_largest_exact_unit():
+    from apps.billing.ways import _span_phrase
+
+    assert [_span_phrase("free_opens", d) for d in (365, 730, 30, 60, 14, 7, 10, 1)] == [
+        "after 1 year of joining",
+        "after 2 years of joining",
+        "after 1 month of joining",
+        "after 2 months of joining",
+        "after 2 weeks of joining",
+        "after 1 week of joining",
+        "after 10 days of joining",
+        "after 1 day of joining",
     ]
 
 

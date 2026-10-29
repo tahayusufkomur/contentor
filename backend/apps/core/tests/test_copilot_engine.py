@@ -2167,7 +2167,7 @@ def test_edit_curriculum_card_lists_the_changes_and_stashes_cleaned_ops(tenant_c
     )
     assert card["kind"] == "edit_curriculum"
     assert card["title"] == "Update the curriculum: Morning Flow"
-    assert card["detail"] == "Add lesson 'Breath' to 'Basics'; Add module 'Flow' with 1 lesson(s)"
+    assert card["detail"] == "Add lesson 'Breath' to 'Basics'; Add module 'Flow' with 1 lesson"
     assert tokens.take_action(card["token"], tenant_ctx.schema_name) == {
         "kind": "edit_curriculum",
         "course_id": course.id,
