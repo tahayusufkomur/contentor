@@ -13,6 +13,7 @@ from functools import cache
 from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
+from django.utils.translation import gettext_lazy
 from pydantic import BaseModel
 
 from apps.core import ai as core_ai
@@ -26,7 +27,7 @@ from . import jobs, kinds
 MAX_COUNT = 12  # modules, and lessons per module
 MAX_TOTAL = MAX_COUNT * MAX_COUNT
 MAX_PRICE = Decimal("99999999.99")  # Course.price: 10 digits, 2 decimals
-STEP = {"specialist": "content", "label": "Reading your details"}
+STEP = {"specialist": "content", "label": gettext_lazy("Reading your details")}
 
 # Static per kind, byte-identical across tenants (prompt caching); her words ride the user turn.
 # ``{noun}`` is the kind's word ("course"). Each kind's RULES adds its own fields, and its own

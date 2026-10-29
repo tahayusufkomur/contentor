@@ -62,7 +62,7 @@ class SubscriptionPlan(models.Model):
         """Why putting it on sale is refused, as a sentence; "" when it can go on sale."""
         if gap := self.not_ready():
             return f"{gap}."
-        return self.NOT_SELLING if self.cannot_sell() else ""
+        return str(self.NOT_SELLING) if self.cannot_sell() else ""
 
 
 class AccessWindowFields(models.Model):
@@ -311,7 +311,7 @@ class Bundle(models.Model):
         """Why publishing it is refused, as a sentence; "" when it can be published."""
         if gap := self.not_ready():
             return f"{gap}."
-        return self.NOT_SELLING if self.cannot_sell() else ""
+        return str(self.NOT_SELLING) if self.cannot_sell() else ""
 
 
 class BundleItem(models.Model):

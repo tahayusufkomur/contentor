@@ -16,6 +16,9 @@ from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.utils import timezone
+from django.utils.formats import date_format
+from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 from django_tenants.utils import tenant_context
 from pydantic import BaseModel, Field
 
@@ -642,7 +645,7 @@ def _tenant_photo(tenant, photo_id):
     with tenant_context(tenant):
         photo = Photo.objects.filter(pk=photo_id).first()
     if photo is None:
-        raise photos.PhotoOpError("that attached photo is not in your library")
+        raise photos.PhotoOpError(_("that attached photo is not in your library"))
     return photo
 
 
@@ -654,10 +657,10 @@ def _block_for_image(tenant, page, block_id, field=None):
 
     blocks_ = blocks.page_blocks(_tenant_pages(tenant).get(page))
     if blocks_ is None:
-        raise photos.PhotoOpError(f"unknown page: {page}")
+        raise photos.PhotoOpError(_("unknown page: %(page)s") % {"page": page})
     block = next((b for b in blocks_ if isinstance(b, dict) and b.get("id") == block_id), None)
     if block is None:
-        raise photos.PhotoOpError(f"no block {block_id} on {page}")
+        raise photos.PhotoOpError(_("no block %(block_id)s on %(page)s") % {"block_id": block_id, "page": page})
     field = photos.image_field_for(block.get("type"), field)
     current_id = (block.get(field) or {}).get("photo_id") if isinstance(block.get(field), dict) else None
     exclude_key = None
@@ -676,7 +679,7 @@ def _course_for_cover(tenant, course_id):
     with tenant_context(tenant):
         course = Course.objects.filter(pk=course_id).select_related("thumbnail").first()
         if course is None:
-            raise photos.PhotoOpError(f"no course with id {course_id}")
+            raise photos.PhotoOpError(_("no course with id %(course_id)s") % {"course_id": course_id})
         exclude_key = course.thumbnail.s3_key if course.thumbnail_id and course.thumbnail else None
         return course.title, exclude_key
 
@@ -688,7 +691,9 @@ def _event_for_cover(tenant, event_kind, event_id):
     with tenant_context(tenant):
         event = content.event_model(event_kind).objects.filter(pk=event_id).select_related("thumbnail").first()
         if event is None:
-            raise photos.PhotoOpError(f"no {event_kind} event with id {event_id}")
+            raise photos.PhotoOpError(
+                _("no %(event_kind)s event with id %(event_id)s") % {"event_kind": event_kind, "event_id": event_id}
+            )
         exclude_key = event.thumbnail.s3_key if event.thumbnail_id and event.thumbnail else None
         return event.title, exclude_key
 
@@ -700,7 +705,7 @@ def _event_title(tenant, event_kind, event_id):
     with tenant_context(tenant):
         title = content.event_model(event_kind).objects.filter(pk=event_id).values_list("title", flat=True).first()
     if title is None:
-        raise content.ContentOpError(f"no event with id {event_id}")
+        raise content.ContentOpError(_("no event with id %(event_id)s") % {"event_id": event_id})
     return title
 
 
@@ -713,7 +718,7 @@ def _post_title(tenant, post_id):
     with tenant_context(tenant):
         title = BlogPost.objects.filter(pk=post_id).values_list("title", flat=True).first()
     if title is None:
-        raise content.ContentOpError(f"no blog post with id {post_id}")
+        raise content.ContentOpError(_("no blog post with id %(post_id)s") % {"post_id": post_id})
     return title
 
 
@@ -1100,7 +1105,7 @@ def _block_label(block_type):
     family = sections.family_of(block_type or "")
     if family:
         return (sections.families().get(family, {}).get("label") or family).lower()
-    return block_type or "block"
+    return block_type or _("block")
 
 
 def _label_of(tenant, page, block_id):
@@ -1138,11 +1143,11 @@ def _card(tenant, action, actor=None, context=None):
         # The email is the one open in her editor, never an id the model wrote.
         email = (context or {}).get("email")
         if not email:
-            raise content.ContentOpError("open the email in the email editor first")
+            raise content.ContentOpError(_("open the email in the email editor first"))
         params = {"target": email["kind"], "id": email["id"], "brief": action.request[:2000]}
         return {
             "kind": "edit_email",
-            "title": "Change this email",
+            "title": _("Change this email"),
             "detail": textwrap.shorten(action.request, 300, placeholder="…"),
             "token": tokens.stash_action(schema, {"kind": "edit_email", "params": params}),
         }
@@ -1158,7 +1163,7 @@ def _card(tenant, action, actor=None, context=None):
                 raise content.ContentOpError(str(exc)) from exc
         return {
             "kind": "set_access",
-            "title": f"Set access for {ways.title_of(item)}"[:120],
+            "title": (_("Set access for %(title)s") % {"title": ways.title_of(item)})[:120],
             "detail": detail,
             "why": action.reason,
             "token": tokens.stash_action(
@@ -1172,7 +1177,7 @@ def _card(tenant, action, actor=None, context=None):
         return {
             "kind": "edit_pages",
             "title": action.instruction[:120],
-            "detail": f"{len(changes)} field(s) change",
+            "detail": ngettext("%(n)d field changes", "%(n)d fields change", len(changes)) % {"n": len(changes)},
             "changes": changes,
             "token": tokens.stash_action(
                 schema, {"kind": "edit_pages", "pages": pages, "extras": extras, "changes_count": len(changes)}
@@ -1184,7 +1189,7 @@ def _card(tenant, action, actor=None, context=None):
         detail = ", ".join(f"{k}: {v}" for k, v in block.items() if k not in ("id", "type", "enabled"))
         return {
             "kind": "add_block",
-            "title": f"Add a {_block_label(action.block_type)} to {action.page}",
+            "title": _("Add a %(block)s to %(page)s") % {"block": _block_label(action.block_type), "page": action.page},
             "detail": detail[:500],
             "token": tokens.stash_action(
                 schema,
@@ -1194,23 +1199,25 @@ def _card(tenant, action, actor=None, context=None):
     if isinstance(action, RemoveBlockAction):
         return {
             "kind": "remove_block",
-            "title": f"Remove the {_label_of(tenant, action.page, action.block_id)} from {action.page}",
+            "title": _("Remove the %(block)s from %(page)s")
+            % {"block": _label_of(tenant, action.page, action.block_id), "page": action.page},
             "detail": "",
             "token": tokens.stash_action(schema, action.model_dump()),
         }
     if isinstance(action, MoveBlockAction):
-        detail = "to the top" if action.after_block_id is None else f"after {action.after_block_id}"
+        detail = _("to the top") if action.after_block_id is None else _("after %(id)s") % {"id": action.after_block_id}
         if action.to_page:
-            detail = f"to {action.to_page} ({detail})"
+            detail = _("to %(page)s (%(where)s)") % {"page": action.to_page, "where": detail}
         return {
             "kind": "move_block",
-            "title": f"Move the {_label_of(tenant, action.page, action.block_id)} on {action.page}",
+            "title": _("Move the %(block)s on %(page)s")
+            % {"block": _label_of(tenant, action.page, action.block_id), "page": action.page},
             "detail": detail,
             "token": tokens.stash_action(schema, action.model_dump()),
         }
     if isinstance(action, EditBlockFieldsAction):
         pages_snapshot = _tenant_pages(tenant)
-        _, changes = blocks.edit_block_fields(pages_snapshot, action.page, action.block_id, action.fields)
+        _unused, changes = blocks.edit_block_fields(pages_snapshot, action.page, action.block_id, action.fields)
         page_blocks_ = blocks.page_blocks(pages_snapshot.get(action.page)) or []
         block = next((b for b in page_blocks_ if isinstance(b, dict) and b.get("id") == action.block_id), {})
         rows = [
@@ -1225,26 +1232,30 @@ def _card(tenant, action, actor=None, context=None):
         ]
         return {
             "kind": "edit_block_fields",
-            "title": f"Update the {_block_label(block.get('type', ''))} on {action.page}",
-            "detail": f"{len(rows)} field(s) change",
+            "title": _("Update the %(block)s on %(page)s")
+            % {"block": _block_label(block.get("type", "")), "page": action.page},
+            "detail": ngettext("%(n)d field changes", "%(n)d fields change", len(rows)) % {"n": len(rows)},
             "changes": rows,
             "token": tokens.stash_action(schema, action.model_dump()),
         }
     if isinstance(action, ToggleBlockAction):
         blocks.set_block_enabled(_tenant_pages(tenant), action.page, action.block_id, action.enabled)
-        verb = "Show" if action.enabled else "Hide"
+        title = (_("Show %(id)s on %(page)s") if action.enabled else _("Hide %(id)s on %(page)s")) % {
+            "id": action.block_id,
+            "page": action.page,
+        }
         return {
             "kind": "toggle_block",
-            "title": f"{verb} {action.block_id} on {action.page}",
-            "detail": "The section stays saved — flip it back anytime.",
+            "title": title,
+            "detail": _("The section stays saved — flip it back anytime."),
             "token": tokens.stash_action(schema, action.model_dump()),
         }
     if isinstance(action, DuplicateBlockAction):
         blocks.duplicate_block(_tenant_pages(tenant), action.page, action.block_id)
         return {
             "kind": "duplicate_block",
-            "title": f"Duplicate {action.block_id} on {action.page}",
-            "detail": "The copy lands right below the original.",
+            "title": _("Duplicate %(id)s on %(page)s") % {"id": action.block_id, "page": action.page},
+            "detail": _("The copy lands right below the original."),
             "token": tokens.stash_action(schema, action.model_dump()),
         }
     if isinstance(action, SetBlockImageAction):
@@ -1253,8 +1264,8 @@ def _card(tenant, action, actor=None, context=None):
             photo = _tenant_photo(tenant, action.photo_id)
             return {
                 "kind": "set_block_image",
-                "title": f"Use your photo '{photo.title or 'untitled'}'",
-                "detail": "This is the photo you attached — nothing changes until you apply.",
+                "title": _("Use your photo '%(photo)s'") % {"photo": photo.title or _("untitled")},
+                "detail": _("This is the photo you attached — nothing changes until you apply."),
                 "image_url": photos.tenant_photo_url(photo),
                 "token": tokens.stash_action(
                     schema,
@@ -1270,17 +1281,18 @@ def _card(tenant, action, actor=None, context=None):
         # A styled site's photos share one look: the style's photo words ride
         # along with the model's description.
         photo_words = (sections.style(_tenant_style(tenant)) or {}).get("photoWords", "")
+        seed = f"{schema}:page:{action.page}:{action.block_id}:{field}"
         image = photos.pick_photo(
             f"{action.description} {photo_words}".strip(),
             tenant,
             field=field,
             exclude_s3_key=exclude_key,
-            subject=f"{schema}:page:{action.page}:{action.block_id}:{field}",
+            subject=seed,
         )
         return {
             "kind": "set_block_image",
-            "title": f"Use the photo '{image.title}'",
-            "detail": "Ask for a different style anytime — nothing changes until you apply.",
+            "title": _("Use the photo '%(photo)s'") % {"photo": image.title},
+            "detail": _("Ask for a different style anytime — nothing changes until you apply."),
             # Curated pick → the widget plays its brief photo-reveal.
             "reveal": True,
             "image_url": image.preview_url,
@@ -1301,25 +1313,28 @@ def _card(tenant, action, actor=None, context=None):
             photo = _tenant_photo(tenant, action.photo_id)
             return {
                 "kind": "set_course_cover",
-                "title": f"Cover for '{course_title[:80]}': your photo '{photo.title or 'untitled'}'",
-                "detail": "This is the photo you attached — nothing changes until you apply.",
+                "title": _("Cover for '%(title)s': your photo '%(photo)s'")
+                % {"title": course_title[:80], "photo": photo.title or _("untitled")},
+                "detail": _("This is the photo you attached — nothing changes until you apply."),
                 "image_url": photos.tenant_photo_url(photo),
                 "token": tokens.stash_action(
                     schema,
                     {"kind": "set_course_cover", "course_id": action.course_id, "tenant_photo_id": str(photo.pk)},
                 ),
             }
+        seed = f"{schema}:course:{action.course_id}"
         image = photos.pick_photo(
             action.description,
             tenant,
             field="courseCover",
             exclude_s3_key=exclude_key,
-            subject=f"{schema}:course:{action.course_id}",
+            subject=seed,
         )
         return {
             "kind": "set_course_cover",
-            "title": f"Cover for '{course_title[:80]}': the photo '{image.title}'",
-            "detail": "Ask for a different style anytime — nothing changes until you apply.",
+            "title": _("Cover for '%(title)s': the photo '%(photo)s'")
+            % {"title": course_title[:80], "photo": image.title},
+            "detail": _("Ask for a different style anytime — nothing changes until you apply."),
             "reveal": True,
             "image_url": image.preview_url,
             "token": tokens.stash_action(
@@ -1333,8 +1348,9 @@ def _card(tenant, action, actor=None, context=None):
             photo = _tenant_photo(tenant, action.photo_id)
             return {
                 "kind": "set_event_cover",
-                "title": f"Cover for '{event_title[:80]}': your photo '{photo.title or 'untitled'}'",
-                "detail": "This is the photo you attached — nothing changes until you apply.",
+                "title": _("Cover for '%(title)s': your photo '%(photo)s'")
+                % {"title": event_title[:80], "photo": photo.title or _("untitled")},
+                "detail": _("This is the photo you attached — nothing changes until you apply."),
                 "image_url": photos.tenant_photo_url(photo),
                 "token": tokens.stash_action(
                     schema,
@@ -1346,17 +1362,19 @@ def _card(tenant, action, actor=None, context=None):
                     },
                 ),
             }
+        seed = f"{schema}:event:{action.event_kind}:{action.event_id}"
         image = photos.pick_photo(
             action.description,
             tenant,
             field="eventCover",
             exclude_s3_key=exclude_key,
-            subject=f"{schema}:event:{action.event_kind}:{action.event_id}",
+            subject=seed,
         )
         return {
             "kind": "set_event_cover",
-            "title": f"Cover for '{event_title[:80]}': the photo '{image.title}'",
-            "detail": "Ask for a different style anytime — nothing changes until you apply.",
+            "title": _("Cover for '%(title)s': the photo '%(photo)s'")
+            % {"title": event_title[:80], "photo": image.title},
+            "detail": _("Ask for a different style anytime — nothing changes until you apply."),
             "reveal": True,
             "image_url": image.preview_url,
             "token": tokens.stash_action(
@@ -1372,12 +1390,12 @@ def _card(tenant, action, actor=None, context=None):
     if isinstance(action, NotePhotoAction):
         description = " ".join(str(action.description or "").split())[:300]
         if not description:
-            raise photos.PhotoOpError("the photo note is empty")
+            raise photos.PhotoOpError(_("the photo note is empty"))
         photo = _tenant_photo(tenant, action.photo_id)
         return {
             "kind": "note_photo",
-            "title": f"Remember this photo as: {description[:100]}",
-            "detail": "Saved to your media library so it can be found again later.",
+            "title": _("Remember this photo as: %(description)s") % {"description": description[:100]},
+            "detail": _("Saved to your media library so it can be found again later."),
             "image_url": photos.tenant_photo_url(photo),
             "token": tokens.stash_action(
                 schema,
@@ -1389,8 +1407,8 @@ def _card(tenant, action, actor=None, context=None):
             photo = _tenant_photo(tenant, action.photo_id)
             return {
                 "kind": "set_logo",
-                "title": f"Use your photo '{photo.title or 'untitled'}' as the logo",
-                "detail": "This is the photo you attached — nothing changes until you apply.",
+                "title": _("Use your photo '%(photo)s' as the logo") % {"photo": photo.title or _("untitled")},
+                "detail": _("This is the photo you attached — nothing changes until you apply."),
                 "image_url": photos.tenant_photo_url(photo),
                 "token": tokens.stash_action(schema, {"kind": "set_logo", "tenant_photo_id": str(photo.pk)}),
             }
@@ -1398,28 +1416,28 @@ def _card(tenant, action, actor=None, context=None):
         row = logos.pick_logo(action.description, tenant, exclude_s3_key=exclude_key)
         return {
             "kind": "set_logo",
-            "title": f"Use the logo '{row.title}'",
-            "detail": "Ask for a different style anytime — nothing changes until you apply.",
+            "title": _("Use the logo '%(logo)s'") % {"logo": row.title},
+            "detail": _("Ask for a different style anytime — nothing changes until you apply."),
             "reveal": True,
             "image_url": logos.preview_url(row),
             "token": tokens.stash_action(schema, {"kind": "set_logo", "curated_logo_id": row.pk}),
         }
     if isinstance(action, EditCourseAction):
-        course_title, _ = _course_for_cover(tenant, action.course_id)  # raises PhotoOpError on unknown id
+        course_title, _unused = _course_for_cover(tenant, action.course_id)  # raises PhotoOpError on unknown id
         parts = [
             p
             for p in (
-                f"title → '{action.title[:60]}'" if action.title else None,
-                "new description" if action.description else None,
-                f"price → {max(action.price, 0):.2f}" if action.price is not None else None,
+                _("title → '%(title)s'") % {"title": action.title[:60]} if action.title else None,
+                _("new description") if action.description else None,
+                _("price → %(price)s") % {"price": f"{max(action.price, 0):.2f}"} if action.price is not None else None,
             )
             if p
         ]
         if not parts:
-            raise content.ContentOpError("nothing to change on the course")
+            raise content.ContentOpError(_("nothing to change on the course"))
         return {
             "kind": "edit_course",
-            "title": f"Update course: {course_title[:100]}",
+            "title": _("Update course: %(title)s") % {"title": course_title[:100]},
             "detail": ", ".join(parts),
             "token": tokens.stash_action(
                 schema,
@@ -1443,7 +1461,7 @@ def _card(tenant, action, actor=None, context=None):
             course, steps = content.curriculum_steps(action.course_id, [op.model_dump() for op in action.ops])
         return {
             "kind": "edit_curriculum",
-            "title": f"Update the curriculum: {course.title[:100]}",
+            "title": _("Update the curriculum: %(title)s") % {"title": course.title[:100]},
             # Never cut short: the card is what she agrees to, removals included.
             "detail": "; ".join(label for _op, label in steps),
             "token": tokens.stash_action(
@@ -1457,21 +1475,21 @@ def _card(tenant, action, actor=None, context=None):
         if action.scheduled_at is not None:
             when = _in_zone(tenant, action.scheduled_at)
             if when <= timezone.now():
-                raise content.ContentOpError("event date must be in the future")
+                raise content.ContentOpError(_("event date must be in the future"))
         parts = [
             p
             for p in (
-                f"title → '{action.title[:60]}'" if action.title else None,
-                "new description" if action.description else None,
-                f"when → {when:%b %d, %Y %H:%M %Z}" if when is not None else None,
-                f"location → '{action.location[:80]}'" if action.location else None,
-                "new Zoom link" if action.zoom_link else None,
-                f"price → {max(action.price, 0):.2f}" if action.price is not None else None,
+                _("title → '%(title)s'") % {"title": action.title[:60]} if action.title else None,
+                _("new description") if action.description else None,
+                _("when → %(when)s") % {"when": date_format(when, "M d, Y H:i T")} if when is not None else None,
+                _("location → '%(location)s'") % {"location": action.location[:80]} if action.location else None,
+                _("new Zoom link") if action.zoom_link else None,
+                _("price → %(price)s") % {"price": f"{max(action.price, 0):.2f}"} if action.price is not None else None,
             )
             if p
         ]
         if not parts:
-            raise content.ContentOpError("nothing to change on the event")
+            raise content.ContentOpError(_("nothing to change on the event"))
         params = {
             k: v
             for k, v in (
@@ -1486,7 +1504,7 @@ def _card(tenant, action, actor=None, context=None):
         }
         return {
             "kind": "edit_event",
-            "title": f"Update event: {event_title[:100]}",
+            "title": _("Update event: %(title)s") % {"title": event_title[:100]},
             "detail": ", ".join(parts),
             "token": tokens.stash_action(
                 schema,
@@ -1503,15 +1521,15 @@ def _card(tenant, action, actor=None, context=None):
         parts = [
             p
             for p in (
-                f"title → '{action.title[:60]}'" if action.title else None,
-                f"summary → '{action.summary[:80]}'" if action.summary else None,
-                "new body" if action.body_html else None,
-                "your photo as the cover" if action.photo_id else None,
+                _("title → '%(title)s'") % {"title": action.title[:60]} if action.title else None,
+                _("summary → '%(summary)s'") % {"summary": action.summary[:80]} if action.summary else None,
+                _("new body") if action.body_html else None,
+                _("your photo as the cover") if action.photo_id else None,
             )
             if p
         ]
         if not parts:
-            raise content.ContentOpError("nothing to change on the post")
+            raise content.ContentOpError(_("nothing to change on the post"))
         params = {
             k: v
             for k, v in (
@@ -1523,7 +1541,7 @@ def _card(tenant, action, actor=None, context=None):
         }
         card = {
             "kind": "edit_blog_post",
-            "title": f"Update post: {post_title[:100]}",
+            "title": _("Update post: %(title)s") % {"title": post_title[:100]},
             "detail": ", ".join(parts),
         }
         if action.photo_id:
@@ -1536,20 +1554,20 @@ def _card(tenant, action, actor=None, context=None):
         )
         return card
     if isinstance(action, PublishCourseAction):
-        course_title, _ = _course_for_cover(tenant, action.course_id)  # raises PhotoOpError on unknown id
+        course_title, _unused = _course_for_cover(tenant, action.course_id)  # raises PhotoOpError on unknown id
         with tenant_context(tenant):
             from apps.courses.models import Course
 
             course = Course.objects.get(pk=action.course_id)
             gap = course.not_ready()
         if course.is_published:
-            raise content.ContentOpError("that course is already published")
+            raise content.ContentOpError(_("that course is already published"))
         if gap:
             raise content.ContentOpError(gap)
         return {
             "kind": "publish_course",
-            "title": f"Publish course: {course_title[:100]}",
-            "detail": "Goes live for students the moment you confirm.",
+            "title": _("Publish course: %(title)s") % {"title": course_title[:100]},
+            "detail": _("Goes live for students the moment you confirm."),
             "token": tokens.stash_action(schema, {"kind": "publish_course", "course_id": action.course_id}),
         }
     if isinstance(action, PublishBlogPostAction):
@@ -1560,21 +1578,22 @@ def _card(tenant, action, actor=None, context=None):
             post = BlogPost.objects.get(pk=action.post_id)
             gap = post.not_ready()
         if post.status == "published":
-            raise content.ContentOpError("that post is already published")
+            raise content.ContentOpError(_("that post is already published"))
         if gap:
             raise content.ContentOpError(gap)
         return {
             "kind": "publish_blog_post",
-            "title": f"Publish post: {post_title[:100]}",
-            "detail": "Goes live for students the moment you confirm.",
+            "title": _("Publish post: %(title)s") % {"title": post_title[:100]},
+            "detail": _("Goes live for students the moment you confirm."),
             "token": tokens.stash_action(schema, {"kind": "publish_blog_post", "post_id": action.post_id}),
         }
     if isinstance(action, EditStyleAction):
         style_id = chrome.clean_style(action.style)
         return {
             "kind": "edit_style",
-            "title": f"Switch the site style to {(sections.style(style_id) or {}).get('label', style_id)}",
-            "detail": "Every section keeps its content and takes the new layout — you can switch back anytime.",
+            "title": _("Switch the site style to %(style)s")
+            % {"style": (sections.style(style_id) or {}).get("label", style_id)},
+            "detail": _("Every section keeps its content and takes the new layout — you can switch back anytime."),
             "token": tokens.stash_action(schema, {"kind": "edit_style", "style": style_id}),
         }
     if isinstance(action, EditNavbarAction):
@@ -1590,21 +1609,25 @@ def _card(tenant, action, actor=None, context=None):
         if action.show_install is not None:
             updates["show_install"] = action.show_install
         if not updates:
-            raise chrome.ChromeOpError("nothing to change on the navbar")
+            raise chrome.ChromeOpError(_("nothing to change on the navbar"))
         parts = []
         if "layout" in updates:
-            parts.append(f"layout: {updates['layout']}")
+            parts.append(_("layout: %(layout)s") % {"layout": updates["layout"]})
         if "cta" in updates:
-            parts.append(f"button: '{updates['cta']['text']}' → {updates['cta']['href']}")
+            parts.append(
+                _("button: '%(text)s' → %(href)s") % {"text": updates["cta"]["text"], "href": updates["cta"]["href"]}
+            )
         if "links" in updates:
-            parts.append("links: " + ", ".join(f"'{link['label']}'" for link in updates["links"]))
+            parts.append(
+                _("links: %(links)s") % {"links": ", ".join(f"'{link['label']}'" for link in updates["links"])}
+            )
         if "show_login" in updates:
-            parts.append(f"login button {'shown' if updates['show_login'] else 'hidden'}")
+            parts.append(_("login button shown") if updates["show_login"] else _("login button hidden"))
         if "show_install" in updates:
-            parts.append(f"install button {'shown' if updates['show_install'] else 'hidden'}")
+            parts.append(_("install button shown") if updates["show_install"] else _("install button hidden"))
         return {
             "kind": "edit_navbar",
-            "title": "Update the navbar",
+            "title": _("Update the navbar"),
             "detail": ", ".join(parts),
             "token": tokens.stash_action(schema, {"kind": "edit_navbar", "updates": updates}),
         }
@@ -1617,8 +1640,8 @@ def _card(tenant, action, actor=None, context=None):
         old = (cfg.meta_description if cfg else "") or ""
         return {
             "kind": "edit_seo",
-            "title": "Update the site's search description",
-            "detail": "This is the text Google shows under your site name.",
+            "title": _("Update the site's search description"),
+            "detail": _("This is the text Google shows under your site name."),
             "changes": [
                 {
                     "page": "site",
@@ -1642,8 +1665,12 @@ def _card(tenant, action, actor=None, context=None):
             ],
         }
         lesson_count = sum(len(m.lessons) for m in action.modules)
-        price_label = "free" if price == 0 else params["price"]
-        detail = f"{len(action.modules)} module(s), {lesson_count} lesson(s) — {price_label}"
+        price_label = _("free") if price == 0 else params["price"]
+        detail = _("%(modules)s, %(lessons)s — %(price)s") % {
+            "modules": ngettext("%(n)d module", "%(n)d modules", len(action.modules)) % {"n": len(action.modules)},
+            "lessons": ngettext("%(n)d lesson", "%(n)d lessons", lesson_count) % {"n": lesson_count},
+            "price": price_label,
+        }
         if action.access:
             from apps.courses.models import Course
 
@@ -1651,14 +1678,14 @@ def _card(tenant, action, actor=None, context=None):
             detail = _access_detail(tenant, Course(), action.access, actor)
         return {
             "kind": "create_course",
-            "title": f"Create draft course: {action.title[:120]}",
+            "title": _("Create draft course: %(title)s") % {"title": action.title[:120]},
             "detail": detail,
             "token": tokens.stash_action(schema, {"kind": "create_course", "params": params}),
         }
     if isinstance(action, CreateEventAction):
         when = _in_zone(tenant, action.scheduled_at)
         if when <= timezone.now():
-            raise content.ContentOpError("event date must be in the future")
+            raise content.ContentOpError(_("event date must be in the future"))
         price = max(action.price, 0)
         params = {
             "title": action.title[:200],
@@ -1672,7 +1699,7 @@ def _card(tenant, action, actor=None, context=None):
         if action.event_kind == "zoom" and action.zoom_link:
             params["zoom_link"] = action.zoom_link[:500]
         label = content.EVENT_KINDS[action.event_kind][4]
-        detail = f"{when:%a %b %d, %Y %H:%M %Z} — visible to students once confirmed"
+        detail = _("%(when)s — visible to students once confirmed") % {"when": date_format(when, "D M d, Y H:i T")}
         if action.access:
             params["access"] = action.access
             detail = (
@@ -1680,7 +1707,7 @@ def _card(tenant, action, actor=None, context=None):
             )
         return {
             "kind": "create_event",
-            "title": f"Schedule {label}: {action.title[:120]}",
+            "title": _("Schedule %(kind)s: %(title)s") % {"kind": label, "title": action.title[:120]},
             "detail": detail,
             "token": tokens.stash_action(
                 schema, {"kind": "create_event", "event_kind": action.event_kind, "params": params}
@@ -1698,23 +1725,27 @@ def _card(tenant, action, actor=None, context=None):
             "template_id": action.template_id,
         }
         template = _email_template_name(tenant, action.template_id)
-        look = f"in your {template} design" if template else "in your brand's design"
+        look = _("in your %(template)s design") % {"template": template} if template else _("in your brand's design")
         return {
             "kind": "draft_email",
-            "title": f"Draft email: {action.subject[:120]}",
-            "detail": f"Saved as a draft {look}. Review and send it from Messages. Nothing is sent now.",
+            "title": _("Draft email: %(subject)s") % {"subject": action.subject[:120]},
+            "detail": _("Saved as a draft %(look)s. Review and send it from Messages. Nothing is sent now.")
+            % {"look": look},
             "token": tokens.stash_action(schema, {"kind": "draft_email", "params": params}),
         }
     if isinstance(action, MakeReelsAction):
         title = _video_title(tenant, action.video_id)
         if title is None:
-            raise content.ContentOpError("that video does not exist")
+            raise content.ContentOpError(_("that video does not exist"))
         count = max(1, min(5, action.count))
         return {
             "kind": "make_reels",
-            "title": f"Make {count} reel{'s' if count > 1 else ''} from {title[:100]}",
-            "detail": "I find its best moments and design a cover for each. You pick the ones you like in "
-            "Reels before they become videos. Nothing is posted.",
+            "title": ngettext("Make %(n)d reel from %(title)s", "Make %(n)d reels from %(title)s", count)
+            % {"n": count, "title": title[:100]},
+            "detail": _(
+                "I find its best moments and design a cover for each. You pick the ones you like in "
+                "Reels before they become videos. Nothing is posted."
+            ),
             "token": tokens.stash_action(
                 schema, {"kind": "make_reels", "params": {"video_id": action.video_id, "count": count}}
             ),
@@ -1727,8 +1758,8 @@ def _card(tenant, action, actor=None, context=None):
         }
         return {
             "kind": "draft_announcement",
-            "title": f"Draft announcement: {action.title[:120]}",
-            "detail": "Saved as a draft — review and send it from Messages. Nothing is sent now.",
+            "title": _("Draft announcement: %(title)s") % {"title": action.title[:120]},
+            "detail": _("Saved as a draft — review and send it from Messages. Nothing is sent now."),
             "token": tokens.stash_action(schema, {"kind": "draft_announcement", "params": params}),
         }
     params = {
@@ -1738,13 +1769,13 @@ def _card(tenant, action, actor=None, context=None):
     }
     card = {
         "kind": "create_blog_post",
-        "title": f"Draft blog post: {action.title[:120]}",
-        "detail": action.summary[:500] or "Draft for your review",
+        "title": _("Draft blog post: %(title)s") % {"title": action.title[:120]},
+        "detail": action.summary[:500] or _("Draft for your review"),
     }
     if action.photo_id:
         photo = _tenant_photo(tenant, action.photo_id)
         params["cover_photo"] = str(photo.pk)
-        card["detail"] = f"{card['detail']} — with your photo as the cover"
+        card["detail"] = _("%(detail)s — with your photo as the cover") % {"detail": card["detail"]}
         card["image_url"] = photos.tenant_photo_url(photo)
     card["token"] = tokens.stash_action(schema, {"kind": "create_blog_post", "params": params})
     return card
@@ -1857,8 +1888,10 @@ def run_turn(
         # Never echo parsed.text here: the model narrates the actions it
         # proposed ("Added a photo…"), and with every card dropped that
         # narration claims changes that never happened.
-        text = "I couldn't turn that into a change I can make — could you rephrase?"
+        text = _("I couldn't turn that into a change I can make — could you rephrase?")
         if drop_reason:
-            text = f"I couldn't make that change: {drop_reason}. Nothing on your site was changed."
+            text = _("I couldn't make that change: %(reason)s. Nothing on your site was changed.") % {
+                "reason": drop_reason
+            }
         return {"kind": "answer", "text": text, "specialist": specialist}, cost
     return {"kind": "actions", "text": parsed.text, "actions": cards, "specialist": specialist}, cost

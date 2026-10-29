@@ -8,6 +8,8 @@ the exact allowlist the admin config PATCH enforces, so the copilot can
 never write a navbar shape the admin couldn't. Imports are function-local
 to match apps/core's cycle-dodging convention."""
 
+from django.utils.translation import gettext as _
+
 
 class ChromeOpError(Exception):
     """User-safe message describing why a chrome edit was refused."""
@@ -21,8 +23,8 @@ def clean_style(style_id):
     enabled = sections.enabled_styles()
     if value not in enabled:
         if not enabled:
-            raise ChromeOpError("no site styles are available yet")
-        raise ChromeOpError("style must be one of: " + ", ".join(enabled))
+            raise ChromeOpError(_("no site styles are available yet"))
+        raise ChromeOpError(_("style must be one of: %(options)s") % {"options": ", ".join(enabled)})
     return value
 
 
@@ -31,7 +33,7 @@ def clean_layout(layout):
 
     value = str(layout or "").strip().lower()
     if value not in _NAVBAR_LAYOUTS:
-        raise ChromeOpError("layout must be one of: " + ", ".join(sorted(_NAVBAR_LAYOUTS)))
+        raise ChromeOpError(_("layout must be one of: %(options)s") % {"options": ", ".join(sorted(_NAVBAR_LAYOUTS))})
     return value
 
 
@@ -64,9 +66,9 @@ def clean_links(links):
     from apps.tenant_config.serializers import TenantConfigSerializer
 
     if not isinstance(links, list):
-        raise ChromeOpError("navbar links must be a list")
+        raise ChromeOpError(_("navbar links must be a list"))
     if len(links) > 20:
-        raise ChromeOpError("navbar supports up to 20 links")
+        raise ChromeOpError(_("navbar supports up to 20 links"))
     try:
         cleaned = TenantConfigSerializer().validate_navbar_config({"links": links})
     except drf_serializers.ValidationError as exc:
@@ -76,12 +78,12 @@ def clean_links(links):
         raise ChromeOpError(str(detail)) from exc
     out = [link for link in cleaned["links"] if link["label"] and link["href"]]
     if not out:
-        raise ChromeOpError("every navbar link needs a label and a safe link")
+        raise ChromeOpError(_("every navbar link needs a label and a safe link"))
     return out
 
 
 def clean_meta_description(value):
     text = " ".join(str(value or "").split())
     if not text:
-        raise ChromeOpError("the description cannot be empty")
+        raise ChromeOpError(_("the description cannot be empty"))
     return text[:300]

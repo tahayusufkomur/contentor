@@ -14,8 +14,10 @@ from zoneinfo import ZoneInfo
 from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
+from django.utils.formats import date_format
+from django.utils.text import get_text_list
 from django.utils.translation import gettext as _
-from django.utils.translation import gettext_lazy
+from django.utils.translation import gettext_lazy, ngettext
 
 from apps.billing.models import AccessWindow, SubscriptionPlan, SubscriptionPlanAccess
 
@@ -28,7 +30,7 @@ KINDS = {
     "zoom_class": "live.zoomclass",
     "bundle": "billing.bundle",
 }
-ALLOWED = {kind: ("free", "buy", "plans") for kind in KINDS}
+ALLOWED = dict.fromkeys(KINDS, ("free", "buy", "plans"))
 ALLOWED["zoom_class"] = ("free",)
 ALLOWED["bundle"] = ("buy",)
 
@@ -383,61 +385,78 @@ def span_text(days: int) -> str:
     for size, unit in ((365, "year"), (30, "month"), (7, "week"), (1, "day")):
         if days % size == 0:
             n = days // size
-            return f"{n} {unit}{'' if n == 1 else 's'}"
+            if unit == "year":
+                return ngettext("%(n)d year", "%(n)d years", n) % {"n": n}
+            if unit == "month":
+                return ngettext("%(n)d month", "%(n)d months", n) % {"n": n}
+            if unit == "week":
+                return ngettext("%(n)d week", "%(n)d weeks", n) % {"n": n}
+            return ngettext("%(n)d day", "%(n)d days", n) % {"n": n}
+
+
+def _day(value: str) -> str:
+    return date_format(date.fromisoformat(value), "j M Y")
 
 
 def _clauses(window: dict | None, opens_after: str, closes_after: str, closes_until: str) -> list[str]:
-    """The window as phrases; the templates take a span such as "1 month". A span to the close still
-    counts from when they got in, so once an opening is set it reads ``closes_until``, not a length."""
+    """The window as phrases; the templates (already translated) take a ``%(span)s`` such as "1 month". A span
+    to the close still counts from when they got in, so once an opening is set it reads ``closes_until``,
+    not a length."""
     w = window or {}
-    day = lambda key: date.fromisoformat(w[key]).strftime("%-d %b %Y")  # noqa: E731
     out = []
     if "opens_after_days" in w:
-        out.append(opens_after.format(span_text(w["opens_after_days"])))
+        out.append(opens_after % {"span": span_text(w["opens_after_days"])})
     if "opens_on" in w:
-        out.append(f"from {day('opens_on')}")
+        out.append(_("from %(date)s") % {"date": _day(w["opens_on"])})
     if "closes_after_days" in w:
         opens = "opens_after_days" in w or "opens_on" in w
-        out.append((closes_until if opens else closes_after).format(span_text(w["closes_after_days"])))
+        out.append((closes_until if opens else closes_after) % {"span": span_text(w["closes_after_days"])})
     if "closes_on" in w:
-        out.append(f"until {day('closes_on')}")
+        out.append(_("until %(date)s") % {"date": _day(w["closes_on"])})
     return out
 
 
 def membership_text(link) -> str:
     """A plan link's window as the Access section's pill says it (``linkPill``): "<opens> · <closes>"."""
     w = _window_of(link) or {}
-    day = lambda key: date.fromisoformat(w[key]).strftime("%-d %b %Y")  # noqa: E731
     if "opens_after_days" in w:
-        opens = f"After {span_text(w['opens_after_days'])} of membership"
+        opens = _("After %(span)s of membership") % {"span": span_text(w["opens_after_days"])}
     elif "opens_on" in w:
-        opens = f"From {day('opens_on')}"
+        opens = _("From %(date)s") % {"date": _day(w["opens_on"])}
     else:
-        opens = "Right away"
+        opens = _("Right away")
     if "closes_after_days" in w:
-        closes = f"closes after {span_text(w['closes_after_days'])}"
+        closes = _("closes after %(span)s") % {"span": span_text(w["closes_after_days"])}
     elif "closes_on" in w:
-        closes = f"closes {day('closes_on')}"
+        closes = _("closes %(date)s") % {"date": _day(w["closes_on"])}
     else:
-        closes = "never closes"
+        closes = _("never closes")
     return f"{opens} · {closes}"
 
 
 def describe(ways: dict) -> str:
+    """The ways in as one sentence for the creator (and the copilot's cards and digests)."""
     from apps.tenant_config.interview_brief import money
 
     parts = []
     if ways.get("free"):
         clauses = _clauses(
-            ways["free"].get("window"), "after {} of joining", "for {} after joining", "until {} after joining"
+            ways["free"].get("window"),
+            _("after %(span)s of joining"),
+            _("for %(span)s after joining"),
+            _("until %(span)s after joining"),
         )
-        parts.append(" ".join(["Free", *clauses]) if clauses else "Free for everyone")
+        parts.append(" ".join([_("Free"), *clauses]) if clauses else _("Free for everyone"))
     if ways.get("buy"):
         buy = ways["buy"]
         clauses = _clauses(
-            buy.get("window"), "opening {} after purchase", "with {} of access", "until {} after purchase"
+            buy.get("window"),
+            _("opening %(span)s after purchase"),
+            _("with %(span)s of access"),
+            _("until %(span)s after purchase"),
         )
-        parts.append(f"{money(buy['price'])} once" + (" " + ", ".join(clauses) if clauses else ", theirs to keep"))
+        once = _("%(price)s once") % {"price": money(buy["price"])}
+        parts.append(once + (" " + ", ".join(clauses) if clauses else _(", theirs to keep")))
     if ways.get("plans"):
         ids = [p["plan_id"] for p in ways["plans"]]
         names = dict(SubscriptionPlan.objects.filter(pk__in=ids).values_list("pk", "name"))
@@ -446,12 +465,17 @@ def describe(ways: dict) -> str:
             if p["plan_id"] not in names:
                 raise WaysError("plan", _("One of those subscriptions no longer exists."))
             clauses = tuple(
-                _clauses(p.get("window"), "after {} of membership", "for {} of membership", "until {} into membership")
+                _clauses(
+                    p.get("window"),
+                    _("after %(span)s of membership"),
+                    _("for %(span)s of membership"),
+                    _("until %(span)s into membership"),
+                )
             )
             groups.setdefault(clauses, []).append(names[p["plan_id"]])
         parts.append(
             ", ".join(
-                "in " + (n[0] if len(n) == 1 else ", ".join(n[:-1]) + " and " + n[-1]) + "".join(f" {c}" for c in cl)
+                _("in %(plans)s") % {"plans": get_text_list(n, _("and"))} + "".join(f" {c}" for c in cl)
                 for cl, n in groups.items()
             )
         )

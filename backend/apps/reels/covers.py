@@ -38,6 +38,7 @@ COUNT = 6  # frames offered per reel
 PICKED = 3  # of which the model's choice, first
 SECONDS = 1.0  # the cover's time at the start of the reel
 CELL = (270, 480)  # a frame on the contact sheet, cropped 9:16 as the cover shows it
+SHEET_NOTE = "Image N is sheet N."  # for the model, not text anyone reads
 LOOK_SYSTEM = (
     "You choose the cover photos of short vertical videos (Instagram Reels, TikTok, YouTube Shorts). Each "
     "image is a contact sheet of numbered stills from one clip, each cropped as the cover will show it, with "
@@ -198,7 +199,7 @@ def _ask_hub(sheets: list[bytes], label: str) -> Choices | None:
             return None
         parsed, _cost, _model = core_ai.agentc_look(
             system=LOOK_SYSTEM,
-            user=json.dumps({"sheets": len(sheets), "note": "Image N is sheet N."}),
+            user=json.dumps({"sheets": len(sheets), "note": SHEET_NOTE}),
             urls=urls,
             output_model=Choices,
             label=label,
@@ -214,7 +215,7 @@ def _ask_hub(sheets: list[bytes], label: str) -> Choices | None:
 
 
 def _ask_vision(sheets: list[bytes]) -> Choices:
-    content = [{"type": "text", "text": json.dumps({"sheets": len(sheets), "note": "Image N is sheet N."})}]
+    content = [{"type": "text", "text": json.dumps({"sheets": len(sheets), "note": SHEET_NOTE})}]
     content += [
         {
             "type": "image",

@@ -15,6 +15,8 @@ from typing import Literal
 from django.db import connection, transaction
 from django.utils import timezone
 from django.utils.html import escape, strip_tags
+from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 
 from apps.tenant_config import interview_schedule
 from apps.tenant_config.interview_brief import Field
@@ -167,7 +169,7 @@ def _target(value):
     from apps.billing.models import Bundle
     from apps.courses.models import Course
 
-    kind, _, pk = str(value or "").partition(":")
+    kind, _sep, pk = str(value or "").partition(":")
     if not (pk.isascii() and pk.isdigit() and len(pk) < 10):
         return None
     if kind == "course":
@@ -212,7 +214,7 @@ def _count(filters) -> int:
 
 
 def _students(n: int) -> str:
-    return f"{n} student{'' if n == 1 else 's'}"
+    return ngettext("%(n)d student", "%(n)d students", n) % {"n": n}
 
 
 def _audience_tiles() -> list[dict]:
@@ -222,7 +224,9 @@ def _audience_tiles() -> list[dict]:
 
     # ponytail: a count per tile walks her students through the paywall (resolve_audience), one course at a
     # time; fine for a coach's list, a bulk count if a big school feels it.
-    tiles = [{"value": ALL, "label": f"All my students ({_students(_count({}))})", "hint": ""}]
+    tiles = [
+        {"value": ALL, "label": _("All my students (%(students)s)") % {"students": _students(_count({}))}, "hint": ""}
+    ]
     for kind, rows in (
         ("course", Course.objects.filter(is_published=True).order_by("title")),
         ("bundle", Bundle.objects.filter(is_active=True, is_published=True).order_by("name")),
@@ -230,7 +234,11 @@ def _audience_tiles() -> list[dict]:
         for row in rows:
             value = f"{kind}:{row.pk}"
             tiles.append(
-                {"value": value, "label": f"Students of {_name(row)}", "hint": _students(_count(_filters(value)))}
+                {
+                    "value": value,
+                    "label": _("Students of %(name)s") % {"name": _name(row)},
+                    "hint": _students(_count(_filters(value))),
+                }
             )
     return tiles
 

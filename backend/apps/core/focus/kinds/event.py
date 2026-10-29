@@ -18,6 +18,7 @@ from zoneinfo import ZoneInfo
 
 from django.db import connection
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from pydantic import BaseModel
 
 from apps.tenant_config import interview_schedule
@@ -350,7 +351,7 @@ def apply_found(creation, found) -> None:
         if _is_link(link):
             answers["place"] = link
         else:  # never junk on the page: asked once (flow.apply adds it to the clarify questions)
-            option = analysis.ClarifyOption(label="Add it later", value=LATER)
+            option = analysis.ClarifyOption(label=_("Add it later"), value=LATER)
             found.unclear.append(analysis.Unclear(field="place", question=BAD_LINK, options=[option]))
             found.answer = ""  # nor kept as her answer to the place question
     elif address and kind in (None, "onsite"):
@@ -528,10 +529,10 @@ def price_tiles(creation, row) -> dict | None:
     s = suggest_price(row)
     paid = {
         "value": f"paid:{s.amount}",
-        "label": f"One-time price: {flow._price_label(str(s.amount))}",
+        "label": _("One-time price: %(price)s") % {"price": flow._price_label(str(s.amount))},
         "hint": s.reason,
     }
-    return {"options": [{"value": "free", "label": "Free", "hint": ""}, paid], "suggested": paid["value"]}
+    return {"options": [{"value": "free", "label": _("Free"), "hint": ""}, paid], "suggested": paid["value"]}
 
 
 def suggest_price(row) -> pricing.Suggestion:

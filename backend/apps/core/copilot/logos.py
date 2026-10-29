@@ -5,6 +5,8 @@ execute view."""
 import logging
 import re
 
+from django.utils.translation import gettext as _
+
 logger = logging.getLogger(__name__)
 
 
@@ -33,7 +35,7 @@ def pick_logo(description, tenant, *, exclude_s3_key=None):
             if r.image_key.startswith("platform/") and r.image_key != (exclude_s3_key or "")
         ]
     if not rows:
-        raise LogoOpError("no logos are available in the library yet")
+        raise LogoOpError(_("no logos are available in the library yet"))
     brief = brief_with_turn_style(tenant, description)
     return shortlist(rows, brief, limit=SHORTLIST_LIMIT)[0]
 

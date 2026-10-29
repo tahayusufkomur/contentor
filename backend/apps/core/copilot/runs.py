@@ -14,12 +14,12 @@ from decimal import Decimal
 
 from django.db import connection, transaction
 from django.db.models import Max, Q
-from django.utils import timezone
+from django.utils import timezone, translation
 from django_tenants.utils import tenant_context
 from rest_framework.utils.encoders import JSONEncoder
 
 from apps.core import ai as core_ai
-from apps.core import tasks
+from apps.core import languages, tasks
 from apps.core.copilot import context as page_context
 from apps.core.copilot import engine, tokens
 from apps.core.onboarding import ai_compose
@@ -96,27 +96,29 @@ def execute(schema_name, run_id):
         emit(run_id, "thinking", {"specialist": run.specialist})
         req = run.request or {}
         payload, cost = None, Decimal("0")
-        try:
-            # Its cards stay usable as long as the reply can be opened.
-            with tokens.lasting(int((OPEN_WINDOW + timedelta(hours=1)).total_seconds())):
-                payload, cost = engine.run_turn(
-                    tenant,
-                    req.get("transcript") or [],
-                    req.get("selections") or [],
-                    req.get("message") or "",
-                    req.get("attachments") or [],
-                    page_context.clean(tenant, req.get("context")),
-                    specialist=run.specialist,
-                    actor=run.actor,
-                )
-        except core_ai.AiError as exc:
-            cost = getattr(exc, "cost_usd", None) or Decimal("0")
-            logger.exception("copilot run failed schema=%s run=%s", schema_name, run_id)
-        except Exception:
-            logger.exception("copilot run failed schema=%s run=%s", schema_name, run_id)
-        finally:
-            ai_compose.record_spend(schema_name, cost)
-        _settle(run_id, payload)
+        # The cards and refusals she reads are in her language (the lazy ones resolve in _settle).
+        with translation.override(languages.creator_language(run.actor)):
+            try:
+                # Its cards stay usable as long as the reply can be opened.
+                with tokens.lasting(int((OPEN_WINDOW + timedelta(hours=1)).total_seconds())):
+                    payload, cost = engine.run_turn(
+                        tenant,
+                        req.get("transcript") or [],
+                        req.get("selections") or [],
+                        req.get("message") or "",
+                        req.get("attachments") or [],
+                        page_context.clean(tenant, req.get("context")),
+                        specialist=run.specialist,
+                        actor=run.actor,
+                    )
+            except core_ai.AiError as exc:
+                cost = getattr(exc, "cost_usd", None) or Decimal("0")
+                logger.exception("copilot run failed schema=%s run=%s", schema_name, run_id)
+            except Exception:
+                logger.exception("copilot run failed schema=%s run=%s", schema_name, run_id)
+            finally:
+                ai_compose.record_spend(schema_name, cost)
+            _settle(run_id, payload)
 
 
 def claim(run_id):
@@ -192,7 +194,10 @@ def open_for(user):
 def _append(run, kind, data=None):
     """Next event of a run whose row the caller holds locked."""
     seq = (run.events.aggregate(top=Max("seq"))["top"] or 0) + 1
-    CopilotRunEvent.objects.create(run=run, seq=seq, type=kind, data=data or {})
+    # (a step's label is a lazy translation: stored in the language of the run)
+    CopilotRunEvent.objects.create(
+        run=run, seq=seq, type=kind, data=json.loads(json.dumps(data or {}, cls=JSONEncoder))
+    )
     CopilotRun.objects.filter(pk=run.pk).update(updated_at=timezone.now())
     return seq
 

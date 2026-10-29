@@ -17,6 +17,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.db import connection
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from apps.courses import captions
 
@@ -83,13 +84,13 @@ def start_search(video, count: int, made_by: str = "coach") -> dict:
     if state["status"] in RUNNING:
         return state
     if made_by != AHEAD_BY and not _take("searches", SEARCHES_PER_HOUR):
-        raise JobError("That's a lot of reels for one hour. Try again a little later.")
+        raise JobError(_("That's a lot of reels for one hour. Try again a little later."))
     # (Scribe is asked by the job, in the video worker: the web process can't reach it in prod)
     found = words_state(video)
     if found == "unavailable":
-        raise JobError("This video has no transcript, so reels can't be made from it. Upload your own video.")
+        raise JobError(_("This video has no transcript, so reels can't be made from it. Upload your own video."))
     if found == "failed":
-        raise JobError("No speech was found in this video, so there is nothing to caption.")
+        raise JobError(_("No speech was found in this video, so there is nothing to caption."))
     _set(video.pk, "picking" if found == "ready" else "transcribing", count=count, made_by=made_by)
     tasks.find_reels.delay(connection.tenant.id, video.pk, count, made_by, 0)
     return search_state(video.pk)
@@ -125,16 +126,17 @@ def run_search(video, count: int, made_by: str, waited: int) -> int | None:
             # Scribe is done with this file and gave no words, or can't do it at all
             over = not away and video.captions_key == video.s3_key and not video.captions_job
             if over or captions.status(video) is None or waited >= WAIT_MAX:
-                fail_search(video.pk, "The video could not be transcribed. Try again later.")
+                fail_search(video.pk, _("The video could not be transcribed. Try again later."))
                 return None
             _set(video.pk, "transcribing", count=count, made_by=made_by)
             return WAIT
     _set(video.pk, "picking", count=count, made_by=made_by)
     ahead = made_by == AHEAD_BY
     taken = list(video.reels.values_list("start", "end"))
-    picked = moments.pick(video, count, taken, label=f"{moments.LABEL}-ahead" if ahead else moments.LABEL)
+    label = moments.LABEL_AHEAD if ahead else moments.LABEL
+    picked = moments.pick(video, count, taken, label=label)
     if not picked:
-        fail_search(video.pk, "No moments long enough for a reel were found in this video.")
+        fail_search(video.pk, _("No moments long enough for a reel were found in this video."))
         return None
     reels = [
         Reel.objects.create(
@@ -205,11 +207,11 @@ def start_render(reel) -> None:
     from . import tasks
 
     if not render.available():
-        raise JobError("Making reels into videos is not on for this site.")
+        raise JobError(_("Making reels into videos is not on for this site."))
     if status_of(reel) == Reel.RENDERING:
         return
     if not _take("renders", RENDERS_PER_HOUR):
-        raise JobError("That's a lot of videos for one hour. Try again a little later.")
+        raise JobError(_("That's a lot of videos for one hour. Try again a little later."))
     now = timezone.now()
     Reel.objects.filter(pk=reel.pk).update(status=Reel.RENDERING, error="", updated_at=now)
     reel.status, reel.updated_at = Reel.RENDERING, now

@@ -9,7 +9,11 @@ view. Imports are function-local to match apps/core's cycle-dodging convention."
 
 from copy import deepcopy
 
+from django.utils.translation import gettext as _
+
 from apps.tenant_config import sections
+
+DESCRIBE_ASK = "Describe this photo."  # the model's instruction, not text anyone reads
 
 # Which image fields each block type carries, default target first (hero
 # backgrounds vs. inline images; a styled section's main photo then its second
@@ -121,11 +125,15 @@ def image_field_for(block_type, field=None):
     else the type's main photo."""
     fields = IMAGE_FIELDS.get(block_type)
     if not fields:
-        raise PhotoOpError("photos can go on these sections only: " + ", ".join(sorted(IMAGE_FIELDS)))
+        raise PhotoOpError(
+            _("photos can go on these sections only: %(options)s") % {"options": ", ".join(sorted(IMAGE_FIELDS))}
+        )
     if field is None:
         return fields[0]
     if field not in fields:
-        raise PhotoOpError(f"{block_type} has photo fields: " + ", ".join(fields))
+        raise PhotoOpError(
+            _("%(block)s has photo fields: %(fields)s") % {"block": block_type, "fields": ", ".join(fields)}
+        )
     return field
 
 
@@ -230,7 +238,7 @@ def pick_photo(description, tenant, *, field, exclude_s3_key=None, subject=""):
     remember_session(subject, session_id, level)
     best = best or wrong
     if best is None:
-        raise PhotoOpError("no photos are available in the library yet")
+        raise PhotoOpError(_("no photos are available in the library yet"))
     # Every photo the catalog can offer this subject has been shown. Starting
     # over beats refusing — the coach asked for a photo, and "no photos are
     # available" would be a lie about a full library.
@@ -255,7 +263,7 @@ def photo_for_action(action):
     if action.get("tenant_photo_id"):
         photo = Photo.objects.filter(pk=action["tenant_photo_id"]).first()
         if photo is None:
-            raise PhotoOpError("that attached photo is not in your library")
+            raise PhotoOpError(_("that attached photo is not in your library"))
         return photo
     return cached_curated_photo(action.get("curated_asset_id"))
 
@@ -271,7 +279,7 @@ def cached_curated_photo(asset_id):
     except curated_client.CuratedImageError as exc:
         raise PhotoOpError(str(exc)) from exc
     if image is None:
-        raise PhotoOpError("that photo is no longer available")
+        raise PhotoOpError(_("that photo is no longer available"))
     try:
         return cache_remote_image(image)
     except curated_client.CuratedImageError as exc:
@@ -287,12 +295,12 @@ def apply_block_image(pages, page, block_id, field, photo_pk):
     new_pages = deepcopy(pages)
     blocks_ = blocks.page_blocks((new_pages or {}).get(page))
     if blocks_ is None:
-        raise PhotoOpError(f"unknown page: {page}")
+        raise PhotoOpError(_("unknown page: %(page)s") % {"page": page})
     for block in blocks_:
         if isinstance(block, dict) and block.get("id") == block_id:
             block[field] = {"url": None, "photo_id": str(photo_pk)}
             return new_pages
-    raise PhotoOpError(f"no block {block_id} on {page}")
+    raise PhotoOpError(_("no block %(block_id)s on %(page)s") % {"block_id": block_id, "page": page})
 
 
 DESCRIBE_MAX_DIM = 1024  # longest edge sent to the vision model
@@ -347,14 +355,14 @@ def describe_tenant_photo(photo):
         return "", Decimal("0")
 
     try:
-        parsed, cost, _ = core_ai.structured_messages(
+        parsed, cost, _model = core_ai.structured_messages(
             system=DESCRIBE_SYSTEM,
             messages=[
                 {
                     "role": "user",
                     "content": [
                         {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": b64}},
-                        {"type": "text", "text": "Describe this photo."},
+                        {"type": "text", "text": DESCRIBE_ASK},
                     ],
                 }
             ],

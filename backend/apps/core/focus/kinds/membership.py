@@ -13,6 +13,8 @@ from decimal import Decimal
 from statistics import median
 
 from django.db import connection
+from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 
 from apps.tenant_config.interview_brief import MEMBERSHIP_TIERS, TIER_BY_ID, Field, answers_of, money, tiers_for
 
@@ -349,15 +351,15 @@ def label(field, answer) -> str | None:
         values = answer if isinstance(answer, list) else _ticked(answer)
         if not values:
             return NOTHING
-        count = f"{len(values)} item" + ("s" if len(values) > 1 else "")
+        count = ngettext("%(n)d item", "%(n)d items", len(values)) % {"n": len(values)}
         if len(values) > 3:
             return count
         return ", ".join(rows[0].title for v in values if (rows := _rows_of(v))) or count
     if field == "access" and isinstance(answer, str):
-        cycle, _, amount = answer.partition(":")
+        cycle, _sep, amount = answer.partition(":")
         price = analysis.price_value(amount) if cycle in CYCLES else None
         if price not in (None, "free", "membership"):
-            return f"{money(price)} a {cycle}"
+            return (_("%(price)s a month") if cycle == "month" else _("%(price)s a year")) % {"price": money(price)}
     return None
 
 
@@ -522,8 +524,16 @@ def price_tiles(creation, row) -> dict | None:
         return None
     s = _monthly(row)
     y = _yearly(row) or pricing.Suggestion(s.amount * 10, YEAR_HINT)
-    month = {"value": f"month:{s.amount}", "label": f"{money(s.amount)} a month", "hint": s.reason}
-    yearly = {"value": f"year:{y.amount}", "label": f"{money(y.amount)} a year", "hint": y.reason}
+    month = {
+        "value": f"month:{s.amount}",
+        "label": _("%(price)s a month") % {"price": money(s.amount)},
+        "hint": s.reason,
+    }
+    yearly = {
+        "value": f"year:{y.amount}",
+        "label": _("%(price)s a year") % {"price": money(y.amount)},
+        "hint": y.reason,
+    }
     return {"options": [month, yearly], "suggested": month["value"], "say": SAY}
 
 
@@ -563,7 +573,14 @@ def suggest_price(row) -> pricing.Suggestion | None:
 def amount_label(row, amount: str) -> str:
     """An amount with its cycle, as her finish step says it: "$9 a month", "$90 a year"."""
     months = row.billing_interval_months if row is not None else 1
-    return f"{money(amount)} " + {1: "a month", 12: "a year"}.get(months, f"every {months} months")
+    if months == 1:
+        return _("%(price)s a month") % {"price": money(amount)}
+    if months == 12:
+        return _("%(price)s a year") % {"price": money(amount)}
+    return ngettext("%(price)s every %(n)d month", "%(price)s every %(n)d months", months) % {
+        "price": money(amount),
+        "n": months,
+    }
 
 
 def _yearly(row) -> pricing.Suggestion | None:

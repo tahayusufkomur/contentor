@@ -14,6 +14,7 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.db import transaction
+from django.utils.translation import gettext as _
 
 
 class ContentOpError(Exception):
@@ -29,7 +30,7 @@ def _fail(errors):
     # Nested DRF errors (e.g. a course's `modules` list) are dicts/lists of
     # dicts all the way down; walk into the first leaf so the raised message
     # is a real sentence, never a Python dict/list repr shown to a coach.
-    for _ in range(5):
+    for _depth in range(5):
         if not isinstance(current, dict) or not current:
             break
         field, messages = next(iter(current.items()))
@@ -172,14 +173,14 @@ def edit_course(course_id, params, *, user=None):
 
     course = Course.objects.filter(pk=course_id).first()
     if course is None:
-        raise ContentOpError(f"no course with id {course_id}")
+        raise ContentOpError(_("no course with id %(course_id)s") % {"course_id": course_id})
     data = {k: v for k, v in params.items() if k in _COURSE_EDIT_FIELDS and v is not None}
     price = data.pop("price", None)
     if price is not None:
         price = f"{max(float(price), 0):.2f}"
     fields = [*data, *(["price"] if price is not None else [])]
     if not fields:
-        raise ContentOpError("nothing to change on the course")
+        raise ContentOpError(_("nothing to change on the course"))
     old = {k: str(getattr(course, k)) for k in fields}
     serializer = CourseCreateUpdateSerializer(instance=course, data=data, partial=True)
     if not serializer.is_valid():
@@ -195,7 +196,7 @@ def edit_course(course_id, params, *, user=None):
         if old[k] != str(getattr(course, k))
     ]
     if not changes:
-        raise ContentOpError("those fields already have those values")
+        raise ContentOpError(_("those fields already have those values"))
     return {
         "kind": "edit_course",
         "id": course.id,
@@ -212,7 +213,7 @@ def edit_event(event_id, kind, params, *, user=None):
     kind = event_kind(kind)
     event = event_model(kind).objects.filter(pk=event_id).first()
     if event is None:
-        raise ContentOpError(f"no {kind} event with id {event_id}")
+        raise ContentOpError(_("no %(kind)s event with id %(event_id)s") % {"kind": kind, "event_id": event_id})
     was_dated = event.scheduled_at is not None
     changes = []
 
@@ -230,11 +231,11 @@ def edit_event(event_id, kind, params, *, user=None):
     if params.get("scheduled_at"):
         when = parse_datetime(str(params["scheduled_at"]))
         if when is None:
-            raise ContentOpError("could not read the new date")
+            raise ContentOpError(_("could not read the new date"))
         if when.tzinfo is None:
             when = when.replace(tzinfo=timezone.get_current_timezone())
         if when <= timezone.now():
-            raise ContentOpError("event date must be in the future")
+            raise ContentOpError(_("event date must be in the future"))
         _set("scheduled_at", when)
     price = None
     if params.get("price") is not None:
@@ -251,10 +252,10 @@ def edit_event(event_id, kind, params, *, user=None):
         try:
             URLValidator(schemes=["http", "https"])(link)
         except ValidationError as exc:
-            raise ContentOpError("that Zoom link is not a full web address (https://…)") from exc
+            raise ContentOpError(_("that Zoom link is not a full web address (https://…)")) from exc
         _set("zoom_link", link)
     if not changes and price is None:
-        raise ContentOpError("nothing to change on the event")
+        raise ContentOpError(_("nothing to change on the event"))
     # The event form's rule (_ScheduledOnCreateMixin): an undated draft that gets a
     # date goes on the schedule; a held draft (one that had a date) stays a draft.
     if event.status == "draft" and not was_dated and event.scheduled_at:
@@ -281,7 +282,7 @@ MAX_NEW_LESSONS = 20
 def _title(op):
     title = " ".join(str(op.get("title") or "").split())[:200]
     if not title:
-        raise ContentOpError("a module or lesson needs a title")
+        raise ContentOpError(_("a module or lesson needs a title"))
     return title
 
 
@@ -299,26 +300,29 @@ def curriculum_steps(course_id, ops):
 
     course = Course.objects.filter(pk=course_id).prefetch_related("modules__lessons").first()
     if course is None:
-        raise ContentOpError(f"no course with id {course_id}")
+        raise ContentOpError(_("no course with id %(course_id)s") % {"course_id": course_id})
     modules = {m.id: m for m in course.modules.all()}
     lessons = {lesson.id: lesson for m in modules.values() for lesson in m.lessons.all()}
 
     def module_of(op):
         module = modules.get(op.get("module_id"))
         if module is None:
-            raise ContentOpError("that module is not in this course")
+            raise ContentOpError(_("that module is not in this course"))
         return module
 
     def lesson_of(op):
         lesson = lessons.get(op.get("lesson_id"))
         if lesson is None:
-            raise ContentOpError("that lesson is not in this course")
+            raise ContentOpError(_("that lesson is not in this course"))
         return lesson
 
     ops = list(ops)
     if len(ops) > MAX_CURRICULUM_OPS:
         # Never apply a silent subset of what was asked.
-        raise ContentOpError(f"that is more than {MAX_CURRICULUM_OPS} changes at once — split it into two requests")
+        raise ContentOpError(
+            _("that is more than %(MAX_CURRICULUM_OPS)s changes at once — split it into two requests")
+            % {"MAX_CURRICULUM_OPS": MAX_CURRICULUM_OPS}
+        )
     steps = []
     for op in ops:
         kind = op.get("op")
@@ -372,9 +376,9 @@ def curriculum_steps(course_id, ops):
                 )
             )
         else:
-            raise ContentOpError("unknown curriculum change")
+            raise ContentOpError(_("unknown curriculum change"))
     if not steps:
-        raise ContentOpError("nothing to change in the curriculum")
+        raise ContentOpError(_("nothing to change in the curriculum"))
     return course, steps
 
 
@@ -441,7 +445,7 @@ def edit_blog_post(post_id, params):
 
     post = BlogPost.objects.filter(pk=post_id).first()
     if post is None:
-        raise ContentOpError(f"no blog post with id {post_id}")
+        raise ContentOpError(_("no blog post with id %(post_id)s") % {"post_id": post_id})
     data = {}
     if params.get("title"):
         data["title"] = str(params["title"])[:200]
@@ -452,7 +456,7 @@ def edit_blog_post(post_id, params):
     if params.get("cover_photo"):
         data["cover_photo"] = params["cover_photo"]
     if not data:
-        raise ContentOpError("nothing to change on the post")
+        raise ContentOpError(_("nothing to change on the post"))
     old = {k: str(getattr(post, k)) for k in data}
     serializer = BlogPostAdminSerializer(instance=post, data=data, partial=True)
     if not serializer.is_valid():
@@ -464,7 +468,7 @@ def edit_blog_post(post_id, params):
         if old[k] != str(getattr(post, k))
     ]
     if not changes:
-        raise ContentOpError("those fields already have those values")
+        raise ContentOpError(_("those fields already have those values"))
     return {
         "kind": "edit_blog_post",
         "id": post.id,
@@ -479,9 +483,9 @@ def publish_course(course_id):
 
     course = Course.objects.filter(pk=course_id).first()
     if course is None:
-        raise ContentOpError(f"no course with id {course_id}")
+        raise ContentOpError(_("no course with id %(course_id)s") % {"course_id": course_id})
     if course.is_published:
-        raise ContentOpError("that course is already published")
+        raise ContentOpError(_("that course is already published"))
     if gap := course.not_ready():
         raise ContentOpError(gap)
     course.is_published = True
@@ -496,9 +500,9 @@ def publish_blog_post(post_id):
 
     post = BlogPost.objects.filter(pk=post_id).first()
     if post is None:
-        raise ContentOpError(f"no blog post with id {post_id}")
+        raise ContentOpError(_("no blog post with id %(post_id)s") % {"post_id": post_id})
     if post.status == "published":
-        raise ContentOpError("that post is already published")
+        raise ContentOpError(_("that post is already published"))
     if gap := post.not_ready():
         raise ContentOpError(gap)
     post.status = "published"
@@ -517,7 +521,7 @@ def create_announcement_draft(user, params):
 
     title = str(params.get("title") or "").strip()[:200]
     if not title:
-        raise ContentOpError("the announcement needs a title")
+        raise ContentOpError(_("the announcement needs a title"))
     row = Announcement.objects.create(
         title=title,
         body=sanitize_rich_text(str(params.get("body_html") or "")),
@@ -549,7 +553,7 @@ def create_email_draft(user, params):
 
     subject = str(params.get("subject") or "").strip()[:255]
     if not subject:
-        raise ContentOpError("the email needs a subject")
+        raise ContentOpError(_("the email needs a subject"))
     templates = EmailTemplate.objects.all()
     template = (
         templates.filter(pk=params.get("template_id")).first() if params.get("template_id") else None
@@ -586,7 +590,7 @@ def make_reels(user, params):
 
     video = Video.objects.filter(pk=params.get("video_id")).exclude(s3_key="").first()
     if video is None:
-        raise ContentOpError("that video was deleted")
+        raise ContentOpError(_("that video was deleted"))
     try:
         jobs.start_search(video, max(1, min(5, int(params.get("count") or 3))), made_by="marketing")
     except jobs.JobError as exc:
@@ -607,9 +611,9 @@ def edit_email(user, params):
         campaign = EmailCampaign.objects.filter(pk=params.get("id"), status=CampaignStatus.DRAFT).first()
     email = campaign or template
     if email is None:
-        raise ContentOpError("that email was sent or deleted")
+        raise ContentOpError(_("that email was sent or deleted"))
     if not designer.available()[0]:
-        raise ContentOpError("the Designer can't work right now, try again in a minute")
+        raise ContentOpError(_("the Designer can't work right now, try again in a minute"))
     job = designer.start(user=user, campaign=campaign, template=template, brief=params["brief"], mode="edit")
     return {
         "kind": "edit_email",

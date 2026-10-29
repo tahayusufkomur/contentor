@@ -12,6 +12,7 @@ with its ``reason`` at once, before any model call, which the guide says in
 place of Try again. A copilot run on the agents worker."""
 
 from django.db import connection, transaction
+from django.utils.translation import gettext as _
 
 from apps.blog import ai as blog_ai
 from apps.blog import curated
@@ -75,7 +76,7 @@ def carry_out(tenant, run_id) -> None:
     if reason := blog_ai.availability(tenant)["reason"]:  # the Generate button's gate
         runs.finish(run_id, False, {"reason": reason})
         return
-    step = {"specialist": run.specialist, "label": "Writing your post"}
+    step = {"specialist": run.specialist, "label": _("Writing your post")}
     runs.emit(run_id, "step", {**step, "state": "start"})
     answers, brief = creation.answers or {}, creation.brief or {}
     topic = str(answers.get("topic") or "")

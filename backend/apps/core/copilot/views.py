@@ -11,6 +11,7 @@ from decimal import Decimal
 from django.core.cache import cache
 from django.db import connection
 from django.http import JsonResponse
+from django.utils.translation import gettext as _
 from django_tenants.utils import tenant_context
 from rest_framework.decorators import api_view, permission_classes, renderer_classes, throttle_classes
 from rest_framework.renderers import JSONRenderer
@@ -236,7 +237,7 @@ def _execute(tenant, user, action):
         with tenant_context(tenant):
             cfg = TenantConfig.objects.first()
             if cfg is None:
-                raise chrome.ChromeOpError("site is not set up yet")
+                raise chrome.ChromeOpError(_("site is not set up yet"))
             if kind == "edit_style":
                 from apps.tenant_config import sections
 
@@ -274,7 +275,7 @@ def _execute(tenant, user, action):
         with tenant_context(tenant):
             cfg = TenantConfig.objects.first()
             if cfg is None:
-                raise chrome.ChromeOpError("site is not set up yet")
+                raise chrome.ChromeOpError(_("site is not set up yet"))
             old_meta_description = cfg.meta_description
             cfg.meta_description = chrome.clean_meta_description(action.get("meta_description"))
             cfg.save(update_fields=["meta_description"])
@@ -284,7 +285,7 @@ def _execute(tenant, user, action):
         with tenant_context(tenant):
             cfg = TenantConfig.objects.first()
             if cfg is None:
-                raise photos.PhotoOpError("site is not set up yet")
+                raise photos.PhotoOpError(_("site is not set up yet"))
             pages_before = deepcopy(cfg.pages or {})
             # Either the coach's attached photo or the catalog asset, cached into
             # this tenant's storage on the way through.
@@ -302,7 +303,7 @@ def _execute(tenant, user, action):
 
             course = Course.objects.filter(pk=action.get("course_id")).first()
             if course is None:
-                raise photos.PhotoOpError("that course no longer exists")
+                raise photos.PhotoOpError(_("that course no longer exists"))
             old_thumbnail_id = course.thumbnail_id
             course.thumbnail = photos.photo_for_action(action)
             course.save(update_fields=["thumbnail"])
@@ -324,7 +325,7 @@ def _execute(tenant, user, action):
         with tenant_context(tenant):
             event = content.event_model(event_kind).objects.filter(pk=action.get("event_id")).first()
             if event is None:
-                raise photos.PhotoOpError("that event no longer exists")
+                raise photos.PhotoOpError(_("that event no longer exists"))
             old_thumbnail_id = event.thumbnail_id
             event.thumbnail = photos.photo_for_action(action)
             event.save(update_fields=["thumbnail"])
@@ -351,7 +352,7 @@ def _execute(tenant, user, action):
         with tenant_context(tenant):
             photo = Photo.objects.filter(pk=action.get("tenant_photo_id")).first()
             if photo is None:
-                raise photos.PhotoOpError("that photo is not in your library")
+                raise photos.PhotoOpError(_("that photo is not in your library"))
             old_alt_text = photo.alt_text
             photo.alt_text = str(action.get("description") or "")[:300]
             photo.save(update_fields=["alt_text"])
@@ -374,11 +375,11 @@ def _execute(tenant, user, action):
             with schema_context("public"):
                 row = CuratedLogo.objects.filter(pk=action.get("curated_logo_id"), enabled=True).first()
             if row is None:
-                raise logos.LogoOpError("that logo is no longer available")
+                raise logos.LogoOpError(_("that logo is no longer available"))
         with tenant_context(tenant):
             cfg = TenantConfig.objects.first()
             if cfg is None:
-                raise logos.LogoOpError("site is not set up yet")
+                raise logos.LogoOpError(_("site is not set up yet"))
             old_logo_id = cfg.logo_id
             old_logo_url = cfg.logo_url
             if action.get("tenant_photo_id"):
@@ -387,7 +388,7 @@ def _execute(tenant, user, action):
 
                 photo = Photo.objects.filter(pk=action["tenant_photo_id"]).first()
                 if photo is None:
-                    raise photos.PhotoOpError("that attached photo is not in your library")
+                    raise photos.PhotoOpError(_("that attached photo is not in your library"))
                 cfg.logo = photo
             else:
                 cfg.logo = materialize_curated_logo(row)
@@ -410,7 +411,7 @@ def _execute(tenant, user, action):
     with tenant_context(tenant):
         cfg = TenantConfig.objects.first()
         if cfg is None:
-            raise blocks.BlockOpError("site is not set up yet")
+            raise blocks.BlockOpError(_("site is not set up yet"))
         pages = cfg.pages or {}
         pages_before = deepcopy(pages)
         if kind == "add_block":
@@ -426,13 +427,15 @@ def _execute(tenant, user, action):
                 to_page=action.get("to_page"),
             )
         elif kind == "edit_block_fields":
-            pages, _ = blocks.edit_block_fields(pages, action["page"], action["block_id"], action.get("fields") or {})
+            pages, _changes = blocks.edit_block_fields(
+                pages, action["page"], action["block_id"], action.get("fields") or {}
+            )
         elif kind == "toggle_block":
             pages = blocks.set_block_enabled(pages, action["page"], action["block_id"], action["enabled"])
         elif kind == "duplicate_block":
-            pages, _ = blocks.duplicate_block(pages, action["page"], action["block_id"])
+            pages, _new = blocks.duplicate_block(pages, action["page"], action["block_id"])
         else:
-            raise blocks.BlockOpError(f"unknown action: {kind}")
+            raise blocks.BlockOpError(_("unknown action: %(kind)s") % {"kind": kind})
         cfg.pages = pages
         cfg.save(update_fields=["pages"])
     # Public pages read blocks through the cached config object too.
@@ -701,7 +704,7 @@ def _apply_inverse(tenant, inverse):
 
             photo = Photo.objects.filter(pk=inverse.get("tenant_photo_id")).first()
             if photo is None:
-                raise blocks.BlockOpError("that photo no longer exists")
+                raise blocks.BlockOpError(_("that photo no longer exists"))
             photo.alt_text = str(inverse.get("alt_text") or "")
             photo.save(update_fields=["alt_text"])
             return
@@ -710,20 +713,20 @@ def _apply_inverse(tenant, inverse):
 
             course = Course.objects.filter(pk=inverse.get("course_id")).first()
             if course is None:
-                raise blocks.BlockOpError("that course no longer exists")
+                raise blocks.BlockOpError(_("that course no longer exists"))
             thumbnail_id = inverse.get("thumbnail_id")
             if thumbnail_id is not None and not _photo_exists(thumbnail_id):
-                raise blocks.BlockOpError("that photo no longer exists")
+                raise blocks.BlockOpError(_("that photo no longer exists"))
             course.thumbnail_id = thumbnail_id
             course.save(update_fields=["thumbnail"])
             return
         if kind == "restore_event_cover":
             event = content.event_model(inverse.get("event_kind")).objects.filter(pk=inverse.get("event_id")).first()
             if event is None:
-                raise blocks.BlockOpError("that event no longer exists")
+                raise blocks.BlockOpError(_("that event no longer exists"))
             thumbnail_id = inverse.get("thumbnail_id")
             if thumbnail_id is not None and not _photo_exists(thumbnail_id):
-                raise blocks.BlockOpError("that photo no longer exists")
+                raise blocks.BlockOpError(_("that photo no longer exists"))
             event.thumbnail_id = thumbnail_id
             event.save(update_fields=["thumbnail"])
             return
@@ -742,7 +745,7 @@ def _apply_inverse(tenant, inverse):
             return
         cfg = TenantConfig.objects.first()
         if cfg is None:
-            raise blocks.BlockOpError("site is not set up yet")
+            raise blocks.BlockOpError(_("site is not set up yet"))
         if kind == "restore_pages":
             cfg.pages = inverse.get("pages") or {}
             cfg.save(update_fields=["pages"])
@@ -757,7 +760,7 @@ def _apply_inverse(tenant, inverse):
         elif kind == "restore_logo":
             logo_id = inverse.get("logo_id")
             if logo_id is not None and not _photo_exists(logo_id):
-                raise blocks.BlockOpError("that photo no longer exists")
+                raise blocks.BlockOpError(_("that photo no longer exists"))
             cfg.logo_id = logo_id
             cfg.logo_url = inverse.get("logo_url") or ""
             cfg.save(update_fields=["logo", "logo_url"])
@@ -765,7 +768,7 @@ def _apply_inverse(tenant, inverse):
             cfg.meta_description = str(inverse.get("meta_description") or "")
             cfg.save(update_fields=["meta_description"])
         else:
-            raise blocks.BlockOpError("that change cannot be undone")
+            raise blocks.BlockOpError(_("that change cannot be undone"))
     cache.delete(f"tenant:{tenant.schema_name}:config")
 
 
@@ -790,7 +793,7 @@ def copilot_undo(request):
     if entry.undone_at is not None or not entry.inverse:
         return Response({"detail": "not_undoable"}, status=400)
     if not _order_free(entry.inverse) and (latest is None or latest.pk != entry.pk):
-        return Response({"detail": "only the latest change can be undone"}, status=400)
+        return Response({"detail": _("only the latest change can be undone")}, status=400)
     if entry.inverse.get("kind") == "restore_ways":
         # The undo writes as the system, so the owner-only rule is checked for the one asking. A refusal
         # here is theirs, not for good: the inverse stays for the owner.
@@ -945,7 +948,7 @@ def copilot_chat_detail(request, chat_id):
             if "title" not in fields:
                 fields.append("title")
         if not fields:
-            return Response({"detail": "nothing to update"}, status=400)
+            return Response({"detail": _("nothing to update")}, status=400)
         chat.save(update_fields=[*fields, "updated_at"])
         return Response({**_chat_row(chat), "entries": chat.entries})
 

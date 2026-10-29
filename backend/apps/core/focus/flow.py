@@ -12,6 +12,9 @@ from datetime import datetime
 
 from django.db import connection, transaction
 from django.utils import timezone
+from django.utils.formats import date_format
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 
 from apps.billing import ways as access_ways
 from apps.core.onboarding import ai_compose
@@ -29,14 +32,23 @@ ANSWER_MAX = 500
 # A multi-pick tap's values, comma-separated: cut at a whole value past this (hundreds of tiles).
 MULTI_MAX = 4000
 # Not now: what became of Marketing's draft, if it made one.
-SAVED_IN_MESSAGES = "Your announcement is saved as a draft in Messages."
-NO_ANNOUNCEMENT = "No announcement this time."
-ANNOUNCE_LABELS = {"scheduled": "Schedule", "draft": "Not now", "skip": "Not now", "sent": "Sent"}
-SENT = "Your announcement has gone out."
+SAVED_IN_MESSAGES = gettext_lazy("Your announcement is saved as a draft in Messages.")
+NO_ANNOUNCEMENT = gettext_lazy("No announcement this time.")
+ANNOUNCE_LABELS = {
+    "scheduled": gettext_lazy("Schedule"),
+    "draft": gettext_lazy("Not now"),
+    "skip": gettext_lazy("Not now"),
+    "sent": gettext_lazy("Sent"),
+}
+SENT = gettext_lazy("Your announcement has gone out.")
 # The finish step of a paid course she cannot sell yet: no "Publish now" (F11).
-START_SELLING = {"value": "start_selling", "label": "Start selling", "hint": "your plan, then payouts"}
+START_SELLING = {
+    "value": "start_selling",
+    "label": gettext_lazy("Start selling"),
+    "hint": gettext_lazy("your plan, then payouts"),
+}
 # The access step's line when it ticked the setup her other items of the kind use most.
-USUAL_WHY = "Ticked the way you usually set these up. You can change it any time."
+USUAL_WHY = gettext_lazy("Ticked the way you usually set these up. You can change it any time.")
 # Follow-ups asked (F4): at most four per creation, two before the outline.
 MAX_FOLLOWUPS = 4
 MAX_PER_SLOT = 2
@@ -377,10 +389,10 @@ def decide_announcement(creation, *, schedule: bool, active_ms=None) -> FocusCre
             row.save(update_fields=["status", "scheduled_at"])
             closing = _scheduled_line(when)
         else:
-            closing = SAVED_IN_MESSAGES if row else NO_ANNOUNCEMENT
+            closing = str(SAVED_IN_MESSAGES if row else NO_ANNOUNCEMENT)
         value = "scheduled" if schedule else "draft" if row else "skip"
         question = next(q for q in kinds.get(creation.kind).RECIPE.questions if q.id == "announce")
-        _say(creation, question, ANNOUNCE_LABELS[value])
+        _say(creation, question, str(ANNOUNCE_LABELS[value]))
         _chat_append(creation, [{"role": "assistant", "text": closing}])
         _end(creation, value)
         creation.save()
@@ -401,7 +413,12 @@ def retry_announcement(creation) -> FocusCreation:
 
 
 def _scheduled_line(when) -> str:
-    return f"Your announcement is scheduled for {when:%A} {when.day} {when:%B} at {when:%H:%M}."
+    return _("Your announcement is scheduled for %(weekday)s %(day)d %(month)s at %(time)s.") % {
+        "weekday": date_format(when, "l"),
+        "day": when.day,
+        "month": date_format(when, "F"),
+        "time": when.strftime("%H:%M"),
+    }
 
 
 def _decided_meanwhile(creation) -> bool:
@@ -416,7 +433,7 @@ def _decided_meanwhile(creation) -> bool:
     if row.status == "scheduled" and row.scheduled_at:
         closing = _scheduled_line(row.scheduled_at.astimezone(_tenant_zone(connection.tenant)))
     else:
-        closing = SENT if row.status == "sent" else "Your announcement is scheduled."
+        closing = str(SENT) if row.status == "sent" else _("Your announcement is scheduled.")
     _chat_append(creation, [{"role": "assistant", "text": closing}])
     _end(creation, row.status)
     return True
@@ -653,7 +670,7 @@ def state(creation) -> dict:
             # "You decide" names what it decided: after "Just draft it" there are several.
             {
                 "field": q.id,
-                "label": f"{q.label}: you decide"
+                "label": _("%(label)s: you decide") % {"label": q.label}
                 if answers[q.id] == DELEGATE
                 else _label(recipe, q, answers[q.id], tiles),
             }
@@ -1137,22 +1154,22 @@ def _price_tiles(creation) -> dict:
     if (own := adapter.price_tiles(creation, record)) is not None:
         return own
     plans = [
-        {"value": f"plan:{p.pk}", "label": f"In {p.name}", "hint": ""}
+        {"value": f"plan:{p.pk}", "label": _("In %(plan)s") % {"plan": p.name}, "hint": ""}
         for p in (SubscriptionPlan.objects.filter(is_active=True) if _can_link(creation, record) else ())
     ]
     paid = None
     if (s := adapter.suggest_price(record)) is not None:
         paid = {
             "value": f"paid:{s.amount}",
-            "label": f"One-time price: {_price_label(str(s.amount))}",
+            "label": _("One-time price: %(price)s") % {"price": _price_label(str(s.amount))},
             "hint": s.reason,
         }
-    options = [{"value": "free", "label": "Free", "hint": ""}, *([paid] if paid else []), *plans]
+    options = [{"value": "free", "label": _("Free"), "hint": ""}, *([paid] if paid else []), *plans]
     out = {"options": options, "suggested": paid and paid["value"], "multi": True, "can_delegate": False}
     if plans and (creation.answers or {}).get("price") == "membership":
         return {**out, "ticked": [p["value"] for p in plans]}
     if usual := _usual(record, options):
-        return {**out, "ticked": usual, "why": USUAL_WHY}
+        return {**out, "ticked": usual, "why": str(USUAL_WHY)}
     return {**out, "ticked": [paid["value"] if paid else "free"]}
 
 
@@ -1182,14 +1199,17 @@ def _finish_options(creation, asked: dict, record) -> dict:
     adapter = kinds.get(creation.kind)
     options = asked["options"]
     if not adapter.not_ready(record) and adapter.cannot_sell(record):
-        options = [START_SELLING, *(o for o in options if o["value"] != adapter.FINISH[0][0])]
+        options = [
+            {k: str(v) for k, v in START_SELLING.items()},
+            *(o for o in options if o["value"] != adapter.FINISH[0][0]),
+        ]
         asked = {**asked, "paid_active": monetization.is_paid_active(connection.tenant)}
     if (creation.answers or {}).get("access") == DELEGATE and (s := adapter.suggest_price(record)):
         options = [
             *options,
             {
                 "value": f"price:{s.amount}",
-                "label": f"Sell it for {_amount_label(creation, str(s.amount))}",
+                "label": _("Sell it for %(price)s") % {"price": _amount_label(creation, str(s.amount))},
                 "hint": s.reason,
             },
         ]
@@ -1205,7 +1225,7 @@ def _amount_label(creation, amount: str) -> str:
 def _price_label(value: str) -> str:
     from apps.tenant_config.interview_brief import money
 
-    return {"free": "Free", "membership": "In your membership"}.get(value) or money(value)
+    return {"free": _("Free"), "membership": _("In your membership")}.get(value) or money(value)
 
 
 def _access_label(value: str) -> str:
@@ -1216,7 +1236,7 @@ def _access_label(value: str) -> str:
         return " + ".join(_access_label(part) for part in value.split(","))
     if value.startswith("plan:"):
         plan = SubscriptionPlan.objects.filter(pk=int(value[5:])).first()
-        return f"In {plan.name}" if plan else "In your membership"
+        return _("In %(plan)s") % {"plan": plan.name} if plan else _("In your membership")
     try:
         return _price_label(value.removeprefix("paid:"))
     except ValueError:  # a kind's own tile value no longer among its tiles: never a 500
@@ -1411,7 +1431,7 @@ def _label(recipe, q, answer, tiles=None) -> str:
     if q.kind == "price":
         return (tiles or {}).get(answer) or _access_label(answer)
     if q.kind == "announce":
-        return ANNOUNCE_LABELS.get(answer, str(answer))
+        return str(ANNOUNCE_LABELS.get(answer, str(answer)))
     if q.kind == "finish":
         return dict(kinds.get(recipe.kind).FINISH).get(answer, str(answer))
     if q.kind == "schedule" and isinstance(answer, dict):

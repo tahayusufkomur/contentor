@@ -10,6 +10,7 @@ import json
 from django.conf import settings
 from django.db import connection, transaction
 from django.utils.html import escape
+from django.utils.translation import gettext_lazy, ngettext
 from pydantic import BaseModel
 
 from apps.core import ai as core_ai
@@ -21,7 +22,7 @@ from apps.tenant_config.models import CopilotRun, FocusCreation
 
 from . import jobs
 
-STEP = {"specialist": "content", "label": "Writing lesson descriptions"}
+STEP = {"specialist": "content", "label": gettext_lazy("Writing lesson descriptions")}
 # Up to 12 lessons of 2-4 sentences, plus the model's thinking.
 MAX_TOKENS = 6000
 SYSTEM = (
@@ -81,7 +82,11 @@ def carry_out(tenant, run_id) -> None:
     runs.emit(run_id, "step", {**STEP, "state": "start", "total": len(todo)})
     course = Course.objects.filter(pk=course_id).first()
     if course is None:  # deleted meanwhile: nothing to write on
-        runs.finish(run_id, True, {"text": "Wrote 0 lesson descriptions."})
+        runs.finish(
+            run_id,
+            True,
+            {"text": ngettext("Wrote %(n)d lesson description.", "Wrote %(n)d lesson descriptions.", 0) % {"n": 0}},
+        )
         return
     from .flow import DELEGATE
 
@@ -135,4 +140,11 @@ def carry_out(tenant, run_id) -> None:
                         {"record": f"lesson:{lesson['id']}", "name": "content_html", "value": text},
                     )
     runs.emit(run_id, "step", {**STEP, "state": "done"})
-    runs.finish(run_id, True, {"text": f"Wrote {written} lesson descriptions."})
+    runs.finish(
+        run_id,
+        True,
+        {
+            "text": ngettext("Wrote %(n)d lesson description.", "Wrote %(n)d lesson descriptions.", written)
+            % {"n": written}
+        },
+    )

@@ -12,6 +12,11 @@ their inputs; DB writes happen in the execute view."""
 from copy import deepcopy
 from uuid import uuid4
 
+from django.utils import translation
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
+
+from apps.core import languages
 from apps.core.onboarding.ai_compose import MAX_FAQ_ITEMS
 from apps.tenant_config import sections
 from apps.tenant_config.defaults import sanitize_rich_text
@@ -126,31 +131,34 @@ BLOCK_SCHEMA.update(
 )
 
 # Placeholder copy for required section text the model left out, so an added
-# section never renders empty. The coach sees it on the confirm card.
+# section never renders empty. It lands on the page, so it is in the site's
+# language (the coach reads it on the confirm card and edits it).
 _SECTION_PLACEHOLDERS = {
-    "headline": "Welcome",
-    "body": "<p>A few words about who you are and how you work.</p>",
-    "statement": "Every student grows best at their own pace.",
-    "ctaLabel": "Get started",
-    "title": "{label} {n}",
-    "text": "A short line about this.",
-    "q": "Question {n}?",
-    "a": "The answer goes here.",
+    "headline": gettext_lazy("Welcome"),
+    "body": gettext_lazy("<p>A few words about who you are and how you work.</p>"),
+    "statement": gettext_lazy("Every student grows best at their own pace."),
+    "ctaLabel": gettext_lazy("Get started"),
+    "title": gettext_lazy("%(label)s %(n)d"),
+    "text": gettext_lazy("A short line about this."),
+    "q": gettext_lazy("Question %(n)d?"),
+    "a": gettext_lazy("The answer goes here."),
 }
 _SECTION_HEADINGS = {
-    "story": "About me",
-    "benefits": "What you'll gain",
-    "howItWorks": "How it works",
-    "faq": "Frequently asked questions",
-    "cta": "Ready to begin?",
-    "contact": "Get in touch",
+    "story": gettext_lazy("About me"),
+    "benefits": gettext_lazy("What you'll gain"),
+    "howItWorks": gettext_lazy("How it works"),
+    "faq": gettext_lazy("Frequently asked questions"),
+    "cta": gettext_lazy("Ready to begin?"),
+    "contact": gettext_lazy("Get in touch"),
 }
 
 
 def _placeholder(family, field, label="", n=1):
-    if field == "heading":
-        return _SECTION_HEADINGS.get(family, sections.families()[family]["label"])
-    return _SECTION_PLACEHOLDERS.get(field, "").format(label=label, n=n)
+    with translation.override(languages.site_language()):
+        if field == "heading":
+            return str(_SECTION_HEADINGS.get(family) or sections.families()[family]["label"])
+        text = _SECTION_PLACEHOLDERS.get(field)
+        return str(text) % {"label": label, "n": n} if text else ""
 
 
 def _seed_section(block, family):
@@ -171,14 +179,16 @@ def clean_link(value):
     blanking) unsafe schemes so the coach gets an honest card-drop reason."""
     href = str(value or "").strip()
     if href.lower().startswith(_UNSAFE_URL_PREFIXES):
-        raise BlockOpError("links must be site paths like /courses or https:// URLs")
+        raise BlockOpError(_("links must be site paths like /courses or https:// URLs"))
     return href[:300]
 
 
 def clean_field(block_type, field, value):
     spec = (BLOCK_SCHEMA.get(block_type) or {}).get(field)
     if spec is None:
-        raise BlockOpError(f"{block_type} has no editable field '{field}'")
+        raise BlockOpError(
+            _("%(block_type)s has no editable field '%(field)s'") % {"block_type": block_type, "field": field}
+        )
     kind = spec[0]
     # Sections cut on a word boundary and measure rich text as plain text
     # (manifest semantics); legacy blocks keep their hard cut.
@@ -196,7 +206,9 @@ def clean_field(block_type, field, value):
     if kind == "select":
         v = str(value).strip()
         if v not in spec[1]:
-            raise BlockOpError(f"{field} must be one of: " + ", ".join(spec[1]))
+            raise BlockOpError(
+                _("%(field)s must be one of: %(options)s") % {"field": field, "options": ", ".join(spec[1])}
+            )
         return v
     if kind == "link":
         return clean_link(value)
@@ -207,9 +219,9 @@ def clean_field(block_type, field, value):
                 return True
             if v == "false":
                 return False
-            raise BlockOpError(f"{field} must be true or false")
+            raise BlockOpError(_("%(field)s must be true or false") % {"field": field})
         return bool(value)
-    _, item_caps, max_items = spec
+    _kind, item_caps, max_items = spec
     return [
         {k: cut(str(it.get(k, "")), cap) for k, cap in item_caps.items()}
         for it in list(value or [])[:max_items]
@@ -223,16 +235,20 @@ def build_block(block_type, fields, style_id=""):
     copy for any required text the model left out."""
     schema = BLOCK_SCHEMA.get(block_type)
     if schema is None:
-        raise BlockOpError(f"unknown block type: {block_type}")
+        raise BlockOpError(_("unknown block type: %(block_type)s") % {"block_type": block_type})
     block = {"id": mint_block_id(), "type": block_type, "enabled": True}
     family = sections.family_of(block_type)
     if family:
         family_fields = sections.families()[family]["fields"]
         if any(spec.get("type") == "items" and name not in schema for name, spec in family_fields.items()):
-            raise BlockOpError(f"the {family} section needs photos — add it from the page editor")
+            raise BlockOpError(
+                _("the %(family)s section needs photos — add it from the page editor") % {"family": family}
+            )
         variant = sections.resolve_variant(style_id, family, None) if style_id else None
         if variant is None:
-            raise BlockOpError(f"{block_type} needs a site style — switch to a style first")
+            raise BlockOpError(
+                _("%(block_type)s needs a site style — switch to a style first") % {"block_type": block_type}
+            )
         block["variant"] = variant
     for field, value in (fields or {}).items():
         if field in schema:
@@ -256,7 +272,7 @@ def page_blocks(page_value):
 def _page_blocks(pages, page):
     blocks_ = page_blocks((pages or {}).get(page))
     if blocks_ is None:
-        raise BlockOpError(f"unknown page: {page}")
+        raise BlockOpError(_("unknown page: %(page)s") % {"page": page})
     return blocks_
 
 
@@ -264,7 +280,7 @@ def _index_of(blocks_, block_id, page):
     for i, b in enumerate(blocks_):
         if isinstance(b, dict) and b.get("id") == block_id:
             return i
-    raise BlockOpError(f"no block {block_id} on {page}")
+    raise BlockOpError(_("no block %(block_id)s on %(page)s") % {"block_id": block_id, "page": page})
 
 
 def add_block(pages, page, block, after_block_id):
@@ -302,7 +318,9 @@ def set_block_enabled(pages, page, block_id, enabled):
     blocks_ = _page_blocks(new_pages, page)
     block = blocks_[_index_of(blocks_, block_id, page)]
     if bool(block.get("enabled", True)) == bool(enabled):
-        raise BlockOpError(f"{block_id} is already {'visible' if enabled else 'hidden'}")
+        raise BlockOpError(
+            (_("%(id)s is already visible") if enabled else _("%(id)s is already hidden")) % {"id": block_id}
+        )
     block["enabled"] = bool(enabled)
     return new_pages
 
@@ -329,7 +347,7 @@ def edit_block_fields(pages, page, block_id, fields):
     """Surgical field writes on one block. Returns (new_pages, changes);
     changes carry display previews for the confirm card's diff rows."""
     if not fields:
-        raise BlockOpError("no fields to change")
+        raise BlockOpError(_("no fields to change"))
     new_pages = deepcopy(pages)
     blocks_ = _page_blocks(new_pages, page)
     block = blocks_[_index_of(blocks_, block_id, page)]
@@ -341,5 +359,5 @@ def edit_block_fields(pages, page, block_id, fields):
         changes.append({"field": field, "old": _preview(block.get(field)), "new": _preview(cleaned)})
         block[field] = cleaned
     if not changes:
-        raise BlockOpError("those fields already have those values")
+        raise BlockOpError(_("those fields already have those values"))
     return new_pages, changes

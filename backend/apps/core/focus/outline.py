@@ -10,6 +10,8 @@ import logging
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Max
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 from pydantic import BaseModel
 
 from apps.core import ai as core_ai
@@ -28,7 +30,7 @@ TITLE_MAX = 200
 MAX_MODULES = 12
 MAX_LESSONS = 12
 CAPPED = " I drafted the first 12 modules; add the rest on the page."
-STEP = {"specialist": "content", "label": "Writing your outline"}
+STEP = {"specialist": "content", "label": gettext_lazy("Writing your outline")}
 # Honest and generic when the model is down: no invented facts, she renames them.
 FALLBACK_MODULES = (
     "Getting started",
@@ -349,8 +351,8 @@ def fallback(answers: dict, title: str, brief: dict | None = None) -> OutlineDra
         description="",
         modules=[
             _Module(
-                title=FALLBACK_MODULES[i] if i < len(FALLBACK_MODULES) else f"Module {i + 1}",
-                lessons=[f"Lesson {n}" for n in range(1, size + 1)],
+                title=FALLBACK_MODULES[i] if i < len(FALLBACK_MODULES) else _("Module %(n)d") % {"n": i + 1},
+                lessons=[_("Lesson %(n)d") % {"n": n} for n in range(1, size + 1)],
             )
             for i, size in enumerate(sizes)
         ],

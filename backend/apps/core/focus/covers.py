@@ -15,6 +15,8 @@ from typing import Literal
 
 from django.conf import settings
 from django.db import connection, transaction
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 from pydantic import BaseModel
 from rest_framework import serializers
 
@@ -34,7 +36,7 @@ from . import jobs, kinds
 
 logger = logging.getLogger(__name__)
 
-STEP = {"specialist": "designer", "label": "Drafting covers"}
+STEP = {"specialist": "designer", "label": gettext_lazy("Drafting covers")}
 COUNT = 4
 SUBTITLE_MAX = 60
 NO_PHOTO = ("title",)  # layouts that draw no photo
@@ -93,7 +95,7 @@ def carry_out(tenant, run_id) -> None:
     adapter = kinds.get(creation.kind)
     record = adapter.record(creation.record_id)
     if record is None:  # deleted meanwhile: nothing to draw for
-        runs.finish(run_id, True, {"text": "Drew no covers."})
+        runs.finish(run_id, True, {"text": _("Drew no covers.")})
         return
     runs.emit(run_id, "step", {**STEP, "state": "start"})
     rounds = (creation.covers or {}).get("rounds") or []
@@ -112,7 +114,7 @@ def carry_out(tenant, run_id) -> None:
         if not jobs.active(run_id):  # Stop won while the model drew
             return
         if adapter.record(locked.record_id) is None:  # deleted while the model drew
-            runs.finish(run_id, True, {"text": "Drew no covers."})
+            runs.finish(run_id, True, {"text": _("Drew no covers.")})
             return
         current = locked.covers or {}
         query = current.get("query") or query  # hers, said while the model drew, beats the model's
@@ -129,7 +131,7 @@ def carry_out(tenant, run_id) -> None:
         }
         locked.save(update_fields=["covers", "updated_at"])
     runs.emit(run_id, "step", {**STEP, "state": "done"})
-    runs.finish(run_id, True, {"text": "Drew four covers."})
+    runs.finish(run_id, True, {"text": _("Drew four covers.")})
 
 
 def _plan(tenant, creation, record, shown: list, label: str) -> tuple[list, str]:

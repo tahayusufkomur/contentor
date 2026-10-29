@@ -18,6 +18,7 @@ import requests
 from django.conf import settings
 from django.core import signing
 from django.db import connection
+from django.utils.translation import gettext as _
 
 from apps.core.languages import site_language
 from apps.core.storage import build_s3_path, generate_presigned_download_url, get_s3_client, sign_if_s3_key
@@ -436,7 +437,7 @@ def run(reel) -> None:
         made = res.json()
     except Exception as exc:  # whatever went wrong, the coach is told it did not work and can try again
         logger.warning("reel %s could not be rendered: %s", reel.pk, exc)
-        Reel.objects.filter(pk=reel.pk).update(status=Reel.FAILED, error="The video could not be made. Try again.")
+        Reel.objects.filter(pk=reel.pk).update(status=Reel.FAILED, error=_("The video could not be made. Try again."))
         return
     # The cover is also its own picture, the one she posts as the reel's cover.
     cover_key = ""

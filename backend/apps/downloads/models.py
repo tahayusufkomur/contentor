@@ -49,4 +49,4 @@ class DownloadFile(models.Model):
 
         if gap := self.not_ready():
             return f"{gap}."
-        return monetization.NOT_SELLING if self.cannot_sell() else ""
+        return str(monetization.NOT_SELLING) if self.cannot_sell() else ""

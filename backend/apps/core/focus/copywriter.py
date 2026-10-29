@@ -13,6 +13,7 @@ from functools import cache
 
 from django.conf import settings
 from django.db import transaction
+from django.utils.translation import gettext_lazy
 from pydantic import create_model
 
 from apps.core import ai as core_ai
@@ -22,6 +23,17 @@ from apps.core.onboarding import ai_compose
 from apps.tenant_config.models import CopilotRun, FocusCreation
 
 from . import covers, jobs, kinds
+
+# What the step says, by the kind's word (whole sentences: a noun dropped into one needs its own case).
+WRITING = {
+    "bundle": gettext_lazy("Writing your bundle"),
+    "course": gettext_lazy("Writing your course"),
+    "download": gettext_lazy("Writing your download"),
+    "membership": gettext_lazy("Writing your membership"),
+    "message": gettext_lazy("Writing your message"),
+    "post": gettext_lazy("Writing your post"),
+    "session": gettext_lazy("Writing your session"),
+}
 
 F13 = "Never invent a claim, a result or a number."
 MAX_TOKENS = 2000
@@ -49,7 +61,7 @@ def system_for(kind: str) -> str:
 @cache
 def output_for(kind: str):
     """The model's output: one string per field the kind's copy writes."""
-    return create_model("Copy", **{name: (str, ...) for name in kinds.get(kind).COPY_FIELDS})
+    return create_model("Copy", **dict.fromkeys(kinds.get(kind).COPY_FIELDS, (str, ...)))
 
 
 def start(creation, instruction: str = "") -> CopilotRun:
@@ -85,7 +97,7 @@ def carry_out(tenant, run_id) -> None:
         return
     if not ai_compose.compose_available():
         raise core_ai.AiError("ai_unavailable")
-    step = {"specialist": run.specialist, "label": f"Writing your {adapter.NOUN}"}
+    step = {"specialist": run.specialist, "label": str(WRITING[adapter.NOUN])}
     runs.emit(run_id, "step", {**step, "state": "start"})
     copy = _write(tenant, creation, adapter, record, instruction)
     with transaction.atomic():

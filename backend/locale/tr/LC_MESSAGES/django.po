@@ -216,7 +216,7 @@ msgid "I could not read those settings."
 msgstr "O ayarları okuyamadım."
 
 #: apps/billing/views/bundles.py apps/courses/views.py apps/downloads/views.py
-#: apps/media/design_views.py apps/media/views.py
+#: apps/media/design_views.py apps/media/views.py apps/reels/views.py
 #, fuzzy
 msgid "Not found."
 msgstr "Bulunamadı."
@@ -432,6 +432,150 @@ msgstr "Bunu hangi aboneliklerin içereceğini yalnızca sahibi değiştirebilir
 msgid "Pick a subscription first, then include this in it."
 msgstr "Önce bir abonelik seç, ardından bunu ona dahil et."
 
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "%(n)d year"
+msgid_plural "%(n)d years"
+msgstr[0] "%(n)d yıl"
+msgstr[1] "%(n)d yıl"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "%(n)d month"
+msgid_plural "%(n)d months"
+msgstr[0] "%(n)d ay"
+msgstr[1] "%(n)d ay"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "%(n)d week"
+msgid_plural "%(n)d weeks"
+msgstr[0] "%(n)d hafta"
+msgstr[1] "%(n)d hafta"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "%(n)d day"
+msgid_plural "%(n)d days"
+msgstr[0] "%(n)d gün"
+msgstr[1] "%(n)d gün"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "from %(date)s"
+msgstr "%(date)s tarihinden itibaren"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "until %(date)s"
+msgstr "%(date)s tarihine kadar"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "After %(span)s of membership"
+msgstr "%(span)s üyelikten sonra"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "From %(date)s"
+msgstr "%(date)s tarihinden itibaren"
+
+#: apps/billing/ways.py
+#, fuzzy
+msgid "Right away"
+msgstr "Hemen"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "closes after %(span)s"
+msgstr "%(span)s sonra kapanır"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "closes %(date)s"
+msgstr "%(date)s tarihinde kapanır"
+
+#: apps/billing/ways.py
+#, fuzzy
+msgid "never closes"
+msgstr "asla kapanmaz"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "after %(span)s of joining"
+msgstr "katıldıktan %(span)s sonra"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "for %(span)s after joining"
+msgstr "katıldıktan sonra %(span)s boyunca"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "until %(span)s after joining"
+msgstr "katıldıktan %(span)s sonrasına kadar"
+
+#: apps/billing/ways.py apps/core/focus/flow.py apps/core/focus/kinds/event.py
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Free"
+msgstr "Ücretsiz"
+
+#: apps/billing/ways.py
+#, fuzzy
+msgid "Free for everyone"
+msgstr "Herkese ücretsiz"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "opening %(span)s after purchase"
+msgstr "satın aldıktan %(span)s sonra açılır"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "with %(span)s of access"
+msgstr "%(span)s erişimle"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "until %(span)s after purchase"
+msgstr "satın aldıktan %(span)s sonrasına kadar"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "%(price)s once"
+msgstr "%(price)s tek seferlik"
+
+#: apps/billing/ways.py
+#, fuzzy
+msgid ", theirs to keep"
+msgstr ", ömür boyu onların"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "after %(span)s of membership"
+msgstr "%(span)s üyelikten sonra"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "for %(span)s of membership"
+msgstr "%(span)s üyelik boyunca"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "until %(span)s into membership"
+msgstr "üyelikte %(span)s dolana kadar"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "in %(plans)s"
+msgstr "%(plans)s kapsamında"
+
+#: apps/billing/ways.py
+#, fuzzy
+msgid "and"
+msgstr "ve"
+
 #: apps/blog/serializers.py
 #, fuzzy
 msgid "Expected a list of at most 6 placements."
@@ -507,11 +651,1044 @@ msgstr "Geçersiz görsel anahtarı."
 msgid "Invalid emoji."
 msgstr "Geçersiz emoji."
 
+#: apps/core/copilot/blocks.py apps/core/onboarding/compose.py
+#: apps/notifications/templates_builtin.py apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Welcome"
+msgstr "Hoş geldin"
+
+#: apps/core/copilot/blocks.py
+#, fuzzy
+msgid "<p>A few words about who you are and how you work.</p>"
+msgstr "<p>Kim olduğun ve nasıl çalıştığın hakkında birkaç kelime.</p>"
+
+#: apps/core/copilot/blocks.py
+#, fuzzy
+msgid "Every student grows best at their own pace."
+msgstr "Her öğrenci en iyi kendi hızında gelişir."
+
+#: apps/core/copilot/blocks.py
+#, fuzzy
+msgid "Get started"
+msgstr "Başla"
+
+#: apps/core/copilot/blocks.py
+#, python-format, fuzzy
+msgid "%(label)s %(n)d"
+msgstr "%(label)s %(n)d"
+
+#: apps/core/copilot/blocks.py
+#, fuzzy
+msgid "A short line about this."
+msgstr "Bununla ilgili kısa bir satır."
+
+#: apps/core/copilot/blocks.py
+#, python-format, fuzzy
+msgid "Question %(n)d?"
+msgstr "Soru %(n)d?"
+
+#: apps/core/copilot/blocks.py
+#, fuzzy
+msgid "The answer goes here."
+msgstr "Cevap buraya gelecek."
+
+#: apps/core/copilot/blocks.py apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "About me"
+msgstr "Hakkımda"
+
+#: apps/core/copilot/blocks.py
+#, fuzzy
+msgid "What you'll gain"
+msgstr "Neler kazanacaksın"
+
+#: apps/core/copilot/blocks.py apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "How it works"
+msgstr "Nasıl çalışır"
+
+#: apps/core/copilot/blocks.py apps/core/onboarding/compose.py
+#: apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Frequently asked questions"
+msgstr "Sıkça sorulan sorular"
+
+#: apps/core/copilot/blocks.py
+#, fuzzy
+msgid "Ready to begin?"
+msgstr "Başlamaya hazır mısın?"
+
+#: apps/core/copilot/blocks.py apps/core/onboarding/compose.py
+#: apps/core/onboarding/site_composer.py apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Get in touch"
+msgstr "İletişime geç"
+
+#: apps/core/copilot/blocks.py
+#, fuzzy
+msgid "links must be site paths like /courses or https:// URLs"
+msgstr ""
+"bağlantılar /courses gibi site yolları veya https:// URL'leri olmalıdır"
+
+#: apps/core/copilot/blocks.py
+#, python-format, fuzzy
+msgid "%(block_type)s has no editable field '%(field)s'"
+msgstr "%(block_type)s üzerinde düzenlenebilir '%(field)s' alanı yok"
+
+#: apps/core/copilot/blocks.py
+#, python-format, fuzzy
+msgid "%(field)s must be one of: %(options)s"
+msgstr "%(field)s şunlardan biri olmalı: %(options)s"
+
+#: apps/core/copilot/blocks.py
+#, python-format, fuzzy
+msgid "%(field)s must be true or false"
+msgstr "%(field)s true veya false olmalı"
+
+#: apps/core/copilot/blocks.py
+#, python-format, fuzzy
+msgid "unknown block type: %(block_type)s"
+msgstr "bilinmeyen blok türü: %(block_type)s"
+
+#: apps/core/copilot/blocks.py
+#, python-format, fuzzy
+msgid "the %(family)s section needs photos — add it from the page editor"
+msgstr ""
+"%(family)s bölümü için fotoğraf gerekiyor — sayfa düzenleyicisinden ekle"
+
+#: apps/core/copilot/blocks.py
+#, python-format, fuzzy
+msgid "%(block_type)s needs a site style — switch to a style first"
+msgstr "%(block_type)s için bir site stili gerekiyor — önce bir stile geç"
+
+#: apps/core/copilot/blocks.py apps/core/copilot/engine.py
+#: apps/core/copilot/photos.py
+#, python-format, fuzzy
+msgid "unknown page: %(page)s"
+msgstr "bilinmeyen sayfa: %(page)s"
+
+#: apps/core/copilot/blocks.py apps/core/copilot/engine.py
+#: apps/core/copilot/photos.py
+#, python-format, fuzzy
+msgid "no block %(block_id)s on %(page)s"
+msgstr "%(page)s sayfasında %(block_id)s bloğu yok"
+
+#: apps/core/copilot/blocks.py
+#, python-format, fuzzy
+msgid "%(id)s is already visible"
+msgstr "%(id)s zaten görünür"
+
+#: apps/core/copilot/blocks.py
+#, python-format, fuzzy
+msgid "%(id)s is already hidden"
+msgstr "%(id)s zaten gizli"
+
+#: apps/core/copilot/blocks.py
+#, fuzzy
+msgid "no fields to change"
+msgstr "değiştirilecek alan yok"
+
+#: apps/core/copilot/blocks.py apps/core/copilot/content.py
+#, fuzzy
+msgid "those fields already have those values"
+msgstr "bu alanlar zaten bu değerlere sahip"
+
+#: apps/core/copilot/chrome.py
+#, fuzzy
+msgid "no site styles are available yet"
+msgstr "henüz kullanılabilir site stili yok"
+
+#: apps/core/copilot/chrome.py
+#, python-format, fuzzy
+msgid "style must be one of: %(options)s"
+msgstr "stil şunlardan biri olmalı: %(options)s"
+
+#: apps/core/copilot/chrome.py
+#, python-format, fuzzy
+msgid "layout must be one of: %(options)s"
+msgstr "düzen şunlardan biri olmalı: %(options)s"
+
+#: apps/core/copilot/chrome.py
+#, fuzzy
+msgid "navbar links must be a list"
+msgstr "gezinme çubuğu bağlantıları bir liste olmalı"
+
+#: apps/core/copilot/chrome.py
+#, fuzzy
+msgid "navbar supports up to 20 links"
+msgstr "gezinme çubuğu en fazla 20 bağlantı destekler"
+
+#: apps/core/copilot/chrome.py
+#, fuzzy
+msgid "every navbar link needs a label and a safe link"
+msgstr ""
+"her gezinme çubuğu bağlantısı için bir etiket ve güvenli bir bağlantı "
+"gerekir"
+
+#: apps/core/copilot/chrome.py
+#, fuzzy
+msgid "the description cannot be empty"
+msgstr "açıklama boş olamaz"
+
+#: apps/core/copilot/content.py apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "no course with id %(course_id)s"
+msgstr "%(course_id)s kimliğine sahip kurs yok"
+
+#: apps/core/copilot/content.py apps/core/copilot/engine.py
+#, fuzzy
+msgid "nothing to change on the course"
+msgstr "kursta değiştirilecek bir şey yok"
+
+#: apps/core/copilot/content.py
+#, python-format, fuzzy
+msgid "no %(kind)s event with id %(event_id)s"
+msgstr "%(event_id)s kimliğine sahip %(kind)s etkinliği yok"
+
+#: apps/core/copilot/content.py
+#, fuzzy
+msgid "could not read the new date"
+msgstr "yeni tarih okunamadı"
+
+#: apps/core/copilot/content.py apps/core/copilot/engine.py
+#, fuzzy
+msgid "event date must be in the future"
+msgstr "etkinlik tarihi gelecekte olmalı"
+
+#: apps/core/copilot/content.py
+#, fuzzy
+msgid "that Zoom link is not a full web address (https://…)"
+msgstr "o Zoom bağlantısı tam bir web adresi değil (https://…)"
+
+#: apps/core/copilot/content.py apps/core/copilot/engine.py
+#, fuzzy
+msgid "nothing to change on the event"
+msgstr "etkinlikte değiştirilecek bir şey yok"
+
+#: apps/core/copilot/content.py
+#, fuzzy
+msgid "a module or lesson needs a title"
+msgstr "bir modül veya ders için başlık gerekiyor"
+
+#: apps/core/copilot/content.py
+#, fuzzy
+msgid "that module is not in this course"
+msgstr "o modül bu kursta değil"
+
+#: apps/core/copilot/content.py
+#, fuzzy
+msgid "that lesson is not in this course"
+msgstr "o ders bu kursta değil"
+
+#: apps/core/copilot/content.py
+#, python-format, fuzzy
+msgid ""
+"that is more than %(MAX_CURRICULUM_OPS)s changes at once — split it into two"
+" requests"
+msgstr ""
+"bu, tek seferde %(MAX_CURRICULUM_OPS)s değişiklikten fazla — iki isteğe böl"
+
+#: apps/core/copilot/content.py
+#, fuzzy
+msgid "unknown curriculum change"
+msgstr "bilinmeyen müfredat değişikliği"
+
+#: apps/core/copilot/content.py
+#, fuzzy
+msgid "nothing to change in the curriculum"
+msgstr "müfredatta değiştirilecek bir şey yok"
+
+#: apps/core/copilot/content.py apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "no blog post with id %(post_id)s"
+msgstr "%(post_id)s kimliğine sahip blog yazısı yok"
+
+#: apps/core/copilot/content.py apps/core/copilot/engine.py
+#, fuzzy
+msgid "nothing to change on the post"
+msgstr "gönderide değiştirilecek bir şey yok"
+
+#: apps/core/copilot/content.py apps/core/copilot/engine.py
+#, fuzzy
+msgid "that course is already published"
+msgstr "o kurs zaten yayınlandı"
+
+#: apps/core/copilot/content.py apps/core/copilot/engine.py
+#, fuzzy
+msgid "that post is already published"
+msgstr "o gönderi zaten yayınlandı"
+
+#: apps/core/copilot/content.py
+#, fuzzy
+msgid "the announcement needs a title"
+msgstr "duyuru için bir başlık gerekiyor"
+
+#: apps/core/copilot/content.py
+#, fuzzy
+msgid "the email needs a subject"
+msgstr "e-posta için bir konu gerekiyor"
+
+#: apps/core/copilot/content.py
+#, fuzzy
+msgid "that video was deleted"
+msgstr "o video silindi"
+
+#: apps/core/copilot/content.py
+#, fuzzy
+msgid "that email was sent or deleted"
+msgstr "o e-posta gönderildi veya silindi"
+
+#: apps/core/copilot/content.py
+#, fuzzy
+msgid "the Designer can't work right now, try again in a minute"
+msgstr "tasarımcı şu anda çalışamıyor, bir dakika sonra tekrar dene"
+
+#: apps/core/copilot/engine.py apps/core/copilot/photos.py
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "that attached photo is not in your library"
+msgstr "ekli fotoğraf kitaplığında yok"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "no %(event_kind)s event with id %(event_id)s"
+msgstr "%(event_id)s kimlikli %(event_kind)s etkinliği yok"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "no event with id %(event_id)s"
+msgstr "%(event_id)s kimlikli etkinlik yok"
+
+#: apps/core/copilot/engine.py apps/email_campaigns/designer.py
+#, fuzzy
+msgid "block"
+msgstr "blok"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "open the email in the email editor first"
+msgstr "önce e-postayı e-posta düzenleyicisinde aç"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "Change this email"
+msgstr "Bu e-postayı değiştir"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Set access for %(title)s"
+msgstr "%(title)s için erişimi ayarla"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "%(n)d field changes"
+msgid_plural "%(n)d fields change"
+msgstr[0] "%(n)d alan değişiyor"
+msgstr[1] "%(n)d alan değişiyor"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Add a %(block)s to %(page)s"
+msgstr "%(page)s sayfasına bir %(block)s ekle"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Remove the %(block)s from %(page)s"
+msgstr "%(page)s sayfasından %(block)s kaldır"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "to the top"
+msgstr "en üste"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "after %(id)s"
+msgstr "%(id)s sonrasına"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "to %(page)s (%(where)s)"
+msgstr "%(page)s sayfasına (%(where)s)"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Move the %(block)s on %(page)s"
+msgstr "%(page)s sayfasında %(block)s taşı"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Update the %(block)s on %(page)s"
+msgstr "%(page)s sayfasında %(block)s güncelle"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Show %(id)s on %(page)s"
+msgstr "%(page)s sayfasında %(id)s göster"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Hide %(id)s on %(page)s"
+msgstr "%(page)s sayfasında %(id)s gizle"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "The section stays saved — flip it back anytime."
+msgstr "Bölüm kayıtlı kalır — istediğin zaman tekrar açabilirsin."
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Duplicate %(id)s on %(page)s"
+msgstr "%(page)s sayfasında %(id)s çoğalt"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "The copy lands right below the original."
+msgstr "Kopya, orijinalin hemen altına yerleşir."
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Use your photo '%(photo)s'"
+msgstr "Kendi '%(photo)s' fotoğrafını kullan"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "untitled"
+msgstr "başlıksız"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "This is the photo you attached — nothing changes until you apply."
+msgstr "Bu, eklediğin fotoğraf — sen uygulayana kadar hiçbir şey değişmez."
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Use the photo '%(photo)s'"
+msgstr "'%(photo)s' fotoğrafını kullan"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "Ask for a different style anytime — nothing changes until you apply."
+msgstr ""
+"İstediğin zaman farklı bir stil iste — sen uygulayana kadar hiçbir şey "
+"değişmez."
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Cover for '%(title)s': your photo '%(photo)s'"
+msgstr "'%(title)s' için kapak: kendi fotoğrafın '%(photo)s'"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Cover for '%(title)s': the photo '%(photo)s'"
+msgstr "'%(title)s' için kapak: '%(photo)s' fotoğrafı"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "the photo note is empty"
+msgstr "fotoğraf notu boş"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Remember this photo as: %(description)s"
+msgstr "Bu fotoğrafı şöyle hatırla: %(description)s"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "Saved to your media library so it can be found again later."
+msgstr "Daha sonra tekrar bulunabilmesi için medya kitaplığına kaydedildi."
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Use your photo '%(photo)s' as the logo"
+msgstr "Kendi '%(photo)s' fotoğrafını logo olarak kullan"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Use the logo '%(logo)s'"
+msgstr "'%(logo)s' logosunu kullan"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "title → '%(title)s'"
+msgstr "başlık → '%(title)s'"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "new description"
+msgstr "yeni açıklama"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "price → %(price)s"
+msgstr "fiyat → %(price)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Update course: %(title)s"
+msgstr "Kursu güncelle: %(title)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Update the curriculum: %(title)s"
+msgstr "Müfredatı güncelle: %(title)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "when → %(when)s"
+msgstr "zaman → %(when)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "location → '%(location)s'"
+msgstr "konum → '%(location)s'"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "new Zoom link"
+msgstr "yeni Zoom bağlantısı"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Update event: %(title)s"
+msgstr "Etkinliği güncelle: %(title)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "summary → '%(summary)s'"
+msgstr "özet → '%(summary)s'"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "new body"
+msgstr "yeni gövde"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "your photo as the cover"
+msgstr "kapak olarak fotoğrafın"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Update post: %(title)s"
+msgstr "Gönderiyi güncelle: %(title)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Publish course: %(title)s"
+msgstr "Kursu yayınla: %(title)s"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "Goes live for students the moment you confirm."
+msgstr "Onayladığın an öğrenciler için yayına girer."
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Publish post: %(title)s"
+msgstr "Gönderiyi yayınla: %(title)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Switch the site style to %(style)s"
+msgstr "Site stilini %(style)s olarak değiştir"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid ""
+"Every section keeps its content and takes the new layout — you can switch "
+"back anytime."
+msgstr ""
+"Her bölüm içeriğini korur ve yeni düzeni alır — istediğin zaman geri "
+"dönebilirsin."
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "nothing to change on the navbar"
+msgstr "gezinme çubuğunda değiştirilecek bir şey yok"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "layout: %(layout)s"
+msgstr "düzen: %(layout)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "button: '%(text)s' → %(href)s"
+msgstr "buton: '%(text)s' → %(href)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "links: %(links)s"
+msgstr "bağlantılar: %(links)s"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "login button shown"
+msgstr "giriş butonu gösterildi"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "login button hidden"
+msgstr "giriş butonu gizlendi"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "install button shown"
+msgstr "yükleme butonu gösterildi"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "install button hidden"
+msgstr "yükleme butonu gizlendi"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "Update the navbar"
+msgstr "Gezinme çubuğunu güncelle"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "Update the site's search description"
+msgstr "Sitenin arama açıklamasını güncelle"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "This is the text Google shows under your site name."
+msgstr "Bu, Google'ın site adının altında gösterdiği metindir."
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "free"
+msgstr "ücretsiz"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "%(modules)s, %(lessons)s — %(price)s"
+msgstr "%(modules)s, %(lessons)s — %(price)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "%(n)d module"
+msgid_plural "%(n)d modules"
+msgstr[0] "%(n)d modül"
+msgstr[1] "%(n)d modül"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "%(n)d lesson"
+msgid_plural "%(n)d lessons"
+msgstr[0] "%(n)d ders"
+msgstr[1] "%(n)d ders"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Create draft course: %(title)s"
+msgstr "Taslak kurs oluştur: %(title)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "%(when)s — visible to students once confirmed"
+msgstr "%(when)s — onaylandığında öğrencilere görünür"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Schedule %(kind)s: %(title)s"
+msgstr "%(kind)s zamanla: %(title)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "in your %(template)s design"
+msgstr "%(template)s tasarımında"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "in your brand's design"
+msgstr "markanın tasarımında"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Draft email: %(subject)s"
+msgstr "E-posta taslağı oluştur: %(subject)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid ""
+"Saved as a draft %(look)s. Review and send it from Messages. Nothing is sent"
+" now."
+msgstr ""
+"Taslak olarak %(look)s kaydedildi. Mesajlar'dan inceleyip gönder. Şu anda "
+"hiçbir şey gönderilmez."
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "that video does not exist"
+msgstr "o video mevcut değil"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Make %(n)d reel from %(title)s"
+msgid_plural "Make %(n)d reels from %(title)s"
+msgstr[0] "%(title)s üzerinden %(n)d reels oluştur"
+msgstr[1] "%(title)s üzerinden %(n)d reels oluştur"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid ""
+"I find its best moments and design a cover for each. You pick the ones you "
+"like in Reels before they become videos. Nothing is posted."
+msgstr ""
+"En iyi anlarını bulur ve her biri için bir kapak tasarlarım. Videoya "
+"dönüşmeden önce beğendiklerini Reels'ta seçersin. Hiçbir şey paylaşılmaz."
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Draft announcement: %(title)s"
+msgstr "Duyuru taslağı oluştur: %(title)s"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid ""
+"Saved as a draft — review and send it from Messages. Nothing is sent now."
+msgstr ""
+"Taslak olarak kaydedildi — Mesajlar'dan incele ve gönder. Şu an hiçbir şey "
+"gönderilmedi."
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Draft blog post: %(title)s"
+msgstr "Taslak blog yazısı: %(title)s"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "Draft for your review"
+msgstr "İncelemen için taslak"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "%(detail)s — with your photo as the cover"
+msgstr "%(detail)s — kapak olarak fotoğrafınla"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "I couldn't turn that into a change I can make — could you rephrase?"
+msgstr ""
+"Bunu yapabileceğim bir değişikliğe dönüştüremedim — başka bir şekilde ifade "
+"edebilir misin?"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid ""
+"I couldn't make that change: %(reason)s. Nothing on your site was changed."
+msgstr ""
+"Bu değişikliği yapamadım: %(reason)s. Sitende hiçbir şey değiştirilmedi."
+
+#: apps/core/copilot/logos.py
+#, fuzzy
+msgid "no logos are available in the library yet"
+msgstr "kitaplıkta henüz logo yok"
+
+#: apps/core/copilot/photos.py
+#, python-format, fuzzy
+msgid "photos can go on these sections only: %(options)s"
+msgstr "fotoğraflar yalnızca şu bölümlere eklenebilir: %(options)s"
+
+#: apps/core/copilot/photos.py
+#, python-format, fuzzy
+msgid "%(block)s has photo fields: %(fields)s"
+msgstr "%(block)s şu fotoğraf alanlarına sahip: %(fields)s"
+
+#: apps/core/copilot/photos.py
+#, fuzzy
+msgid "no photos are available in the library yet"
+msgstr "kitaplıkta henüz fotoğraf yok"
+
+#: apps/core/copilot/photos.py
+#, fuzzy
+msgid "that photo is no longer available"
+msgstr "o fotoğraf artık mevcut değil"
+
+#: apps/core/copilot/tokens.py
+#, fuzzy
+msgid "invalid action token"
+msgstr "geçersiz eylem belirteci"
+
+#: apps/core/copilot/tokens.py
+#, fuzzy
+msgid "action expired or already executed"
+msgstr "eylemin süresi dolmuş veya zaten gerçekleştirilmiş"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "site is not set up yet"
+msgstr "site henüz kurulmadı"
+
+#: apps/core/copilot/views.py apps/media/designs.py
+#, fuzzy
+msgid "that course no longer exists"
+msgstr "o kurs artık mevcut değil"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "that event no longer exists"
+msgstr "o etkinlik artık mevcut değil"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "that photo is not in your library"
+msgstr "o fotoğraf kitaplığında yok"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "that logo is no longer available"
+msgstr "o logo artık mevcut değil"
+
+#: apps/core/copilot/views.py
+#, python-format, fuzzy
+msgid "unknown action: %(kind)s"
+msgstr "bilinmeyen eylem: %(kind)s"
+
+#: apps/core/copilot/views.py apps/media/designs.py
+#, fuzzy
+msgid "that photo no longer exists"
+msgstr "o fotoğraf artık mevcut değil"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "that change cannot be undone"
+msgstr "o değişiklik geri alınamaz"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "only the latest change can be undone"
+msgstr "yalnızca en son değişiklik geri alınabilir"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "nothing to update"
+msgstr "güncellenecek bir şey yok"
+
 #: apps/core/email.py
 #, fuzzy
 msgid "Contentor · Courses, live sessions and payments under your own brand."
 msgstr ""
 "Contentor · Kendi markan altında kurslar, canlı oturumlar ve ödemeler."
+
+#: apps/core/focus/analysis.py
+#, fuzzy
+msgid "Reading your details"
+msgstr "Bilgilerin okunuyor"
+
+#: apps/core/focus/copywriter.py
+#, fuzzy
+msgid "Writing your bundle"
+msgstr "Paketin yazılıyor"
+
+#: apps/core/focus/copywriter.py
+#, fuzzy
+msgid "Writing your course"
+msgstr "Kursun yazılıyor"
+
+#: apps/core/focus/copywriter.py
+#, fuzzy
+msgid "Writing your download"
+msgstr "İndirilebilir dosyan yazılıyor"
+
+#: apps/core/focus/copywriter.py
+#, fuzzy
+msgid "Writing your membership"
+msgstr "Üyeliğin yazılıyor"
+
+#: apps/core/focus/copywriter.py
+#, fuzzy
+msgid "Writing your message"
+msgstr "Mesajın yazılıyor"
+
+#: apps/core/focus/copywriter.py apps/core/focus/post.py
+#, fuzzy
+msgid "Writing your post"
+msgstr "Gönderin yazılıyor"
+
+#: apps/core/focus/copywriter.py
+#, fuzzy
+msgid "Writing your session"
+msgstr "Oturumun yazılıyor"
+
+#: apps/core/focus/covers.py
+#, fuzzy
+msgid "Drafting covers"
+msgstr "Kapak taslakları hazırlanıyor"
+
+#: apps/core/focus/covers.py
+#, fuzzy
+msgid "Drew no covers."
+msgstr "Hiç kapak çizilmedi."
+
+#: apps/core/focus/covers.py
+#, fuzzy
+msgid "Drew four covers."
+msgstr "Dört kapak çizildi."
+
+#: apps/core/focus/descriptions.py
+#, fuzzy
+msgid "Writing lesson descriptions"
+msgstr "Ders açıklamaları yazılıyor"
+
+#: apps/core/focus/descriptions.py
+#, python-format, fuzzy
+msgid "Wrote %(n)d lesson description."
+msgid_plural "Wrote %(n)d lesson descriptions."
+msgstr[0] "%(n)d ders açıklaması yazıldı."
+msgstr[1] "%(n)d ders açıklaması yazıldı."
+
+#: apps/core/focus/flow.py
+#, fuzzy
+msgid "Your announcement is saved as a draft in Messages."
+msgstr "Duyurun Mesajlar'da taslak olarak kaydedildi."
+
+#: apps/core/focus/flow.py
+#, fuzzy
+msgid "No announcement this time."
+msgstr "Bu sefer duyuru yok."
+
+#: apps/core/focus/flow.py
+#, fuzzy
+msgid "Schedule"
+msgstr "Zamanla"
+
+#: apps/core/focus/flow.py
+#, fuzzy
+msgid "Not now"
+msgstr "Şimdi değil"
+
+#: apps/core/focus/flow.py
+#, fuzzy
+msgid "Sent"
+msgstr "Gönderildi"
+
+#: apps/core/focus/flow.py
+#, fuzzy
+msgid "Your announcement has gone out."
+msgstr "Duyurun gönderildi."
+
+#: apps/core/focus/flow.py
+#, fuzzy
+msgid "Start selling"
+msgstr "Satışa başla"
+
+#: apps/core/focus/flow.py
+#, fuzzy
+msgid "your plan, then payouts"
+msgstr "planın, sonra ödemeler"
+
+#: apps/core/focus/flow.py
+#, fuzzy
+msgid "Ticked the way you usually set these up. You can change it any time."
+msgstr ""
+"Genelde ayarladığın şekilde işaretlendi. İstediğin zaman değiştirebilirsin."
+
+#: apps/core/focus/flow.py
+#, python-format, fuzzy
+msgid ""
+"Your announcement is scheduled for %(weekday)s %(day)d %(month)s at "
+"%(time)s."
+msgstr "Duyurun %(weekday)s %(day)d %(month)s saat %(time)s için zamanlandı."
+
+#: apps/core/focus/flow.py
+#, fuzzy
+msgid "Your announcement is scheduled."
+msgstr "Duyurun zamanlandı."
+
+#: apps/core/focus/flow.py
+#, python-format, fuzzy
+msgid "%(label)s: you decide"
+msgstr "%(label)s: sen karar ver"
+
+#: apps/core/focus/flow.py
+#, python-format, fuzzy
+msgid "In %(plan)s"
+msgstr "%(plan)s içinde"
+
+#: apps/core/focus/flow.py apps/core/focus/kinds/event.py
+#, python-format, fuzzy
+msgid "One-time price: %(price)s"
+msgstr "Tek seferlik fiyat: %(price)s"
+
+#: apps/core/focus/flow.py
+#, python-format, fuzzy
+msgid "Sell it for %(price)s"
+msgstr "%(price)s karşılığında sat"
+
+#: apps/core/focus/flow.py
+#, fuzzy
+msgid "In your membership"
+msgstr "Üyeliğinde"
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "Add it later"
+msgstr "Daha sonra ekle"
+
+#: apps/core/focus/kinds/membership.py
+#, python-format, fuzzy
+msgid "%(n)d item"
+msgid_plural "%(n)d items"
+msgstr[0] "%(n)d öğe"
+msgstr[1] "%(n)d öğe"
+
+#: apps/core/focus/kinds/membership.py apps/email_campaigns/catalog.py
+#, fuzzy, python-format
+msgid "%(price)s a month"
+msgstr "ayda %(price)s"
+
+#: apps/core/focus/kinds/membership.py apps/email_campaigns/catalog.py
+#, fuzzy, python-format
+msgid "%(price)s a year"
+msgstr "yılda %(price)s"
+
+#: apps/core/focus/kinds/membership.py
+#, python-format, fuzzy
+msgid "%(price)s every %(n)d month"
+msgid_plural "%(price)s every %(n)d months"
+msgstr[0] "Her %(n)d ayda bir %(price)s"
+msgstr[1] "Her %(n)d ayda bir %(price)s"
+
+#: apps/core/focus/kinds/message.py
+#, python-format, fuzzy
+msgid "%(n)d student"
+msgid_plural "%(n)d students"
+msgstr[0] "%(n)d öğrenci"
+msgstr[1] "%(n)d öğrenci"
+
+#: apps/core/focus/kinds/message.py
+#, python-format, fuzzy
+msgid "All my students (%(students)s)"
+msgstr "Tüm öğrencilerim (%(students)s)"
+
+#: apps/core/focus/kinds/message.py
+#, python-format, fuzzy
+msgid "Students of %(name)s"
+msgstr "%(name)s öğrencileri"
+
+#: apps/core/focus/outline.py
+#, fuzzy
+msgid "Writing your outline"
+msgstr "Taslağın yazılıyor"
+
+#: apps/core/focus/outline.py
+#, python-format, fuzzy
+msgid "Module %(n)d"
+msgstr "Modül %(n)d"
+
+#: apps/core/focus/outline.py
+#, python-format, fuzzy
+msgid "Lesson %(n)d"
+msgstr "Ders %(n)d"
+
+#: apps/core/monetization.py
+#, fuzzy
+msgid "Start selling first: your plan, then payouts."
+msgstr "Önce satışa başla: planın, sonra ödemeler."
 
 #: apps/core/onboarding/about_check.py
 #, fuzzy
@@ -680,11 +1857,6 @@ msgstr "Yaklaşan Etkinlikler"
 msgid "Downloads & Resources"
 msgstr "İndirilebilir Dosyalar & Kaynaklar"
 
-#: apps/core/onboarding/compose.py apps/tenant_config/defaults.py
-#, fuzzy
-msgid "Frequently asked questions"
-msgstr "Sıkça sorulan sorular"
-
 #: apps/core/onboarding/compose.py apps/core/tasks.py
 #: apps/tenant_config/defaults.py
 #, fuzzy
@@ -707,22 +1879,10 @@ msgstr "Planlar & Fiyatlandırma"
 msgid "Choose a plan that fits your goals."
 msgstr "Hedeflerine uygun bir plan seç."
 
-#: apps/core/onboarding/compose.py apps/notifications/templates_builtin.py
-#: apps/tenant_config/defaults.py
-#, fuzzy
-msgid "Welcome"
-msgstr "Hoş geldin"
-
 #: apps/core/onboarding/compose.py
 #, fuzzy
 msgid "Take a look around and find what fits you."
 msgstr "Etrafına bir göz at ve sana uygun olanı bul."
-
-#: apps/core/onboarding/compose.py apps/core/onboarding/site_composer.py
-#: apps/tenant_config/defaults.py
-#, fuzzy
-msgid "Get in touch"
-msgstr "İletişime geç"
 
 #: apps/core/onboarding/compose.py apps/tenant_config/defaults.py
 #, fuzzy
@@ -1065,11 +2225,6 @@ msgstr "Neden %(topic)s öğretiyoruz"
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
-msgid "About me"
-msgstr "Hakkımda"
-
-#: apps/core/onboarding/site_composer.py
-#, fuzzy
 msgid "About us"
 msgstr "Hakkımızda"
 
@@ -1350,11 +2505,6 @@ msgstr "Bugün bulunduğun noktaya uyan kursu seç ve kendi temponda ilerle."
 #, fuzzy
 msgid "See all courses"
 msgstr "Tüm kursları gör"
-
-#: apps/core/onboarding/site_composer.py
-#, fuzzy
-msgid "How it works"
-msgstr "Nasıl çalışır"
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
@@ -2179,7 +3329,7 @@ msgid "You do not have access to this file."
 msgstr "Bu dosyaya erişimin yok."
 
 #: apps/email_campaigns/brand.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "A featured item (%(ref)s) isn't available, so it's left out."
 msgstr ""
 "Öne çıkan bir öğe (%(ref)s) kullanılamıyor, bu yüzden dışarıda bırakıldı."
@@ -2255,11 +3405,6 @@ msgid "%(city)s time"
 msgstr "%(city)s saati"
 
 #: apps/email_campaigns/catalog.py
-#, fuzzy
-msgid "Free"
-msgstr "Ücretsiz"
-
-#: apps/email_campaigns/catalog.py
 #, fuzzy, python-format
 msgid "or with %(plan)s"
 msgstr "veya %(plan)s ile"
@@ -2293,16 +3438,6 @@ msgstr "İndirilebilir dosya"
 #, fuzzy
 msgid "Article"
 msgstr "Makale"
-
-#: apps/email_campaigns/catalog.py
-#, fuzzy, python-format
-msgid "%(price)s a month"
-msgstr "ayda %(price)s"
-
-#: apps/email_campaigns/catalog.py
-#, fuzzy, python-format
-msgid "%(price)s a year"
-msgstr "yılda %(price)s"
 
 #: apps/email_campaigns/catalog.py
 #, fuzzy, python-format
@@ -2361,7 +3496,7 @@ msgid "Something went wrong. Try again."
 msgstr "Bir şeyler ters gitti. Tekrar dene."
 
 #: apps/email_campaigns/designer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "The Designer couldn't write %(count)d part of this email and left it out."
 msgid_plural ""
@@ -2457,27 +3592,22 @@ msgid "Designer · tidying up"
 msgstr "Tasarımcı · son düzenlemeleri yapıyor"
 
 #: apps/email_campaigns/designer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Marketing Specialist · rewriting the %(part)s"
 msgstr "Pazarlama Uzmanı · yeniden yazıyor: %(part)s"
 
 #: apps/email_campaigns/designer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Marketing Specialist · writing the %(part)s"
 msgstr "Pazarlama Uzmanı · yazıyor: %(part)s"
 
 #: apps/email_campaigns/designer.py
-#, fuzzy
-msgid "block"
-msgstr "blok"
-
-#: apps/email_campaigns/designer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Designer · reworking the %(part)s"
 msgstr "Tasarımcı · yeniden düzenliyor: %(part)s"
 
 #: apps/email_campaigns/designer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Designer · laying out the %(part)s"
 msgstr "Tasarımcı · yerleşimi hazırlıyor: %(part)s"
 
@@ -2487,7 +3617,7 @@ msgid "Designer · finding photos"
 msgstr "Tasarımcı · fotoğraf arıyor"
 
 #: apps/email_campaigns/designer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "No picture was found for %(what)s, so that spot is empty."
 msgstr "%(what)s için görsel bulunamadı, bu yüzden o alan boş."
 
@@ -2987,11 +4117,6 @@ msgstr ""
 
 #: apps/media/designs.py
 #, fuzzy
-msgid "that course no longer exists"
-msgstr "o kurs artık mevcut değil"
-
-#: apps/media/designs.py
-#, fuzzy
 msgid "that download no longer exists"
 msgstr "o indirilebilir dosya artık mevcut değil"
 
@@ -3034,11 +4159,6 @@ msgstr "o kapak o zamandan beri değiştirildi"
 #, fuzzy
 msgid "only a draft can be kept"
 msgstr "yalnızca bir taslak saklanabilir"
-
-#: apps/media/designs.py
-#, fuzzy
-msgid "that photo no longer exists"
-msgstr "o fotoğraf artık mevcut değil"
 
 #: apps/media/views.py
 #, fuzzy
@@ -3610,6 +4730,192 @@ msgstr "Bu e-postaların aboneliğinden çıkarıldın."
 #, fuzzy, python-format
 msgid "Invalid language. Must be one of: %(codes)s."
 msgstr "Geçersiz dil. Şunlardan biri olmalıdır: %(codes)s."
+
+#: apps/reels/jobs.py
+#, fuzzy
+msgid "That's a lot of reels for one hour. Try again a little later."
+msgstr "Bir saat için çok fazla reel. Biraz sonra tekrar dene."
+
+#: apps/reels/jobs.py
+#, fuzzy
+msgid ""
+"This video has no transcript, so reels can't be made from it. Upload your "
+"own video."
+msgstr ""
+"Bu videonun transkripti yok, bu yüzden bundan reel oluşturulamaz. Kendi "
+"videonu yükle."
+
+#: apps/reels/jobs.py
+#, fuzzy
+msgid "No speech was found in this video, so there is nothing to caption."
+msgstr ""
+"Bu videoda konuşma bulunamadı, bu yüzden alt yazı eklenecek bir şey yok."
+
+#: apps/reels/jobs.py
+#, fuzzy
+msgid "The video could not be transcribed. Try again later."
+msgstr "Videonun transkripti çıkarılamadı. Daha sonra tekrar dene."
+
+#: apps/reels/jobs.py
+#, fuzzy
+msgid "No moments long enough for a reel were found in this video."
+msgstr "Bu videoda bir reel için yeterince uzun an bulunamadı."
+
+#: apps/reels/jobs.py
+#, fuzzy
+msgid "Making reels into videos is not on for this site."
+msgstr "Reel'ları videoya dönüştürme bu site için açık değil."
+
+#: apps/reels/jobs.py
+#, fuzzy
+msgid "That's a lot of videos for one hour. Try again a little later."
+msgstr "Bir saat için çok fazla video. Biraz sonra tekrar dene."
+
+#: apps/reels/moments.py
+#, fuzzy
+msgid "Translated captions are not on for this site right now."
+msgstr "Çevrilmiş alt yazılar şu anda bu site için açık değil."
+
+#: apps/reels/moments.py
+#, fuzzy
+msgid "The captions could not be translated. Try again."
+msgstr "Alt yazılar çevrilemedi. Tekrar dene."
+
+#: apps/reels/render.py apps/reels/views.py
+#, fuzzy
+msgid "The video could not be made. Try again."
+msgstr "Video oluşturulamadı. Tekrar dene."
+
+#: apps/reels/tasks.py
+#, fuzzy
+msgid "The video was deleted."
+msgstr "Video silindi."
+
+#: apps/reels/tasks.py
+#, fuzzy
+msgid "Something went wrong while finding moments. Try again."
+msgstr "Anlar bulunurken bir sorun oluştu. Tekrar dene."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "video is a video's id."
+msgstr "video, bir videonun kimliğidir."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Send a video and how many reels to make."
+msgstr "Bir video ve kaç reel oluşturulacağını gönder."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Send one of your videos and 1 to 5 reels."
+msgstr "Videolarından birini ve 1 ila 5 reel gönder."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Send the edits as an object."
+msgstr "Düzenlemeleri bir nesne olarak gönder."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Send the stretches cut out as a list."
+msgstr "Kesilip çıkarılan aralıkları liste olarak gönder."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Each stretch cut out is [start, end] in the video's seconds."
+msgstr ""
+"Kesilip çıkarılan her aralık, videonun saniyesi cinsinden [start, end] "
+"şeklindedir."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Send the retyped words by their start."
+msgstr "Yeniden yazılan kelimeleri başlangıçlarına göre gönder."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "A retyped word is one of the video's words, by its start."
+msgstr ""
+"Yeniden yazılan bir kelime, başlangıcına göre videonun kelimelerinden "
+"biridir."
+
+#: apps/reels/views.py
+#, python-format, fuzzy
+msgid "%(key)s is a number from %(low)s to %(high)s."
+msgstr "%(key)s, %(low)s ile %(high)s arasında bir sayıdır."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Send the photos over the clip as a list."
+msgstr "Klip üzerindeki fotoğrafları liste olarak gönder."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Each photo over the clip is {at, photo}."
+msgstr "Klip üzerindeki her fotoğraf {at, photo} şeklindedir."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Choose one of the photos found for this reel."
+msgstr "Bu reel için bulunan fotoğraflardan birini seç."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Choose one of the cover designs."
+msgstr "Kapak tasarımlarından birini seç."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Choose one of the video's frames for the cover."
+msgstr "Kapak için videonun karelerinden birini seç."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Choose a caption style."
+msgstr "Bir altyazı stili seç."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Choose how the video is framed."
+msgstr "Videonun nasıl çerçeveleneceğini seç."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Start and end are seconds."
+msgstr "Başlangıç ve bitiş saniyedir."
+
+#: apps/reels/views.py
+#, python-format, fuzzy
+msgid "A reel is %(low)d s to %(high)d min of the video."
+msgstr "Bir reel, videonun %(low)d sn ile %(high)d dk arasıdır."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Choose one of the caption languages."
+msgstr "Altyazı dillerinden birini seç."
+
+#: apps/reels/views.py
+#, python-format, fuzzy
+msgid "Keep at least %(n)d second of the clip."
+msgid_plural "Keep at least %(n)d seconds of the clip."
+msgstr[0] "Klibin en az %(n)d saniyesini koru."
+msgstr[1] "Klibin en az %(n)d saniyesini koru."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Make the video first."
+msgstr "Önce videoyu oluştur."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Send words."
+msgstr "Kelimeleri gönder."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Too few words for a reel."
+msgstr "Bir reel için çok az kelime."
 
 #: apps/tenant_config/defaults.py
 #, fuzzy

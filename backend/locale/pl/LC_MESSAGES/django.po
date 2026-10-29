@@ -220,7 +220,7 @@ msgid "I could not read those settings."
 msgstr "Nie udało mi się odczytać tych ustawień."
 
 #: apps/billing/views/bundles.py apps/courses/views.py apps/downloads/views.py
-#: apps/media/design_views.py apps/media/views.py
+#: apps/media/design_views.py apps/media/views.py apps/reels/views.py
 #, fuzzy
 msgid "Not found."
 msgstr "Nie znaleziono."
@@ -436,6 +436,154 @@ msgstr "Tylko właściciel może zmienić, które subskrypcje to obejmują."
 msgid "Pick a subscription first, then include this in it."
 msgstr "Najpierw wybierz subskrypcję, a potem dołącz to do niej."
 
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "%(n)d year"
+msgid_plural "%(n)d years"
+msgstr[0] "%(n)d rok"
+msgstr[1] "%(n)d lata"
+msgstr[2] "%(n)d lat"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "%(n)d month"
+msgid_plural "%(n)d months"
+msgstr[0] "%(n)d miesiąc"
+msgstr[1] "%(n)d miesiące"
+msgstr[2] "%(n)d miesięcy"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "%(n)d week"
+msgid_plural "%(n)d weeks"
+msgstr[0] "%(n)d tydzień"
+msgstr[1] "%(n)d tygodnie"
+msgstr[2] "%(n)d tygodni"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "%(n)d day"
+msgid_plural "%(n)d days"
+msgstr[0] "%(n)d dzień"
+msgstr[1] "%(n)d dni"
+msgstr[2] "%(n)d dni"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "from %(date)s"
+msgstr "od %(date)s"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "until %(date)s"
+msgstr "do %(date)s"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "After %(span)s of membership"
+msgstr "Po %(span)s członkostwa"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "From %(date)s"
+msgstr "Od %(date)s"
+
+#: apps/billing/ways.py
+#, fuzzy
+msgid "Right away"
+msgstr "Od razu"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "closes after %(span)s"
+msgstr "zamyka się po %(span)s"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "closes %(date)s"
+msgstr "zamyka się %(date)s"
+
+#: apps/billing/ways.py
+#, fuzzy
+msgid "never closes"
+msgstr "nigdy się nie zamyka"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "after %(span)s of joining"
+msgstr "po %(span)s od dołączenia"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "for %(span)s after joining"
+msgstr "przez %(span)s po dołączeniu"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "until %(span)s after joining"
+msgstr "do %(span)s po dołączeniu"
+
+#: apps/billing/ways.py apps/core/focus/flow.py apps/core/focus/kinds/event.py
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Free"
+msgstr "Bezpłatnie"
+
+#: apps/billing/ways.py
+#, fuzzy
+msgid "Free for everyone"
+msgstr "Bezpłatne dla wszystkich"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "opening %(span)s after purchase"
+msgstr "otwiera się %(span)s po zakupie"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "with %(span)s of access"
+msgstr "z dostępem przez %(span)s"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "until %(span)s after purchase"
+msgstr "do %(span)s po zakupie"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "%(price)s once"
+msgstr "%(price)s jednorazowo"
+
+#: apps/billing/ways.py
+#, fuzzy
+msgid ", theirs to keep"
+msgstr ", na własność"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "after %(span)s of membership"
+msgstr "po %(span)s członkostwa"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "for %(span)s of membership"
+msgstr "przez %(span)s członkostwa"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "until %(span)s into membership"
+msgstr "do %(span)s członkostwa"
+
+#: apps/billing/ways.py
+#, python-format, fuzzy
+msgid "in %(plans)s"
+msgstr "w %(plans)s"
+
+#: apps/billing/ways.py
+#, fuzzy
+msgid "and"
+msgstr "i"
+
 #: apps/blog/serializers.py
 #, fuzzy
 msgid "Expected a list of at most 6 placements."
@@ -511,10 +659,1057 @@ msgstr "Nieprawidłowy klucz obrazu."
 msgid "Invalid emoji."
 msgstr "Nieprawidłowe emoji."
 
+#: apps/core/copilot/blocks.py apps/core/onboarding/compose.py
+#: apps/notifications/templates_builtin.py apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Welcome"
+msgstr "Witaj"
+
+#: apps/core/copilot/blocks.py
+#, fuzzy
+msgid "<p>A few words about who you are and how you work.</p>"
+msgstr "<p>Kilka słów o tym, kim jesteś i jak pracujesz.</p>"
+
+#: apps/core/copilot/blocks.py
+#, fuzzy
+msgid "Every student grows best at their own pace."
+msgstr "Każdy uczestnik rozwija się najlepiej we własnym tempie."
+
+#: apps/core/copilot/blocks.py
+#, fuzzy
+msgid "Get started"
+msgstr "Rozpocznij"
+
+#: apps/core/copilot/blocks.py
+#, python-format, fuzzy
+msgid "%(label)s %(n)d"
+msgstr "%(label)s %(n)d"
+
+#: apps/core/copilot/blocks.py
+#, fuzzy
+msgid "A short line about this."
+msgstr "Krótki opis na ten temat."
+
+#: apps/core/copilot/blocks.py
+#, python-format, fuzzy
+msgid "Question %(n)d?"
+msgstr "Pytanie %(n)d?"
+
+#: apps/core/copilot/blocks.py
+#, fuzzy
+msgid "The answer goes here."
+msgstr "Tutaj wpisz odpowiedź."
+
+#: apps/core/copilot/blocks.py apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "About me"
+msgstr "O mnie"
+
+#: apps/core/copilot/blocks.py
+#, fuzzy
+msgid "What you'll gain"
+msgstr "Co zyskasz"
+
+#: apps/core/copilot/blocks.py apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "How it works"
+msgstr "Jak to działa"
+
+#: apps/core/copilot/blocks.py apps/core/onboarding/compose.py
+#: apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Frequently asked questions"
+msgstr "Często zadawane pytania"
+
+#: apps/core/copilot/blocks.py
+#, fuzzy
+msgid "Ready to begin?"
+msgstr "Gotowy, aby zacząć?"
+
+#: apps/core/copilot/blocks.py apps/core/onboarding/compose.py
+#: apps/core/onboarding/site_composer.py apps/tenant_config/defaults.py
+#, fuzzy
+msgid "Get in touch"
+msgstr "Skontaktuj się z nami"
+
+#: apps/core/copilot/blocks.py
+#, fuzzy
+msgid "links must be site paths like /courses or https:// URLs"
+msgstr ""
+"linki muszą być ścieżkami w witrynie, takimi jak /courses, lub adresami URL "
+"https://"
+
+#: apps/core/copilot/blocks.py
+#, python-format, fuzzy
+msgid "%(block_type)s has no editable field '%(field)s'"
+msgstr "%(block_type)s nie ma edytowalnego pola '%(field)s'"
+
+#: apps/core/copilot/blocks.py
+#, python-format, fuzzy
+msgid "%(field)s must be one of: %(options)s"
+msgstr "%(field)s musi być jednym z: %(options)s"
+
+#: apps/core/copilot/blocks.py
+#, python-format, fuzzy
+msgid "%(field)s must be true or false"
+msgstr "%(field)s musi mieć wartość true lub false"
+
+#: apps/core/copilot/blocks.py
+#, python-format, fuzzy
+msgid "unknown block type: %(block_type)s"
+msgstr "nieznany typ bloku: %(block_type)s"
+
+#: apps/core/copilot/blocks.py
+#, python-format, fuzzy
+msgid "the %(family)s section needs photos — add it from the page editor"
+msgstr "sekcja %(family)s wymaga zdjęć — dodaj ją w edytorze strony"
+
+#: apps/core/copilot/blocks.py
+#, python-format, fuzzy
+msgid "%(block_type)s needs a site style — switch to a style first"
+msgstr "%(block_type)s wymaga stylu witryny — najpierw przełącz się na styl"
+
+#: apps/core/copilot/blocks.py apps/core/copilot/engine.py
+#: apps/core/copilot/photos.py
+#, python-format, fuzzy
+msgid "unknown page: %(page)s"
+msgstr "nieznana strona: %(page)s"
+
+#: apps/core/copilot/blocks.py apps/core/copilot/engine.py
+#: apps/core/copilot/photos.py
+#, python-format, fuzzy
+msgid "no block %(block_id)s on %(page)s"
+msgstr "brak bloku %(block_id)s na stronie %(page)s"
+
+#: apps/core/copilot/blocks.py
+#, python-format, fuzzy
+msgid "%(id)s is already visible"
+msgstr "%(id)s jest już widoczny"
+
+#: apps/core/copilot/blocks.py
+#, python-format, fuzzy
+msgid "%(id)s is already hidden"
+msgstr "%(id)s jest już ukryty"
+
+#: apps/core/copilot/blocks.py
+#, fuzzy
+msgid "no fields to change"
+msgstr "brak pól do zmiany"
+
+#: apps/core/copilot/blocks.py apps/core/copilot/content.py
+#, fuzzy
+msgid "those fields already have those values"
+msgstr "te pola mają już takie wartości"
+
+#: apps/core/copilot/chrome.py
+#, fuzzy
+msgid "no site styles are available yet"
+msgstr "żadne style witryny nie są jeszcze dostępne"
+
+#: apps/core/copilot/chrome.py
+#, python-format, fuzzy
+msgid "style must be one of: %(options)s"
+msgstr "styl musi być jednym z: %(options)s"
+
+#: apps/core/copilot/chrome.py
+#, python-format, fuzzy
+msgid "layout must be one of: %(options)s"
+msgstr "układ musi być jednym z: %(options)s"
+
+#: apps/core/copilot/chrome.py
+#, fuzzy
+msgid "navbar links must be a list"
+msgstr "linki paska nawigacji muszą być listą"
+
+#: apps/core/copilot/chrome.py
+#, fuzzy
+msgid "navbar supports up to 20 links"
+msgstr "pasek nawigacji obsługuje do 20 linków"
+
+#: apps/core/copilot/chrome.py
+#, fuzzy
+msgid "every navbar link needs a label and a safe link"
+msgstr "każdy link w pasku nawigacji wymaga etykiety i bezpiecznego linku"
+
+#: apps/core/copilot/chrome.py
+#, fuzzy
+msgid "the description cannot be empty"
+msgstr "opis nie może być pusty"
+
+#: apps/core/copilot/content.py apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "no course with id %(course_id)s"
+msgstr "brak kursu o id %(course_id)s"
+
+#: apps/core/copilot/content.py apps/core/copilot/engine.py
+#, fuzzy
+msgid "nothing to change on the course"
+msgstr "nic do zmiany w kursie"
+
+#: apps/core/copilot/content.py
+#, python-format, fuzzy
+msgid "no %(kind)s event with id %(event_id)s"
+msgstr "brak wydarzenia %(kind)s o id %(event_id)s"
+
+#: apps/core/copilot/content.py
+#, fuzzy
+msgid "could not read the new date"
+msgstr "nie udało się odczytać nowej daty"
+
+#: apps/core/copilot/content.py apps/core/copilot/engine.py
+#, fuzzy
+msgid "event date must be in the future"
+msgstr "data wydarzenia musi być w przyszłości"
+
+#: apps/core/copilot/content.py
+#, fuzzy
+msgid "that Zoom link is not a full web address (https://…)"
+msgstr "ten link do Zoom nie jest pełnym adresem internetowym (https://…)"
+
+#: apps/core/copilot/content.py apps/core/copilot/engine.py
+#, fuzzy
+msgid "nothing to change on the event"
+msgstr "nic do zmiany w wydarzeniu"
+
+#: apps/core/copilot/content.py
+#, fuzzy
+msgid "a module or lesson needs a title"
+msgstr "moduł lub lekcja wymaga tytułu"
+
+#: apps/core/copilot/content.py
+#, fuzzy
+msgid "that module is not in this course"
+msgstr "ten moduł nie znajduje się w tym kursie"
+
+#: apps/core/copilot/content.py
+#, fuzzy
+msgid "that lesson is not in this course"
+msgstr "ta lekcja nie znajduje się w tym kursie"
+
+#: apps/core/copilot/content.py
+#, python-format, fuzzy
+msgid ""
+"that is more than %(MAX_CURRICULUM_OPS)s changes at once — split it into two"
+" requests"
+msgstr ""
+"to więcej niż %(MAX_CURRICULUM_OPS)s zmian naraz — podziel to na dwa żądania"
+
+#: apps/core/copilot/content.py
+#, fuzzy
+msgid "unknown curriculum change"
+msgstr "nieznana zmiana w programie kursu"
+
+#: apps/core/copilot/content.py
+#, fuzzy
+msgid "nothing to change in the curriculum"
+msgstr "nic do zmiany w programie kursu"
+
+#: apps/core/copilot/content.py apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "no blog post with id %(post_id)s"
+msgstr "brak wpisu na blogu o id %(post_id)s"
+
+#: apps/core/copilot/content.py apps/core/copilot/engine.py
+#, fuzzy
+msgid "nothing to change on the post"
+msgstr "nic do zmiany we wpisie"
+
+#: apps/core/copilot/content.py apps/core/copilot/engine.py
+#, fuzzy
+msgid "that course is already published"
+msgstr "ten kurs jest już opublikowany"
+
+#: apps/core/copilot/content.py apps/core/copilot/engine.py
+#, fuzzy
+msgid "that post is already published"
+msgstr "ten wpis jest już opublikowany"
+
+#: apps/core/copilot/content.py
+#, fuzzy
+msgid "the announcement needs a title"
+msgstr "ogłoszenie wymaga tytułu"
+
+#: apps/core/copilot/content.py
+#, fuzzy
+msgid "the email needs a subject"
+msgstr "e-mail wymaga tematu"
+
+#: apps/core/copilot/content.py
+#, fuzzy
+msgid "that video was deleted"
+msgstr "to wideo zostało usunięte"
+
+#: apps/core/copilot/content.py
+#, fuzzy
+msgid "that email was sent or deleted"
+msgstr "ten e-mail został wysłany lub usunięty"
+
+#: apps/core/copilot/content.py
+#, fuzzy
+msgid "the Designer can't work right now, try again in a minute"
+msgstr "projektant nie może teraz pracować, spróbuj ponownie za minutę"
+
+#: apps/core/copilot/engine.py apps/core/copilot/photos.py
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "that attached photo is not in your library"
+msgstr "tego załączonego zdjęcia nie ma w twojej bibliotece"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "no %(event_kind)s event with id %(event_id)s"
+msgstr "brak wydarzenia %(event_kind)s o identyfikatorze %(event_id)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "no event with id %(event_id)s"
+msgstr "brak wydarzenia o identyfikatorze %(event_id)s"
+
+#: apps/core/copilot/engine.py apps/email_campaigns/designer.py
+#, fuzzy
+msgid "block"
+msgstr "blok"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "open the email in the email editor first"
+msgstr "najpierw otwórz e-mail w edytorze e-maili"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "Change this email"
+msgstr "Zmień ten e-mail"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Set access for %(title)s"
+msgstr "Ustaw dostęp do %(title)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "%(n)d field changes"
+msgid_plural "%(n)d fields change"
+msgstr[0] "%(n)d pole się zmienia"
+msgstr[1] "%(n)d pola się zmieniają"
+msgstr[2] "%(n)d pól się zmienia"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Add a %(block)s to %(page)s"
+msgstr "Dodaj %(block)s do %(page)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Remove the %(block)s from %(page)s"
+msgstr "Usuń %(block)s z %(page)s"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "to the top"
+msgstr "na samą górę"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "after %(id)s"
+msgstr "po %(id)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "to %(page)s (%(where)s)"
+msgstr "do %(page)s (%(where)s)"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Move the %(block)s on %(page)s"
+msgstr "Przenieś %(block)s na %(page)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Update the %(block)s on %(page)s"
+msgstr "Zaktualizuj %(block)s na %(page)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Show %(id)s on %(page)s"
+msgstr "Pokaż %(id)s na %(page)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Hide %(id)s on %(page)s"
+msgstr "Ukryj %(id)s na %(page)s"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "The section stays saved — flip it back anytime."
+msgstr "Sekcja pozostaje zapisana — w każdej chwili możesz ją przywrócić."
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Duplicate %(id)s on %(page)s"
+msgstr "Zduplikuj %(id)s na %(page)s"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "The copy lands right below the original."
+msgstr "Kopia pojawi się tuż pod oryginałem."
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Use your photo '%(photo)s'"
+msgstr "Użyj swojego zdjęcia '%(photo)s'"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "untitled"
+msgstr "bez tytułu"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "This is the photo you attached — nothing changes until you apply."
+msgstr ""
+"To jest zdjęcie załączone przez ciebie — nic się nie zmieni, dopóki nie "
+"zastosujesz zmian."
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Use the photo '%(photo)s'"
+msgstr "Użyj zdjęcia '%(photo)s'"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "Ask for a different style anytime — nothing changes until you apply."
+msgstr ""
+"W każdej chwili możesz poprosić o inny styl — nic się nie zmieni, dopóki nie"
+" zastosujesz zmian."
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Cover for '%(title)s': your photo '%(photo)s'"
+msgstr "Okładka dla '%(title)s': twoje zdjęcie '%(photo)s'"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Cover for '%(title)s': the photo '%(photo)s'"
+msgstr "Okładka dla '%(title)s': zdjęcie '%(photo)s'"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "the photo note is empty"
+msgstr "notatka do zdjęcia jest pusta"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Remember this photo as: %(description)s"
+msgstr "Zapamiętaj to zdjęcie jako: %(description)s"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "Saved to your media library so it can be found again later."
+msgstr ""
+"Zapisano w twojej bibliotece mediów, aby można je było później znaleźć."
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Use your photo '%(photo)s' as the logo"
+msgstr "Użyj swojego zdjęcia '%(photo)s' jako logo"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Use the logo '%(logo)s'"
+msgstr "Użyj logo '%(logo)s'"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "title → '%(title)s'"
+msgstr "tytuł → '%(title)s'"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "new description"
+msgstr "nowy opis"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "price → %(price)s"
+msgstr "cena → %(price)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Update course: %(title)s"
+msgstr "Zaktualizuj kurs: %(title)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Update the curriculum: %(title)s"
+msgstr "Zaktualizuj program: %(title)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "when → %(when)s"
+msgstr "kiedy → %(when)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "location → '%(location)s'"
+msgstr "lokalizacja → '%(location)s'"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "new Zoom link"
+msgstr "nowy link do Zoom"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Update event: %(title)s"
+msgstr "Zaktualizuj wydarzenie: %(title)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "summary → '%(summary)s'"
+msgstr "podsumowanie → '%(summary)s'"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "new body"
+msgstr "nowa treść"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "your photo as the cover"
+msgstr "twoje zdjęcie jako okładka"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Update post: %(title)s"
+msgstr "Zaktualizuj wpis: %(title)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Publish course: %(title)s"
+msgstr "Opublikuj kurs: %(title)s"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "Goes live for students the moment you confirm."
+msgstr "Będzie dostępny dla uczestników w chwili, gdy potwierdzisz."
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Publish post: %(title)s"
+msgstr "Opublikuj wpis: %(title)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Switch the site style to %(style)s"
+msgstr "Zmień styl strony na %(style)s"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid ""
+"Every section keeps its content and takes the new layout — you can switch "
+"back anytime."
+msgstr ""
+"Każda sekcja zachowuje swoją treść i przyjmuje nowy układ — w każdej chwili "
+"możesz wrócić do poprzedniego."
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "nothing to change on the navbar"
+msgstr "nic do zmiany na pasku nawigacji"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "layout: %(layout)s"
+msgstr "układ: %(layout)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "button: '%(text)s' → %(href)s"
+msgstr "przycisk: '%(text)s' → %(href)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "links: %(links)s"
+msgstr "linki: %(links)s"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "login button shown"
+msgstr "przycisk logowania widoczny"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "login button hidden"
+msgstr "przycisk logowania ukryty"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "install button shown"
+msgstr "przycisk instalacji widoczny"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "install button hidden"
+msgstr "przycisk instalacji ukryty"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "Update the navbar"
+msgstr "Zaktualizuj pasek nawigacji"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "Update the site's search description"
+msgstr "Zaktualizuj opis strony w wyszukiwarkach"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "This is the text Google shows under your site name."
+msgstr "To jest tekst, który Google wyświetla pod nazwą twojej strony."
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "free"
+msgstr "za darmo"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "%(modules)s, %(lessons)s — %(price)s"
+msgstr "%(modules)s, %(lessons)s — %(price)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "%(n)d module"
+msgid_plural "%(n)d modules"
+msgstr[0] "%(n)d moduł"
+msgstr[1] "%(n)d moduły"
+msgstr[2] "%(n)d modułów"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "%(n)d lesson"
+msgid_plural "%(n)d lessons"
+msgstr[0] "%(n)d lekcja"
+msgstr[1] "%(n)d lekcje"
+msgstr[2] "%(n)d lekcji"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Create draft course: %(title)s"
+msgstr "Utwórz wersję roboczą kursu: %(title)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "%(when)s — visible to students once confirmed"
+msgstr "%(when)s — widoczne dla uczestników po potwierdzeniu"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Schedule %(kind)s: %(title)s"
+msgstr "Zaplanuj %(kind)s: %(title)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "in your %(template)s design"
+msgstr "w twoim stylu %(template)s"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "in your brand's design"
+msgstr "w stylu twojej marki"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Draft email: %(subject)s"
+msgstr "Wersja robocza e-maila: %(subject)s"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid ""
+"Saved as a draft %(look)s. Review and send it from Messages. Nothing is sent"
+" now."
+msgstr ""
+"Zapisano jako wersję roboczą %(look)s. Przejrzyj i wyślij z Wiadomości. "
+"Teraz nic nie jest wysyłane."
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "that video does not exist"
+msgstr "to wideo nie istnieje"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Make %(n)d reel from %(title)s"
+msgid_plural "Make %(n)d reels from %(title)s"
+msgstr[0] "Stwórz %(n)d rolkę z %(title)s"
+msgstr[1] "Stwórz %(n)d rolki z %(title)s"
+msgstr[2] "Stwórz %(n)d rolek z %(title)s"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid ""
+"I find its best moments and design a cover for each. You pick the ones you "
+"like in Reels before they become videos. Nothing is posted."
+msgstr ""
+"Znajduję jego najlepsze momenty i projektuję okładkę dla każdego z nich. "
+"Wybierasz te, które ci się podobają w Rolkach, zanim staną się filmami. Nic "
+"nie jest publikowane."
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Draft announcement: %(title)s"
+msgstr "Wersja robocza ogłoszenia: %(title)s"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid ""
+"Saved as a draft — review and send it from Messages. Nothing is sent now."
+msgstr ""
+"Zapisano jako wersję roboczą — przejrzyj i wyślij z Wiadomości. Teraz nic "
+"nie jest wysyłane."
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "Draft blog post: %(title)s"
+msgstr "Wersja robocza wpisu na blogu: %(title)s"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "Draft for your review"
+msgstr "Wersja robocza do przejrzenia"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid "%(detail)s — with your photo as the cover"
+msgstr "%(detail)s — z twoim zdjęciem jako okładka"
+
+#: apps/core/copilot/engine.py
+#, fuzzy
+msgid "I couldn't turn that into a change I can make — could you rephrase?"
+msgstr ""
+"Nie udało mi się przekształcić tego w zmianę, którą mogę wprowadzić — czy "
+"możesz to przeformułować?"
+
+#: apps/core/copilot/engine.py
+#, python-format, fuzzy
+msgid ""
+"I couldn't make that change: %(reason)s. Nothing on your site was changed."
+msgstr ""
+"Nie udało mi się wprowadzić tej zmiany: %(reason)s. Nic na twojej stronie "
+"nie zostało zmienione."
+
+#: apps/core/copilot/logos.py
+#, fuzzy
+msgid "no logos are available in the library yet"
+msgstr "w bibliotece nie ma jeszcze dostępnych logo"
+
+#: apps/core/copilot/photos.py
+#, python-format, fuzzy
+msgid "photos can go on these sections only: %(options)s"
+msgstr "zdjęcia można umieścić tylko w tych sekcjach: %(options)s"
+
+#: apps/core/copilot/photos.py
+#, python-format, fuzzy
+msgid "%(block)s has photo fields: %(fields)s"
+msgstr "%(block)s ma pola na zdjęcia: %(fields)s"
+
+#: apps/core/copilot/photos.py
+#, fuzzy
+msgid "no photos are available in the library yet"
+msgstr "w bibliotece nie ma jeszcze dostępnych zdjęć"
+
+#: apps/core/copilot/photos.py
+#, fuzzy
+msgid "that photo is no longer available"
+msgstr "to zdjęcie nie jest już dostępne"
+
+#: apps/core/copilot/tokens.py
+#, fuzzy
+msgid "invalid action token"
+msgstr "nieprawidłowy token akcji"
+
+#: apps/core/copilot/tokens.py
+#, fuzzy
+msgid "action expired or already executed"
+msgstr "akcja wygasła lub została już wykonana"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "site is not set up yet"
+msgstr "strona nie jest jeszcze skonfigurowana"
+
+#: apps/core/copilot/views.py apps/media/designs.py
+#, fuzzy
+msgid "that course no longer exists"
+msgstr "ten kurs już nie istnieje"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "that event no longer exists"
+msgstr "to wydarzenie już nie istnieje"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "that photo is not in your library"
+msgstr "tego zdjęcia nie ma w twojej bibliotece"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "that logo is no longer available"
+msgstr "to logo nie jest już dostępne"
+
+#: apps/core/copilot/views.py
+#, python-format, fuzzy
+msgid "unknown action: %(kind)s"
+msgstr "nieznana akcja: %(kind)s"
+
+#: apps/core/copilot/views.py apps/media/designs.py
+#, fuzzy
+msgid "that photo no longer exists"
+msgstr "to zdjęcie już nie istnieje"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "that change cannot be undone"
+msgstr "tej zmiany nie można cofnąć"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "only the latest change can be undone"
+msgstr "tylko ostatnią zmianę można cofnąć"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "nothing to update"
+msgstr "nic do zaktualizowania"
+
 #: apps/core/email.py
 #, fuzzy
 msgid "Contentor · Courses, live sessions and payments under your own brand."
 msgstr "Contentor · Kursy, sesje na żywo i płatności pod własną marką."
+
+#: apps/core/focus/analysis.py
+#, fuzzy
+msgid "Reading your details"
+msgstr "Odczytywanie twoich danych"
+
+#: apps/core/focus/copywriter.py
+#, fuzzy
+msgid "Writing your bundle"
+msgstr "Pisanie twojego pakietu"
+
+#: apps/core/focus/copywriter.py
+#, fuzzy
+msgid "Writing your course"
+msgstr "Pisanie twojego kursu"
+
+#: apps/core/focus/copywriter.py
+#, fuzzy
+msgid "Writing your download"
+msgstr "Pisanie twojego pliku do pobrania"
+
+#: apps/core/focus/copywriter.py
+#, fuzzy
+msgid "Writing your membership"
+msgstr "Pisanie twojego członkostwa"
+
+#: apps/core/focus/copywriter.py
+#, fuzzy
+msgid "Writing your message"
+msgstr "Pisanie twojej wiadomości"
+
+#: apps/core/focus/copywriter.py apps/core/focus/post.py
+#, fuzzy
+msgid "Writing your post"
+msgstr "Pisanie twojego wpisu"
+
+#: apps/core/focus/copywriter.py
+#, fuzzy
+msgid "Writing your session"
+msgstr "Pisanie twojej sesji"
+
+#: apps/core/focus/covers.py
+#, fuzzy
+msgid "Drafting covers"
+msgstr "Szkicowanie okładek"
+
+#: apps/core/focus/covers.py
+#, fuzzy
+msgid "Drew no covers."
+msgstr "Nie narysowano żadnych okładek."
+
+#: apps/core/focus/covers.py
+#, fuzzy
+msgid "Drew four covers."
+msgstr "Narysowano cztery okładki."
+
+#: apps/core/focus/descriptions.py
+#, fuzzy
+msgid "Writing lesson descriptions"
+msgstr "Pisanie opisów lekcji"
+
+#: apps/core/focus/descriptions.py
+#, python-format, fuzzy
+msgid "Wrote %(n)d lesson description."
+msgid_plural "Wrote %(n)d lesson descriptions."
+msgstr[0] "Napisano %(n)d opis lekcji."
+msgstr[1] "Napisano %(n)d opisy lekcji."
+msgstr[2] "Napisano %(n)d opisów lekcji."
+
+#: apps/core/focus/flow.py
+#, fuzzy
+msgid "Your announcement is saved as a draft in Messages."
+msgstr "Twoje ogłoszenie jest zapisane jako wersja robocza w Wiadomościach."
+
+#: apps/core/focus/flow.py
+#, fuzzy
+msgid "No announcement this time."
+msgstr "Tym razem bez ogłoszenia."
+
+#: apps/core/focus/flow.py
+#, fuzzy
+msgid "Schedule"
+msgstr "Zaplanuj"
+
+#: apps/core/focus/flow.py
+#, fuzzy
+msgid "Not now"
+msgstr "Nie teraz"
+
+#: apps/core/focus/flow.py
+#, fuzzy
+msgid "Sent"
+msgstr "Wysłano"
+
+#: apps/core/focus/flow.py
+#, fuzzy
+msgid "Your announcement has gone out."
+msgstr "Twoje ogłoszenie zostało wysłane."
+
+#: apps/core/focus/flow.py
+#, fuzzy
+msgid "Start selling"
+msgstr "Zacznij sprzedawać"
+
+#: apps/core/focus/flow.py
+#, fuzzy
+msgid "your plan, then payouts"
+msgstr "twój plan, potem wypłaty"
+
+#: apps/core/focus/flow.py
+#, fuzzy
+msgid "Ticked the way you usually set these up. You can change it any time."
+msgstr ""
+"Zaznaczono tak, jak zwykle to ustawiasz. Możesz to zmienić w dowolnym "
+"momencie."
+
+#: apps/core/focus/flow.py
+#, python-format, fuzzy
+msgid ""
+"Your announcement is scheduled for %(weekday)s %(day)d %(month)s at "
+"%(time)s."
+msgstr ""
+"Twoje ogłoszenie jest zaplanowane na %(weekday)s %(day)d %(month)s o "
+"%(time)s."
+
+#: apps/core/focus/flow.py
+#, fuzzy
+msgid "Your announcement is scheduled."
+msgstr "Twoje ogłoszenie jest zaplanowane."
+
+#: apps/core/focus/flow.py
+#, python-format, fuzzy
+msgid "%(label)s: you decide"
+msgstr "%(label)s: ty decydujesz"
+
+#: apps/core/focus/flow.py
+#, python-format, fuzzy
+msgid "In %(plan)s"
+msgstr "W %(plan)s"
+
+#: apps/core/focus/flow.py apps/core/focus/kinds/event.py
+#, python-format, fuzzy
+msgid "One-time price: %(price)s"
+msgstr "Cena jednorazowa: %(price)s"
+
+#: apps/core/focus/flow.py
+#, python-format, fuzzy
+msgid "Sell it for %(price)s"
+msgstr "Sprzedaj za %(price)s"
+
+#: apps/core/focus/flow.py
+#, fuzzy
+msgid "In your membership"
+msgstr "W twoim członkostwie"
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "Add it later"
+msgstr "Dodaj później"
+
+#: apps/core/focus/kinds/membership.py
+#, python-format, fuzzy
+msgid "%(n)d item"
+msgid_plural "%(n)d items"
+msgstr[0] "%(n)d element"
+msgstr[1] "%(n)d elementy"
+msgstr[2] "%(n)d elementów"
+
+#: apps/core/focus/kinds/membership.py apps/email_campaigns/catalog.py
+#, fuzzy, python-format
+msgid "%(price)s a month"
+msgstr "%(price)s miesięcznie"
+
+#: apps/core/focus/kinds/membership.py apps/email_campaigns/catalog.py
+#, fuzzy, python-format
+msgid "%(price)s a year"
+msgstr "%(price)s rocznie"
+
+#: apps/core/focus/kinds/membership.py
+#, python-format, fuzzy
+msgid "%(price)s every %(n)d month"
+msgid_plural "%(price)s every %(n)d months"
+msgstr[0] "%(price)s co %(n)d miesiąc"
+msgstr[1] "%(price)s co %(n)d miesiące"
+msgstr[2] "%(price)s co %(n)d miesięcy"
+
+#: apps/core/focus/kinds/message.py
+#, python-format, fuzzy
+msgid "%(n)d student"
+msgid_plural "%(n)d students"
+msgstr[0] "%(n)d uczestnik"
+msgstr[1] "%(n)d uczestnicy"
+msgstr[2] "%(n)d uczestników"
+
+#: apps/core/focus/kinds/message.py
+#, python-format, fuzzy
+msgid "All my students (%(students)s)"
+msgstr "Wszyscy moi uczestnicy (%(students)s)"
+
+#: apps/core/focus/kinds/message.py
+#, python-format, fuzzy
+msgid "Students of %(name)s"
+msgstr "Uczestnicy %(name)s"
+
+#: apps/core/focus/outline.py
+#, fuzzy
+msgid "Writing your outline"
+msgstr "Pisanie twojego konspektu"
+
+#: apps/core/focus/outline.py
+#, python-format, fuzzy
+msgid "Module %(n)d"
+msgstr "Moduł %(n)d"
+
+#: apps/core/focus/outline.py
+#, python-format, fuzzy
+msgid "Lesson %(n)d"
+msgstr "Lekcja %(n)d"
+
+#: apps/core/monetization.py
+#, fuzzy
+msgid "Start selling first: your plan, then payouts."
+msgstr "Najpierw zacznij sprzedawać: twój plan, potem wypłaty."
 
 #: apps/core/onboarding/about_check.py
 #, fuzzy
@@ -683,11 +1878,6 @@ msgstr "Nadchodzące wydarzenia"
 msgid "Downloads & Resources"
 msgstr "Pliki do pobrania & materiały"
 
-#: apps/core/onboarding/compose.py apps/tenant_config/defaults.py
-#, fuzzy
-msgid "Frequently asked questions"
-msgstr "Często zadawane pytania"
-
 #: apps/core/onboarding/compose.py apps/core/tasks.py
 #: apps/tenant_config/defaults.py
 #, fuzzy
@@ -710,22 +1900,10 @@ msgstr "Plany & cennik"
 msgid "Choose a plan that fits your goals."
 msgstr "Wybierz plan dopasowany do twoich celów."
 
-#: apps/core/onboarding/compose.py apps/notifications/templates_builtin.py
-#: apps/tenant_config/defaults.py
-#, fuzzy
-msgid "Welcome"
-msgstr "Witaj"
-
 #: apps/core/onboarding/compose.py
 #, fuzzy
 msgid "Take a look around and find what fits you."
 msgstr "Rozejrzyj się i znajdź to, co do ciebie pasuje."
-
-#: apps/core/onboarding/compose.py apps/core/onboarding/site_composer.py
-#: apps/tenant_config/defaults.py
-#, fuzzy
-msgid "Get in touch"
-msgstr "Skontaktuj się z nami"
 
 #: apps/core/onboarding/compose.py apps/tenant_config/defaults.py
 #, fuzzy
@@ -1088,11 +2266,6 @@ msgstr "Dlaczego uczymy %(topic)s"
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
-msgid "About me"
-msgstr "O mnie"
-
-#: apps/core/onboarding/site_composer.py
-#, fuzzy
 msgid "About us"
 msgstr "O nas"
 
@@ -1383,11 +2556,6 @@ msgstr ""
 #, fuzzy
 msgid "See all courses"
 msgstr "Zobacz wszystkie kursy"
-
-#: apps/core/onboarding/site_composer.py
-#, fuzzy
-msgid "How it works"
-msgstr "Jak to działa"
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
@@ -2218,7 +3386,7 @@ msgid "You do not have access to this file."
 msgstr "Nie masz dostępu do tego pliku."
 
 #: apps/email_campaigns/brand.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "A featured item (%(ref)s) isn't available, so it's left out."
 msgstr "Wyróżniony element (%(ref)s) jest niedostępny, więc został pominięty."
 
@@ -2293,11 +3461,6 @@ msgid "%(city)s time"
 msgstr "czas %(city)s"
 
 #: apps/email_campaigns/catalog.py
-#, fuzzy
-msgid "Free"
-msgstr "Bezpłatnie"
-
-#: apps/email_campaigns/catalog.py
 #, fuzzy, python-format
 msgid "or with %(plan)s"
 msgstr "lub z %(plan)s"
@@ -2331,16 +3494,6 @@ msgstr "Plik do pobrania"
 #, fuzzy
 msgid "Article"
 msgstr "Artykuł"
-
-#: apps/email_campaigns/catalog.py
-#, fuzzy, python-format
-msgid "%(price)s a month"
-msgstr "%(price)s miesięcznie"
-
-#: apps/email_campaigns/catalog.py
-#, fuzzy, python-format
-msgid "%(price)s a year"
-msgstr "%(price)s rocznie"
 
 #: apps/email_campaigns/catalog.py
 #, fuzzy, python-format
@@ -2401,7 +3554,7 @@ msgid "Something went wrong. Try again."
 msgstr "Coś poszło nie tak. Spróbuj ponownie."
 
 #: apps/email_campaigns/designer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "The Designer couldn't write %(count)d part of this email and left it out."
 msgid_plural ""
@@ -2499,27 +3652,22 @@ msgid "Designer · tidying up"
 msgstr "Projektant · porządkuje całość"
 
 #: apps/email_campaigns/designer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Marketing Specialist · rewriting the %(part)s"
 msgstr "Specjalista ds. marketingu · przepisuje: %(part)s"
 
 #: apps/email_campaigns/designer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Marketing Specialist · writing the %(part)s"
 msgstr "Specjalista ds. marketingu · pisze: %(part)s"
 
 #: apps/email_campaigns/designer.py
-#, fuzzy
-msgid "block"
-msgstr "blok"
-
-#: apps/email_campaigns/designer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Designer · reworking the %(part)s"
 msgstr "Projektant · przerabia: %(part)s"
 
 #: apps/email_campaigns/designer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Designer · laying out the %(part)s"
 msgstr "Projektant · układa: %(part)s"
 
@@ -2529,7 +3677,7 @@ msgid "Designer · finding photos"
 msgstr "Projektant · szuka zdjęć"
 
 #: apps/email_campaigns/designer.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "No picture was found for %(what)s, so that spot is empty."
 msgstr "Nie znaleziono zdjęcia dla: %(what)s, więc to miejsce jest puste."
 
@@ -3030,11 +4178,6 @@ msgstr ""
 
 #: apps/media/designs.py
 #, fuzzy
-msgid "that course no longer exists"
-msgstr "ten kurs już nie istnieje"
-
-#: apps/media/designs.py
-#, fuzzy
 msgid "that download no longer exists"
 msgstr "ten plik do pobrania już nie istnieje"
 
@@ -3077,11 +4220,6 @@ msgstr "ta okładka została od tego czasu zmieniona"
 #, fuzzy
 msgid "only a draft can be kept"
 msgstr "tylko szkic można zachować"
-
-#: apps/media/designs.py
-#, fuzzy
-msgid "that photo no longer exists"
-msgstr "to zdjęcie już nie istnieje"
 
 #: apps/media/views.py
 #, fuzzy
@@ -3659,6 +4797,188 @@ msgstr "Wypisano Cię z tych wiadomości e-mail."
 #, fuzzy, python-format
 msgid "Invalid language. Must be one of: %(codes)s."
 msgstr "Nieprawidłowy język. Musi być jednym z: %(codes)s."
+
+#: apps/reels/jobs.py
+#, fuzzy
+msgid "That's a lot of reels for one hour. Try again a little later."
+msgstr "To dużo rolek jak na jedną godzinę. Spróbuj ponownie trochę później."
+
+#: apps/reels/jobs.py
+#, fuzzy
+msgid ""
+"This video has no transcript, so reels can't be made from it. Upload your "
+"own video."
+msgstr ""
+"Ten film nie ma transkrypcji, więc nie można z niego utworzyć rolek. "
+"Prześlij własny film."
+
+#: apps/reels/jobs.py
+#, fuzzy
+msgid "No speech was found in this video, so there is nothing to caption."
+msgstr "W tym filmie nie znaleziono mowy, więc nie ma do czego dodać napisów."
+
+#: apps/reels/jobs.py
+#, fuzzy
+msgid "The video could not be transcribed. Try again later."
+msgstr "Nie udało się wykonać transkrypcji filmu. Spróbuj ponownie później."
+
+#: apps/reels/jobs.py
+#, fuzzy
+msgid "No moments long enough for a reel were found in this video."
+msgstr "W tym filmie nie znaleziono momentów wystarczająco długich na rolkę."
+
+#: apps/reels/jobs.py
+#, fuzzy
+msgid "Making reels into videos is not on for this site."
+msgstr "Tworzenie filmów z rolek nie jest włączone dla tej witryny."
+
+#: apps/reels/jobs.py
+#, fuzzy
+msgid "That's a lot of videos for one hour. Try again a little later."
+msgstr "To dużo filmów jak na jedną godzinę. Spróbuj ponownie trochę później."
+
+#: apps/reels/moments.py
+#, fuzzy
+msgid "Translated captions are not on for this site right now."
+msgstr "Przetłumaczone napisy nie są teraz włączone dla tej witryny."
+
+#: apps/reels/moments.py
+#, fuzzy
+msgid "The captions could not be translated. Try again."
+msgstr "Nie udało się przetłumaczyć napisów. Spróbuj ponownie."
+
+#: apps/reels/render.py apps/reels/views.py
+#, fuzzy
+msgid "The video could not be made. Try again."
+msgstr "Nie udało się utworzyć filmu. Spróbuj ponownie."
+
+#: apps/reels/tasks.py
+#, fuzzy
+msgid "The video was deleted."
+msgstr "Film został usunięty."
+
+#: apps/reels/tasks.py
+#, fuzzy
+msgid "Something went wrong while finding moments. Try again."
+msgstr "Coś poszło nie tak podczas wyszukiwania momentów. Spróbuj ponownie."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "video is a video's id."
+msgstr "video to identyfikator filmu."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Send a video and how many reels to make."
+msgstr "Wyślij film i liczbę rolek do utworzenia."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Send one of your videos and 1 to 5 reels."
+msgstr "Wyślij jeden ze swoich filmów i od 1 do 5 rolek."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Send the edits as an object."
+msgstr "Wyślij edycje jako obiekt."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Send the stretches cut out as a list."
+msgstr "Wyślij wycięte fragmenty jako listę."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Each stretch cut out is [start, end] in the video's seconds."
+msgstr "Każdy wycięty fragment to [start, end] w sekundach filmu."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Send the retyped words by their start."
+msgstr "Wyślij przepisane słowa według ich początku."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "A retyped word is one of the video's words, by its start."
+msgstr "Przepisane słowo to jedno ze słów filmu, według jego początku."
+
+#: apps/reels/views.py
+#, python-format, fuzzy
+msgid "%(key)s is a number from %(low)s to %(high)s."
+msgstr "%(key)s to liczba od %(low)s do %(high)s."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Send the photos over the clip as a list."
+msgstr "Wyślij zdjęcia nałożone na klip jako listę."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Each photo over the clip is {at, photo}."
+msgstr "Każde zdjęcie nałożone na klip to {at, photo}."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Choose one of the photos found for this reel."
+msgstr "Wybierz jedno ze zdjęć znalezionych dla tej rolki."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Choose one of the cover designs."
+msgstr "Wybierz jeden z projektów okładki."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Choose one of the video's frames for the cover."
+msgstr "Wybierz jedną z klatek filmu na okładkę."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Choose a caption style."
+msgstr "Wybierz styl napisów."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Choose how the video is framed."
+msgstr "Wybierz sposób kadrowania filmu."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Start and end are seconds."
+msgstr "Początek i koniec to sekundy."
+
+#: apps/reels/views.py
+#, python-format, fuzzy
+msgid "A reel is %(low)d s to %(high)d min of the video."
+msgstr "Rolka to od %(low)d s do %(high)d min filmu."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Choose one of the caption languages."
+msgstr "Wybierz jeden z języków napisów."
+
+#: apps/reels/views.py
+#, python-format, fuzzy
+msgid "Keep at least %(n)d second of the clip."
+msgid_plural "Keep at least %(n)d seconds of the clip."
+msgstr[0] "Zachowaj co najmniej %(n)d sekundę klipu."
+msgstr[1] "Zachowaj co najmniej %(n)d sekundy klipu."
+msgstr[2] "Zachowaj co najmniej %(n)d sekund klipu."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Make the video first."
+msgstr "Najpierw utwórz film."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Send words."
+msgstr "Wyślij słowa."
+
+#: apps/reels/views.py
+#, fuzzy
+msgid "Too few words for a reel."
+msgstr "Za mało słów na rolkę."
 
 #: apps/tenant_config/defaults.py
 #, fuzzy

@@ -13,6 +13,7 @@ from uuid import uuid4
 import jwt
 from django.conf import settings
 from django.core.cache import cache
+from django.utils.translation import gettext as _
 
 _PURPOSE = "copilot_action"
 _KEY = "copilot:action:{jti}"
@@ -56,13 +57,13 @@ def take_action(token, tenant_schema):
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
     except jwt.PyJWTError as exc:
-        raise ActionTokenError("invalid action token") from exc
+        raise ActionTokenError(_("invalid action token")) from exc
     if payload.get("purpose") != _PURPOSE or payload.get("schema") != tenant_schema:
-        raise ActionTokenError("invalid action token")
+        raise ActionTokenError(_("invalid action token"))
     key = _KEY.format(jti=payload["jti"])
     action = cache.get(key)
     if action is None:
-        raise ActionTokenError("action expired or already executed")
+        raise ActionTokenError(_("action expired or already executed"))
     if not cache.delete(key):
-        raise ActionTokenError("action expired or already executed")
+        raise ActionTokenError(_("action expired or already executed"))
     return action

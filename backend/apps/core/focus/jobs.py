@@ -8,8 +8,10 @@ import logging
 from importlib import import_module
 
 from django.db import connection, transaction
+from django.utils import translation
 from django_tenants.utils import tenant_context
 
+from apps.core import languages
 from apps.core.copilot import runs
 from apps.tenant_config.models import CopilotRun
 
@@ -92,16 +94,18 @@ def execute(schema_name, run_id) -> None:
     with tenant_context(tenant):
         if not runs.claim(run_id):  # stopped, swept, or a second delivery of the task
             return
+        run = CopilotRun.objects.get(pk=run_id)
         handler = None
-        try:
-            job = (CopilotRun.objects.get(pk=run_id).request or {}).get("job")
-            handler = import_module(HANDLERS[job])
-            handler.carry_out(tenant, run_id)
-        except Exception:
-            logger.exception("focus job failed schema=%s run=%s", schema_name, run_id)
+        # What the job says to her (steps, the closing line, the cards it drafts) is in her language.
+        with translation.override(languages.creator_language(run.actor)):
             try:
-                if hasattr(handler, "on_failure"):
-                    handler.on_failure(tenant, run_id)
+                handler = import_module(HANDLERS[(run.request or {}).get("job")])
+                handler.carry_out(tenant, run_id)
             except Exception:
-                logger.exception("focus job on_failure failed schema=%s run=%s", schema_name, run_id)
-            runs.finish(run_id, False)
+                logger.exception("focus job failed schema=%s run=%s", schema_name, run_id)
+                try:
+                    if hasattr(handler, "on_failure"):
+                        handler.on_failure(tenant, run_id)
+                except Exception:
+                    logger.exception("focus job on_failure failed schema=%s run=%s", schema_name, run_id)
+                runs.finish(run_id, False)

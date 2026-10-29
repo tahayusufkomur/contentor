@@ -23,6 +23,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from django.conf import settings
+from django.utils.translation import gettext_lazy
 
 if TYPE_CHECKING:
     from .models import Tenant
@@ -34,7 +35,7 @@ TRIAL_DAYS = 14
 TRIAL_PLAN_NAME = "starter"
 
 # Why a paid item's Publish waits (a bundle's or download's page, as their finish offers "Start selling").
-NOT_SELLING = "Start selling first: your plan, then payouts."
+NOT_SELLING = gettext_lazy("Start selling first: your plan, then payouts.")
 
 
 def _bypass() -> bool:

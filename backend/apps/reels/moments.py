@@ -15,6 +15,7 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.db import connection
+from django.utils.translation import gettext as _
 from pydantic import BaseModel, Field
 
 from apps.core import ai as core_ai
@@ -30,6 +31,7 @@ MAX_COUNT = 8
 MAX_SENTENCES = 3000  # ~3 hours of talk
 LEAD, TAIL = 0.12, 0.3  # kept before a moment's first word and after its last
 LABEL = "contentor:reels"
+LABEL_AHEAD = f"{LABEL}-ahead"
 KINDS = ("send", "funny", "hook", "insight")
 LANGUAGES = {  # not-site-locales: the caption languages
     "en": "English",
@@ -273,7 +275,7 @@ def translate(lines: list[str], language: str) -> list[str]:
     if not lines:
         return []
     if not ai_compose.compose_available():
-        raise TranslationError("Translated captions are not on for this site right now.")
+        raise TranslationError(_("Translated captions are not on for this site right now."))
     turn = {"language": LANGUAGES.get(language, language), "lines": [[i + 1, line] for i, line in enumerate(lines)]}
     cost = Decimal("0")
     try:
@@ -290,9 +292,9 @@ def translate(lines: list[str], language: str) -> list[str]:
         )
     except core_ai.AiError as exc:
         cost = exc.cost_usd
-        raise TranslationError("The captions could not be translated. Try again.") from exc
+        raise TranslationError(_("The captions could not be translated. Try again.")) from exc
     finally:
         ai_compose.record_spend(connection.schema_name, cost)
     if len(parsed.lines) != len(lines):
-        raise TranslationError("The captions could not be translated. Try again.")
+        raise TranslationError(_("The captions could not be translated. Try again."))
     return [line.strip().strip('"“”') for line in parsed.lines]

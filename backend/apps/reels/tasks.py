@@ -1,12 +1,24 @@
 """Reels' jobs (apps.reels.jobs) on their own queue, `video`, whose worker takes one at a time: a render holds
 the video service's CPU, and a site build must never wait behind one."""
 
+import contextlib
 import logging
 
 from celery import shared_task
+from django.utils import translation
+from django.utils.translation import gettext as _
 from django_tenants.utils import tenant_context
 
+from apps.core import languages
+
 logger = logging.getLogger(__name__)
+
+
+@contextlib.contextmanager
+def _in_tenant(tenant):
+    """The tenant's schema, with what the job says to the creator (errors the studio shows) in her language."""
+    with tenant_context(tenant), translation.override(languages.creator_language()):
+        yield
 
 
 def _tenant(tenant_id):
@@ -25,16 +37,16 @@ def find_reels(tenant_id, video_id, count, made_by="coach", waited=0):
     tenant = _tenant(tenant_id)
     if tenant is None:
         return
-    with tenant_context(tenant):
+    with _in_tenant(tenant):
         video = Video.objects.filter(pk=video_id).first()
         if video is None:
-            jobs.fail_search(video_id, "The video was deleted.")
+            jobs.fail_search(video_id, _("The video was deleted."))
             return
         try:
             wait = jobs.run_search(video, count, made_by, waited)
         except Exception:
             logger.exception("reels: finding moments of video %s failed", video_id)
-            jobs.fail_search(video_id, "Something went wrong while finding moments. Try again.")
+            jobs.fail_search(video_id, _("Something went wrong while finding moments. Try again."))
             return
     if wait:
         find_reels.apply_async((tenant_id, video_id, count, made_by, waited + wait), countdown=wait)
@@ -49,7 +61,7 @@ def scan_reel(tenant_id, reel_id):
     tenant = _tenant(tenant_id)
     if tenant is None:
         return
-    with tenant_context(tenant):
+    with _in_tenant(tenant):
         reel = Reel.objects.select_related("video").filter(pk=reel_id).first()
         if reel is not None:
             jobs.scan(reel)
@@ -64,7 +76,7 @@ def render_reel(tenant_id, reel_id):
     tenant = _tenant(tenant_id)
     if tenant is None:
         return
-    with tenant_context(tenant):
+    with _in_tenant(tenant):
         reel = Reel.objects.select_related("video").filter(pk=reel_id).first()
         if reel is not None:
             render.run(reel)
