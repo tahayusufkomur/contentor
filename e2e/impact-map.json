@@ -36,8 +36,7 @@
     "mailbox": ["07-mailbox"],
     "media": ["05-media", "32-photo-studio"],
     "reels": ["42-reels"],
-    "notifications": ["06-announcements", "11-login-code"],
-    "notifications/transactional.py": ["06-announcements", "11-login-code", "43-site-in-turkish"],
+    "notifications": ["06-announcements", "11-login-code", "43-site-in-turkish"],
     "core/languages.py": ["43-site-in-turkish"],
     "core/middleware/language.py": ["43-site-in-turkish"],
     "platform_email": "none",
@@ -56,7 +55,7 @@
     "usage": "none"
   },
   "frontend-customer": {
-    "messages": "none",
+    "messages": ["43-site-in-turkish"],
     "src/app/(student)/community": ["15-community"],
     "src/app/(student)/learn": ["02-courses"],
     "src/app/live": ["04-live-class"],

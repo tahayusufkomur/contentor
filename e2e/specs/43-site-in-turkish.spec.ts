@@ -10,9 +10,14 @@
 // absent from the page. Creators' own content is NOT interface text: demo-yoga's
 // course, plan and event titles, block copy and navbar labels are English DATA
 // written at setup, and the plan excludes what creators write from translation.
-// So the candidates that occur in that stored content (fetched once, through the
-// public API the frontend reads) are dropped before the check. Buttons, labels,
-// empty states, toasts and dates stay covered.
+// That content is fetched once, through the public API the frontend reads, and
+// only its creator-authored fields (titles, descriptions, labels, block copy; not
+// enum fields like pricing_type or status, which render as interface words such
+// as "Free" and "Live") are cut out of each page's text before matching: a
+// multi-word piece wherever it occurs, a single word only as a whole line. So no
+// interface word is ever dropped from the check; buttons, labels, empty states,
+// toasts and dates stay covered. An English phrase that the Turkish files also
+// write as a whole phrase (e.g. "Name") is no leak signal and is skipped.
 //
 // Run serially (workers: 1): beforeAll/afterAll bracket the language so other
 // specs stay on English. The Turkish site is demo-yoga; the sign-in EMAIL is
@@ -25,7 +30,7 @@ import path from "node:path";
 import { TENANT } from "../helpers/auth";
 import { manage, REPO_ROOT, setSiteLanguage } from "../helpers/compose";
 import { latestEmail } from "../helpers/email";
-import { englishLeaks, leakCandidates, phrasesIn } from "../helpers/leaks";
+import { authoredLeaves, englishLeaks, leafValues, leakCandidates } from "../helpers/leaks";
 
 test.use({ locale: "en-US" });
 
@@ -55,16 +60,10 @@ const STUDENT_EMAIL = `e2e-tr-student-${stamp}@example.com`;
 const MAIL_EMAIL = `e2e-tr-mail-${stamp}@example.com`;
 
 let candidates: string[] = [];
+let authored: string[] = [];
 let courseSlug = "";
 
 const json = (file: string) => JSON.parse(fs.readFileSync(file, "utf8"));
-
-function stringsIn(value: unknown, out: string[] = []): string[] {
-  if (typeof value === "string") out.push(value);
-  else if (Array.isArray(value)) value.forEach((v) => stringsIn(v, out));
-  else if (value && typeof value === "object") Object.values(value).forEach((v) => stringsIn(v, out));
-  return out;
-}
 
 async function api(pathname: string) {
   const res = await fetch(`http://localhost${pathname}`, { headers: { "X-Tenant-Domain": "demo-yoga.localhost" } });
@@ -83,7 +82,7 @@ async function storedContent() {
     api(`/api/v1/calendar/?from=${day(0)}&to=${day(90)}`),
   ]);
   const detail = courses.length ? await api(`/api/v1/courses/${courses[0].slug}/`) : {};
-  return { text: stringsIn([config, courses, detail, plans, events]).join("\n"), courseSlug: courses[0]?.slug ?? "" };
+  return { authored: authoredLeaves([config, courses, detail, plans, events]), courseSlug: courses[0]?.slug ?? "" };
 }
 
 function ensureScratchTenant() {
@@ -94,7 +93,8 @@ function ensureScratchTenant() {
 from apps.core.models import Tenant, Domain
 from django_tenants.utils import schema_context
 slug = "${SCRATCH_SLUG}"
-if not Tenant.objects.filter(slug=slug).exists():
+t = Tenant.objects.filter(slug=slug).first()
+if t is None:
     t = Tenant.objects.create(
         name="${SCRATCH_BRAND}",
         slug=slug,
@@ -103,8 +103,9 @@ if not Tenant.objects.filter(slug=slug).exists():
         owner_email="owner-${stamp}@example.com",
         provisioning_status="ready",
     )
-    Domain.objects.create(domain="${SCRATCH_HOST}", tenant=t, is_primary=True)
-    t.create_schema(check_if_exists=True, verbosity=0)
+Domain.objects.get_or_create(domain="${SCRATCH_HOST}", defaults={"tenant": t, "is_primary": True})
+# Always: a first run that timed out leaves a row without its schema; this is a no-op when it exists.
+t.create_schema(check_if_exists=True, verbosity=0)
 with schema_context(slug.replace("-", "_")):
     from apps.tenant_config.models import TenantConfig
     TenantConfig.objects.get_or_create(pk=1, defaults={"brand_name": "${SCRATCH_BRAND}"})
@@ -117,19 +118,19 @@ for key in r.keys('*throttle_magic_link*'):
 }
 
 test.beforeAll(async () => {
+  test.setTimeout(240_000); // a first-time schema creation + several manage.py boots outrun the default 60 s
   setSiteLanguage("demo_yoga", "tr");
   ensureScratchTenant();
   setSiteLanguage(SCRATCH_SLUG.replace("-", "_"), "tr");
 
   const stored = await storedContent();
   courseSlug = stored.courseSlug;
-  const english = MESSAGE_FILES.flatMap(([root, file]) =>
-    leakCandidates(json(path.join(root, "en", file)), json(path.join(root, "tr", file))),
-  );
-  // Interface text only: drop what also reads as the creator's own words.
-  const all = [...new Set([...english, ...ENGLISH_DATES])];
-  const ownWords = new Set(phrasesIn(stored.text, all));
-  candidates = all.filter((c) => !ownWords.has(c));
+  authored = stored.authored;
+  const pairs = MESSAGE_FILES.map(([root, file]) => [json(path.join(root, "en", file)), json(path.join(root, "tr", file))]);
+  // What the Turkish files write, all of it: an English value inside it is no leak signal.
+  const turkish = pairs.flatMap(([, tr]) => leafValues(tr)).join("\n");
+  const english = pairs.flatMap(([en, tr]) => leakCandidates(en, tr, turkish));
+  candidates = [...new Set([...english, ...ENGLISH_DATES])];
 });
 
 // Restore English even when a test failed or timed out.
@@ -143,7 +144,7 @@ async function expectTurkish(page: Page, pathname: string) {
   await expect(page.locator("html")).toHaveAttribute("lang", "tr", { timeout: 20_000 });
   await page.waitForLoadState("networkidle").catch(() => undefined);
   await page.waitForTimeout(500); // client-rendered pages: skeleton to content
-  const leaks = await englishLeaks(page, candidates);
+  const leaks = await englishLeaks(page, candidates, authored);
   expect(leaks, `English on ${pathname}`).toEqual([]);
 }
 

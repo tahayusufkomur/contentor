@@ -36,4 +36,6 @@ export default async function globalSetup() {
     const msg = err instanceof Error ? err.message : String(err);
     throw new Error(`Seeding failed (seed_dev_tenants) — check the stack logs (make logs): ${msg}`);
   }
+  // A killed run of 43-site-in-turkish may have left demo-yoga in Turkish; a forced reseed does not reset it.
+  setSiteLanguage("demo_yoga", "en");
 }
