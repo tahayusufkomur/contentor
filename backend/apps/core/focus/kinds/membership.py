@@ -23,6 +23,7 @@ from apps.tenant_config.interview_brief import MEMBERSHIP_TIERS, TIER_BY_ID, Fie
 
 from .. import analysis, pricing
 from ..recipes import Recipe
+from . import in_every_language
 
 NOUN = "membership"
 NEW_TITLE = gettext_noop("New membership")
@@ -568,7 +569,7 @@ def _tier(row) -> dict:
     from apps.billing.models import SubscriptionPlanAccess
 
     name = lc(row.name)
-    named = (t for t in MEMBERSHIP_TIERS if t["label"].lower() in name or lc(_plan_name(t)) in name)
+    named = (t for t in MEMBERSHIP_TIERS if any(lc(label) in name for label in in_every_language(t["label"])))
     if tier := next(named, None):
         return tier
     models = SubscriptionPlanAccess.objects.filter(plan=row).values_list("content_type__model", flat=True)

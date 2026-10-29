@@ -2461,6 +2461,15 @@ msgstr "İstediğin zaman değiştirebilirsin."
 msgid "Ready. Publish it now?"
 msgstr "Hazır. Şimdi yayınlansın mı?"
 
+#: apps/core/focus/kinds/course.py
+#, python-format, fuzzy
+msgid "%(title)s sells for %(price)s; %(best)s has %(n)d student"
+msgid_plural "%(title)s sells for %(price)s; %(best)s has %(n)d students"
+msgstr[0] ""
+"%(title)s %(price)s fiyatına satılıyor; %(best)s %(n)d öğrenciye sahip"
+msgstr[1] ""
+"%(title)s %(price)s fiyatına satılıyor; %(best)s %(n)d öğrenciye sahip"
+
 #: apps/core/focus/kinds/course.py apps/core/focus/kinds/download.py
 #: apps/core/focus/kinds/event.py
 #, fuzzy, python-format
@@ -2468,16 +2477,19 @@ msgid "%(title)s sells for %(price)s"
 msgstr "%(title)s %(price)s fiyata satılıyor"
 
 #: apps/core/focus/kinds/course.py
-#, fuzzy, python-format
-msgid "Your other courses sell for %(price)s"
-msgstr "Diğer kursların %(price)s fiyata satılıyor"
+#, python-format, fuzzy
+msgid "Your other courses sell for %(price)s; %(best)s has %(n)d student"
+msgid_plural ""
+"Your other courses sell for %(price)s; %(best)s has %(n)d students"
+msgstr[0] ""
+"Diğer kursların %(price)s fiyatına satılıyor; %(best)s %(n)d öğrenciye sahip"
+msgstr[1] ""
+"Diğer kursların %(price)s fiyatına satılıyor; %(best)s %(n)d öğrenciye sahip"
 
 #: apps/core/focus/kinds/course.py
 #, fuzzy, python-format
-msgid "%(title)s has %(n)d student"
-msgid_plural "%(title)s has %(n)d students"
-msgstr[0] "%(title)s %(n)d öğrenciye sahip"
-msgstr[1] "%(title)s %(n)d öğrenciye sahip"
+msgid "Your other courses sell for %(price)s"
+msgstr "Diğer kursların %(price)s fiyata satılıyor"
 
 #: apps/core/focus/kinds/download.py
 #, fuzzy

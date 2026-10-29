@@ -132,7 +132,7 @@ def test_a_draft_title_is_in_the_site_language_not_the_creators(tenant_ctx):
     with translation.override("de"):
         assert flow.working_title("", "course") == gettext_in("New course", "tr")
         assert kinds.new_title("bundle") == gettext_in("New bundle", "tr")
-        assert kinds.new_titles("post") == (gettext_in("New post", "tr"), "New post")
+        assert {gettext_in("New post", "tr"), "New post"} <= set(kinds.new_titles("post"))
     assert gettext_in("New course", "tr") != "New course"
 
 
@@ -185,3 +185,168 @@ def test_a_tier_tile_shows_the_creators_words_and_names_the_plan_in_the_site_lan
     assert tile["label"] == translated("Digital membership")
     assert tile["value"] == gettext_in("Digital membership", "de")  # the plan's name: students read it
     assert tile["hint"] == translated("All the pre-recorded content, watched any time.")
+
+
+# ── fix round 1 ─────────────────────────────────────────────────────────────
+
+
+def _plural_in(singular, plural, n, lang="tr"):
+    with translation.override(lang):
+        text = ngettext(singular, plural, n)
+    assert text != (singular if n == 1 else plural), f"{lang} has no translation for {singular!r}: run make translate"
+    return text
+
+
+def _paid_course(owner, title, price, students=0):
+    from decimal import Decimal
+
+    from apps.courses.models import Course, Enrollment
+
+    course = Course.objects.create(
+        title=title,
+        slug=title.lower().replace(" ", "-"),
+        instructor=owner,
+        price=Decimal(price),
+        pricing_type="paid",
+        is_published=True,
+    )
+    for i in range(students):
+        student = User.objects.create_user(email=f"s{i}-{title[:3]}@x.com", name="S", password="x", role="student")  # noqa: S106
+        Enrollment.objects.create(user=student, course=course)
+    return course
+
+
+def test_a_course_reason_with_its_best_seller_is_one_translated_sentence(owner):
+    from apps.courses.models import Course
+
+    _paid_course(owner, "Morning flow", "29", students=3)
+    draft = Course.objects.create(title="Desk yoga", slug="desk-yoga", instructor=owner)
+    with translation.override("tr"):
+        one = course_kind.suggest_price(draft).reason
+    expected = _plural_in(
+        "%(title)s sells for %(price)s; %(best)s has %(n)d student",
+        "%(title)s sells for %(price)s; %(best)s has %(n)d students",
+        3,
+    )
+    assert one == expected % {"title": "Morning flow", "price": "$29", "best": "Morning flow", "n": 3}
+    _paid_course(owner, "Strong back", "49")
+    with translation.override("tr"):
+        several = course_kind.suggest_price(draft).reason
+    expected = _plural_in(
+        "Your other courses sell for %(price)s; %(best)s has %(n)d student",
+        "Your other courses sell for %(price)s; %(best)s has %(n)d students",
+        3,
+    )
+    assert several == expected % {"price": "$29–$49", "best": "Morning flow", "n": 3}
+
+
+def test_every_kinds_pricing_reason_is_in_the_creators_language(owner):
+    from datetime import timedelta
+    from decimal import Decimal
+
+    from django.utils import timezone
+
+    from apps.billing.models import SubscriptionPlan
+    from apps.core.focus.kinds import download, event
+    from apps.downloads.models import DownloadFile
+    from apps.live.models import LiveClass
+
+    draft = DownloadFile.objects.create(title="Draft", is_published=False)
+    DownloadFile.objects.create(title="Meal plan", pricing_type="paid", price=Decimal("12"), file_url="https://x/f.pdf")
+    with translation.override("tr"):
+        reason = download.suggest_price(draft).reason
+    assert reason == translated("%(title)s sells for %(price)s") % {"title": "Meal plan", "price": "$12"}
+
+    plan = SubscriptionPlan.objects.create(name="Online membership", price=0, is_active=False)
+    SubscriptionPlan.objects.create(name="Basic", price=Decimal("10"), is_active=True)
+    with translation.override("tr"):
+        month = membership.suggest_price(plan).reason
+        plan.billing_interval_months = 12
+        yearly = membership.suggest_price(plan).reason
+    assert month == translated("%(name)s costs %(price)s a month") % {"name": "Basic", "price": "$10"}
+    assert yearly == translated("Two months free on %(price)s a month") % {"price": "$10"}
+
+    row = LiveClass.objects.create(title="Draft", instructor=owner)
+    when = timezone.now() + timedelta(days=2)
+    for title in ("Flow", "Core"):
+        LiveClass.objects.create(
+            title=title, instructor=owner, pricing_type="paid", price=20, status="scheduled", scheduled_at=when
+        )
+    with translation.override("tr"):
+        sessions = event.suggest_price(row).reason
+    assert sessions == translated("Your live sessions sell for %(price)s") % {"price": "$20"}
+
+
+def test_her_in_person_answer_is_understood_in_turkish_too(tenant_ctx):
+    from apps.core.focus.kinds import event
+
+    with translation.override("tr"):
+        assert event._where("In person") == "onsite"  # the model answers in English: "I" must not become "ı"
+        assert event._where(translated("In person")) == "onsite"
+        assert event._where("On Zoom") == "zoom"
+
+
+def test_a_draft_made_under_another_site_language_is_still_a_placeholder(tenant_ctx):
+    from apps.blog.models import BlogPost
+
+    _site("de")
+    title = kinds.new_title("post")
+    assert title == gettext_in("New post", "de") != "New post"
+    row = BlogPost.objects.create(title=title, slug="neuer-beitrag-2", status="draft", source="ai")
+    _site("tr")  # the site language changed before go-live
+    assert post.not_ready(row) == "Give it a title first"
+    assert post.placeholder().fullmatch(row.slug)
+
+
+def test_a_tier_named_in_another_site_language_is_still_found(tenant_ctx):
+    from apps.billing.models import SubscriptionPlan
+
+    _site("tr")
+    name = gettext_in("Studio membership", "de")
+    assert name != "Studio membership"
+    plan = SubscriptionPlan.objects.create(name=name, price=0, is_active=False)
+    assert membership._tier(plan)["id"] == "studio"
+
+
+def test_her_subscription_plan_names_are_matched_with_the_language_she_writes_in(tenant_ctx):
+    from apps.billing.models import SubscriptionPlan
+    from apps.core.focus import analysis
+
+    SubscriptionPlan.objects.create(name="İstanbul Pass", price=10, is_active=True)
+    creation = FocusCreation.objects.create(kind="course", brief={})
+    said = analysis.FoundWays(plans=[analysis.FoundPlan(plan="istanbul pass")])
+    with translation.override("tr"), mock.patch.object(flow, "_can_link", return_value=True):
+        chosen = flow._found_ways(creation, said)
+    assert chosen and len(chosen["plans"]) == 1
+
+
+def test_a_download_starter_is_not_an_english_article_for_other_languages(tenant_ctx):
+    with translation.override("tr"):
+        assert flow.question("download", "topic")["starter"] == ""
+    with translation.override("en"):
+        assert flow.question("download", "topic")["starter"] == "A "
+
+
+def test_the_analysis_is_given_the_english_question(owner):
+    from apps.core.focus import analysis
+
+    run = CopilotRun.objects.create(actor=owner, specialist="content", request={})
+    creation = FocusCreation.objects.create(kind="course", actor=owner, pending={"field": "level", "text": "x"})
+    creation.pending = {**creation.pending, "run": run.pk}
+    creation.save()
+    run.request = {"focus": creation.pk}
+    run.save()
+    seen = {}
+
+    def fake_read(tenant, text, *, question, **kwargs):
+        seen["question"] = question
+        raise RuntimeError("stop")
+
+    with (
+        translation.override("tr"),
+        mock.patch.object(analysis, "read", side_effect=fake_read),
+        mock.patch.object(analysis.ai_compose, "compose_available", return_value=True),
+        pytest.raises(RuntimeError),
+    ):
+        analysis.carry_out(mock.Mock(schema_name="shared_test"), run.pk)
+    assert seen["question"] == "Who is it for?"

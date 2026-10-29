@@ -13,8 +13,9 @@ from statistics import median
 
 from django.db import connection
 from django.template.defaultfilters import filesizeformat
+from django.utils.functional import lazy
+from django.utils.translation import get_language, gettext_lazy, gettext_noop
 from django.utils.translation import gettext as _
-from django.utils.translation import gettext_lazy, gettext_noop
 
 from apps.core import monetization
 from apps.tenant_config.interview_brief import Field
@@ -53,6 +54,14 @@ CLOSING = {
 }
 NOT_READY_LINE = gettext_lazy("Your download is saved as a draft.")
 
+
+def _article() -> str:
+    """The prefill of her first answer: the English article only; the other languages have none to put there."""
+    return "A " if (get_language() or "en").startswith("en") else ""
+
+
+_english_article = lazy(_article, str)()
+
 RECIPE = Recipe(
     kind="download",
     questions=(
@@ -60,7 +69,7 @@ RECIPE = Recipe(
             "topic",
             gettext_lazy("Topic"),
             gettext_lazy("What are you sharing?"),
-            ("A ",),
+            (_english_article,),
             delegable=True,
             starter=True,
             why=(

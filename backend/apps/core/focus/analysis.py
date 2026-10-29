@@ -12,7 +12,7 @@ from functools import cache
 
 from django.conf import settings
 from django.db import transaction
-from django.utils import timezone
+from django.utils import timezone, translation
 from django.utils.translation import gettext_lazy
 from pydantic import BaseModel
 
@@ -217,6 +217,12 @@ def price_value(raw: str) -> str | None:
     return "free" if amount == 0 else f"{amount:.2f}"
 
 
+def _english_question(flow, creation, field) -> str:
+    """The question she was asked, in English: only the model reads it (what she saw may be in her language)."""
+    with translation.override("en"):
+        return flow.question(creation.kind, field, creation)["question"]
+
+
 def carry_out(tenant, run_id) -> None:
     """Read her words outside any lock, then apply them under the creation's
     lock, unless Stop or a newer answer won meanwhile."""
@@ -235,7 +241,7 @@ def carry_out(tenant, run_id) -> None:
     found = read(
         tenant,
         str(pending.get("text") or ""),
-        question=flow.question(creation.kind, pending.get("field"), creation)["question"],
+        question=_english_question(flow, creation, pending.get("field")),
         kind=creation.kind,
         outline_exists=flow.draft_started(creation),
         currency=tenant_charge_currency(tenant),

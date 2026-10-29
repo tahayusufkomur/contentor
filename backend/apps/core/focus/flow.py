@@ -1140,12 +1140,12 @@ def _found_ways(creation, said) -> dict | None:
     named = {}
     if _can_link(creation, record):
         named = {
-            name.strip().lower(): pk
+            lc(name.strip()): pk
             for pk, name in SubscriptionPlan.objects.filter(is_active=True).values_list("pk", "name")
         }
     plans = {}
     for p in said.plans:
-        if (pk := named.get(p.plan.strip().lower())) is not None:
+        if (pk := named.get(lc(p.plan.strip()))) is not None:
             plans.setdefault(pk, {"plan_id": pk, "window": _window(p.window)})
     price = analysis.price_value(said.buy)
     chosen = {
@@ -1285,7 +1285,11 @@ def _retitle(creation, provisional: str, title: str) -> None:
     if title == provisional:
         return
     # Without a record yet (G10), it is the title the record is made with.
-    if creation.record_id is not None and not kinds.get(creation.kind).retitle(creation.record_id, provisional, title):
+    # A kind's placeholder title may be in the language the site had when the draft was made.
+    placeholders = kinds.new_titles(creation.kind)
+    provisionals = placeholders if provisional in placeholders else (provisional,)
+    adapter = kinds.get(creation.kind)
+    if creation.record_id is not None and not any(adapter.retitle(creation.record_id, p, title) for p in provisionals):
         return
     drafted = creation.drafted or {}
     creation.drafted = {**drafted, "titles": [*(drafted.get("titles") or []), title]}
@@ -1395,7 +1399,9 @@ def _choice(recipe, field: str, words: str) -> str:
     for value, label in zip(recipe.values.get(field, ()), q.options, strict=False):
         with translation.override("en"):
             english = str(label)  # the model answers in English whatever language she reads
-        if lc(words) in (value, lc(label), english.lower()):
+        # Her words against the label she reads (tr-aware), and against the English one with a plain lower:
+        # under Turkish ``lc`` turns the English "In person" into "ın person".
+        if words.lower() in (value, english.lower()) or lc(words) in (value, lc(label)):
             return value
     return words
 

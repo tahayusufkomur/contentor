@@ -224,18 +224,28 @@ def suggest_price(course) -> pricing.Suggestion:
     )
     if others:
         low, high = others[0].price, others[-1].price
-        if len(others) == 1:
-            reason = _("%(title)s sells for %(price)s") % {"title": others[0].title, "price": money(low)}
-        else:
-            reason = _("Your other courses sell for %(price)s") % {
-                "price": money(low) + (f"–{money(high)}" if high != low else "")
-            }
         best = max(others, key=lambda c: c.students)
-        if best.students:
-            reason += "; " + ngettext("%(title)s has %(n)d student", "%(title)s has %(n)d students", best.students) % {
-                "title": best.title,
-                "n": best.students,
-            }
+        values = {"title": others[0].title, "price": money(low), "best": best.title, "n": best.students}
+        if len(others) > 1:
+            values["price"] = money(low) + (f"–{money(high)}" if high != low else "")
+        # One sentence per case, whole: translated pieces are never glued together.
+        if len(others) == 1 and best.students:
+            reason = ngettext(
+                "%(title)s sells for %(price)s; %(best)s has %(n)d student",
+                "%(title)s sells for %(price)s; %(best)s has %(n)d students",
+                best.students,
+            )
+        elif len(others) == 1:
+            reason = _("%(title)s sells for %(price)s")
+        elif best.students:
+            reason = ngettext(
+                "Your other courses sell for %(price)s; %(best)s has %(n)d student",
+                "Your other courses sell for %(price)s; %(best)s has %(n)d students",
+                best.students,
+            )
+        else:
+            reason = _("Your other courses sell for %(price)s")
+        reason %= values
         return pricing.Suggestion(pricing.whole(median(c.price for c in others)), reason)
     given = answers_of(connection.tenant).get("course_price")
     if given != DELEGATE and (price := parse_price(given)):

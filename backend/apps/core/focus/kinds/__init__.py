@@ -113,6 +113,17 @@ def new_title(kind: str) -> str:
         return render_marked(get(kind).NEW_TITLE)
 
 
+def in_every_language(marked: str) -> tuple[str, ...]:
+    """A text marked with gettext_noop in every language (English first): a name written onto the site
+    under a language the site no longer has is still ours."""
+    out = []
+    for code in languages.CODES:
+        with translation.override(code):
+            out.append(render_marked(marked))
+    return tuple(dict.fromkeys(out))
+
+
 def new_titles(kind: str) -> tuple[str, ...]:
-    """The titles a draft of this kind may still carry: the site's language, and English (drafts made before)."""
-    return tuple(dict.fromkeys((new_title(kind), str(get(kind).NEW_TITLE))))
+    """The titles a draft of this kind may carry: its placeholder in any language, for a draft made under the
+    site's language before it was changed (a site may change it until it goes live)."""
+    return in_every_language(get(kind).NEW_TITLE)

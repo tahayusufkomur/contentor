@@ -2525,6 +2525,16 @@ msgstr "Możesz to zmienić w dowolnym momencie."
 msgid "Ready. Publish it now?"
 msgstr "Gotowe. Opublikować teraz?"
 
+#: apps/core/focus/kinds/course.py
+#, python-format, fuzzy
+msgid "%(title)s sells for %(price)s; %(best)s has %(n)d student"
+msgid_plural "%(title)s sells for %(price)s; %(best)s has %(n)d students"
+msgstr[0] "%(title)s sprzedaje się za %(price)s; %(best)s ma %(n)d uczestnika"
+msgstr[1] ""
+"%(title)s sprzedaje się za %(price)s; %(best)s ma %(n)d uczestników"
+msgstr[2] ""
+"%(title)s sprzedaje się za %(price)s; %(best)s ma %(n)d uczestników"
+
 #: apps/core/focus/kinds/course.py apps/core/focus/kinds/download.py
 #: apps/core/focus/kinds/event.py
 #, fuzzy, python-format
@@ -2532,17 +2542,21 @@ msgid "%(title)s sells for %(price)s"
 msgstr "%(title)s kosztuje %(price)s"
 
 #: apps/core/focus/kinds/course.py
-#, fuzzy, python-format
-msgid "Your other courses sell for %(price)s"
-msgstr "Twoje pozostałe kursy kosztują %(price)s"
+#, python-format, fuzzy
+msgid "Your other courses sell for %(price)s; %(best)s has %(n)d student"
+msgid_plural ""
+"Your other courses sell for %(price)s; %(best)s has %(n)d students"
+msgstr[0] ""
+"Twoje inne kursy sprzedają się za %(price)s; %(best)s ma %(n)d uczestnika"
+msgstr[1] ""
+"Twoje inne kursy sprzedają się za %(price)s; %(best)s ma %(n)d uczestników"
+msgstr[2] ""
+"Twoje inne kursy sprzedają się za %(price)s; %(best)s ma %(n)d uczestników"
 
 #: apps/core/focus/kinds/course.py
 #, fuzzy, python-format
-msgid "%(title)s has %(n)d student"
-msgid_plural "%(title)s has %(n)d students"
-msgstr[0] "%(title)s ma %(n)d uczestnika"
-msgstr[1] "%(title)s ma %(n)d uczestników"
-msgstr[2] "%(title)s ma %(n)d uczestników"
+msgid "Your other courses sell for %(price)s"
+msgstr "Twoje pozostałe kursy kosztują %(price)s"
 
 #: apps/core/focus/kinds/download.py
 #, fuzzy
