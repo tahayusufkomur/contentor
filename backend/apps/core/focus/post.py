@@ -13,6 +13,7 @@ place of Try again. A copilot run on the agents worker."""
 
 from django.db import connection, transaction
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 
 from apps.blog import ai as blog_ai
 from apps.blog import curated
@@ -26,15 +27,15 @@ from . import jobs, kinds
 FIELDS = ("title", "excerpt", "body_html", "meta_description", "tags")
 # Her length answer in the generator's words; "standard" is its own 800-1200.
 LENGTHS = {"short": "Keep it short: about 500 words in 3-4 sections.", "long": "Make it long: about 1,400 words."}
-KEPT = "You changed the text, so I left it; the title and summary are new."
-ALL_KEPT = "You changed all of it, so I left it as it is."
-SOME_KEPT = "You changed some of it, so I left those parts as you wrote them."
+KEPT = gettext_lazy("You changed the text, so I left it; the title and summary are new.")
+ALL_KEPT = gettext_lazy("You changed all of it, so I left it as it is.")
+SOME_KEPT = gettext_lazy("You changed some of it, so I left those parts as you wrote them.")
 # The blog gate's no, in the dock (the guide's focus.kinds.post.refused.* say the same).
 REFUSED = {
-    "upgrade_required": "Writing posts for you is on a paid plan. Write it yourself, or upgrade.",
-    "quota_exhausted": "You're out of AI posts for this month. Write it yourself, or upgrade for more.",
+    "upgrade_required": gettext_lazy("Writing posts for you is on a paid plan. Write it yourself, or upgrade."),
+    "quota_exhausted": gettext_lazy("You're out of AI posts for this month. Write it yourself, or upgrade for more."),
 }
-UNAVAILABLE = "AI writing is unavailable right now. Write it yourself."
+UNAVAILABLE = gettext_lazy("AI writing is unavailable right now. Write it yourself.")
 # "You decide" on the topic with no topic idea left (kinds/post.py ``sync``): never a post on "New post".
 ANY_TOPIC = "a topic her students would want to read, from what her site is about"
 
@@ -53,7 +54,7 @@ def start(creation, instruction: str = "") -> CopilotRun:
     run = jobs.queue(creation, "post", specialist="marketing", instruction=instruction)
     if reason := blog_ai.availability(connection.tenant)["reason"]:
         runs.finish(run.id, False, {"reason": reason})
-        _chat_append(creation, [{"role": "assistant", "text": REFUSED.get(reason, UNAVAILABLE)}])
+        _chat_append(creation, [{"role": "assistant", "text": str(REFUSED.get(reason, UNAVAILABLE))}])
     return run
 
 
@@ -63,7 +64,7 @@ def _gone(creation, record) -> bool:
 
 
 def carry_out(tenant, run_id) -> None:
-    from .flow import DELEGATE, _chat_append, draft_title
+    from .flow import DELEGATE, _chat_append, decided, draft_title
 
     run = CopilotRun.objects.get(pk=run_id)
     request = run.request or {}
@@ -82,10 +83,10 @@ def carry_out(tenant, run_id) -> None:
     topic = str(answers.get("topic") or "")
     adapter = kinds.get(creation.kind)
     subject = topic if topic and topic != DELEGATE else record.title
-    subject = ANY_TOPIC if subject == adapter.NEW_TITLE else subject
+    subject = ANY_TOPIC if subject in kinds.new_titles(creation.kind) else subject
     notes = str(brief.get("notes") or "")
     # Her follow-up answers too (the flow asks one before the drafting when it is needed).
-    answered = [f"{f['question']} {f['answer']}" for f in brief.get("followups") or [] if f["answer"] != "You decide"]
+    answered = [f"{f['question']} {f['answer']}" for f in brief.get("followups") or [] if not decided(f)]
     words = [instruction, LENGTHS.get(answers.get("length"), ""), notes and f"Her notes: {notes}", *answered]
     draft = blog_ai.generate_counted(
         tenant,
@@ -137,7 +138,7 @@ def carry_out(tenant, run_id) -> None:
             if not early:  # hers became the job's to write while it wrote (she emptied it): copied here
                 curated.resolve_curated_photo_ids(draft)
             extra = {"image_placements": draft["image_placements"], "ai_model": draft["ai_model"]}
-        if "title" in fields and adapter.PLACEHOLDER.fullmatch(record.slug):
+        if "title" in fields and adapter.placeholder().fullmatch(record.slug):
             # Its own address before any publish (the page's, the assistant's): never /blog/new-post-N.
             extra["slug"] = unique_slug(fields["title"], exclude_pk=record.pk)
         if fields:
@@ -152,11 +153,11 @@ def carry_out(tenant, run_id) -> None:
         if not kept:
             said = ""
         elif not fields:
-            said = ALL_KEPT
+            said = str(ALL_KEPT)
         elif "body_html" in kept and {"title", "excerpt"} <= set(fields):
-            said = KEPT
+            said = str(KEPT)
         else:
-            said = SOME_KEPT
+            said = str(SOME_KEPT)
         if said:
             _chat_append(locked, [{"role": "assistant", "text": said}])
     runs.emit(run_id, "step", {**step, "state": "done"})

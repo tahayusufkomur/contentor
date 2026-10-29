@@ -20,9 +20,10 @@ from decimal import Decimal
 from typing import TYPE_CHECKING
 
 from django.db import transaction
-from django.utils import timezone
+from django.utils import timezone, translation
 from django_tenants.utils import tenant_context
 
+from apps.core import languages
 from apps.demo_seed.registry import list_niches, load_niche
 
 if TYPE_CHECKING:
@@ -163,7 +164,8 @@ def _merge_config(tenant, config_data: dict, photo_map: dict) -> None:
         merged["brand_name"] = tenant.name
         sections = merged.get("landing_sections", {})
         _inject_photo_ids(sections, photo_map)
-        merged["pages"] = pages_from_landing_sections(sections, brand_name=tenant.name)
+        with translation.override(languages.site_language()):  # the pages' starter blocks are the site's words
+            merged["pages"] = pages_from_landing_sections(sections, brand_name=tenant.name)
         TenantConfig.objects.create(**merged)
         return
 
@@ -178,7 +180,8 @@ def _merge_config(tenant, config_data: dict, photo_map: dict) -> None:
         setattr(config, key, value)
     # Derive the builder pages from the (photo-injected) niche landing sections,
     # replacing the placeholder defaults provision created.
-    config.pages = pages_from_landing_sections(config.landing_sections or {}, brand_name=config.brand_name)
+    with translation.override(languages.site_language()):  # the pages' starter blocks are the site's words
+        config.pages = pages_from_landing_sections(config.landing_sections or {}, brand_name=config.brand_name)
     config.save()
 
 

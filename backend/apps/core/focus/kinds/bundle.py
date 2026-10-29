@@ -13,16 +13,18 @@ writes and announces it (G16)."""
 from decimal import Decimal
 
 from django.db import connection
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy, gettext_noop, ngettext
 
 from apps.core import monetization
 from apps.tenant_config.interview_brief import Field, money
 
 from .. import analysis, pricing
 from ..recipes import Recipe
-from . import membership
+from . import membership, new_title
 
 NOUN = "bundle"
-NEW_TITLE = "New bundle"
+NEW_TITLE = gettext_noop("New bundle")
 SETUP_TOPIC = None
 COVER = None  # a bundle shows no image (G7)
 cover_target = cover_facts = None
@@ -31,23 +33,23 @@ ANNOUNCER = "marketing"
 DRAFT_SLOT = "copy"
 DRAFT_WHAT = "name and description"
 REVIEWED_LINE = None
-FINISH = (("publish", "Publish now"), ("draft", "Keep as a draft"))
+FINISH = (("publish", gettext_lazy("Publish now")), ("draft", gettext_lazy("Keep as a draft")))
 CLOSING = {
-    "publish": "Published. Students can buy it in your store now.",
+    "publish": gettext_lazy("Published. Students can buy it in your store now."),
     # Says what it still needs while it cannot be published yet (the page's Publish waits for the same).
     "draft": lambda row: (
-        f"Saved as a draft. {gap}, then publish it from this page."
+        _("Saved as a draft. %(gap)s, then publish it from this page.") % {"gap": gap}
         if row is not None and (gap := row.not_ready())
-        else f"Saved as a draft. {monetization.NOT_SELLING} Then publish it from this page."
+        else _("Saved as a draft. %(selling)s Then publish it from this page.") % {"selling": monetization.NOT_SELLING}
         if row is not None and row.cannot_sell()
-        else "Saved as a draft. Publish it from this page when you're ready."
+        else _("Saved as a draft. Publish it from this page when you're ready.")
     ),
 }
-NOT_READY_LINE = "Your bundle is saved as a draft."
+NOT_READY_LINE = gettext_lazy("Your bundle is saved as a draft.")
 FINISH_SPECIALIST = "finance"  # what it still needs is Finance's (G16): its items and its price
 TOO_FEW = "too_few_items"  # her first answer while she sells fewer than two items (the guide says so instead)
-REFUSED = "A bundle holds only what students can buy."  # why one of her items could not go in
-SAY = "Say an amount"  # the price step's typing box: her words set the price only when they give one
+REFUSED = gettext_lazy("A bundle holds only what students can buy.")  # why one of her items could not go in
+SAY = gettext_lazy("Say an amount")  # the price step's typing box: her words set the price only when they give one
 OFF = Decimal("0.75")  # the suggestion: a quarter off what the items cost bought apart
 
 RECIPE = Recipe(
@@ -55,38 +57,38 @@ RECIPE = Recipe(
     questions=(
         Field(
             "items",
-            "Items",
-            "What goes in the bundle?",
+            gettext_lazy("Items"),
+            gettext_lazy("What goes in the bundle?"),
             kind="pick",  # her items she sells, as tiles (``topic_tiles``); hers to tick, never delegated
             multi=True,
-            why="Tick what students get together, or name them. You can change it any time.",
+            why=gettext_lazy("Tick what students get together, or name them. You can change it any time."),
         ),
         Field(
             "review",
-            "Bundle",
-            "Here's your bundle. Does it fit?",
+            gettext_lazy("Bundle"),
+            gettext_lazy("Here's your bundle. Does it fit?"),
             kind="review",
-            why="Say what to change, or edit it on the page yourself.",
+            why=gettext_lazy("Say what to change, or edit it on the page yourself."),
         ),
         Field(
             "access",
-            "Price",
-            "What should it cost?",
+            gettext_lazy("Price"),
+            gettext_lazy("What should it cost?"),
             kind="price",
             # Only "Just draft it" delegates it, and that leaves the price to her finish tap ("Sell it for"):
             # the bundle stays at 0, a draft (F11).
             delegable=True,
-            why="Students pay it once for everything in it. You can change it any time.",
+            why=gettext_lazy("Students pay it once for everything in it. You can change it any time."),
         ),
         Field(
             "finish",
-            "Finish",
-            "Ready. Publish it?",
+            gettext_lazy("Finish"),
+            gettext_lazy("Ready. Publish it?"),
             kind="finish",
-            why="A draft stays hidden from students until you publish it.",
+            why=gettext_lazy("A draft stays hidden from students until you publish it."),
         ),
         # Only after "Publish now" with "Tell my students" ticked; answered by its own taps.
-        Field("announce", "Announcement", "Tell your students?", kind="announce"),
+        Field("announce", gettext_lazy("Announcement"), gettext_lazy("Tell your students?"), kind="announce"),
     ),
     # G16: Finance asks the bundle's questions and its price, Marketing writes and announces it.
     specialists={
@@ -191,7 +193,7 @@ def create_draft(actor, title: str, answers: dict) -> int:
 
     if len(_choices()) < 2:
         raise FlowError(TOO_FEW)
-    return Bundle.objects.create(name=NEW_TITLE, price=0, is_published=False).pk
+    return Bundle.objects.create(name=new_title("bundle"), price=0, is_published=False).pk
 
 
 def record(pk):
@@ -243,7 +245,7 @@ def label(field, answer) -> str | None:
         values = answer if isinstance(answer, list) else _ticked(answer)
         if not values:
             return membership.NOTHING
-        count = f"{len(values)} item" + ("s" if len(values) > 1 else "")
+        count = ngettext("%(n)d item", "%(n)d items", len(values)) % {"n": len(values)}
         return count if len(values) > 3 else ", ".join(_titles(values)) or count
     return None
 
@@ -273,7 +275,7 @@ def apply_found(creation, found) -> None:
         brief["refused"] = membership.refused_line(_titles(refused), [REFUSED])
     creation.brief = brief
     if found.topic.strip():  # only while it is still "New bundle"
-        flow._retitle(creation, NEW_TITLE, flow.working_title(found.topic, NOUN))
+        flow._retitle(creation, new_title("bundle"), flow.working_title(found.topic, NOUN))
 
 
 def apply_change(creation, found, *, field, text, item, clarified, fresh) -> None:
@@ -355,7 +357,7 @@ def _included(row) -> list[str]:
     for item in row.items.select_related("content_type"):
         kind = membership.MODEL_KIND.get(item.content_type.model)
         title = kind and getattr(item.content_object, "title", "")
-        if title and (entry := f"{title} ({membership.HINTS[kind].lower()})") not in out:
+        if title and (entry := f"{title} ({membership.kind_word(kind)})") not in out:
             out.append(entry)
     return out
 
@@ -397,8 +399,12 @@ def _offers(row) -> list[pricing.Suggestion]:
     if total <= 0:
         return []
     off = pricing.whole(total * OFF)
-    full = pricing.Suggestion(total, "the same as buying them apart")
-    return [pricing.Suggestion(off, f"{money(total)} bought apart; 25% off"), full] if off < total else [full]
+    full = pricing.Suggestion(total, _("the same as buying them apart"))
+    return (
+        [pricing.Suggestion(off, _("%(price)s bought apart; 25%% off") % {"price": money(total)}), full]
+        if off < total
+        else [full]
+    )
 
 
 def set_price(pk, value: str) -> None:
@@ -414,8 +420,8 @@ def price_tiles(creation, row) -> dict | None:
     amount" (the typing box; not a tile, so it never answers)."""
     if row is None:
         return None
-    options = [{"value": f"paid:{s.amount}", "label": money(s.amount), "hint": s.reason} for s in _offers(row)]
-    return {"options": options, "suggested": options[0]["value"] if options else None, "say": SAY}
+    options = [{"value": f"paid:{s.amount}", "label": money(s.amount), "hint": str(s.reason)} for s in _offers(row)]
+    return {"options": options, "suggested": options[0]["value"] if options else None, "say": str(SAY)}
 
 
 def suggest_price(row) -> pricing.Suggestion | None:

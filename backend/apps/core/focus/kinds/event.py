@@ -17,8 +17,9 @@ from typing import Literal
 from zoneinfo import ZoneInfo
 
 from django.db import connection
-from django.utils import timezone
+from django.utils import timezone, translation
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy, gettext_noop
 from pydantic import BaseModel
 
 from apps.tenant_config import interview_schedule
@@ -28,7 +29,7 @@ from .. import analysis, pricing
 from ..recipes import Recipe
 
 NOUN = "session"
-NEW_TITLE = "New session"
+NEW_TITLE = gettext_noop("New session")
 # The /setup answer that seeds the topic's starter tile: her first online class.
 SETUP_TOPIC = "live_topic"
 COVER = "styles"
@@ -37,20 +38,25 @@ ANNOUNCER = "community"
 DRAFT_SLOT = "copy"
 DRAFT_WHAT = "title and description"
 REVIEWED_LINE = None  # "Looks good" starts nothing more: no line after it
-FINISH = (("publish", "Publish now"), ("draft", "Keep as a draft"))
+FINISH = (("publish", gettext_lazy("Publish now")), ("draft", gettext_lazy("Keep as a draft")))
 CLOSING = {
-    "publish": "Published. Students can find it on your site now.",
-    "draft": "Saved as a draft. Publish it from this page when you're ready.",
+    "publish": gettext_lazy("Published. Students can find it on your site now."),
+    "draft": gettext_lazy("Saved as a draft. Publish it from this page when you're ready."),
 }
-NOT_READY_LINE = "Your session is saved as a draft."
+NOT_READY_LINE = gettext_lazy("Your session is saved as a draft.")
 WHERE = ("live", "stream", "zoom", "onsite")
 LATER = "later"
-ZOOM_FREE = "Zoom sessions are free to join."
+ZOOM_FREE = gettext_lazy("Zoom sessions are free to join.")
 ZOOM_START = "https://zoom.us/j/"
-PLACE_QUESTION = {"onsite": "What's the address?", "zoom": "Paste your Zoom link"}
-BAD_LINK = "That doesn't look like a whole link. Paste your Zoom link?"
+PLACE_QUESTION = {"onsite": gettext_lazy("What's the address?"), "zoom": gettext_lazy("Paste your Zoom link")}
+BAD_LINK = gettext_lazy("That doesn't look like a whole link. Paste your Zoom link?")
 # Her other classes on sale, in the price step's reason.
-PLURAL = {"live": "live sessions", "stream": "live streams", "zoom": "Zoom sessions", "onsite": "events"}
+OTHERS_SELL = {
+    "live": gettext_lazy("Your live sessions sell for %(price)s"),
+    "stream": gettext_lazy("Your live streams sell for %(price)s"),
+    "zoom": gettext_lazy("Your Zoom sessions sell for %(price)s"),
+    "onsite": gettext_lazy("Your events sell for %(price)s"),
+}
 MAX_MINUTES = 24 * 60
 MAX_CAPACITY = 10_000  # far under OnsiteEvent.max_capacity's PositiveIntegerField
 
@@ -59,67 +65,82 @@ RECIPE = Recipe(
     questions=(
         Field(
             "topic",
-            "Topic",
-            "What's your session or event about?",
-            ("A session on ",),
+            gettext_lazy("Topic"),
+            gettext_lazy("What's your session or event about?"),
+            (gettext_lazy("A session on "),),
             delegable=True,
             starter=True,
             why=(
-                "Say as much as you know: where, when, weekly or once, how long, the address, the price. "
-                "I'll fill in the rest for you to check."
+                gettext_lazy(
+                    "Say as much as you know: where, when, weekly or once, how long, the address, the price. "
+                    "I'll fill in the rest for you to check."
+                )
             ),
         ),
         Field(
             "where",
-            "Where",
-            "Where will it happen?",
-            ("Live online", "Live stream", "On Zoom", "In person"),
+            gettext_lazy("Where"),
+            gettext_lazy("Where will it happen?"),
+            (
+                gettext_lazy("Live online"),
+                gettext_lazy("Live stream"),
+                gettext_lazy("On Zoom"),
+                gettext_lazy("In person"),
+            ),
             kind="choice",  # hers (not delegable): never "You decide", and "Just draft it" leaves it to her
-            why="It can't change once the session is made.",
+            why=gettext_lazy("It can't change once the session is made."),
         ),
         # Hers too (not delegable): "Just draft it" leaves her date to her, never guessed.
-        Field("when", "When", "When is it?", kind="schedule", why="Times are in your site's time zone."),
+        Field(
+            "when",
+            gettext_lazy("When"),
+            gettext_lazy("When is it?"),
+            kind="schedule",
+            why=gettext_lazy("Times are in your site's time zone."),
+        ),
         Field(
             "place",
-            "Place",
-            "Where exactly?",
-            ("Add it later",),
-            why="Only students who can join see it.",
+            gettext_lazy("Place"),
+            gettext_lazy("Where exactly?"),
+            (gettext_lazy("Add it later"),),
+            why=gettext_lazy("Only students who can join see it."),
         ),
         Field(
             "review",
-            "Session",
-            "Here's your session. Does it fit?",
+            gettext_lazy("Session"),
+            gettext_lazy("Here's your session. Does it fit?"),
             kind="review",
-            why="Say what to change, or edit it on the page yourself.",
+            why=gettext_lazy("Say what to change, or edit it on the page yourself."),
         ),
         Field(
             "cover",
-            "Cover",
-            "Which cover fits your session?",
+            gettext_lazy("Cover"),
+            gettext_lazy("Which cover fits your session?"),
             kind="cover",
             why=(
-                "Pick a style on the page. The photo row under it changes the photo in all four; "
-                "upload one, or tell me what you want."
+                gettext_lazy(
+                    "Pick a style on the page. The photo row under it changes the photo in all four; "
+                    "upload one, or tell me what you want."
+                )
             ),
         ),
         Field(
             "access",
-            "Access",
-            "How will students join?",
+            gettext_lazy("Access"),
+            gettext_lazy("How will students join?"),
             kind="price",
             delegable=True,
-            why="You can change it any time.",
+            why=gettext_lazy("You can change it any time."),
         ),
         Field(
             "finish",
-            "Finish",
-            "Ready. Publish it?",
+            gettext_lazy("Finish"),
+            gettext_lazy("Ready. Publish it?"),
             kind="finish",
-            why="A draft stays hidden from students until you publish it.",
+            why=gettext_lazy("A draft stays hidden from students until you publish it."),
         ),
         # Only after "Publish now" with "Tell my students" ticked; answered by its own taps.
-        Field("announce", "Announcement", "Tell your students?", kind="announce"),
+        Field("announce", gettext_lazy("Announcement"), gettext_lazy("Tell your students?"), kind="announce"),
     ),
     # G16: Content drafts classes, Finance asks the price, the Community manager announces them.
     specialists={
@@ -277,7 +298,7 @@ def ask(creation, asked: dict) -> dict:
     if asked["field"] == "place":
         return {
             **asked,
-            "question": PLACE_QUESTION.get(kind, asked["question"]),
+            "question": str(PLACE_QUESTION.get(kind, asked["question"])),
             "starter": ZOOM_START if kind == "zoom" else None,
         }
     if asked["field"] == "when":
@@ -352,7 +373,7 @@ def apply_found(creation, found) -> None:
             answers["place"] = link
         else:  # never junk on the page: asked once (flow.apply adds it to the clarify questions)
             option = analysis.ClarifyOption(label=_("Add it later"), value=LATER)
-            found.unclear.append(analysis.Unclear(field="place", question=BAD_LINK, options=[option]))
+            found.unclear.append(analysis.Unclear(field="place", question=str(BAD_LINK), options=[option]))
             found.answer = ""  # nor kept as her answer to the place question
     elif address and kind in (None, "onsite"):
         answers["place"] = address
@@ -478,7 +499,8 @@ def copy_facts(creation, row) -> dict:
 
     answers, brief = creation.answers or {}, creation.brief or {}
     topic, when = str(answers.get("topic") or ""), answers.get("when")
-    where = next(q for q in RECIPE.questions if q.id == "where").options[WHERE.index(_kind(row))]
+    with translation.override("en"):  # the writing model reads it
+        where = str(next(q for q in RECIPE.questions if q.id == "where").options[WHERE.index(_kind(row))])
     site = outline.site(connection.tenant)
     return {
         "topic": "" if topic == flow.DELEGATE else topic,
@@ -523,14 +545,14 @@ def price_tiles(creation, row) -> dict | None:
 
     kind = _kind(row) if row is not None else _where((creation.answers or {}).get("where"))
     if kind == "zoom":
-        return {"options": [{"value": "free", "label": ZOOM_FREE, "hint": ""}], "suggested": None}
+        return {"options": [{"value": "free", "label": str(ZOOM_FREE), "hint": ""}], "suggested": None}
     if kind != "stream" or row is None:
         return None
     s = suggest_price(row)
     paid = {
         "value": f"paid:{s.amount}",
         "label": _("One-time price: %(price)s") % {"price": flow._price_label(str(s.amount))},
-        "hint": s.reason,
+        "hint": str(s.reason),
     }
     return {"options": [{"value": "free", "label": _("Free"), "hint": ""}, paid], "suggested": paid["value"]}
 
@@ -550,9 +572,9 @@ def suggest_price(row) -> pricing.Suggestion:
         prices = sorted(others.values())
         low, high = prices[0], prices[-1]
         if len(others) == 1:
-            reason = f"{next(iter(others))} sells for {money(low)}"
+            reason = _("%(title)s sells for %(price)s") % {"title": next(iter(others)), "price": money(low)}
         else:
-            reason = f"Your {PLURAL[kind]} sell for {money(low)}" + (f"–{money(high)}" if high != low else "")
+            reason = str(OTHERS_SELL[kind]) % {"price": money(low) + (f"–{money(high)}" if high != low else "")}
         return pricing.Suggestion(pricing.whole(median(prices)), reason)
     given = answers_of(connection.tenant).get("onsite_price" if kind == "onsite" else "event_price")
     if given != DELEGATE and (price := parse_price(given)):
@@ -578,13 +600,13 @@ def not_ready(row) -> str:
     has passed is ready while her schedule has one to come (go_live moves it)."""
     kind = _kind(row)
     if kind == "onsite" and not row.address.strip():
-        return "Add the address first"
+        return _("Add the address first")
     if kind == "zoom" and not row.zoom_link.strip():
-        return "Add the Zoom link first"
+        return _("Add the Zoom link first")
     if not (row.scheduled_at and row.scheduled_at > timezone.now()):
         schedule = _schedule(row)
         if not (schedule and schedule["mode"] == "recurring" and _upcoming(schedule)):
-            return "Pick a date in the future"
+            return _("Pick a date in the future")
     return ""
 
 

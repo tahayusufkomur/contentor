@@ -422,7 +422,7 @@ def test_you_decide_without_an_idea_goes_live_at_its_own_address(owner, on, paid
 def test_a_written_post_takes_its_own_address_before_any_publish(owner, on, paid, hers):
     # "You decide" with no idea: the job's title brings its address, so the page's Publish uses it too.
     creation = flow.answer(flow.start(owner, "post", delegate=True), "length", delegate=True)
-    assert recipe.PLACEHOLDER.fullmatch(_row(creation).slug)
+    assert recipe.placeholder().fullmatch(_row(creation).slug)
     with _model():
         jobs.execute(SCHEMA, creation.runs["post"])
     row = _row(creation)

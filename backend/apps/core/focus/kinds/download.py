@@ -13,6 +13,8 @@ from statistics import median
 
 from django.db import connection
 from django.template.defaultfilters import filesizeformat
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy, gettext_noop
 
 from apps.core import monetization
 from apps.tenant_config.interview_brief import Field
@@ -21,14 +23,14 @@ from .. import analysis, pricing
 from ..recipes import Recipe
 
 NOUN = "download"
-NEW_TITLE = "New download"
+NEW_TITLE = gettext_noop("New download")
 SETUP_TOPIC = None  # /setup asks no download topic
 # The first question's format tiles: each fills her answer box with its starter for her to finish (§1.3).
 STARTERS = (
-    ("A workbook", "A workbook on "),
-    ("A checklist", "A checklist for "),
-    ("A recording", "A recording of "),
-    ("A template", "A template for "),
+    (gettext_lazy("A workbook"), gettext_lazy("A workbook on ")),
+    (gettext_lazy("A checklist"), gettext_lazy("A checklist for ")),
+    (gettext_lazy("A recording"), gettext_lazy("A recording of ")),
+    (gettext_lazy("A template"), gettext_lazy("A template for ")),
 )
 COVER = "styles"
 ANNOUNCER = "marketing"
@@ -37,77 +39,81 @@ DRAFT_SLOT = "copy"
 DRAFT_WHAT = "title and description"
 REVIEWED_LINE = None
 UPLOADED, LATER = "uploaded", "later"
-FINISH = (("publish", "Publish now"), ("draft", "Keep as a draft"))
+FINISH = (("publish", gettext_lazy("Publish now")), ("draft", gettext_lazy("Keep as a draft")))
 CLOSING = {
-    "publish": "Published. Students can find it on your site now.",
+    "publish": gettext_lazy("Published. Students can find it on your site now."),
     # Asks for the file only while it is missing, then for selling while it cannot sell yet.
     "draft": lambda row: (
-        "Saved as a draft. Add the file and publish it from this page when you're ready."
+        _("Saved as a draft. Add the file and publish it from this page when you're ready.")
         if row is None or not row.file_url
-        else f"Saved as a draft. {monetization.NOT_SELLING} Then publish it from this page."
+        else _("Saved as a draft. %(selling)s Then publish it from this page.") % {"selling": monetization.NOT_SELLING}
         if row.cannot_sell()
-        else "Saved as a draft. Publish it from this page when you're ready."
+        else _("Saved as a draft. Publish it from this page when you're ready.")
     ),
 }
-NOT_READY_LINE = "Your download is saved as a draft."
+NOT_READY_LINE = gettext_lazy("Your download is saved as a draft.")
 
 RECIPE = Recipe(
     kind="download",
     questions=(
         Field(
             "topic",
-            "Topic",
-            "What are you sharing?",
+            gettext_lazy("Topic"),
+            gettext_lazy("What are you sharing?"),
             ("A ",),
             delegable=True,
             starter=True,
             why=(
-                "A workbook, a checklist, a recording, a template: say what's inside, who it's for, "
-                "the price. I'll fill in the rest for you to check."
+                gettext_lazy(
+                    "A workbook, a checklist, a recording, a template: say what's inside, who it's for, "
+                    "the price. I'll fill in the rest for you to check."
+                )
             ),
         ),
         Field(
             "file",
-            "File",
-            "Add the file",
-            ("Add it later", "File added"),
+            gettext_lazy("File"),
+            gettext_lazy("Add the file"),
+            (gettext_lazy("Add it later"), gettext_lazy("File added")),
             kind="upload",  # hers (not delegable): only she has the file
-            why="Drop it here or on the page. Students get it once you publish.",
+            why=gettext_lazy("Drop it here or on the page. Students get it once you publish."),
         ),
         Field(
             "review",
-            "Download",
-            "Here's your download. Does it fit?",
+            gettext_lazy("Download"),
+            gettext_lazy("Here's your download. Does it fit?"),
             kind="review",
-            why="Say what to change, or edit it on the page yourself.",
+            why=gettext_lazy("Say what to change, or edit it on the page yourself."),
         ),
         Field(
             "cover",
-            "Cover",
-            "Which cover fits your download?",
+            gettext_lazy("Cover"),
+            gettext_lazy("Which cover fits your download?"),
             kind="cover",
             why=(
-                "Pick a style on the page. The photo row under it changes the photo in all four; "
-                "upload one, or tell me what you want."
+                gettext_lazy(
+                    "Pick a style on the page. The photo row under it changes the photo in all four; "
+                    "upload one, or tell me what you want."
+                )
             ),
         ),
         Field(
             "access",
-            "Access",
-            "How will students get it?",
+            gettext_lazy("Access"),
+            gettext_lazy("How will students get it?"),
             kind="price",
             delegable=True,
-            why="You can change it any time.",
+            why=gettext_lazy("You can change it any time."),
         ),
         Field(
             "finish",
-            "Finish",
-            "Ready. Publish it?",
+            gettext_lazy("Finish"),
+            gettext_lazy("Ready. Publish it?"),
             kind="finish",
-            why="A draft stays hidden from students until you publish it.",
+            why=gettext_lazy("A draft stays hidden from students until you publish it."),
         ),
         # Only after "Publish now" with "Tell my students" ticked; answered by its own taps.
-        Field("announce", "Announcement", "Tell your students?", kind="announce"),
+        Field("announce", gettext_lazy("Announcement"), gettext_lazy("Tell your students?"), kind="announce"),
     ),
     # G16: Content drafts it and asks the file and finish, Finance the price, Marketing announces it.
     specialists={
@@ -297,9 +303,11 @@ def suggest_price(row) -> pricing.Suggestion:
         return pricing.Suggestion(Decimal(9), pricing.FALLBACK)
     low, high = others[0].price, others[-1].price
     if len(others) == 1:
-        reason = f"{others[0].title} sells for {money(low)}"
+        reason = _("%(title)s sells for %(price)s") % {"title": others[0].title, "price": money(low)}
     else:
-        reason = f"Your other downloads sell for {money(low)}" + (f"–{money(high)}" if high != low else "")
+        reason = _("Your other downloads sell for %(price)s") % {
+            "price": money(low) + (f"–{money(high)}" if high != low else "")
+        }
     return pricing.Suggestion(pricing.whole(median(d.price for d in others)), reason)
 
 

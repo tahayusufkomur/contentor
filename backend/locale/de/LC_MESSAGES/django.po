@@ -1072,7 +1072,8 @@ msgstr "%(id)s ist bereits sichtbar"
 msgid "%(id)s is already hidden"
 msgstr "%(id)s ist bereits ausgeblendet"
 
-#: apps/core/copilot/blocks.py apps/core/focus/kinds/membership.py
+#: apps/core/copilot/blocks.py apps/core/focus/kinds/bundle.py
+#: apps/core/focus/kinds/membership.py
 #, fuzzy, python-format
 msgid "%(n)d item"
 msgid_plural "%(n)d items"
@@ -1624,14 +1625,16 @@ msgstr "kostenlos"
 msgid "%(modules)s, %(lessons)s — %(price)s"
 msgstr "%(modules)s, %(lessons)s — %(price)s"
 
-#: apps/core/copilot/engine.py
+#: apps/core/copilot/engine.py apps/core/focus/flow.py
+#: apps/core/focus/outline.py apps/core/tests/test_focus_language.py
 #, fuzzy, python-format
 msgid "%(n)d module"
 msgid_plural "%(n)d modules"
 msgstr[0] "%(n)d Modul"
 msgstr[1] "%(n)d Module"
 
-#: apps/core/copilot/engine.py
+#: apps/core/copilot/engine.py apps/core/focus/flow.py
+#: apps/core/focus/outline.py apps/core/tests/test_focus_language.py
 #, fuzzy, python-format
 msgid "%(n)d lesson"
 msgid_plural "%(n)d lessons"
@@ -1898,6 +1901,11 @@ msgstr ""
 msgid "Reading your details"
 msgstr "Deine Angaben werden gelesen"
 
+#: apps/core/focus/announce.py
+#, fuzzy
+msgid "Writing your announcement"
+msgstr "Deine Ankündigung wird verfasst"
+
 #: apps/core/focus/copywriter.py
 #, fuzzy
 msgid "Writing your bundle"
@@ -2008,6 +2016,16 @@ msgstr ""
 "ändern."
 
 #: apps/core/focus/flow.py
+#, fuzzy
+msgid "Looks good, continue"
+msgstr "Sieht gut aus, weiter"
+
+#: apps/core/focus/flow.py
+#, fuzzy, python-format
+msgid "Sell it for %(price)s"
+msgstr "Für %(price)s verkaufen"
+
+#: apps/core/focus/flow.py
 #, fuzzy, python-format
 msgid ""
 "Your announcement is scheduled for %(weekday)s %(day)d %(month)s at "
@@ -2023,8 +2041,32 @@ msgstr "Deine Ankündigung ist geplant."
 
 #: apps/core/focus/flow.py
 #, fuzzy, python-format
+msgid "%(gap)s. Until then it stays a hidden draft."
+msgstr "%(gap)s. Bis dahin bleibt es ein verborgener Entwurf."
+
+#: apps/core/focus/flow.py
+#, fuzzy, python-format
 msgid "%(label)s: you decide"
 msgstr "%(label)s: du entscheidest"
+
+#: apps/core/focus/flow.py apps/core/tests/test_focus_language.py
+#, fuzzy, python-format
+msgid "%(n)d lesson each"
+msgid_plural "%(n)d lessons each"
+msgstr[0] "%(n)d Lektion jeweils"
+msgstr[1] "%(n)d Lektionen jeweils"
+
+#: apps/core/focus/flow.py
+#, fuzzy, python-format
+msgid "%(n)d lesson per module"
+msgid_plural "%(n)d lessons per module"
+msgstr[0] "%(n)d Lektion pro Modul"
+msgstr[1] "%(n)d Lektionen pro Modul"
+
+#: apps/core/focus/flow.py
+#, fuzzy
+msgid "You decide"
+msgstr "Du entscheidest"
 
 #: apps/core/focus/flow.py
 #, fuzzy, python-format
@@ -2043,14 +2085,24 @@ msgid "Free"
 msgstr "Kostenlos"
 
 #: apps/core/focus/flow.py
-#, fuzzy, python-format
-msgid "Sell it for %(price)s"
-msgstr "Für %(price)s verkaufen"
-
-#: apps/core/focus/flow.py
 #, fuzzy
 msgid "In your membership"
 msgstr "In deiner Mitgliedschaft"
+
+#: apps/core/focus/flow.py
+#, fuzzy
+msgid "Looks good"
+msgstr "Sieht gut aus"
+
+#: apps/core/focus/flow.py
+#, fuzzy
+msgid "Cover chosen"
+msgstr "Cover ausgewählt"
+
+#: apps/core/focus/flow.py
+#, fuzzy
+msgid "Later"
+msgstr "Später"
 
 #: apps/core/focus/followup.py
 #, fuzzy
@@ -2087,10 +2139,810 @@ msgstr "Gedanken zu deinem Beitrag"
 msgid "Thinking about your session"
 msgstr "Gedanken zu deiner Session"
 
+#: apps/core/focus/kinds/bundle.py
+#, fuzzy
+msgid "New bundle"
+msgstr "Neues Bundle"
+
+#: apps/core/focus/kinds/bundle.py apps/core/focus/kinds/course.py
+#: apps/core/focus/kinds/download.py apps/core/focus/kinds/event.py
+#: apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "Publish now"
+msgstr "Jetzt veröffentlichen"
+
+#: apps/core/focus/kinds/bundle.py apps/core/focus/kinds/course.py
+#: apps/core/focus/kinds/download.py apps/core/focus/kinds/event.py
+#: apps/core/focus/kinds/message.py apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "Keep as a draft"
+msgstr "Als Entwurf behalten"
+
+#: apps/core/focus/kinds/bundle.py
+#, fuzzy
+msgid "Published. Students can buy it in your store now."
+msgstr "Veröffentlicht. Teilnehmer können es jetzt in deinem Store kaufen."
+
+#: apps/core/focus/kinds/bundle.py apps/core/focus/kinds/post.py
+#, fuzzy, python-format
+msgid "Saved as a draft. %(gap)s, then publish it from this page."
+msgstr ""
+"Als Entwurf gespeichert. %(gap)s, dann veröffentliche es von dieser Seite "
+"aus."
+
+#: apps/core/focus/kinds/bundle.py apps/core/focus/kinds/download.py
+#, fuzzy, python-format
+msgid "Saved as a draft. %(selling)s Then publish it from this page."
+msgstr ""
+"Als Entwurf gespeichert. %(selling)s Dann veröffentliche es von dieser Seite"
+" aus."
+
+#: apps/core/focus/kinds/bundle.py apps/core/focus/kinds/download.py
+#: apps/core/focus/kinds/event.py apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "Saved as a draft. Publish it from this page when you're ready."
+msgstr ""
+"Als Entwurf gespeichert. Veröffentliche es von dieser Seite aus, wenn du "
+"bereit bist."
+
+#: apps/core/focus/kinds/bundle.py
+#, fuzzy
+msgid "Your bundle is saved as a draft."
+msgstr "Dein Bundle ist als Entwurf gespeichert."
+
+#: apps/core/focus/kinds/bundle.py
+#, fuzzy
+msgid "A bundle holds only what students can buy."
+msgstr "Ein Bundle enthält nur, was Teilnehmer kaufen können."
+
+#: apps/core/focus/kinds/bundle.py apps/core/focus/kinds/membership.py
+#, fuzzy
+msgid "Say an amount"
+msgstr "Nenne einen Betrag"
+
+#: apps/core/focus/kinds/bundle.py
+#, fuzzy
+msgid "Items"
+msgstr "Elemente"
+
+#: apps/core/focus/kinds/bundle.py
+#, fuzzy
+msgid "What goes in the bundle?"
+msgstr "Was kommt in das Bundle?"
+
+#: apps/core/focus/kinds/bundle.py
+#, fuzzy
+msgid ""
+"Tick what students get together, or name them. You can change it any time."
+msgstr ""
+"Hake an, was Teilnehmer zusammen erhalten, oder nenne sie. Du kannst es "
+"jederzeit ändern."
+
+#: apps/core/focus/kinds/bundle.py
+#, fuzzy
+msgid "Bundle"
+msgstr "Bundle"
+
+#: apps/core/focus/kinds/bundle.py
+#, fuzzy
+msgid "Here's your bundle. Does it fit?"
+msgstr "Hier ist dein Bundle. Passt es?"
+
+#: apps/core/focus/kinds/bundle.py apps/core/focus/kinds/course.py
+#: apps/core/focus/kinds/download.py apps/core/focus/kinds/event.py
+#: apps/core/focus/kinds/membership.py apps/core/focus/kinds/message.py
+#: apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "Say what to change, or edit it on the page yourself."
+msgstr ""
+"Sag, was geändert werden soll, oder bearbeite es selbst auf der Seite."
+
+#: apps/core/focus/kinds/bundle.py apps/core/focus/kinds/membership.py
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Price"
+msgstr "Preis"
+
+#: apps/core/focus/kinds/bundle.py apps/core/focus/kinds/membership.py
+#, fuzzy
+msgid "What should it cost?"
+msgstr "Was soll es kosten?"
+
+#: apps/core/focus/kinds/bundle.py
+#, fuzzy
+msgid "Students pay it once for everything in it. You can change it any time."
+msgstr ""
+"Teilnehmer zahlen einmal für alles darin. Du kannst es jederzeit ändern."
+
+#: apps/core/focus/kinds/bundle.py apps/core/focus/kinds/course.py
+#: apps/core/focus/kinds/download.py apps/core/focus/kinds/event.py
+#: apps/core/focus/kinds/membership.py apps/core/focus/kinds/message.py
+#: apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "Finish"
+msgstr "Fertigstellen"
+
+#: apps/core/focus/kinds/bundle.py apps/core/focus/kinds/download.py
+#: apps/core/focus/kinds/event.py apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "Ready. Publish it?"
+msgstr "Bereit. Veröffentlichen?"
+
+#: apps/core/focus/kinds/bundle.py apps/core/focus/kinds/course.py
+#: apps/core/focus/kinds/download.py apps/core/focus/kinds/event.py
+#: apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "A draft stays hidden from students until you publish it."
+msgstr ""
+"Ein Entwurf bleibt für Teilnehmer verborgen, bis du ihn veröffentlichst."
+
+#: apps/core/focus/kinds/bundle.py apps/core/focus/kinds/course.py
+#: apps/core/focus/kinds/download.py apps/core/focus/kinds/event.py
+#: apps/core/focus/kinds/membership.py apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "Announcement"
+msgstr "Ankündigung"
+
+#: apps/core/focus/kinds/bundle.py apps/core/focus/kinds/course.py
+#: apps/core/focus/kinds/download.py apps/core/focus/kinds/event.py
+#: apps/core/focus/kinds/membership.py apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "Tell your students?"
+msgstr "Deine Teilnehmer informieren?"
+
+#: apps/core/focus/kinds/bundle.py
+#, fuzzy
+msgid "the same as buying them apart"
+msgstr "dasselbe wie beim Einzelkauf"
+
+#: apps/core/focus/kinds/bundle.py
+#, fuzzy, python-format
+msgid "%(price)s bought apart; 25%% off"
+msgstr "%(price)s im Einzelkauf; 25%% Rabatt"
+
+#: apps/core/focus/kinds/course.py
+#, fuzzy
+msgid "New course"
+msgstr "Neuer Kurs"
+
+#: apps/core/focus/kinds/course.py
+#, fuzzy
+msgid ""
+"Writing a short description for each lesson's video. Edit any of them on the"
+" page."
+msgstr ""
+"Eine kurze Beschreibung für das Video jeder Lektion wird verfasst. Bearbeite"
+" jede davon auf der Seite."
+
+#: apps/core/focus/kinds/course.py apps/core/focus/kinds/download.py
 #: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "Published. Students can find it on your site now."
+msgstr "Veröffentlicht. Teilnehmer können es jetzt auf deiner Website finden."
+
+#: apps/core/focus/kinds/course.py
+#, fuzzy
+msgid ""
+"Saved as a draft. Once every lesson has its video or text, publish it from "
+"this page."
+msgstr ""
+"Als Entwurf gespeichert. Sobald jede Lektion ihr Video oder ihren Text hat, "
+"veröffentliche es von dieser Seite aus."
+
+#: apps/core/focus/kinds/course.py
+#, fuzzy
+msgid "Your outline is saved. Next, your lessons."
+msgstr "Deine Gliederung ist gespeichert. Als Nächstes deine Lektionen."
+
+#: apps/core/focus/kinds/course.py apps/core/focus/kinds/download.py
+#: apps/core/focus/kinds/event.py apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "Topic"
+msgstr "Thema"
+
+#: apps/core/focus/kinds/course.py
+#, fuzzy
+msgid "What will your students learn?"
+msgstr "Was werden deine Teilnehmer lernen?"
+
+#: apps/core/focus/kinds/course.py
+#, fuzzy
+msgid "A course on "
+msgstr "Ein Kurs über "
+
+#: apps/core/focus/kinds/course.py
+#, fuzzy
+msgid ""
+"Say as much as you know: who it's for, how many modules and lessons, lesson "
+"titles, the price. I'll fill in the rest for you to check."
+msgstr ""
+"Sag so viel, wie du weißt: für wen er ist, wie viele Module und Lektionen, "
+"Lektionstitel, den Preis. Ich trage den Rest für dich ein, damit du ihn "
+"prüfen kannst."
+
+#: apps/core/focus/kinds/course.py
+#, fuzzy
+msgid "Who it is for"
+msgstr "Für wen er ist"
+
+#: apps/core/focus/kinds/course.py
+#, fuzzy
+msgid "Who is it for?"
+msgstr "Für wen ist er?"
+
+#: apps/core/focus/kinds/course.py apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Complete beginners"
+msgstr "Komplette Anfänger"
+
+#: apps/core/focus/kinds/course.py
+#, fuzzy
+msgid "Some experience"
+msgstr "Etwas Erfahrung"
+
+#: apps/core/focus/kinds/course.py
+#, fuzzy
+msgid "Advanced"
+msgstr "Fortgeschritten"
+
+#: apps/core/focus/kinds/course.py
+#, fuzzy
+msgid "It sets the pace, and the words the lessons use."
+msgstr "Es bestimmt das Tempo und die Wortwahl in den Lektionen."
+
+#: apps/core/focus/kinds/course.py
+#, fuzzy
+msgid "Size"
+msgstr "Umfang"
+
+#: apps/core/focus/kinds/course.py
+#, fuzzy
+msgid "How big should it be?"
+msgstr "Wie groß soll er sein?"
+
+#: apps/core/focus/kinds/course.py
+#, fuzzy
+msgid "Quick win"
+msgstr "Schneller Erfolg"
+
+#: apps/core/focus/kinds/course.py
+#, fuzzy
+msgid "Short course"
+msgstr "Kurzer Kurs"
+
+#: apps/core/focus/kinds/course.py
+#, fuzzy
+msgid "Full program"
+msgstr "Komplettes Programm"
+
+#: apps/core/focus/kinds/course.py
+#, fuzzy
+msgid "1 module · 3–4 lessons"
+msgstr "1 Modul · 3–4 Lektionen"
+
+#: apps/core/focus/kinds/course.py
+#, fuzzy
+msgid "3 modules · about 12 lessons"
+msgstr "3 Module · etwa 12 Lektionen"
+
+#: apps/core/focus/kinds/course.py
+#, fuzzy
+msgid "6 modules"
+msgstr "6 Module"
+
+#: apps/core/focus/kinds/course.py
+#, fuzzy
+msgid "You can add or remove lessons any time."
+msgstr "Du kannst Lektionen jederzeit hinzufügen oder entfernen."
+
+#: apps/core/focus/kinds/course.py
+#, fuzzy
+msgid "Outline"
+msgstr "Gliederung"
+
+#: apps/core/focus/kinds/course.py
+#, fuzzy
+msgid "Here's your outline. Does it fit?"
+msgstr "Hier ist deine Gliederung. Passt sie?"
+
+#: apps/core/focus/kinds/course.py apps/core/focus/kinds/download.py
+#: apps/core/focus/kinds/event.py apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "Cover"
+msgstr "Titelbild"
+
+#: apps/core/focus/kinds/course.py
+#, fuzzy
+msgid "Which cover fits your course?"
+msgstr "Welches Titelbild passt zu deinem Kurs?"
+
+#: apps/core/focus/kinds/course.py apps/core/focus/kinds/download.py
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid ""
+"Pick a style on the page. The photo row under it changes the photo in all "
+"four; upload one, or tell me what you want."
+msgstr ""
+"Wähle einen Stil auf der Seite. Die Fotoreihe darunter ändert das Foto in "
+"allen vier; lade eines hoch oder sag mir, was du möchtest."
+
+#: apps/core/focus/kinds/course.py apps/core/focus/kinds/download.py
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "Access"
+msgstr "Zugang"
+
+#: apps/core/focus/kinds/course.py apps/core/focus/kinds/download.py
+#, fuzzy
+msgid "How will students get it?"
+msgstr "Wie erhalten Teilnehmer es?"
+
+#: apps/core/focus/kinds/course.py apps/core/focus/kinds/download.py
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "You can change it any time."
+msgstr "Du kannst es jederzeit ändern."
+
+#: apps/core/focus/kinds/course.py
+#, fuzzy
+msgid "Ready. Publish it now?"
+msgstr "Fertig. Jetzt veröffentlichen?"
+
+#: apps/core/focus/kinds/course.py apps/core/focus/kinds/download.py
+#: apps/core/focus/kinds/event.py
+#, fuzzy, python-format
+msgid "%(title)s sells for %(price)s"
+msgstr "%(title)s wird für %(price)s verkauft"
+
+#: apps/core/focus/kinds/course.py
+#, fuzzy, python-format
+msgid "Your other courses sell for %(price)s"
+msgstr "Deine anderen Kurse werden für %(price)s verkauft"
+
+#: apps/core/focus/kinds/course.py
+#, fuzzy, python-format
+msgid "%(title)s has %(n)d student"
+msgid_plural "%(title)s has %(n)d students"
+msgstr[0] "%(title)s hat %(n)d Teilnehmer"
+msgstr[1] "%(title)s hat %(n)d Teilnehmer"
+
+#: apps/core/focus/kinds/download.py
+#, fuzzy
+msgid "New download"
+msgstr "Neuer Download"
+
+#: apps/core/focus/kinds/download.py
+#, fuzzy
+msgid "A workbook"
+msgstr "Ein Arbeitsbuch"
+
+#: apps/core/focus/kinds/download.py
+#, fuzzy
+msgid "A workbook on "
+msgstr "Ein Arbeitsbuch über "
+
+#: apps/core/focus/kinds/download.py
+#, fuzzy
+msgid "A checklist"
+msgstr "Eine Checkliste"
+
+#: apps/core/focus/kinds/download.py
+#, fuzzy
+msgid "A checklist for "
+msgstr "Eine Checkliste für "
+
+#: apps/core/focus/kinds/download.py
+#, fuzzy
+msgid "A recording"
+msgstr "Eine Aufnahme"
+
+#: apps/core/focus/kinds/download.py
+#, fuzzy
+msgid "A recording of "
+msgstr "Eine Aufnahme von "
+
+#: apps/core/focus/kinds/download.py
+#, fuzzy
+msgid "A template"
+msgstr "Eine Vorlage"
+
+#: apps/core/focus/kinds/download.py
+#, fuzzy
+msgid "A template for "
+msgstr "Eine Vorlage für "
+
+#: apps/core/focus/kinds/download.py
+#, fuzzy
+msgid ""
+"Saved as a draft. Add the file and publish it from this page when you're "
+"ready."
+msgstr ""
+"Als Entwurf gespeichert. Füge die Datei hinzu und veröffentliche sie von "
+"dieser Seite aus, wenn du bereit bist."
+
+#: apps/core/focus/kinds/download.py
+#, fuzzy
+msgid "Your download is saved as a draft."
+msgstr "Dein Download ist als Entwurf gespeichert."
+
+#: apps/core/focus/kinds/download.py
+#, fuzzy
+msgid "What are you sharing?"
+msgstr "Was teilst du?"
+
+#: apps/core/focus/kinds/download.py
+#, fuzzy
+msgid ""
+"A workbook, a checklist, a recording, a template: say what's inside, who "
+"it's for, the price. I'll fill in the rest for you to check."
+msgstr ""
+"Ein Arbeitsbuch, eine Checkliste, eine Aufnahme, eine Vorlage: sag, was drin"
+" ist, für wen es ist, den Preis. Ich fülle den Rest für dich zum Überprüfen "
+"aus."
+
+#: apps/core/focus/kinds/download.py
+#, fuzzy
+msgid "File"
+msgstr "Datei"
+
+#: apps/core/focus/kinds/download.py
+#, fuzzy
+msgid "Add the file"
+msgstr "Datei hinzufügen"
+
+#: apps/core/focus/kinds/download.py apps/core/focus/kinds/event.py
 #, fuzzy
 msgid "Add it later"
 msgstr "Später hinzufügen"
+
+#: apps/core/focus/kinds/download.py
+#, fuzzy
+msgid "File added"
+msgstr "Datei hinzugefügt"
+
+#: apps/core/focus/kinds/download.py
+#, fuzzy
+msgid "Drop it here or on the page. Students get it once you publish."
+msgstr ""
+"Lege sie hier oder auf der Seite ab. Teilnehmer erhalten sie, sobald du "
+"veröffentlichst."
+
+#: apps/core/focus/kinds/download.py apps/core/focus/kinds/membership.py
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Download"
+msgstr "Download"
+
+#: apps/core/focus/kinds/download.py
+#, fuzzy
+msgid "Here's your download. Does it fit?"
+msgstr "Hier ist dein Download. Passt das?"
+
+#: apps/core/focus/kinds/download.py
+#, fuzzy
+msgid "Which cover fits your download?"
+msgstr "Welches Cover passt zu deinem Download?"
+
+#: apps/core/focus/kinds/download.py
+#, fuzzy, python-format
+msgid "Your other downloads sell for %(price)s"
+msgstr "Deine anderen Downloads werden für %(price)s verkauft"
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "New session"
+msgstr "Neue Session"
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "Your session is saved as a draft."
+msgstr "Deine Session ist als Entwurf gespeichert."
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "Zoom sessions are free to join."
+msgstr "Die Teilnahme an Zoom-Sessions ist kostenlos."
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "What's the address?"
+msgstr "Wie lautet die Adresse?"
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "Paste your Zoom link"
+msgstr "Füge deinen Zoom-Link ein"
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "That doesn't look like a whole link. Paste your Zoom link?"
+msgstr ""
+"Das sieht nicht nach einem vollständigen Link aus. Deinen Zoom-Link "
+"einfügen?"
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy, python-format
+msgid "Your live sessions sell for %(price)s"
+msgstr "Deine Live-Sessions werden für %(price)s verkauft"
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy, python-format
+msgid "Your live streams sell for %(price)s"
+msgstr "Deine Livestreams werden für %(price)s verkauft"
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy, python-format
+msgid "Your Zoom sessions sell for %(price)s"
+msgstr "Deine Zoom-Sessions werden für %(price)s verkauft"
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy, python-format
+msgid "Your events sell for %(price)s"
+msgstr "Deine Veranstaltungen werden für %(price)s verkauft"
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "What's your session or event about?"
+msgstr "Worum geht es in deiner Session oder Veranstaltung?"
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "A session on "
+msgstr "Eine Session zu "
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid ""
+"Say as much as you know: where, when, weekly or once, how long, the address,"
+" the price. I'll fill in the rest for you to check."
+msgstr ""
+"Sag so viel, wie du weißt: wo, wann, wöchentlich oder einmalig, wie lange, "
+"die Adresse, der Preis. Ich fülle den Rest für dich zum Überprüfen aus."
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "Where"
+msgstr "Wo"
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "Where will it happen?"
+msgstr "Wo findet es statt?"
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "Live online"
+msgstr "Live online"
+
+#: apps/core/focus/kinds/event.py apps/core/focus/kinds/membership.py
+#: apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Live stream"
+msgstr "Livestream"
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "On Zoom"
+msgstr "Auf Zoom"
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "In person"
+msgstr "In Präsenz"
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "It can't change once the session is made."
+msgstr ""
+"Das kann nicht mehr geändert werden, sobald die Session erstellt wurde."
+
+#: apps/core/focus/kinds/event.py apps/core/focus/kinds/message.py
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "When"
+msgstr "Wann"
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "When is it?"
+msgstr "Wann ist es?"
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "Times are in your site's time zone."
+msgstr "Uhrzeiten entsprechen der Zeitzone deiner Website."
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "Place"
+msgstr "Ort"
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "Where exactly?"
+msgstr "Wo genau?"
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "Only students who can join see it."
+msgstr "Nur Teilnehmer, die teilnehmen können, sehen es."
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "Session"
+msgstr "Session"
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "Here's your session. Does it fit?"
+msgstr "Hier ist deine Session. Passt das?"
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "Which cover fits your session?"
+msgstr "Welches Cover passt zu deiner Session?"
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "How will students join?"
+msgstr "Wie nehmen Teilnehmer teil?"
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "Add the address first"
+msgstr "Füge zuerst die Adresse hinzu"
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "Add the Zoom link first"
+msgstr "Füge zuerst den Zoom-Link hinzu"
+
+#: apps/core/focus/kinds/event.py
+#, fuzzy
+msgid "Pick a date in the future"
+msgstr "Wähle ein Datum in der Zukunft"
+
+#: apps/core/focus/kinds/membership.py
+#, fuzzy
+msgid "New membership"
+msgstr "Neue Mitgliedschaft"
+
+#: apps/core/focus/kinds/membership.py
+#, fuzzy
+msgid "Put it on sale"
+msgstr "Zum Verkauf anbieten"
+
+#: apps/core/focus/kinds/membership.py
+#, fuzzy
+msgid "Keep it off sale"
+msgstr "Nicht zum Verkauf anbieten"
+
+#: apps/core/focus/kinds/membership.py
+#, fuzzy
+msgid "On sale. Students can join it from your pricing page."
+msgstr "Im Verkauf. Teilnehmer können ihr über deine Preisseite beitreten."
+
+#: apps/core/focus/kinds/membership.py
+#, fuzzy
+msgid "Kept off sale. Put it on sale from this page when you're ready."
+msgstr ""
+"Nicht im Verkauf. Biete sie über diese Seite zum Verkauf an, wenn du bereit "
+"bist."
+
+#: apps/core/focus/kinds/membership.py
+#, fuzzy
+msgid "Your membership is kept off sale."
+msgstr "Deine Mitgliedschaft ist nicht im Verkauf."
+
+#: apps/core/focus/kinds/membership.py
+#, fuzzy
+msgid "Nothing ticked"
+msgstr "Nichts angehakt"
+
+#: apps/core/focus/kinds/membership.py
+#, fuzzy
+msgid "Two months free"
+msgstr "Zwei Monate kostenlos"
+
+#: apps/core/focus/kinds/membership.py apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Course"
+msgstr "Kurs"
+
+#: apps/core/focus/kinds/membership.py apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "Live session"
+msgstr "Live-Session"
+
+#: apps/core/focus/kinds/membership.py apps/email_campaigns/catalog.py
+#, fuzzy
+msgid "In-person event"
+msgstr "Präsenzveranstaltung"
+
+#: apps/core/focus/kinds/membership.py apps/email_campaigns/catalog.py
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Membership"
+msgstr "Mitgliedschaft"
+
+#: apps/core/focus/kinds/membership.py
+#, fuzzy
+msgid "What do members get?"
+msgstr "Was bekommen Mitglieder?"
+
+#: apps/core/focus/kinds/membership.py
+#, fuzzy
+msgid "Members get "
+msgstr "Mitglieder bekommen "
+
+#: apps/core/focus/kinds/membership.py
+#, fuzzy
+msgid ""
+"Pick one to start from, or say it in your words. I'll fill in the rest for "
+"you to check."
+msgstr ""
+"Wähle eines für den Anfang oder beschreibe es mit deinen Worten. Ich fülle "
+"den Rest für dich aus, damit du ihn prüfen kannst."
+
+#: apps/core/focus/kinds/membership.py
+#, fuzzy
+msgid "Included"
+msgstr "Enthalten"
+
+#: apps/core/focus/kinds/membership.py
+#, fuzzy
+msgid "What's included?"
+msgstr "Was ist enthalten?"
+
+#: apps/core/focus/kinds/membership.py
+#, fuzzy
+msgid "Tick everything members get. You can change it any time."
+msgstr ""
+"Hake alles an, was Mitglieder bekommen. Du kannst es jederzeit ändern."
+
+#: apps/core/focus/kinds/membership.py
+#, fuzzy
+msgid "Here's your membership. Does it fit?"
+msgstr "Hier ist deine Mitgliedschaft. Passt das so?"
+
+#: apps/core/focus/kinds/membership.py
+#, fuzzy
+msgid "Members pay it every month or every year. You can change it any time."
+msgstr ""
+"Mitglieder zahlen das jeden Monat oder jedes Jahr. Du kannst es jederzeit "
+"ändern."
+
+#: apps/core/focus/kinds/membership.py
+#, fuzzy
+msgid "Ready. Put it on sale?"
+msgstr "Bereit. Zum Verkauf anbieten?"
+
+#: apps/core/focus/kinds/membership.py
+#, fuzzy
+msgid "It stays off sale, hidden from students, until you put it on sale."
+msgstr ""
+"Sie bleibt nicht im Verkauf, für Teilnehmer verborgen, bis du sie zum "
+"Verkauf anbietest."
+
+#: apps/core/focus/kinds/membership.py
+#, fuzzy, python-format
+msgid "%(n)d more"
+msgstr "%(n)d weitere"
+
+#: apps/core/focus/kinds/membership.py apps/tenant_config/interview_brief.py
+#, fuzzy, python-format
+msgid "%(items)s and %(last)s"
+msgstr "%(items)s und %(last)s"
+
+#: apps/core/focus/kinds/membership.py
+#, fuzzy, python-format
+msgid "%(names)s could not be added: %(why)s"
+msgstr "%(names)s konnten nicht hinzugefügt werden: %(why)s"
+
+#: apps/core/focus/kinds/membership.py
+#, fuzzy, python-format
+msgid "%(names)s could not be added."
+msgstr "%(names)s konnten nicht hinzugefügt werden."
 
 #: apps/core/focus/kinds/membership.py apps/email_campaigns/catalog.py
 #: apps/tenant_config/interview_brief.py
@@ -2105,10 +2957,151 @@ msgstr "%(price)s pro Jahr"
 
 #: apps/core/focus/kinds/membership.py
 #, fuzzy, python-format
+msgid "Two months free on %(price)s a month"
+msgstr "Zwei Monate kostenlos bei %(price)s im Monat"
+
+#: apps/core/focus/kinds/membership.py
+#, fuzzy, python-format
+msgid "%(n)d month at %(price)s a month"
+msgid_plural "%(n)d months at %(price)s a month"
+msgstr[0] "%(n)d Monat zu %(price)s im Monat"
+msgstr[1] "%(n)d Monate zu %(price)s im Monat"
+
+#: apps/core/focus/kinds/membership.py
+#, fuzzy, python-format
 msgid "%(price)s every %(n)d month"
 msgid_plural "%(price)s every %(n)d months"
 msgstr[0] "%(price)s alle %(n)d Monat"
 msgstr[1] "%(price)s alle %(n)d Monate"
+
+#: apps/core/focus/kinds/membership.py
+#, fuzzy, python-format
+msgid "%(name)s costs %(price)s a year"
+msgstr "%(name)s kostet %(price)s im Jahr"
+
+#: apps/core/focus/kinds/membership.py
+#, fuzzy, python-format
+msgid "%(name)s costs %(price)s a month"
+msgstr "%(name)s kostet %(price)s im Monat"
+
+#: apps/core/focus/kinds/membership.py
+#, fuzzy, python-format
+msgid "Your other memberships cost %(price)s a year"
+msgstr "Deine anderen Mitgliedschaften kosten %(price)s im Jahr"
+
+#: apps/core/focus/kinds/membership.py
+#, fuzzy, python-format
+msgid "Your other memberships cost %(price)s a month"
+msgstr "Deine anderen Mitgliedschaften kosten %(price)s im Monat"
+
+#: apps/core/focus/kinds/message.py
+#, fuzzy
+msgid "New message"
+msgstr "Neue Nachricht"
+
+#: apps/core/focus/kinds/message.py
+#, fuzzy
+msgid "Your message is saved as a draft."
+msgstr "Deine Nachricht ist als Entwurf gespeichert."
+
+#: apps/core/focus/kinds/message.py
+#, fuzzy
+msgid "Nobody would receive it yet"
+msgstr "Noch würde sie niemand erhalten"
+
+#: apps/core/focus/kinds/message.py
+#, fuzzy
+msgid "That time has passed. Keep it as a draft and send it from Messages"
+msgstr ""
+"Dieser Zeitpunkt ist verstrichen. Behalte sie als Entwurf und sende sie über"
+" Nachrichten"
+
+#: apps/core/focus/kinds/message.py
+#, fuzzy
+msgid "Your message is still being written"
+msgstr "Deine Nachricht wird noch geschrieben"
+
+#: apps/core/focus/kinds/message.py
+#, fuzzy
+msgid "Write your message first"
+msgstr "Schreibe zuerst deine Nachricht"
+
+#: apps/core/focus/kinds/message.py
+#, fuzzy
+msgid "Message"
+msgstr "Nachricht"
+
+#: apps/core/focus/kinds/message.py
+#, fuzzy
+msgid "What do you want to tell your students?"
+msgstr "Was möchtest du deinen Teilnehmern mitteilen?"
+
+#: apps/core/focus/kinds/message.py
+#, fuzzy
+msgid "Tell them "
+msgstr "Teile ihnen mit "
+
+#: apps/core/focus/kinds/message.py
+#, fuzzy
+msgid ""
+"Say as much as you like: who it's for, when it goes out, a course to link, "
+"\"by email too\"."
+msgstr ""
+"Sag so viel du möchtest: für wen sie ist, wann sie gesendet wird, ein Kurs "
+"zum Verlinken, \"auch per E-Mail\"."
+
+#: apps/core/focus/kinds/message.py
+#, fuzzy
+msgid "Who gets it"
+msgstr "Wer sie bekommt"
+
+#: apps/core/focus/kinds/message.py
+#, fuzzy
+msgid "Who should get it?"
+msgstr "Wer soll sie bekommen?"
+
+#: apps/core/focus/kinds/message.py
+#, fuzzy
+msgid "Only students who can see a course get its message."
+msgstr ""
+"Nur Teilnehmer, die einen Kurs sehen können, erhalten dessen Nachricht."
+
+#: apps/core/focus/kinds/message.py
+#, fuzzy
+msgid "Here's your message. Does it fit?"
+msgstr "Hier ist deine Nachricht. Passt sie so?"
+
+#: apps/core/focus/kinds/message.py
+#, fuzzy
+msgid "When should it go out?"
+msgstr "Wann soll sie gesendet werden?"
+
+#: apps/core/focus/kinds/message.py
+#, fuzzy
+msgid "Now"
+msgstr "Jetzt"
+
+#: apps/core/focus/kinds/message.py
+#, fuzzy
+msgid "The next 10:00"
+msgstr "Das nächste Mal um 10:00"
+
+#: apps/core/focus/kinds/message.py
+#, fuzzy
+msgid "Or say a time. Times are in your site's time zone."
+msgstr ""
+"Oder nenne eine Uhrzeit. Zeiten beziehen sich auf die Zeitzone deiner "
+"Website."
+
+#: apps/core/focus/kinds/message.py
+#, fuzzy
+msgid "Ready. Send it?"
+msgstr "Bereit. Senden?"
+
+#: apps/core/focus/kinds/message.py
+#, fuzzy
+msgid "Nothing goes out until you tap Send."
+msgstr "Es wird nichts gesendet, bis du auf Senden tippst."
 
 #: apps/core/focus/kinds/message.py
 #, fuzzy, python-format
@@ -2126,6 +3119,145 @@ msgstr "Alle meine Teilnehmer (%(students)s)"
 #, fuzzy, python-format
 msgid "Students of %(name)s"
 msgstr "Teilnehmer von %(name)s"
+
+#: apps/core/focus/kinds/message.py
+#, fuzzy, python-format
+msgid "%(weekday)s %(day)d %(month)s at %(time)s"
+msgstr "%(weekday)s, %(day)d. %(month)s um %(time)s"
+
+#: apps/core/focus/kinds/message.py
+#, fuzzy
+msgid "All my students"
+msgstr "Alle meine Teilnehmer"
+
+#: apps/core/focus/kinds/message.py
+#, fuzzy, python-format
+msgid "Scheduled for %(when)s."
+msgstr "Geplant für %(when)s."
+
+#: apps/core/focus/kinds/message.py
+#, fuzzy
+msgid "Sent."
+msgstr "Gesendet."
+
+#: apps/core/focus/kinds/message.py
+#, fuzzy
+msgid "Saved as a draft in Messages."
+msgstr "Als Entwurf in Nachrichten gespeichert."
+
+#: apps/core/focus/kinds/message.py
+#, fuzzy
+msgid "Send"
+msgstr "Senden"
+
+#: apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "New post"
+msgstr "Neuer Beitrag"
+
+#: apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "Published. Students can read it on your blog now."
+msgstr "Veröffentlicht. Teilnehmer können ihn jetzt auf deinem Blog lesen."
+
+#: apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "Your post is saved as a draft."
+msgstr "Dein Beitrag wurde als Entwurf gespeichert."
+
+#: apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "What's your post about?"
+msgstr "Worum geht es in deinem Beitrag?"
+
+#: apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "A post on "
+msgstr "Ein Beitrag über "
+
+#: apps/core/focus/kinds/post.py
+#, fuzzy
+msgid ""
+"Say the topic, who it's for and anything it must say. I'll write it for you "
+"to check."
+msgstr ""
+"Nenne das Thema, für wen er ist und was unbedingt hineingehört. Ich schreibe"
+" ihn für dich zum Überprüfen."
+
+#: apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "Length"
+msgstr "Länge"
+
+#: apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "How long?"
+msgstr "Wie lang?"
+
+#: apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "Short read"
+msgstr "Kurze Lektüre"
+
+#: apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "Standard"
+msgstr "Standard"
+
+#: apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "Long guide"
+msgstr "Langer Leitfaden"
+
+#: apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "About 500 words"
+msgstr "Etwa 500 Wörter"
+
+#: apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "About 1,000 words"
+msgstr "Etwa 1.000 Wörter"
+
+#: apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "About 1,400 words"
+msgstr "Etwa 1.400 Wörter"
+
+#: apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "Post"
+msgstr "Veröffentlichen"
+
+#: apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "Here's your post. Does it fit?"
+msgstr "Hier ist dein Beitrag. Passt er so?"
+
+#: apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "Pick a cover photo"
+msgstr "Wähle ein Titelbild aus"
+
+#: apps/core/focus/kinds/post.py
+#, fuzzy
+msgid ""
+"Your photos first, then the library. Upload one, or tell me what you want."
+msgstr ""
+"Zuerst deine Fotos, dann die Mediathek. Lade eines hoch oder sag mir, was du"
+" möchtest."
+
+#: apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "Give it a title first"
+msgstr "Gib ihm zuerst einen Titel"
+
+#: apps/core/focus/outline.py
+#, fuzzy, python-format
+msgid "I drafted the first %(max)d modules; add the rest on the page."
+msgstr ""
+"Ich habe die ersten %(max)d Module entworfen; füge den Rest auf der Seite "
+"hinzu."
 
 #: apps/core/focus/outline.py
 #, fuzzy
@@ -2171,6 +3303,67 @@ msgstr "Modul %(n)d"
 #, fuzzy, python-format
 msgid "Lesson %(n)d"
 msgstr "Lektion %(n)d"
+
+#: apps/core/focus/outline.py
+#, fuzzy, python-format
+msgid "%(modules)s, %(lessons)s"
+msgstr "%(modules)s, %(lessons)s"
+
+#: apps/core/focus/outline.py
+#, fuzzy, python-format
+msgid "Your outline is ready: %(summary)s."
+msgstr "Deine Gliederung ist fertig: %(summary)s."
+
+#: apps/core/focus/post.py
+#, fuzzy
+msgid "You changed the text, so I left it; the title and summary are new."
+msgstr ""
+"Du hast den Text geändert, also habe ich ihn so gelassen; Titel und "
+"Zusammenfassung sind neu."
+
+#: apps/core/focus/post.py
+#, fuzzy
+msgid "You changed all of it, so I left it as it is."
+msgstr "Du hast alles geändert, also habe ich es so gelassen, wie es ist."
+
+#: apps/core/focus/post.py
+#, fuzzy
+msgid "You changed some of it, so I left those parts as you wrote them."
+msgstr ""
+"Du hast einiges davon geändert, also habe ich diese Teile so gelassen, wie "
+"du sie geschrieben hast."
+
+#: apps/core/focus/post.py
+#, fuzzy
+msgid ""
+"Writing posts for you is on a paid plan. Write it yourself, or upgrade."
+msgstr ""
+"Das Schreiben von Beiträgen für dich ist in einem kostenpflichtigen Tarif "
+"enthalten. Schreibe es selbst, oder führe ein Upgrade durch."
+
+#: apps/core/focus/post.py
+#, fuzzy
+msgid ""
+"You're out of AI posts for this month. Write it yourself, or upgrade for "
+"more."
+msgstr ""
+"Deine KI-Beiträge für diesen Monat sind aufgebraucht. Schreibe es selbst, "
+"oder führe ein Upgrade durch, um mehr zu erhalten."
+
+#: apps/core/focus/post.py
+#, fuzzy
+msgid "AI writing is unavailable right now. Write it yourself."
+msgstr "KI-Texterstellung ist zurzeit nicht verfügbar. Schreibe es selbst."
+
+#: apps/core/focus/pricing.py
+#, fuzzy
+msgid "A common place to start; change it any time"
+msgstr "Ein gängiger Ausgangspunkt; ändere ihn jederzeit"
+
+#: apps/core/focus/pricing.py
+#, fuzzy
+msgid "The price you gave when you set up your site"
+msgstr "Der Preis, den du beim Einrichten deiner Seite angegeben hast"
 
 #: apps/core/help/views.py apps/tenant_config/assistant_views.py
 #: apps/tenant_config/views.py
@@ -3942,23 +5135,8 @@ msgstr "Dein neuester Download"
 
 #: apps/email_campaigns/catalog.py
 #, fuzzy
-msgid "Live session"
-msgstr "Live-Session"
-
-#: apps/email_campaigns/catalog.py
-#, fuzzy
-msgid "Live stream"
-msgstr "Livestream"
-
-#: apps/email_campaigns/catalog.py
-#, fuzzy
 msgid "Zoom session"
 msgstr "Zoom-Session"
-
-#: apps/email_campaigns/catalog.py
-#, fuzzy
-msgid "In-person event"
-msgstr "Präsenzveranstaltung"
 
 #: apps/email_campaigns/catalog.py
 #, fuzzy, python-format
@@ -3987,16 +5165,6 @@ msgstr "In Mitgliedschaft enthalten"
 
 #: apps/email_campaigns/catalog.py
 #, fuzzy
-msgid "Course"
-msgstr "Kurs"
-
-#: apps/email_campaigns/catalog.py
-#, fuzzy
-msgid "Download"
-msgstr "Download"
-
-#: apps/email_campaigns/catalog.py
-#, fuzzy
 msgid "Article"
 msgstr "Artikel"
 
@@ -4006,11 +5174,6 @@ msgid "%(price)s every %(count)d month"
 msgid_plural "%(price)s every %(count)d months"
 msgstr[0] "%(price)s alle %(count)d Monat"
 msgstr[1] "%(price)s alle %(count)d Monate"
-
-#: apps/email_campaigns/catalog.py apps/notifications/transactional.py
-#, fuzzy
-msgid "Membership"
-msgstr "Mitgliedschaft"
 
 #: apps/email_campaigns/catalog.py apps/tenant_config/interview_golive.py
 #, fuzzy
@@ -5099,11 +6262,6 @@ msgstr ""
 
 #: apps/notifications/transactional.py
 #, fuzzy
-msgid "Price"
-msgstr "Preis"
-
-#: apps/notifications/transactional.py
-#, fuzzy
 msgid "Renews on"
 msgstr "Verlängert sich am"
 
@@ -5281,11 +6439,6 @@ msgstr "Weiter"
 #, fuzzy, python-format
 msgid "%(title)s starts soon"
 msgstr "%(title)s beginnt bald"
-
-#: apps/notifications/transactional.py
-#, fuzzy
-msgid "When"
-msgstr "Wann"
 
 #: apps/notifications/transactional.py
 #, fuzzy
@@ -6960,11 +8113,6 @@ msgstr "%(first)s und %(second)s"
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy, python-format
-msgid "%(items)s and %(last)s"
-msgstr "%(items)s und %(last)s"
-
-#: apps/tenant_config/interview_brief.py
-#, fuzzy, python-format
 msgid "Mostly %(name)s"
 msgstr "Hauptsächlich %(name)s"
 
@@ -7121,11 +8269,6 @@ msgstr ""
 #, fuzzy
 msgid "Who are the students you love working with most?"
 msgstr "Mit welchen Teilnehmern arbeitest du am liebsten zusammen?"
-
-#: apps/tenant_config/interview_brief.py
-#, fuzzy
-msgid "Complete beginners"
-msgstr "Komplette Anfänger"
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
@@ -8008,7 +9151,7 @@ msgid "And the bottom of every page?"
 msgstr "Und der untere Bereich jeder Seite?"
 
 #: apps/tenant_config/interview_brief.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Prices are in %(currency)s (%(sign)s), the currency you picked."
 msgstr ""
 "Preise sind in %(currency)s (%(sign)s), der Währung, die du ausgewählt hast."
@@ -8024,7 +9167,7 @@ msgid "Each gets the same room on your site"
 msgstr "Jedes erhält gleich viel Platz auf deiner Website"
 
 #: apps/tenant_config/interview_brief.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(name)s leads; the rest support it"
 msgstr "%(name)s führt; der Rest unterstützt es"
 
@@ -8069,7 +9212,7 @@ msgid "First course"
 msgstr "Erster Kurs"
 
 #: apps/tenant_config/interview_golive.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(name)s (%(price)s a month)"
 msgstr "%(name)s (%(price)s im Monat)"
 
@@ -8099,7 +9242,7 @@ msgid ", members only"
 msgstr ", nur für Mitglieder"
 
 #: apps/tenant_config/interview_golive.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ", %(price)s each"
 msgstr ", je %(price)s"
 
@@ -8115,12 +9258,12 @@ msgid "A month grid, linked in your menu"
 msgstr "Ein Monatsraster, in deinem Menü verlinkt"
 
 #: apps/tenant_config/interview_golive.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Your course “%(title)s”"
 msgstr "Dein Kurs “%(title)s”"
 
 #: apps/tenant_config/interview_golive.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Your membership: %(names)s"
 msgid_plural "Your memberships: %(names)s"
 msgstr[0] "Deine Mitgliedschaft: %(names)s"
@@ -8152,17 +9295,17 @@ msgid "%(perks)s, for %(teaches)s."
 msgstr "%(perks)s, für %(teaches)s."
 
 #: apps/tenant_config/interview_milestones.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Made for %(subject)s creators, and it sounds %(tones)s."
 msgstr "Gemacht für %(subject)s-Creator, und es klingt %(tones)s."
 
 #: apps/tenant_config/interview_milestones.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Made for %(subject)s creators."
 msgstr "Gemacht für %(subject)s-Creator."
 
 #: apps/tenant_config/interview_milestones.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "It sounds %(tones)s."
 msgstr "Es klingt %(tones)s."
 

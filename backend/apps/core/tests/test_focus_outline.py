@@ -384,7 +384,7 @@ def test_a_total_above_twelve_by_twelve_is_held_there_and_says_so(owner):
     with _model(draft=_draft(modules=12, lessons=12)):
         jobs.execute(SCHEMA, run_id)
     assert Lesson.objects.filter(module__course=_course(creation)).count() == 144
-    assert CopilotRun.objects.get(pk=run_id).result["text"].endswith(outline.CAPPED)
+    assert CopilotRun.objects.get(pk=run_id).result["text"].endswith(str(outline.CAPPED) % {"max": outline.MAX_MODULES})
 
 
 def test_the_fallback_shapes_a_total_by_the_plan():

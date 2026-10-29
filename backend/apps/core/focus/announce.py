@@ -13,6 +13,7 @@ from django.conf import settings
 from django.db import connection, transaction
 from django.utils import timezone
 from django.utils.html import escape, strip_tags
+from django.utils.translation import gettext_lazy
 from pydantic import BaseModel
 
 from apps.core import ai as core_ai
@@ -24,7 +25,7 @@ from apps.tenant_config.models import CopilotRun, FocusCreation
 
 from . import jobs, kinds
 
-LABEL = "Writing your announcement"
+LABEL = gettext_lazy("Writing your announcement")
 MAX_TOKENS = 2000
 # Static per kind, byte-identical across tenants (prompt caching); ``{noun}`` is the kind's word.
 SYSTEM = (

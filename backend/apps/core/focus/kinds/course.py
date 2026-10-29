@@ -9,6 +9,8 @@ from typing import Literal
 
 from django.db import connection
 from django.db.models import Count, Q
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy, gettext_noop, ngettext
 from pydantic import BaseModel
 
 from apps.tenant_config.interview_brief import Field
@@ -17,7 +19,7 @@ from .. import analysis, pricing
 from ..recipes import Recipe
 
 NOUN = "course"
-NEW_TITLE = "New course"
+NEW_TITLE = gettext_noop("New course")
 # The /setup answer that seeds the topic's starter tile.
 SETUP_TOPIC = "course_topic"
 COVER = "styles"
@@ -26,83 +28,91 @@ ANNOUNCER = "marketing"
 DRAFT_SLOT = "outline"
 DRAFT_WHAT = "title, description, modules and lessons"
 # The dock's line after her "Looks good": the descriptions job starts.
-REVIEWED_LINE = "Writing a short description for each lesson's video. Edit any of them on the page."
-FINISH = (("publish", "Publish now"), ("draft", "Keep as a draft"))
+REVIEWED_LINE = gettext_lazy("Writing a short description for each lesson's video. Edit any of them on the page.")
+FINISH = (("publish", gettext_lazy("Publish now")), ("draft", gettext_lazy("Keep as a draft")))
 CLOSING = {
-    "publish": "Published. Students can find it on your site now.",
-    "draft": "Saved as a draft. Once every lesson has its video or text, publish it from this page.",
+    "publish": gettext_lazy("Published. Students can find it on your site now."),
+    "draft": gettext_lazy("Saved as a draft. Once every lesson has its video or text, publish it from this page."),
 }
 # The finish step while a lesson is still empty: no "Publish now".
-NOT_READY_LINE = "Your outline is saved. Next, your lessons."
+NOT_READY_LINE = gettext_lazy("Your outline is saved. Next, your lessons.")
 
 RECIPE = Recipe(
     kind="course",
     questions=(
         Field(
             "topic",
-            "Topic",
-            "What will your students learn?",
-            ("A course on ",),
+            gettext_lazy("Topic"),
+            gettext_lazy("What will your students learn?"),
+            (gettext_lazy("A course on "),),
             delegable=True,
             starter=True,
             why=(
-                "Say as much as you know: who it's for, how many modules and lessons, lesson titles, "
-                "the price. I'll fill in the rest for you to check."
+                gettext_lazy(
+                    "Say as much as you know: who it's for, how many modules and lessons, lesson titles, "
+                    "the price. I'll fill in the rest for you to check."
+                )
             ),
         ),
         Field(
             "level",
-            "Who it is for",
-            "Who is it for?",
-            ("Complete beginners", "Some experience", "Advanced"),
+            gettext_lazy("Who it is for"),
+            gettext_lazy("Who is it for?"),
+            (gettext_lazy("Complete beginners"), gettext_lazy("Some experience"), gettext_lazy("Advanced")),
             kind="choice",
             delegable=True,
-            why="It sets the pace, and the words the lessons use.",
+            why=gettext_lazy("It sets the pace, and the words the lessons use."),
         ),
         Field(
             "size",
-            "Size",
-            "How big should it be?",
-            ("Quick win", "Short course", "Full program"),
+            gettext_lazy("Size"),
+            gettext_lazy("How big should it be?"),
+            (gettext_lazy("Quick win"), gettext_lazy("Short course"), gettext_lazy("Full program")),
             kind="choice",
-            hints=("1 module · 3–4 lessons", "3 modules · about 12 lessons", "6 modules"),
+            hints=(
+                gettext_lazy("1 module · 3–4 lessons"),
+                gettext_lazy("3 modules · about 12 lessons"),
+                gettext_lazy("6 modules"),
+            ),
             delegable=True,
-            why="You can add or remove lessons any time.",
+            why=gettext_lazy("You can add or remove lessons any time."),
         ),
         Field(
             "outline_review",
-            "Outline",
-            "Here's your outline. Does it fit?",
+            gettext_lazy("Outline"),
+            gettext_lazy("Here's your outline. Does it fit?"),
             kind="review",
-            why="Say what to change, or edit it on the page yourself.",
+            why=gettext_lazy("Say what to change, or edit it on the page yourself."),
         ),
         Field(
             "cover",
-            "Cover",
-            "Which cover fits your course?",
+            gettext_lazy("Cover"),
+            gettext_lazy("Which cover fits your course?"),
             kind="cover",
             why=(
-                "Pick a style on the page. The photo row under it changes the photo in all four; "
-                "upload one, or tell me what you want."
+                gettext_lazy(
+                    "Pick a style on the page. The photo row under it changes the photo in all four; "
+                    "upload one, or tell me what you want."
+                )
             ),
         ),
         Field(
             "access",
-            "Access",
-            "How will students get it?",
+            gettext_lazy("Access"),
+            gettext_lazy("How will students get it?"),
             kind="price",
             delegable=True,
-            why="You can change it any time.",
+            why=gettext_lazy("You can change it any time."),
         ),
         Field(
             "finish",
-            "Finish",
-            "Ready. Publish it now?",
+            gettext_lazy("Finish"),
+            gettext_lazy("Ready. Publish it now?"),
             kind="finish",
-            why="A draft stays hidden from students until you publish it.",
+            why=gettext_lazy("A draft stays hidden from students until you publish it."),
         ),
         # Only after "Publish now" with "Tell my students" ticked; answered by its own taps.
-        Field("announce", "Announcement", "Tell your students?", kind="announce"),
+        Field("announce", gettext_lazy("Announcement"), gettext_lazy("Tell your students?"), kind="announce"),
     ),
     specialists={
         "topic": "content",
@@ -215,12 +225,17 @@ def suggest_price(course) -> pricing.Suggestion:
     if others:
         low, high = others[0].price, others[-1].price
         if len(others) == 1:
-            reason = f"{others[0].title} sells for {money(low)}"
+            reason = _("%(title)s sells for %(price)s") % {"title": others[0].title, "price": money(low)}
         else:
-            reason = f"Your other courses sell for {money(low)}" + (f"–{money(high)}" if high != low else "")
+            reason = _("Your other courses sell for %(price)s") % {
+                "price": money(low) + (f"–{money(high)}" if high != low else "")
+            }
         best = max(others, key=lambda c: c.students)
         if best.students:
-            reason += f"; {best.title} has {best.students} student{'' if best.students == 1 else 's'}"
+            reason += "; " + ngettext("%(title)s has %(n)d student", "%(title)s has %(n)d students", best.students) % {
+                "title": best.title,
+                "n": best.students,
+            }
         return pricing.Suggestion(pricing.whole(median(c.price for c in others)), reason)
     given = answers_of(connection.tenant).get("course_price")
     if given != DELEGATE and (price := parse_price(given)):

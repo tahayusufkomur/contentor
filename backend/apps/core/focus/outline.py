@@ -12,7 +12,7 @@ from django.db import transaction
 from django.db.models import Max
 from django.utils import translation
 from django.utils.translation import gettext as _
-from django.utils.translation import gettext_lazy
+from django.utils.translation import gettext_lazy, ngettext
 from pydantic import BaseModel
 
 from apps.core import ai as core_ai
@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 TITLE_MAX = 200
 MAX_MODULES = 12
 MAX_LESSONS = 12
-CAPPED = " I drafted the first 12 modules; add the rest on the page."
+CAPPED = gettext_lazy("I drafted the first %(max)d modules; add the rest on the page.")
 STEP = {"specialist": "content", "label": gettext_lazy("Writing your outline")}
 # Honest and generic when the model is down: no invented facts, she renames them.
 FALLBACK_MODULES = (
@@ -139,8 +139,13 @@ def carry_out(tenant, run_id) -> None:
     runs.emit(run_id, "step", {**STEP, "state": "done"})
     modules = course.modules.count()
     lessons = Lesson.objects.filter(module__course=course).count()
-    summary = f"{modules} module{'s' if modules != 1 else ''}, {lessons} lesson{'s' if lessons != 1 else ''}"
-    text = f"Your outline is ready: {summary}." + (CAPPED if capped else "")
+    summary = _("%(modules)s, %(lessons)s") % {
+        "modules": ngettext("%(n)d module", "%(n)d modules", modules) % {"n": modules},
+        "lessons": ngettext("%(n)d lesson", "%(n)d lessons", lessons) % {"n": lessons},
+    }
+    text = _("Your outline is ready: %(summary)s.") % {"summary": summary}
+    if capped:
+        text += " " + str(CAPPED) % {"max": MAX_MODULES}
     runs.finish(run_id, True, {"text": text, "summary": summary})
 
 

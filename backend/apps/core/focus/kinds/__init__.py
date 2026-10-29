@@ -5,7 +5,8 @@ nothing in the flow names a kind. ``FOCUS_KINDS`` turns each one on.
 
 The adapter (the course's in kinds/course.py):
 - RECIPE: its questions, in order (recipes.Recipe).
-- NOUN: its word in prompts ("course"). NEW_TITLE: a draft's title before she names it.
+- NOUN: its word in prompts ("course"). NEW_TITLE: a draft's title before she names it (English, marked with
+  gettext_noop: the draft is on the site, so ``new_title`` says it in the site's language).
 - SETUP_TOPIC: the /setup answer that seeds the topic's starter tile, or None.
 - STARTERS: optional, (label, starter) tiles on its first question, each filling her answer box to finish.
 - topic_tiles(): optional, its first question's tiles (a membership's tiers, a bundle's items), in place of
@@ -77,6 +78,10 @@ from importlib import import_module
 from types import ModuleType
 
 from django.conf import settings
+from django.utils import translation
+from django.utils.translation import gettext as render_marked  # for text marked with gettext_noop
+
+from apps.core import languages
 
 KINDS: dict[str, str] = {
     "course": "apps.core.focus.kinds.course",
@@ -100,3 +105,14 @@ def get(kind: str) -> ModuleType:
 def enabled() -> list[str]:
     """The kinds switched on, in ``KINDS`` order."""
     return [kind for kind in KINDS if kind in settings.FOCUS_KINDS]
+
+
+def new_title(kind: str) -> str:
+    """A draft's title before she names it. It is written onto the site, so it is in the site's language."""
+    with translation.override(languages.site_language()):
+        return render_marked(get(kind).NEW_TITLE)
+
+
+def new_titles(kind: str) -> tuple[str, ...]:
+    """The titles a draft of this kind may still carry: the site's language, and English (drafts made before)."""
+    return tuple(dict.fromkeys((new_title(kind), str(get(kind).NEW_TITLE))))

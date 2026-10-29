@@ -13,16 +13,19 @@ from decimal import Decimal
 from statistics import median
 
 from django.db import connection
+from django.utils import translation
 from django.utils.translation import gettext as _
-from django.utils.translation import ngettext
+from django.utils.translation import gettext as render_marked  # for text marked with gettext_noop
+from django.utils.translation import gettext_lazy, gettext_noop, ngettext
 
-from apps.tenant_config.interview_brief import MEMBERSHIP_TIERS, TIER_BY_ID, Field, answers_of, money, tiers_for
+from apps.core import languages
+from apps.tenant_config.interview_brief import MEMBERSHIP_TIERS, TIER_BY_ID, Field, answers_of, lc, money, tiers_for
 
 from .. import analysis, pricing
 from ..recipes import Recipe
 
 NOUN = "membership"
-NEW_TITLE = "New membership"
+NEW_TITLE = gettext_noop("New membership")
 SETUP_TOPIC = None  # its first tiles are the /setup tiers for what she has (``topic_tiles``)
 COVER = None  # a plan shows no image (G7)
 cover_target = cover_facts = None
@@ -31,25 +34,25 @@ ANNOUNCER = "marketing"
 DRAFT_SLOT = "copy"
 DRAFT_WHAT = "name and description"
 REVIEWED_LINE = None
-FINISH = (("on_sale", "Put it on sale"), ("off_sale", "Keep it off sale"))
+FINISH = (("on_sale", gettext_lazy("Put it on sale")), ("off_sale", gettext_lazy("Keep it off sale")))
 CLOSING = {
-    "on_sale": "On sale. Students can join it from your pricing page.",
-    "off_sale": "Kept off sale. Put it on sale from this page when you're ready.",
+    "on_sale": gettext_lazy("On sale. Students can join it from your pricing page."),
+    "off_sale": gettext_lazy("Kept off sale. Put it on sale from this page when you're ready."),
 }
-NOT_READY_LINE = "Your membership is kept off sale."
+NOT_READY_LINE = gettext_lazy("Your membership is kept off sale.")
 FINISH_SPECIALIST = "finance"  # what it still needs is Finance's (G16): its items and its price
-NOTHING = "Nothing ticked"  # a tap none of whose values is one of her tiles
+NOTHING = gettext_lazy("Nothing ticked")  # a tap none of whose values is one of her tiles
 REFUSED_NAMES = 3  # the items a refusal line names; past that, "and N more"
-SAY = "Say an amount"  # the price step's typing box: her words set the price only when they give one
+SAY = gettext_lazy("Say an amount")  # the price step's typing box: her words set the price only when they give one
 CYCLES = {"month": 1, "year": 12}  # a price tile's cycle -> billing_interval_months
-YEAR_HINT = "Two months free"  # the year's tile is ten months' price
+YEAR_HINT = gettext_lazy("Two months free")  # the year's tile is ten months' price
 SERIES = ("live", "stream", "onsite")  # never Zoom: billing cannot put one in a plan (G9)
 HINTS = {
-    "course": "Course",
-    "live": "Live session",
-    "stream": "Live stream",
-    "onsite": "In-person event",
-    "download": "Download",
+    "course": gettext_lazy("Course"),
+    "live": gettext_lazy("Live session"),
+    "stream": gettext_lazy("Live stream"),
+    "onsite": gettext_lazy("In-person event"),
+    "download": gettext_lazy("Download"),
 }
 # What each of her items is, as /setup's offers name it (the tiers' ``needs``).
 OFFER = {"course": "course", "download": "course", "live": "live", "stream": "live", "onsite": "onsite"}
@@ -67,47 +70,49 @@ RECIPE = Recipe(
     questions=(
         Field(
             "topic",
-            "Membership",
-            "What do members get?",
-            ("Members get ",),
+            gettext_lazy("Membership"),
+            gettext_lazy("What do members get?"),
+            (gettext_lazy("Members get "),),
             delegable=True,
             starter=True,
-            why="Pick one to start from, or say it in your words. I'll fill in the rest for you to check.",
+            why=gettext_lazy(
+                "Pick one to start from, or say it in your words. I'll fill in the rest for you to check."
+            ),
         ),
         Field(
             "included",
-            "Included",
-            "What's included?",
+            gettext_lazy("Included"),
+            gettext_lazy("What's included?"),
             kind="pick",  # options are her items, drawn per creation (``ask``); hers to tick, never delegated
             multi=True,
-            why="Tick everything members get. You can change it any time.",
+            why=gettext_lazy("Tick everything members get. You can change it any time."),
         ),
         Field(
             "review",
-            "Membership",
-            "Here's your membership. Does it fit?",
+            gettext_lazy("Membership"),
+            gettext_lazy("Here's your membership. Does it fit?"),
             kind="review",
-            why="Say what to change, or edit it on the page yourself.",
+            why=gettext_lazy("Say what to change, or edit it on the page yourself."),
         ),
         Field(
             "access",
-            "Price",
-            "What should it cost?",
+            gettext_lazy("Price"),
+            gettext_lazy("What should it cost?"),
             kind="price",
             # Only "Just draft it" delegates it, and that leaves the price to her finish tap ("Sell it for"):
             # the plan stays at 0, off sale (F11).
             delegable=True,
-            why="Members pay it every month or every year. You can change it any time.",
+            why=gettext_lazy("Members pay it every month or every year. You can change it any time."),
         ),
         Field(
             "finish",
-            "Finish",
-            "Ready. Put it on sale?",
+            gettext_lazy("Finish"),
+            gettext_lazy("Ready. Put it on sale?"),
             kind="finish",
-            why="It stays off sale, hidden from students, until you put it on sale.",
+            why=gettext_lazy("It stays off sale, hidden from students, until you put it on sale."),
         ),
         # Only after "Put it on sale" with "Tell my students" ticked; answered by its own taps.
-        Field("announce", "Announcement", "Tell your students?", kind="announce"),
+        Field("announce", gettext_lazy("Announcement"), gettext_lazy("Tell your students?"), kind="announce"),
     ),
     # G16: Finance asks the membership's questions and its price, Marketing writes and announces it.
     specialists={
@@ -161,7 +166,7 @@ def _choices(sold: bool = False) -> list[dict]:
     from apps.downloads.models import DownloadFile
 
     def tiles(prefix, hint, rows):
-        return [{"value": f"{prefix}:{pk}", "label": title, "hint": hint} for pk, title in rows]
+        return [{"value": f"{prefix}:{pk}", "label": title, "hint": str(hint)} for pk, title in rows]
 
     paid = {"pricing_type": "paid", "price__gt": 0} if sold else {}
     courses = Course.objects.filter(is_published=True, **paid).values_list("pk", "title")
@@ -225,11 +230,11 @@ def _named(titles, choices: list[dict] | None = None) -> list[str]:
     choices = _choices() if choices is None else choices
     named = set()
     for title in titles:
-        title = str(title).strip().lower()
+        title = lc(str(title).strip())  # her own words, in the language she writes: Turkish "İ" and "I" lower right
         if not title:
             continue
-        exact = [c["value"] for c in choices if c["label"].lower() == title]
-        starts = [c["value"] for c in choices if c["label"].lower().startswith(title)]
+        exact = [c["value"] for c in choices if lc(c["label"]) == title]
+        starts = [c["value"] for c in choices if lc(c["label"]).startswith(title)]
         named.update(exact or (starts if len(starts) == 1 else []))
     return [c["value"] for c in choices if c["value"] in named]
 
@@ -263,10 +268,16 @@ def refused_line(titles: list[str], reasons: list[str]) -> str:
     a price above 0." A few names, then "and N more"; the ways' reasons, each once."""
     names = titles[:REFUSED_NAMES]
     if len(titles) > REFUSED_NAMES:
-        names.append(f"{len(titles) - REFUSED_NAMES} more")
-    named = names[0] if len(names) == 1 else f"{', '.join(names[:-1])} and {names[-1]}"
-    why = " ".join(dict.fromkeys(r for r in reasons if r))
-    return f"{named} could not be added" + (f": {why}" if why else ".")
+        names.append(_("%(n)d more") % {"n": len(titles) - REFUSED_NAMES})
+    named = (
+        names[0]
+        if len(names) == 1
+        else _("%(items)s and %(last)s") % {"items": ", ".join(names[:-1]), "last": names[-1]}
+    )
+    why = " ".join(dict.fromkeys(str(r) for r in reasons if r))
+    if why:
+        return _("%(names)s could not be added: %(why)s") % {"names": named, "why": why}
+    return _("%(names)s could not be added.") % {"names": named}
 
 
 # ── The draft ───────────────────────────────────────────────────────────────
@@ -320,6 +331,12 @@ def skips(creation) -> set[str]:
     return set() if "included" in (creation.answers or {}) or _choices() else {"included"}
 
 
+def _plan_name(tier: dict) -> str:
+    """The tier's name as the plan is named: on the site, so in the site's language (the tile shows the creator's)."""
+    with translation.override(languages.site_language()):
+        return render_marked(tier["label"])
+
+
 def topic_tiles() -> list[dict]:
     """The first question's tiles: the /setup tiers for what she makes (her
     courses and downloads, live classes, in-person events, and her community
@@ -327,7 +344,9 @@ def topic_tiles() -> list[dict]:
     answers = answers_of(connection.tenant)
     have = {OFFER[_kind(c["value"])] for c in _choices()} | ({"community"} & set(answers.get("offers") or []))
     tiers = tiers_for({**answers, "offers": sorted(have)}) if have else []
-    return [{"value": t["label"], "label": t["label"], "hint": t["blurb"]} for t in tiers]
+    return [
+        {"value": _plan_name(t), "label": render_marked(t["label"]), "hint": render_marked(t["blurb"])} for t in tiers
+    ]
 
 
 def ask(creation, asked: dict) -> dict:
@@ -350,7 +369,7 @@ def label(field, answer) -> str | None:
     if field == "included":
         values = answer if isinstance(answer, list) else _ticked(answer)
         if not values:
-            return NOTHING
+            return str(NOTHING)
         count = ngettext("%(n)d item", "%(n)d items", len(values)) % {"n": len(values)}
         if len(values) > 3:
             return count
@@ -473,9 +492,15 @@ def _included(row) -> list[str]:
             .values_list("title", flat=True)
             .first()
         )
-        if title and (entry := f"{title} ({HINTS[kind].lower()})") not in out:
+        if title and (entry := f"{title} ({kind_word(kind)})") not in out:
             out.append(entry)
     return out
+
+
+def kind_word(kind: str) -> str:
+    """What an item is, for the writing model: English, whatever language she reads."""
+    with translation.override("en"):
+        return str(HINTS[kind]).lower()
 
 
 def copy_facts(creation, row) -> dict:
@@ -527,14 +552,14 @@ def price_tiles(creation, row) -> dict | None:
     month = {
         "value": f"month:{s.amount}",
         "label": _("%(price)s a month") % {"price": money(s.amount)},
-        "hint": s.reason,
+        "hint": str(s.reason),
     }
     yearly = {
         "value": f"year:{y.amount}",
         "label": _("%(price)s a year") % {"price": money(y.amount)},
-        "hint": y.reason,
+        "hint": str(y.reason),
     }
-    return {"options": [month, yearly], "suggested": month["value"], "say": SAY}
+    return {"options": [month, yearly], "suggested": month["value"], "say": str(SAY)}
 
 
 def _tier(row) -> dict:
@@ -542,8 +567,9 @@ def _tier(row) -> dict:
     its items make (several kinds: all-access)."""
     from apps.billing.models import SubscriptionPlanAccess
 
-    name = row.name.lower()
-    if tier := next((t for t in MEMBERSHIP_TIERS if t["label"].lower() in name), None):
+    name = lc(row.name)
+    named = (t for t in MEMBERSHIP_TIERS if t["label"].lower() in name or lc(_plan_name(t)) in name)
+    if tier := next(named, None):
         return tier
     models = SubscriptionPlanAccess.objects.filter(plan=row).values_list("content_type__model", flat=True)
     have = {OFFER[MODEL_KIND[m]] for m in models if m in MODEL_KIND}
@@ -566,8 +592,12 @@ def suggest_price(row) -> pricing.Suggestion | None:
     if months == 1:
         return s
     if months == 12:
-        return pricing.Suggestion(s.amount * 10, f"Two months free on {money(s.amount)} a month")
-    return pricing.Suggestion(s.amount * months, f"{months} months at {money(s.amount)} a month")
+        return pricing.Suggestion(s.amount * 10, _("Two months free on %(price)s a month") % {"price": money(s.amount)})
+    return pricing.Suggestion(
+        s.amount * months,
+        ngettext("%(n)d month at %(price)s a month", "%(n)d months at %(price)s a month", months)
+        % {"n": months, "price": money(s.amount)},
+    )
 
 
 def amount_label(row, amount: str) -> str:
@@ -585,10 +615,10 @@ def amount_label(row, amount: str) -> str:
 
 def _yearly(row) -> pricing.Suggestion | None:
     """Her other yearly memberships on sale, or None without one."""
-    return _her_plans(row, 12, "a year")
+    return _her_plans(row, 12)
 
 
-def _her_plans(row, months: int, per: str) -> pricing.Suggestion | None:
+def _her_plans(row, months: int) -> pricing.Suggestion | None:
     """The median of her other memberships on sale billed every ``months``,
     with them as the reason ("Annual Pass costs $349 a year"); None without one."""
     from apps.billing.models import SubscriptionPlan
@@ -601,10 +631,19 @@ def _her_plans(row, months: int, per: str) -> pricing.Suggestion | None:
     if not others:
         return None
     low, high = others[0].price, others[-1].price
+    yearly = months == 12
     if len(others) == 1:
-        reason = f"{others[0].name} costs {money(low)} {per}"
+        reason = (_("%(name)s costs %(price)s a year") if yearly else _("%(name)s costs %(price)s a month")) % {
+            "name": others[0].name,
+            "price": money(low),
+        }
     else:
-        reason = f"Your other memberships cost {money(low)}" + (f"–{money(high)}" if high != low else "") + f" {per}"
+        price = money(low) + (f"–{money(high)}" if high != low else "")
+        reason = (
+            _("Your other memberships cost %(price)s a year")
+            if yearly
+            else _("Your other memberships cost %(price)s a month")
+        ) % {"price": price}
     return pricing.Suggestion(pricing.whole(median(p.price for p in others)), reason)
 
 
@@ -612,7 +651,7 @@ def _monthly(row) -> pricing.Suggestion:
     """The first rule that has her numbers: her other monthly memberships on
     sale, the price she gave this tier when she picked it in /setup, else the
     catalogue's price for the closest tier."""
-    if s := _her_plans(row, 1, "a month"):
+    if s := _her_plans(row, 1):
         return s
     tier = _tier(row)
     answers = answers_of(connection.tenant)

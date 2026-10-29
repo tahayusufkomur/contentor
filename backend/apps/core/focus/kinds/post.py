@@ -10,15 +10,18 @@ announces it (G16); no price."""
 import re
 
 from django.db import connection
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy, gettext_noop
 
 from apps.core.slugs import slugify
 from apps.tenant_config.interview_brief import Field
 
 from .. import analysis
 from ..recipes import Recipe
+from . import new_title, new_titles
 
 NOUN = "post"
-NEW_TITLE = "New post"
+NEW_TITLE = gettext_noop("New post")
 SETUP_TOPIC = None  # its first tiles are her topic ideas (``topic_tiles``)
 COVER = "photo"
 ANNOUNCER = "marketing"
@@ -28,65 +31,75 @@ DRAFT_SLOT = "draft"
 DRAFT_WHAT = "title, summary and text"
 REVIEWED_LINE = None
 LENGTHS = ("short", "standard", "long")
-FINISH = (("publish", "Publish now"), ("draft", "Keep as a draft"))
+FINISH = (("publish", gettext_lazy("Publish now")), ("draft", gettext_lazy("Keep as a draft")))
 CLOSING = {
-    "publish": "Published. Students can read it on your blog now.",
+    "publish": gettext_lazy("Published. Students can read it on your blog now."),
     # Says what it still needs while it cannot be published yet (her Publish tap kept it a draft too).
     "draft": lambda row: (
-        f"Saved as a draft. {gap}, then publish it from this page."
+        _("Saved as a draft. %(gap)s, then publish it from this page.") % {"gap": gap}
         if row is not None and (gap := not_ready(row))
-        else "Saved as a draft. Publish it from this page when you're ready."
+        else _("Saved as a draft. Publish it from this page when you're ready.")
     ),
 }
-NOT_READY_LINE = "Your post is saved as a draft."
-# The address a draft gets from NEW_TITLE ("You decide" with no topic idea), never the one it goes live at.
-PLACEHOLDER = re.compile(rf"{slugify(NEW_TITLE)}(-\d+)?")
+NOT_READY_LINE = gettext_lazy("Your post is saved as a draft.")
+
+
+def placeholder() -> re.Pattern:
+    """The address a draft gets from NEW_TITLE ("You decide" with no topic idea), never the one it goes live at:
+    from the site's language's title, and the English one (drafts made before)."""
+    slugs = (re.escape(slugify(title)) for title in new_titles("post"))
+    return re.compile(rf"(?:{'|'.join(slugs)})(-\d+)?")
+
 
 RECIPE = Recipe(
     kind="post",
     questions=(
         Field(
             "topic",
-            "Topic",
-            "What's your post about?",
-            ("A post on ",),
+            gettext_lazy("Topic"),
+            gettext_lazy("What's your post about?"),
+            (gettext_lazy("A post on "),),
             delegable=True,  # "You decide": her next topic idea (``sync``)
             starter=True,
-            why="Say the topic, who it's for and anything it must say. I'll write it for you to check.",
+            why=gettext_lazy("Say the topic, who it's for and anything it must say. I'll write it for you to check."),
         ),
         Field(
             "length",
-            "Length",
-            "How long?",
-            ("Short read", "Standard", "Long guide"),
+            gettext_lazy("Length"),
+            gettext_lazy("How long?"),
+            (gettext_lazy("Short read"), gettext_lazy("Standard"), gettext_lazy("Long guide")),
             kind="choice",
             # What the post job asks the blog writer for (apps.core.focus.post.LENGTHS).
-            hints=("About 500 words", "About 1,000 words", "About 1,400 words"),
+            hints=(
+                gettext_lazy("About 500 words"),
+                gettext_lazy("About 1,000 words"),
+                gettext_lazy("About 1,400 words"),
+            ),
             delegable=True,
         ),
         Field(
             "review",
-            "Post",
-            "Here's your post. Does it fit?",
+            gettext_lazy("Post"),
+            gettext_lazy("Here's your post. Does it fit?"),
             kind="review",
-            why="Say what to change, or edit it on the page yourself.",
+            why=gettext_lazy("Say what to change, or edit it on the page yourself."),
         ),
         Field(
             "cover",
-            "Cover",
-            "Pick a cover photo",
+            gettext_lazy("Cover"),
+            gettext_lazy("Pick a cover photo"),
             kind="cover",
-            why="Your photos first, then the library. Upload one, or tell me what you want.",
+            why=gettext_lazy("Your photos first, then the library. Upload one, or tell me what you want."),
         ),
         Field(
             "finish",
-            "Finish",
-            "Ready. Publish it?",
+            gettext_lazy("Finish"),
+            gettext_lazy("Ready. Publish it?"),
             kind="finish",
-            why="A draft stays hidden from students until you publish it.",
+            why=gettext_lazy("A draft stays hidden from students until you publish it."),
         ),
         # Only after "Publish now" with "Tell my students" ticked; answered by its own taps.
-        Field("announce", "Announcement", "Tell your students?", kind="announce"),
+        Field("announce", gettext_lazy("Announcement"), gettext_lazy("Tell your students?"), kind="announce"),
     ),
     # G16: Marketing writes post copy and announces it; the Designer asks the cover.
     specialists={
@@ -213,7 +226,7 @@ def sync(creation) -> None:
     delegated = answers.get("topic") == flow.DELEGATE and not flow.draft_started(creation)
     if delegated and (idea := ideas.first()):
         answers["topic"] = idea.title
-        flow._retitle(creation, NEW_TITLE, flow.working_title(idea.title, NOUN))
+        flow._retitle(creation, new_title("post"), flow.working_title(idea.title, NOUN))
     if topic := answers.get("topic"):
         ideas.filter(title=topic).update(status="used")
 
@@ -253,7 +266,7 @@ def apply_clarified(creation, field, value) -> bool:
 def not_ready(row) -> str:
     """A real title and some text (G20): the post's own rule, wherever it is
     published; its placeholder title is no title either."""
-    return "Give it a title first" if row.title.strip() == NEW_TITLE else row.not_ready()
+    return _("Give it a title first") if row.title.strip() in new_titles("post") else row.not_ready()
 
 
 def cannot_sell(row) -> bool:
@@ -268,7 +281,7 @@ def go_live(pk) -> None:
     from apps.core.copilot import content
 
     row = _rows(pk).filter(status="draft").first()
-    if row is not None and PLACEHOLDER.fullmatch(row.slug):
+    if row is not None and placeholder().fullmatch(row.slug):
         _rows(pk).update(slug=unique_slug(row.title, exclude_pk=pk))
     content.publish_blog_post(pk)
 

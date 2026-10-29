@@ -7,23 +7,29 @@ which answers every question it can; the outline job writes the outline
 (apps.core.focus.outline). Call inside her tenant's context. Writes lock the
 row, so two tabs cannot both move it."""
 
+import re
 from contextlib import suppress
 from datetime import datetime
 
 from django.db import connection, transaction
-from django.utils import timezone
+from django.utils import timezone, translation
 from django.utils.formats import date_format
 from django.utils.translation import gettext as _
-from django.utils.translation import gettext_lazy
+from django.utils.translation import gettext as render_marked  # for text marked with gettext_noop
+from django.utils.translation import gettext_lazy, ngettext
 
 from apps.billing import ways as access_ways
 from apps.core.onboarding import ai_compose
+from apps.reels.ass import upper
+from apps.tenant_config.interview_brief import lc
 from apps.tenant_config.models import CopilotChat, CopilotRun, FocusCreation
 
 from . import analysis, copywriter, covers, descriptions, followup, jobs, kinds
 from . import announce as announcing  # ``announce`` is finish()'s flag
 
 DELEGATE = "delegate"
+# What the writing models read for "You decide" in a follow-up's answer (never shown: the dock says _("You decide")).
+DECIDE = "You decide"
 # A reported span of active time counts up to ten minutes: a bogus number
 # (a clock jump, a crafted request) cannot inflate her total.
 MAX_SPAN_MS = 600_000
@@ -54,6 +60,11 @@ MAX_FOLLOWUPS = 4
 MAX_PER_SLOT = 2
 
 
+def decided(entry: dict) -> bool:
+    """A follow-up's answer that was "You decide" (stored before the flag, as its English words)."""
+    return bool(entry.get("decided")) or entry.get("answer") == DECIDE
+
+
 class FlowError(Exception):
     pass
 
@@ -72,19 +83,19 @@ def working_title(topic: str, kind: str = "course") -> str:
     """Her topic as the record's title until the outline writes a better one."""
     adapter = kinds.get(kind)
     text = (topic or "").strip()
-    starter = (adapter.RECIPE.questions[0].options or ("",))[0].strip()
-    if text.lower().startswith(starter.lower()):
+    starter = str((adapter.RECIPE.questions[0].options or ("",))[0]).strip()
+    if lc(text).startswith(lc(starter)):
         text = text[len(starter) :].strip()
     text = text.rstrip(".").strip()
     if not text:
-        return adapter.NEW_TITLE
-    return (text[0].upper() + text[1:])[:TITLE_MAX]
+        return kinds.new_title(kind)
+    return (upper(text[0], translation.get_language() or "en") + text[1:])[:TITLE_MAX]
 
 
 def _chat_title(kind: str, title: str) -> str:
     """The dock thread's name: "New bundle", or "New course: Desk yoga"."""
-    new = kinds.get(kind).NEW_TITLE
-    return (new if title == new else f"{new}: {title}")[:120]
+    new = render_marked(kinds.get(kind).NEW_TITLE)
+    return (new if title in kinds.new_titles(kind) else f"{new}: {title}")[:120]
 
 
 def draft_title(creation) -> str:
@@ -122,7 +133,7 @@ def start(user, kind: str, *, value=None, text=None, delegate=False, rest=False,
             actor=actor,
             title=_chat_title(kind, title),
             entries=[
-                {"role": "assistant", "text": first.question},
+                {"role": "assistant", "text": str(first.question)},
                 {"role": "coach", "text": _label(recipe, first, picked)},
             ],
         )
@@ -189,7 +200,7 @@ def answer(creation, field, *, value=None, text=None, delegate=False, rest=False
                 creation.save(update_fields=["active_ms", "updated_at"])
                 return creation
         elif words and not delegate:
-            asking = question.question if question else creation.brief["clarify"][0]["question"]
+            asking = str(question.question) if question else creation.brief["clarify"][0]["question"]
             _chat_append(creation, [{"role": "assistant", "text": asking}, {"role": "coach", "text": words}])
             _analyse(creation, field, words, rest)
         elif field == "clarify":
@@ -200,7 +211,7 @@ def answer(creation, field, *, value=None, text=None, delegate=False, rest=False
             if value == "ok":
                 status = outline_status(creation)
                 creation.answers[field] = "ok"
-                _say(creation, question, "Looks good, continue")
+                _say(creation, question, _("Looks good, continue"))
                 # The outline on the page: ready, or an earlier one a stopped or failed redraft left.
                 # While one is being written, the outline job starts them once it has written.
                 if status == "ready" or (status in ("failed", "idle") and _has_outline(creation)):
@@ -216,7 +227,7 @@ def answer(creation, field, *, value=None, text=None, delegate=False, rest=False
         elif question.kind == "finish":
             price = _sell_for(creation, value)
             _set_price(creation, price)
-            _say(creation, question, f"Sell it for {_amount_label(creation, price)}")
+            _say(creation, question, _("Sell it for %(price)s") % {"price": _amount_label(creation, price)})
         elif question.kind == "price":
             if not _access(creation, question, value, delegate) and not rest:
                 creation.save(update_fields=["active_ms", "updated_at"])
@@ -333,7 +344,7 @@ def finish(creation, *, publish: bool, announce: bool = False, active_ms=None) -
         question = next(q for q in recipe.questions if q.id == "finish")
         creation.answers["finish"] = choice
         # The question as the dock asked it, and the button she tapped; the closing line says what it did.
-        asked = adapter.NOT_READY_LINE if gap else question.question
+        asked = str(adapter.NOT_READY_LINE if gap else question.question)
         tapped = _label(recipe, question, adapter.FINISH[0 if publish else 1][0])
         _chat_append(
             creation,
@@ -358,7 +369,7 @@ def closing_line(creation) -> str:
     if choice is None:
         return ""
     closing = kinds.get(creation.kind).CLOSING[choice]  # or a function of the record, for a line that says when
-    return closing(_record(creation)) if callable(closing) else closing
+    return str(closing(_record(creation)) if callable(closing) else closing)
 
 
 def decide_announcement(creation, *, schedule: bool, active_ms=None) -> FocusCreation:
@@ -585,15 +596,15 @@ def question(kind: str, field: str, creation=None) -> dict:
     asked = {
         "field": q.id,
         "kind": q.kind,
-        "question": q.question,
-        "why": q.why,
+        "question": str(q.question),
+        "why": str(q.why),
         "options": _tiles(recipe, q),
-        "starter": q.options[0] if q.starter and q.options else None,
+        "starter": str(q.options[0]) if q.starter and q.options else None,
         "can_delegate": q.delegable,
         "specialist": recipe.specialists[q.id],
     }
     if q.starter and (starters := getattr(kinds.get(kind), "STARTERS", ())):  # optional: more starters, as tiles
-        asked["starters"] = [{"label": label, "starter": starter} for label, starter in starters]
+        asked["starters"] = [{"label": str(label), "starter": str(starter)} for label, starter in starters]
     if q.kind == "price":
         asked = {**asked, **_price_tiles(creation)}
     ask = getattr(kinds.get(kind), "ask", None)  # optional: its wording for this creation
@@ -639,9 +650,10 @@ def state(creation) -> dict:
     if gap:
         asked = {
             **asked,
-            "question": adapter.NOT_READY_LINE,
+            "question": str(adapter.NOT_READY_LINE),
             # Upper-first, never capitalize(): that lowercases the rest ("Zoom", "Messages").
-            "why": f"{gap[0].upper()}{gap[1:]}. Until then it stays a hidden draft.",
+            "why": _("%(gap)s. Until then it stays a hidden draft.")
+            % {"gap": upper(gap[0], translation.get_language() or "en") + gap[1:]},
             "options": [o for o in asked["options"] if o["value"] != adapter.FINISH[0][0]],
             # Whoever drafts it says what it still needs (the course's and the event's: content),
             # unless the kind names who asks its finish (a membership's: Finance, whose step its price is).
@@ -670,7 +682,7 @@ def state(creation) -> dict:
             # "You decide" names what it decided: after "Just draft it" there are several.
             {
                 "field": q.id,
-                "label": _("%(label)s: you decide") % {"label": q.label}
+                "label": _("%(label)s: you decide") % {"label": str(q.label)}
                 if answers[q.id] == DELEGATE
                 else _label(recipe, q, answers[q.id], tiles),
             }
@@ -734,20 +746,37 @@ def _draft_state(creation) -> dict | None:
 
 
 def size_label(brief) -> str:
-    """The counts she gave, as the size's answered line: "4 modules · 3
-    lessons each", "4 modules", "12 lessons"; "" without a count."""
+    """The counts she gave, as the size answer she is recorded with: "4 modules · 3
+    lessons each", "4 modules", "12 lessons"; "" without a count. English: the outline
+    job reads it; what she sees is ``_size_shown``."""
     brief = brief or {}
-    modules, lessons, total = brief.get("modules"), brief.get("lessons"), brief.get("total")
-    parts = [_count(modules, "module")] if modules else []
-    if lessons:
-        parts.append(_count(lessons, "lesson") + (" each" if modules else " per module"))
+    with translation.override("en"):
+        return _size(brief.get("modules"), brief.get("lessons"), brief.get("total"))
+
+
+def _size(modules, lessons, total) -> str:
+    parts = [ngettext("%(n)d module", "%(n)d modules", modules) % {"n": modules}] if modules else []
+    if lessons and modules:
+        parts.append(ngettext("%(n)d lesson each", "%(n)d lessons each", lessons) % {"n": lessons})
+    elif lessons:
+        parts.append(ngettext("%(n)d lesson per module", "%(n)d lessons per module", lessons) % {"n": lessons})
     elif total:
-        parts.append(_count(total, "lesson"))
+        parts.append(ngettext("%(n)d lesson", "%(n)d lessons", total) % {"n": total})
     return " · ".join(parts)
 
 
-def _count(n: int, noun: str) -> str:
-    return f"{n} {noun}{'' if n == 1 else 's'}"
+_SIZE = re.compile(r"(?:(\d+) modules?)?(?: · )?(?:(\d+) lessons?(?: (each|per module))?)?")
+
+
+def _size_shown(label: str) -> str:
+    """``size_label``'s English answer, in the active language; any other text (her own words) as it is."""
+    match = _SIZE.fullmatch(label) if label else None
+    if not match:
+        return label
+    modules, lessons, rate = (int(g) if g and g.isdigit() else g for g in match.groups())
+    if lessons and not modules and not rate:
+        return _size(None, None, lessons)  # "12 lessons": a total
+    return _size(modules, lessons, None)
 
 
 def _analyse(creation, field, text, rest) -> None:
@@ -828,20 +857,27 @@ def _followup_answered(creation, value, words, delegate, rest) -> bool:
     decide". False when the tap carried no answer."""
     asked = creation.brief["followup"]
     tapped = value if value in asked["options"] else None
-    label = "You decide" if delegate else words or tapped or ("You decide" if rest else None)
-    if label is None:
+    decided = bool(delegate or (rest and not (words or tapped)))
+    label = DECIDE if decided else words or tapped
+    if not label:
         return False
-    entry = {"question": asked["question"], "answer": label, "slot": asked["slot"]}
+    entry = {
+        "question": asked["question"],
+        "answer": label,
+        "slot": asked["slot"],
+        **({"decided": True} if decided else {}),
+    }
     creation.brief = {
         **{k: v for k, v in creation.brief.items() if k != "followup"},
         "followups": [*(creation.brief.get("followups") or []), entry],
     }
-    _chat_append(creation, [{"role": "assistant", "text": asked["question"]}, {"role": "coach", "text": label}])
+    shown = _("You decide") if decided else label
+    _chat_append(creation, [{"role": "assistant", "text": asked["question"]}, {"role": "coach", "text": shown}])
     if rest:
         _delegate_rest(creation)
     if asked["slot"] == kinds.get(creation.kind).DRAFT_SLOT:
         _next_draft(creation)  # a second follow-up when allowed, else the drafting
-    elif label != "You decide":
+    elif not decided:
         _redraw_covers(creation)
     return True
 
@@ -884,7 +920,7 @@ def _clarify(creation, value, delegate, rest) -> bool:
             creation.answers.setdefault("size", DELEGATE)
         elif unclear["field"] == "level":
             creation.answers.setdefault("level", DELEGATE)
-        label = "You decide"
+        label = _("You decide")
     elif value is not None and str(value).strip():
         clarified = _clarified(creation, unclear["field"], value)
         label = next((o["label"] for o in unclear["options"] if o["value"] == value), str(value)[:ANSWER_MAX])
@@ -1014,7 +1050,7 @@ def _access(creation, q, value, delegate) -> bool:
     own = adapter.price_tiles(creation, _record(creation))
     if delegate:
         creation.answers["access"] = DELEGATE
-        _say(creation, q, "You decide")
+        _say(creation, q, _("You decide"))
         return True
     if own is not None:
         tile = next((o for o in own["options"] if o["value"] == value), None)
@@ -1162,7 +1198,7 @@ def _price_tiles(creation) -> dict:
         paid = {
             "value": f"paid:{s.amount}",
             "label": _("One-time price: %(price)s") % {"price": _price_label(str(s.amount))},
-            "hint": s.reason,
+            "hint": str(s.reason),
         }
     options = [{"value": "free", "label": _("Free"), "hint": ""}, *([paid] if paid else []), *plans]
     out = {"options": options, "suggested": paid and paid["value"], "multi": True, "can_delegate": False}
@@ -1210,7 +1246,7 @@ def _finish_options(creation, asked: dict, record) -> dict:
             {
                 "value": f"price:{s.amount}",
                 "label": _("Sell it for %(price)s") % {"price": _amount_label(creation, str(s.amount))},
-                "hint": s.reason,
+                "hint": str(s.reason),
             },
         ]
     return {**asked, "options": options}
@@ -1304,7 +1340,7 @@ def _delegate_rest(creation) -> None:
     for q in (*_before_draft(creation), *access):
         if q.id not in creation.answers and q.delegable:
             creation.answers[q.id] = DELEGATE
-            _say(creation, q, "You decide")
+            _say(creation, q, _("You decide"))
 
 
 def _ensure_record(creation) -> None:
@@ -1357,7 +1393,9 @@ def _choice(recipe, field: str, words: str) -> str:
     words = words.strip()[:ANSWER_MAX]
     q = next(q for q in recipe.questions if q.id == field)
     for value, label in zip(recipe.values.get(field, ()), q.options, strict=False):
-        if words.lower() in (value, label.lower()):
+        with translation.override("en"):
+            english = str(label)  # the model answers in English whatever language she reads
+        if lc(words) in (value, lc(label), english.lower()):
             return value
     return words
 
@@ -1387,10 +1425,10 @@ def _tiles(recipe, q) -> list[dict]:
         topic = str(answers_of(connection.tenant).get(adapter.SETUP_TOPIC) or "").strip()[:ANSWER_MAX]
         return [{"value": topic, "label": topic, "hint": ""}] if topic else []
     if q.kind == "finish":
-        return [{"value": v, "label": label, "hint": ""} for v, label in adapter.FINISH]
+        return [{"value": v, "label": str(label), "hint": ""} for v, label in adapter.FINISH]
     values = recipe.values.get(q.id, ())
     return [
-        {"value": v, "label": label, "hint": q.hints[i] if i < len(q.hints) else ""}
+        {"value": v, "label": str(label), "hint": str(q.hints[i]) if i < len(q.hints) else ""}
         for i, (v, label) in enumerate(zip(values, q.options, strict=False))
     ]
 
@@ -1420,31 +1458,33 @@ def _pick(recipe, q, value, text, delegate):
 def _label(recipe, q, answer, tiles=None) -> str:
     """Her answer as its answered line; ``tiles``: a kind's own price tiles, value to label."""
     if answer == DELEGATE:
-        return "You decide"
+        return _("You decide")
     own = getattr(kinds.get(recipe.kind), "label", None)  # optional: its words for an answer (a tile it drew)
     if own and (text := own(q.id, answer)):
-        return text
+        return str(text)
     if q.kind == "review":
-        return "Looks good" if answer == "ok" else str(answer)
+        return _("Looks good") if answer == "ok" else str(answer)
     if q.kind == "cover":
-        return "Cover chosen" if answer == "kept" else "Later"
+        return _("Cover chosen") if answer == "kept" else _("Later")
     if q.kind == "price":
         return (tiles or {}).get(answer) or _access_label(answer)
     if q.kind == "announce":
         return str(ANNOUNCE_LABELS.get(answer, str(answer)))
     if q.kind == "finish":
-        return dict(kinds.get(recipe.kind).FINISH).get(answer, str(answer))
+        return str(dict(kinds.get(recipe.kind).FINISH).get(answer, answer))
     if q.kind == "schedule" and isinstance(answer, dict):
         from apps.tenant_config import interview_schedule
 
         return interview_schedule.summary(answer)
     values = recipe.values.get(q.id, ())
-    return q.options[values.index(answer)] if answer in values else str(answer)
+    if answer in values:
+        return str(q.options[values.index(answer)])
+    return _size_shown(str(answer)) if q.id == "size" else str(answer)
 
 
 def _say(creation, q, label: str) -> None:
     """The question and her answer, in the dock thread."""
-    _chat_append(creation, [{"role": "assistant", "text": q.question}, {"role": "coach", "text": label}])
+    _chat_append(creation, [{"role": "assistant", "text": str(q.question)}, {"role": "coach", "text": label}])
 
 
 def _chat_append(creation, entries) -> None:
@@ -1453,5 +1493,5 @@ def _chat_append(creation, entries) -> None:
     chat = CopilotChat.objects.select_for_update().filter(pk=creation.chat_id).first()
     if chat is None:
         return
-    chat.entries = [*(chat.entries or []), *entries]
+    chat.entries = [*(chat.entries or []), *({**e, "text": str(e["text"])} for e in entries)]
     chat.save(update_fields=["entries", "updated_at"])

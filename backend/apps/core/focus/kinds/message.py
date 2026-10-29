@@ -14,9 +14,10 @@ from typing import Literal
 
 from django.db import connection, transaction
 from django.utils import timezone
+from django.utils.formats import date_format
 from django.utils.html import escape, strip_tags
 from django.utils.translation import gettext as _
-from django.utils.translation import ngettext
+from django.utils.translation import gettext_lazy, gettext_noop, ngettext
 
 from apps.tenant_config import interview_schedule
 from apps.tenant_config.interview_brief import Field
@@ -25,7 +26,7 @@ from .. import analysis
 from ..recipes import Recipe
 
 NOUN = "message"
-NEW_TITLE = "New message"
+NEW_TITLE = gettext_noop("New message")
 SETUP_TOPIC = None
 COVER = None
 ANNOUNCER = None
@@ -34,48 +35,56 @@ DRAFT_SLOT = "copy"
 DRAFT_WHAT = "title and message"
 REVIEWED_LINE = None
 ALL, NOW, NEXT = "all", "now", "next"
-NOT_READY_LINE = "Your message is saved as a draft."
-NOBODY = "Nobody would receive it yet"
+NOT_READY_LINE = gettext_lazy("Your message is saved as a draft.")
+NOBODY = gettext_lazy("Nobody would receive it yet")
 # The plain composer sends a kept draft as a new message (prefilled from it), scheduled or now.
-PASSED = "That time has passed. Keep it as a draft and send it from Messages"
-WRITING = "Your message is still being written"
-EMPTY = "Write your message first"
+PASSED = gettext_lazy("That time has passed. Keep it as a draft and send it from Messages")
+WRITING = gettext_lazy("Your message is still being written")
+EMPTY = gettext_lazy("Write your message first")
 
 RECIPE = Recipe(
     kind="message",
     questions=(
         Field(
             "topic",
-            "Message",
-            "What do you want to tell your students?",
-            ("Tell them ",),
+            gettext_lazy("Message"),
+            gettext_lazy("What do you want to tell your students?"),
+            (gettext_lazy("Tell them "),),
             starter=True,  # hers (not delegable): a message comes from her
-            why='Say as much as you like: who it\'s for, when it goes out, a course to link, "by email too".',
+            why=gettext_lazy(
+                'Say as much as you like: who it\'s for, when it goes out, a course to link, "by email too".'
+            ),
         ),
         Field(
             "audience",
-            "Who gets it",
-            "Who should get it?",
+            gettext_lazy("Who gets it"),
+            gettext_lazy("Who should get it?"),
             kind="choice",  # its tiles are her courses and bundles (``ask``)
             delegable=True,  # "You decide": all her students
-            why="Only students who can see a course get its message.",
+            why=gettext_lazy("Only students who can see a course get its message."),
         ),
         Field(
             "review",
-            "Message",
-            "Here's your message. Does it fit?",
+            gettext_lazy("Message"),
+            gettext_lazy("Here's your message. Does it fit?"),
             kind="review",
-            why="Say what to change, or edit it on the page yourself.",
+            why=gettext_lazy("Say what to change, or edit it on the page yourself."),
         ),
         Field(
             "when",
-            "When",
-            "When should it go out?",
-            ("Now", "The next 10:00"),
+            gettext_lazy("When"),
+            gettext_lazy("When should it go out?"),
+            (gettext_lazy("Now"), gettext_lazy("The next 10:00")),
             kind="choice",
-            why="Or say a time. Times are in your site's time zone.",
+            why=gettext_lazy("Or say a time. Times are in your site's time zone."),
         ),
-        Field("finish", "Finish", "Ready. Send it?", kind="finish", why="Nothing goes out until you tap Send."),
+        Field(
+            "finish",
+            gettext_lazy("Finish"),
+            gettext_lazy("Ready. Send it?"),
+            kind="finish",
+            why=gettext_lazy("Nothing goes out until you tap Send."),
+        ),
     ),
     # G16: the Community manager writes messages.
     specialists=dict.fromkeys(("topic", "audience", "review", "when", "finish"), "community"),
@@ -283,7 +292,12 @@ def _send_at(when, now: datetime) -> datetime | None:
 
 def _said(at: datetime) -> str:
     at = at.astimezone(_zone())
-    return f"{at:%A} {at.day} {at:%B} at {at:%H:%M}"
+    return _("%(weekday)s %(day)d %(month)s at %(time)s") % {
+        "weekday": date_format(at, "l"),
+        "day": at.day,
+        "month": date_format(at, "F"),
+        "time": f"{at:%H:%M}",
+    }
 
 
 # ── Her answers ─────────────────────────────────────────────────────────────
@@ -397,7 +411,13 @@ def label(field, answer) -> str | None:
     """Her answered line for who ("Students of Desk Yoga") and a time ("Tuesday 20 October at 10:00")."""
     if field == "audience":
         target = _target(answer)
-        return "All my students" if answer == ALL else f"Students of {_name(target)}" if target else None
+        return (
+            _("All my students")
+            if answer == ALL
+            else _("Students of %(name)s") % {"name": _name(target)}
+            if target
+            else None
+        )
     if field == "when" and answer != NOW and (at := _send_at(answer, timezone.now())):
         return _said(at)
     return None
@@ -481,14 +501,14 @@ def not_ready(row) -> str:
 
     creation = _creation(row)
     if creation is not None and jobs.status(creation, "copy") == "building":
-        return WRITING
+        return str(WRITING)
     if not html.unescape(strip_tags(row.body)).strip():
-        return EMPTY
+        return str(EMPTY)
     answers = (creation.answers if creation else None) or {}
     if _count(_filters(answers.get("audience"))) == 0:
-        return NOBODY
+        return str(NOBODY)
     if _passed(answers.get("when")):
-        return PASSED
+        return str(PASSED)
     return ""
 
 
@@ -542,13 +562,13 @@ def go_live(pk) -> None:
 
 def _sent_line(row) -> str:
     if row is None or row.status == "draft":  # go_live refused it after all: its course or bundle went
-        return KEPT
+        return str(KEPT)
     at = row.scheduled_at
-    return f"Scheduled for {_said(at)}." if at and at > timezone.now() else "Sent."
+    return _("Scheduled for %(when)s.") % {"when": _said(at)} if at and at > timezone.now() else _("Sent.")
 
 
-KEPT = "Saved as a draft in Messages."
-FINISH = (("send", "Send"), ("draft", "Keep as a draft"))
+KEPT = gettext_lazy("Saved as a draft in Messages.")
+FINISH = (("send", gettext_lazy("Send")), ("draft", gettext_lazy("Keep as a draft")))
 CLOSING = {"send": _sent_line, "draft": KEPT}
 
 # No price, no cover, no announcement (the flow skips each step a kind lacks).
