@@ -23,12 +23,6 @@ HOST = "shared-test.localhost"
 SCHEMA = "shared_test"
 
 
-@pytest.fixture(autouse=True)
-def _no_language_leak():
-    yield
-    translation.activate("en")  # a request through the middleware leaves its language on the worker
-
-
 @pytest.fixture()
 def owner(tenant_ctx):
     return User.objects.create_user(

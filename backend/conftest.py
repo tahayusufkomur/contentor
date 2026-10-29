@@ -23,6 +23,7 @@ from django.conf import settings
 from django.core.management.color import no_style
 from django.db import connection, connections
 from django.test import TransactionTestCase
+from django.utils import translation
 from django_redis import get_redis_connection
 from django_tenants.utils import tenant_context
 
@@ -69,7 +70,14 @@ from apps.notifications.models import (
     PushSubscription,
 )
 from apps.reels.models import Reel
-from apps.tenant_config.models import AssistantConfig, AssistantKnowledgeEntry, CopilotChat, CopilotRun, FocusCreation
+from apps.tenant_config.models import (
+    AssistantConfig,
+    AssistantKnowledgeEntry,
+    CopilotChat,
+    CopilotRun,
+    FocusCreation,
+    TenantConfig,
+)
 
 SHARED_SCHEMA = "shared_test"
 SHARED_DOMAIN = "shared-test.localhost"
@@ -238,10 +246,14 @@ def _purge_rate_limit_keys():
     without purging, one test's cached/capped answer bleeds into another
     test (or, under pytest-xdist, another worker) that happens to ask the
     same first-turn question or reuses a session id.
+
+    ``*tenant:*:config`` is the admin config view's cached TenantConfig: rows are
+    recreated per test, so a cached instance from an earlier test updates a pk
+    that no longer exists and the PATCH silently saves nothing.
     """
     try:
         redis = get_redis_connection("default")
-        for pattern in ("ratelimit:*", "*throttle*", "*logo-ai*", "*ai-answer*", "*ai-sess*"):
+        for pattern in ("ratelimit:*", "*throttle*", "*logo-ai*", "*ai-answer*", "*ai-sess*", "*tenant:*:config"):
             for key in redis.keys(pattern):
                 redis.delete(key)
     except Exception:  # noqa: S110
@@ -254,6 +266,14 @@ def _clear_rate_limits():
     _purge_rate_limit_keys()
     yield
     _purge_rate_limit_keys()
+
+
+@pytest.fixture(autouse=True)
+def _restore_language():
+    """No test leaves its active language behind, whatever the test order."""
+    before = translation.get_language()
+    yield
+    translation.activate(before)
 
 
 @pytest.fixture(autouse=True)
@@ -417,6 +437,7 @@ TENANT_CLEANUP_MODELS = [
     FocusCreation,
     CopilotRun,
     CopilotChat,
+    TenantConfig,  # the site's language lives here: a committed default_locale="tr" turns every later request Turkish
     User,
 ]
 
