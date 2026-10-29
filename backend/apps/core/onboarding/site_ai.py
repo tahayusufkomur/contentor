@@ -7,6 +7,7 @@ from decimal import Decimal
 from django.db.models import F
 from django_tenants.utils import tenant_context
 
+from apps.core.languages import site_language
 from apps.core.models import SiteAiUpdateUsage
 
 
@@ -92,7 +93,7 @@ def preview_edit(tenant, instruction):
             # "instruction" parameter.
             followups=[{"q": "What would you like changed about the site?", "a": instruction}],
             goals=list(answers.get("goals") or []),
-            locale="en",
+            language=site_language(),
             tenant_schema=tenant.schema_name,
         )
     # compose_pages already records its own USD spend via ai_compose.record_spend;

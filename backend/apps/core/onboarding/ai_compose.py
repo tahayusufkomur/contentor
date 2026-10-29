@@ -19,7 +19,6 @@ from django.db.models import F, Sum
 from pydantic import BaseModel, Field
 
 from apps.core import ai as core_ai
-from apps.core import languages
 from apps.core.models import OnboardingAiUsage
 from apps.tenant_config.defaults import sanitize_rich_text
 
@@ -104,7 +103,6 @@ blocks with their writable fields and current placeholder text. Rewrite the
 copy in the coach's voice: warm, concrete, second person, no hype.
 
 Hard rules:
-- Write in the language named in the brief.
 - Only return blocks you are improving; only use the listed writable fields.
 - NEVER invent facts, statistics, credentials, student quotes, prices, or
   guarantees. If the brief gives no detail, stay general but warm.
@@ -115,7 +113,7 @@ Hard rules:
 
 Also return:
 - meta_description: one sentence (max 170 chars) describing this coach's site
-  for search engines, in the brief's language.
+  for search engines.
 - navbar_cta: a 1-3 word call-to-action button label (max 30 chars).
 - courses / downloads: the draft items listed in <draft_content>, retitled in
   the coach's voice (title max 120 chars; course description 1-2 honest
@@ -156,15 +154,13 @@ def compose_available() -> bool:
     return _global_spend() < settings.ONBOARDING_AI_MONTHLY_BUDGET_USD
 
 
-def _brief(pages: dict, *, brand_name, niche, description, followups, goals, locale, courses=(), downloads=()) -> str:
-    language = "English"
+def _brief(pages: dict, *, brand_name, niche, description, followups, goals, courses=(), downloads=()) -> str:
     lines = [
         "<coach_brief>",
         f"Brand: {brand_name or 'a new coaching brand'}",
         f"Niche: {niche}",
         f"In their own words: {description or '-'}",
         f"They plan to offer: {', '.join(goals) or '-'}",
-        f"Write ALL copy in: {language}",
         "</coach_brief>",
         "",
         "<current_pages>",
@@ -243,7 +239,17 @@ def _apply(pages: dict, updates: list[_BlockCopy]) -> dict:
 
 
 def compose_pages(
-    pages: dict, *, brand_name, niche, description, followups=(), goals, locale, tenant_schema, courses=(), downloads=()
+    pages: dict,
+    *,
+    brand_name,
+    niche,
+    description,
+    followups=(),
+    goals,
+    language,
+    tenant_schema,
+    courses=(),
+    downloads=(),
 ) -> tuple[dict, dict]:
     """One structured call -> (new pages dict with AI copy applied, extras).
 
@@ -260,7 +266,6 @@ def compose_pages(
         description=description,
         followups=followups,
         goals=goals,
-        locale=locale,
         courses=courses,
         downloads=downloads,
     )
@@ -272,7 +277,7 @@ def compose_pages(
             model=settings.ONBOARDING_AI_MODEL,
             max_tokens=MAX_OUTPUT_TOKENS,
             effort="medium",
-            language=languages.site_language(),
+            language=language,
         )
     except core_ai.AiError as exc:
         record_spend(tenant_schema, float(getattr(exc, "cost_usd", 0) or 0))

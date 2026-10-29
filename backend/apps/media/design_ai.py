@@ -40,7 +40,7 @@ WORDS_SYSTEM = (
     "- title: the cover's headline, at most 60 characters, true to the item's own title: shorter, sharper, "
     "or the same idea in other words.\n"
     "- subtitle: one short line under the title, at most 90 characters: who it is for, or what they get.\n"
-    "Write in the language of the facts. Never invent a claim, a result, a number, a date, a price or a "
+    "Never invent a claim, a result, a number, a date, a price or a "
     "credential the facts do not state. No hashtags, no emoji, no quotation marks."
 )
 

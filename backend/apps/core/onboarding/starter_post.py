@@ -44,10 +44,9 @@ def generate_starter_draft(brief: CoachBrief, tenant_schema: str, *, language: s
     from apps.blog import ai as blog_ai
     from apps.core.onboarding import ai_compose
 
-    written_in = "English"
     topic = topic or f"Welcome to {brief.brand_name or 'my studio'}: what I offer and how to start"
     instructions = (
-        f"Write in {written_in}. This is the coach's very first post, introducing themselves and their "
+        "This is the coach's very first post, introducing themselves and their "
         f"{brief.niche} practice to brand-new students. In the coach's own words: {brief.description[:300]}"
     )
     photos = blog_curated.curated_candidates(f"{brief.niche} {brief.description}", limit=MAX_CANDIDATE_PHOTOS)

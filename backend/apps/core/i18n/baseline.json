@@ -43,7 +43,7 @@
   "apps/core/onboarding/ai_curate.py": 1,
   "apps/core/onboarding/name_check.py": 2,
   "apps/core/onboarding/recovery.py": 9,
-  "apps/core/onboarding/site_composer.py": 44,
+  "apps/core/onboarding/site_composer.py": 2,
   "apps/core/onboarding/views.py": 9,
   "apps/core/signals.py": 2,
   "apps/core/uploads/multipart.py": 7,

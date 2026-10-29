@@ -257,7 +257,7 @@ def thread_payload(conversation, after_id=0):
 # ── Cost guards (v2 spec §10.3-10.4) ────────────────────────────────────────
 
 
-def answer_cache_key(feature, audience, prompt_version, kb_fingerprint, question, scope=""):
+def answer_cache_key(feature, audience, prompt_version, kb_fingerprint, question, scope="", *, language):
     """Cache key for a first-turn answer. ``scope`` MUST identify whatever
     per-caller state gets spliced into the first user turn by
     ``prepare_history`` (e.g. the tenant schema / marketing bucket for
@@ -266,10 +266,12 @@ def answer_cache_key(feature, audience, prompt_version, kb_fingerprint, question
     different context blocks would collide on the same key and replay each
     other's context-derived answer. Defaults to "" for callers whose
     kb_fingerprint already uniquely identifies the scope (e.g. student_bot's
-    per-tenant kb_hash) or who never populate the cache for scoped viewers."""
+    per-tenant kb_hash) or who never populate the cache for scoped viewers.
+    ``language`` is the language the answer is written in: the same question
+    in another language is another answer."""
     norm = " ".join(str(question or "").split()).casefold()
     digest = hashlib.sha256(
-        f"{feature}|{audience}|{prompt_version}|{kb_fingerprint}|{scope}|{norm}".encode()
+        f"{feature}|{audience}|{prompt_version}|{kb_fingerprint}|{scope}|{language}|{norm}".encode()
     ).hexdigest()
     return f"ai-answer:{digest}"
 

@@ -23,7 +23,7 @@ from pydantic import BaseModel, Field
 from apps.core import ai as core_ai
 from apps.core.models import BlogAiUsage
 
-PROMPT_VERSION = 3
+PROMPT_VERSION = 4
 MAX_OUTPUT_TOKENS = 3000
 TOPIC_MAX_OUTPUT_TOKENS = 1200
 MAX_AVAILABLE_PHOTOS = 30
@@ -81,9 +81,8 @@ write one complete, publish-ready blog post per request.
 Voice and quality rules:
 - Warm, expert, plain language. Write like the coach talking to their \
 audience — no corporate filler, no "in today's fast-paced world" openers.
-- Write the whole post in ONE language, the language of the brand brief: \
-every field (title, sections, FAQ, excerpt, meta description and tags) is \
-in that same language.
+- Write the whole post in ONE language: every field (title, sections, FAQ, \
+excerpt, meta description and tags) is in that same language.
 - Be concrete and practical: steps, examples, small routines the reader can \
 do today. Never invent statistics, studies, client stories or testimonials.
 - Never promise income, guaranteed results, or medical outcomes.
@@ -127,7 +126,6 @@ propose exactly 12 NEW blog topic ideas that would attract this coach's \
 audience via search.
 
 Rules:
-- Same language as the brand brief.
 - Mix formats: how-to, listicle, myth-busting, beginner guide, common \
 mistakes, seasonal angles.
 - Specific to this niche and audience — no generic "5 productivity tips".

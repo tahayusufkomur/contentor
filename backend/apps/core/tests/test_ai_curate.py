@@ -25,7 +25,7 @@ def test_brief_from_tenant_reads_wizard_answers():
             "style": "journal",
         }
     )
-    brief = ai_curate.CoachBrief.from_tenant(tenant, locale="en")
+    brief = ai_curate.CoachBrief.from_tenant(tenant)
     assert brief.niche == "yoga"
     assert brief.description == "Vinyasa for busy professionals"
     # Legacy wizard answers migrate into the interview brief: goals → offers.
@@ -33,11 +33,10 @@ def test_brief_from_tenant_reads_wizard_answers():
     assert brief.goals == ("sell_courses",)
     assert brief.style == "journal"
     assert brief.brand_name == "Glow Studio"
-    assert brief.locale == "en"
 
 
 def test_brief_from_tenant_defaults_on_empty_state():
-    brief = ai_curate.CoachBrief.from_tenant(SimpleNamespace(wizard_state=None, name="X"), locale="en")
+    brief = ai_curate.CoachBrief.from_tenant(SimpleNamespace(wizard_state=None, name="X"))
     assert brief.niche == "general"
     assert brief.description == ""
     assert brief.followups == ()
@@ -65,15 +64,15 @@ def test_brief_with_turn_style_empty_tenant_description_uses_turn_text_alone():
     assert brief.description == "calm sunlit studio"
 
 
-def test_brief_block_contains_coach_words_and_language():
+def test_brief_block_contains_coach_words_and_names_no_language():
     brief = ai_curate.CoachBrief(
-        niche="yoga", description="Calm vinyasa", followups=(("Who?", "Beginners"),), locale="en", brand_name="Glow"
+        niche="yoga", description="Calm vinyasa", followups=(("Who?", "Beginners"),), brand_name="Glow"
     )
     block = ai_curate.brief_block(brief)
     assert "<coach_brief>" in block and "</coach_brief>" in block
     assert "Calm vinyasa" in block
     assert 'Asked: "Who?"' in block
-    assert "English" in block
+    assert "English" not in block and "writes in" not in block
 
 
 def test_shortlist_orders_by_token_overlap_then_position():

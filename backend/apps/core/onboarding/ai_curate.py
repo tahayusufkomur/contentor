@@ -29,10 +29,9 @@ class CoachBrief:
     goals: tuple[str, ...] = ()
     style: str = ""  # the look's style id
     brand_name: str = ""
-    locale: str = "en"
 
     @classmethod
-    def from_tenant(cls, tenant, locale: str = "en") -> CoachBrief:
+    def from_tenant(cls, tenant) -> CoachBrief:
         from apps.tenant_config import interview_brief
 
         answers = interview_brief.answers_of(tenant)
@@ -49,7 +48,6 @@ class CoachBrief:
             goals=tuple(answers.get("goals") or ()),
             style=str(answers.get("style") or ""),
             brand_name=tenant.name or "",
-            locale=locale,
         )
 
 
@@ -57,7 +55,6 @@ def brief_block(brief: CoachBrief) -> str:
     """Tenant-specific prompt section. Static system prompts must stay
     byte-identical across tenants (prompt caching) — everything coach-specific
     goes through here."""
-    language = "English"
     lines = [
         "<coach_brief>",
         f"Brand: {brief.brand_name or 'a new coaching brand'}",
@@ -70,7 +67,6 @@ def brief_block(brief: CoachBrief) -> str:
     lines += [
         f"They plan to offer: {', '.join(brief.goals) or '-'}",
         f"Site look: {brief.style or '-'}",
-        f"The coach writes in: {language}",
         "</coach_brief>",
     ]
     return "\n".join(lines)

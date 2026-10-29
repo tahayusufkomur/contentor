@@ -122,14 +122,12 @@ def _apply_wizard_answers(tenant, answers, preferred_locale):
             overrides["setup_flow"] = site_composer.initial_setup_flow()
         else:
             if not state.get("ai_compose_status"):
-                overrides["pages"], extras, ai_status = _compose_pages_with_ai(
-                    tenant, answers, overrides["pages"], preferred_locale
-                )
+                overrides["pages"], extras, ai_status = _compose_pages_with_ai(tenant, answers, overrides["pages"])
                 if extras:
                     _apply_compose_extras(config, overrides, extras)
 
             if not state.get("ai_photos_status"):
-                photos_status = _pick_photos_with_ai(tenant, answers, overrides["pages"], preferred_locale)
+                photos_status = _pick_photos_with_ai(tenant, answers, overrides["pages"])
 
         for field, value in overrides.items():
             setattr(config, field, value)
@@ -207,11 +205,12 @@ def _gather_content_items(tenant):
     return course_items, download_items
 
 
-def _compose_pages_with_ai(tenant, answers, pages, preferred_locale):
+def _compose_pages_with_ai(tenant, answers, pages):
     """AI copy pass. Returns (pages, extras, status); falls back to the static
     pages (extras None) on skip/failure. Content is gathered HERE, in the
     caller's tenant_context — the worker thread's fresh connection lands on
     the public schema and could not read the tenant's courses/downloads."""
+    from apps.core.languages import site_language
     from apps.core.onboarding import ai_compose
 
     if not ai_compose.compose_available():
@@ -221,6 +220,8 @@ def _compose_pages_with_ai(tenant, answers, pages, preferred_locale):
         return pages, None, "skipped"
 
     course_items, download_items = _gather_content_items(tenant)
+    # The worker thread sits on the public connection, where a bare site_language() is always English.
+    language = site_language(tenant)
 
     def run():
         return ai_compose.compose_pages(
@@ -230,7 +231,7 @@ def _compose_pages_with_ai(tenant, answers, pages, preferred_locale):
             description=answers.get("description") or "",
             followups=list(((answers.get("description_followups") or {}).get("items")) or []),
             goals=list(answers.get("goals") or []),
-            locale=preferred_locale,
+            language=language,
             tenant_schema=tenant.schema_name,
             courses=course_items,
             downloads=download_items,
@@ -274,7 +275,7 @@ def _apply_compose_extras(config, overrides, extras):
     refresh_seeded_fingerprints(touched)
 
 
-def _pick_photos_with_ai(tenant, answers, pages, preferred_locale):
+def _pick_photos_with_ai(tenant, answers, pages):
     """Curated-photo pick: LLM step in the capped thread (public-schema reads
     only), apply in this thread (we're inside tenant_context). Mutates `pages`
     in place on success. Returns a status string; never raises."""
@@ -286,7 +287,7 @@ def _pick_photos_with_ai(tenant, answers, pages, preferred_locale):
     from apps.courses.models import Course
     from apps.live.models import LiveClass, LiveStream, OnsiteEvent, ZoomClass
 
-    brief = ai_curate.CoachBrief.from_tenant(tenant, locale=preferred_locale)
+    brief = ai_curate.CoachBrief.from_tenant(tenant)
     courses = list(Course.objects.order_by("id")[:8])
     events = [
         *LiveClass.objects.filter(status="draft").order_by("id"),
@@ -428,7 +429,7 @@ def provision_tenant(self, tenant_id, owner_email, owner_name, niche=None):
         if wizard_answers:
             _apply_wizard_answers(tenant, wizard_answers, preferred_locale)
             if not styled:
-                _seed_starter_post(tenant, preferred_locale)
+                _seed_starter_post(tenant)
 
         initial_about = (tenant.wizard_state or {}).get("initial_about")
         if initial_about:
@@ -618,7 +619,7 @@ def sweep_own_photos():
 AI_STARTER_POST_TIMEOUT_SECONDS = 90
 
 
-def _seed_starter_post(tenant, preferred_locale):
+def _seed_starter_post(tenant):
     """One draft welcome blog post. Fail-silent; status in wizard_state."""
     from apps.core.languages import site_language
     from apps.core.onboarding import ai_compose, ai_curate, starter_post
@@ -629,7 +630,7 @@ def _seed_starter_post(tenant, preferred_locale):
     if not ai_compose.compose_available():
         status = "skipped"
     else:
-        brief = ai_curate.CoachBrief.from_tenant(tenant, locale=preferred_locale)
+        brief = ai_curate.CoachBrief.from_tenant(tenant)
         fields, status = _run_ai_step(
             "starter post",
             tenant,
@@ -653,7 +654,6 @@ def rank_curated_logos(tenant_id):
     """AI-rank the curated logo catalog for this coach and stash the order in
     wizard_state (read by the /setup interview's logo cards). Every failure path is a
     silent no-op — the cards fall back to the keyword shortlist."""
-    from apps.core.constants import REGION_DEFAULT_LOCALE
     from apps.core.models import Tenant
     from apps.core.onboarding import ai_compose, ai_curate
 
@@ -662,8 +662,7 @@ def rank_curated_logos(tenant_id):
         return
     if not ai_compose.compose_available():
         return
-    locale = REGION_DEFAULT_LOCALE.get(tenant.region or "global", "en")
-    brief = ai_curate.CoachBrief.from_tenant(tenant, locale=locale)
+    brief = ai_curate.CoachBrief.from_tenant(tenant)
     try:
         ids = ai_curate.rank_logos(brief, tenant_schema=tenant.schema_name)
     except Exception:

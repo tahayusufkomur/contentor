@@ -125,7 +125,7 @@ Do these things:
    joke). Write them once you know what they teach; until then, an empty list.
 If "spoken" is true the message came from speech recognition and may contain misheard words:
 set heard to what they most likely said (fix niche vocabulary, their brand name, obvious
-mishearings) and extract facts from that. Otherwise heard is null. Write in English.
+mishearings) and extract facts from that. Otherwise heard is null.
 "from_bio", when present, is what the bio or CV the coach shared at signup says about her, field by
 field, not yet confirmed. Build the whole interview on it: write every question and its options for
 the coach it describes (what she teaches, her students, her way of working), make the options it

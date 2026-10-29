@@ -32,7 +32,7 @@ msgid "Unsupported locale"
 msgstr "Nicht unterstütztes Gebietsschema"
 
 #: apps/community/payloads.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(author)s posted in the community"
 msgstr "%(author)s hat in der Community gepostet"
 
@@ -41,8 +41,8 @@ msgstr "%(author)s hat in der Community gepostet"
 msgid "%(commenter)s commented on your post"
 msgstr "%(commenter)s hat deinen Beitrag kommentiert"
 
-#: apps/core/onboarding/compose.py apps/core/tasks.py
-#: apps/tenant_config/interview_milestones.py
+#: apps/core/onboarding/compose.py apps/core/onboarding/site_composer.py
+#: apps/core/tasks.py apps/tenant_config/interview_milestones.py
 #, fuzzy
 msgid "Courses"
 msgstr "Kurse"
@@ -58,19 +58,21 @@ msgstr "Veranstaltungen"
 msgid "Store"
 msgstr "Shop"
 
-#: apps/core/onboarding/compose.py apps/tenant_config/interview_milestones.py
+#: apps/core/onboarding/compose.py apps/core/onboarding/site_composer.py
+#: apps/tenant_config/interview_milestones.py
 #, fuzzy
 msgid "Pricing"
 msgstr "Preise"
 
-#: apps/core/onboarding/compose.py apps/core/tasks.py
-#: apps/tenant_config/defaults.py apps/tenant_config/interview_milestones.py
+#: apps/core/onboarding/compose.py apps/core/onboarding/site_composer.py
+#: apps/core/tasks.py apps/tenant_config/defaults.py
+#: apps/tenant_config/interview_milestones.py
 #, fuzzy
 msgid "About"
 msgstr "Über uns"
 
-#: apps/core/onboarding/compose.py apps/core/tasks.py
-#: apps/tenant_config/interview_milestones.py
+#: apps/core/onboarding/compose.py apps/core/onboarding/site_composer.py
+#: apps/core/tasks.py apps/tenant_config/interview_milestones.py
 #, fuzzy
 msgid "FAQ"
 msgstr "FAQ"
@@ -134,7 +136,8 @@ msgstr "Willkommen"
 msgid "Take a look around and find what fits you."
 msgstr "Schau dich um und finde, was zu dir passt."
 
-#: apps/core/onboarding/compose.py apps/tenant_config/defaults.py
+#: apps/core/onboarding/compose.py apps/core/onboarding/site_composer.py
+#: apps/tenant_config/defaults.py
 #, fuzzy
 msgid "Get in touch"
 msgstr "Kontakt aufnehmen"
@@ -232,6 +235,121 @@ msgstr "Mandant nicht gefunden"
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
+msgid "Steadier breath, quieter mind"
+msgstr "Ruhigerer Atem, stillerer Geist"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Strength that starts at your centre"
+msgstr "Kraft, die in deiner Mitte beginnt"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Get stronger at a pace you can keep"
+msgstr "Werde stärker in einem Tempo, das du halten kannst"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Strength, flow and a little daring"
+msgstr "Kraft, Flow und ein wenig Wagemut"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Find the rhythm already yours"
+msgstr "Finde den Rhythmus, der bereits deiner ist"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "A few calm minutes for your face"
+msgstr "Ein paar ruhige Minuten für dein Gesicht"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Makeup that still looks like you"
+msgstr "Make-up, das immer noch nach dir aussieht"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Clear next steps toward what matters"
+msgstr "Klare nächste Schritte hin zu dem, was zählt"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Run the business, not the reverse"
+msgstr "Führe das Business, nicht umgekehrt"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Make what you keep meaning to make"
+msgstr "Erschaffe, was du dir schon lange vornimmst"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Calmer days and better nights"
+msgstr "Ruhigere Tage und bessere Nächte"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Learn it properly, at your own pace"
+msgstr "Lerne es richtig, in deinem eigenen Tempo"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Real food, every night of the week"
+msgstr "Echtes Essen, jeden Abend der Woche"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Play the music you always wanted to"
+msgstr "Spiele die Musik, die du schon immer spielen wolltest"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Go further than you expected"
+msgstr "Gehe weiter, als du erwartet hast"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Focused training, quiet confidence"
+msgstr "Fokussiertes Training, stilles Selbstvertrauen"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Move like nobody is watching"
+msgstr "Bewege dich, als würde niemand zuschauen"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Build real skills on real projects"
+msgstr "Baue echte Fähigkeiten an echten Projekten auf"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Calmer days with the little ones"
+msgstr "Ruhigere Tage mit den Kleinen"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Find your own rhythm with the sky"
+msgstr "Finde deinen eigenen Rhythmus mit dem Himmel"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Care that still looks like you"
+msgstr "Pflege, die immer noch nach dir aussieht"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Make something with your own hands"
+msgstr "Erschaffe etwas mit deinen eigenen Händen"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Write the pages you keep putting off"
+msgstr "Schreibe die Seiten, die du immer wieder vor dir herschiebst"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
 msgid "Why I coach"
 msgstr "Warum ich coache"
 
@@ -269,6 +387,794 @@ msgstr "Die Kurse durchstöbern"
 #, fuzzy
 msgid "See the sessions"
 msgstr "Die Sessions ansehen"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "I coach with clear guidance, patience and room for your questions."
+msgstr "Ich coache mit klarer Anleitung, Geduld und Raum für deine Fragen."
+
+#: apps/core/onboarding/site_composer.py
+#, python-format, fuzzy
+msgid ""
+"I teach %(topic)s with clear guidance, patience and room for your questions."
+msgstr ""
+"Ich unterrichte %(topic)s mit klarer Anleitung, Geduld und Raum für deine "
+"Fragen."
+
+#: apps/core/onboarding/site_composer.py
+#, python-format, fuzzy
+msgid ""
+"At %(brand)s we coach with clear guidance, patience and room for your "
+"questions."
+msgstr ""
+"Bei %(brand)s coachen wir mit klarer Anleitung, Geduld und Raum für deine "
+"Fragen."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "We coach with clear guidance, patience and room for your questions."
+msgstr "Wir coachen mit klarer Anleitung, Geduld und Raum für deine Fragen."
+
+#: apps/core/onboarding/site_composer.py
+#, python-format, fuzzy
+msgid ""
+"At %(brand)s we teach %(topic)s with clear guidance, patience and room for "
+"your questions."
+msgstr ""
+"Bei %(brand)s unterrichten wir %(topic)s mit klarer Anleitung, Geduld und "
+"Raum für deine Fragen."
+
+#: apps/core/onboarding/site_composer.py
+#, python-format, fuzzy
+msgid ""
+"We teach %(topic)s with clear guidance, patience and room for your "
+"questions."
+msgstr ""
+"Wir unterrichten %(topic)s mit klarer Anleitung, Geduld und Raum für deine "
+"Fragen."
+
+#: apps/core/onboarding/site_composer.py
+#, python-format, fuzzy
+msgid ""
+"I started %(brand)s to share my coaching the way I believe it should be "
+"taught: clearly, patiently and without pressure."
+msgstr ""
+"Ich habe %(brand)s gegründet, um mein Coaching so zu vermitteln, wie es "
+"meiner Meinung nach gelehrt werden sollte: klar, geduldig und ohne Druck."
+
+#: apps/core/onboarding/site_composer.py
+#, python-format, fuzzy
+msgid ""
+"I started %(brand)s to share %(topic)s the way I believe it should be "
+"taught: clearly, patiently and without pressure."
+msgstr ""
+"Ich habe %(brand)s gegründet, um %(topic)s so zu vermitteln, wie es meiner "
+"Meinung nach gelehrt werden sollte: klar, geduldig und ohne Druck."
+
+#: apps/core/onboarding/site_composer.py
+#, python-format, fuzzy
+msgid ""
+"%(brand)s exists to share our coaching the way we believe it should be "
+"taught: clearly, patiently and without pressure."
+msgstr ""
+"%(brand)s existiert, um unser Coaching so zu vermitteln, wie es unserer "
+"Meinung nach gelehrt werden sollte: klar, geduldig und ohne Druck."
+
+#: apps/core/onboarding/site_composer.py
+#, python-format, fuzzy
+msgid ""
+"%(brand)s exists to share %(topic)s the way we believe it should be taught: "
+"clearly, patiently and without pressure."
+msgstr ""
+"%(brand)s existiert, um %(topic)s so zu vermitteln, wie es unserer Meinung "
+"nach gelehrt werden sollte: klar, geduldig und ohne Druck."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"Here you'll find my courses and a simple way to reach me whenever a question"
+" comes up."
+msgstr ""
+"Hier findest du meine Kurse und eine einfache Möglichkeit, mich zu "
+"erreichen, wann immer eine Frage aufkommt."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"Here you'll find our courses and a simple way to reach us whenever a "
+"question comes up."
+msgstr ""
+"Hier findest du unsere Kurse und eine einfache Möglichkeit, uns zu "
+"erreichen, wann immer eine Frage aufkommt."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"Here you'll find my sessions and a simple way to reach me whenever a "
+"question comes up."
+msgstr ""
+"Hier findest du meine Sessions und eine einfache Möglichkeit, mich zu "
+"erreichen, wann immer eine Frage aufkommt."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"Here you'll find our sessions and a simple way to reach us whenever a "
+"question comes up."
+msgstr ""
+"Hier findest du unsere Sessions und eine einfache Möglichkeit, uns zu "
+"erreichen, wann immer eine Frage aufkommt."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"Here you'll find my work and a simple way to reach me whenever a question "
+"comes up."
+msgstr ""
+"Hier findest du meine Arbeit und eine einfache Möglichkeit, mich zu "
+"erreichen, wann immer eine Frage aufkommt."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"Here you'll find our work and a simple way to reach us whenever a question "
+"comes up."
+msgstr ""
+"Hier findest du unsere Arbeit und eine einfache Möglichkeit, uns zu "
+"erreichen, wann immer eine Frage aufkommt."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Take a look at the courses and start with what fits you today."
+msgstr ""
+"Wirf einen Blick auf die Kurse und starte heute mit dem, was zu dir passt."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Take a look at the sessions and start with what fits you today."
+msgstr ""
+"Wirf einen Blick auf die Sessions und starte heute mit dem, was zu dir "
+"passt."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Take a look at the work and start with what fits you today."
+msgstr ""
+"Wirf einen Blick auf die Arbeiten und starte heute mit dem, was zu dir "
+"passt."
+
+#: apps/core/onboarding/site_composer.py
+#, python-format, fuzzy
+msgid "%(topic)s that fits your real life"
+msgstr "%(topic)s, das zu deinem echten Leben passt"
+
+#: apps/core/onboarding/site_composer.py
+#, python-format, fuzzy
+msgid "%(topic)s, together"
+msgstr "%(topic)s, gemeinsam"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy, python-format
+msgid "I also teach %(also)s."
+msgstr "Ich unterrichte auch %(also)s."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy, python-format
+msgid "We also teach %(also)s."
+msgstr "Wir unterrichten auch %(also)s."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy, python-format
+msgid "%(topic)s with %(brand)s"
+msgstr "%(topic)s mit %(brand)s"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy, python-format
+msgid "Hello, I'm %(name)s"
+msgstr "Hallo, ich bin %(name)s"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Hello"
+msgstr "Hallo"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Who we are"
+msgstr "Wer wir sind"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "More about me"
+msgstr "Mehr über mich"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "More about us"
+msgstr "Mehr über uns"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "What you can expect"
+msgstr "Was dich erwartet"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Built for real weeks, not perfect ones"
+msgstr "Gemacht für echte Wochen, nicht für perfekte"
+
+#: apps/core/onboarding/site_composer.py
+#, python-format, fuzzy
+msgid "A few things that shape every lesson at %(brand)s."
+msgstr "Ein paar Dinge, die jede Lektion bei %(brand)s prägen."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Clear guidance"
+msgstr "Klare Anleitung"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"Every lesson explains the why as well as the how, so you always know what "
+"you are working on."
+msgstr ""
+"Jede Lektion erklärt sowohl das Warum als auch das Wie, damit du immer "
+"weißt, woran du arbeitest."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Your own pace"
+msgstr "Dein eigenes Tempo"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Pause, repeat and come back to a lesson whenever your week allows."
+msgstr ""
+"Pausiere, wiederhole und kehre zu einer Lektion zurück, wann immer es deine "
+"Woche erlaubt."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Someone to ask"
+msgstr "Jemand, den du fragen kannst"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Questions come straight to me, not to a help desk."
+msgstr "Fragen gehen direkt an mich, nicht an einen Helpdesk."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Questions come straight to us, not to a help desk."
+msgstr "Fragen gehen direkt an uns, nicht an einen Helpdesk."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Where to begin"
+msgstr "Wo du beginnst"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"Pick the course that fits where you are today and work through it at your "
+"own pace."
+msgstr ""
+"Wähle den Kurs, der zu deinem heutigen Stand passt, und arbeite ihn in "
+"deinem eigenen Tempo durch."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "See all courses"
+msgstr "Alle Kurse ansehen"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "How it works"
+msgstr "So funktioniert's"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Join a session in three steps"
+msgstr "In drei Schritten an einer Session teilnehmen"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Pick a session"
+msgstr "Wähle eine Session"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Find a session above that fits your week, online or in person."
+msgstr ""
+"Finde oben eine Session, die zu deiner Woche passt, online oder in Präsenz."
+
+#: apps/core/onboarding/site_composer.py apps/email_campaigns/starters.py
+#, fuzzy
+msgid "Save your spot"
+msgstr "Platz sichern"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Book in a few clicks; live sessions send you the link to join."
+msgstr ""
+"Buche mit wenigen Klicks; Live-Sessions schicken dir den Link zur Teilnahme."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Show up and train"
+msgstr "Dabei sein und trainieren"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Come as you are. I take it from there."
+msgstr "Komm, wie du bist. Den Rest übernehme ich."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Come as you are. We take it from there."
+msgstr "Komm, wie du bist. Den Rest übernehmen wir."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Getting started is simple"
+msgstr "Der Einstieg ist einfach"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Choose a course"
+msgstr "Wähle einen Kurs"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Browse the courses and pick the one that fits where you are."
+msgstr "Stöbere durch die Kurse und wähle den aus, der zu deinem Stand passt."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Learn at your pace"
+msgstr "Lerne in deinem Tempo"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"Follow the lessons when it suits you. Pause, repeat and return whenever you "
+"like."
+msgstr ""
+"Folge den Lektionen, wann es dir passt. Pausiere, wiederhole und kehre "
+"zurück, wann immer du möchtest."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Ask along the way"
+msgstr "Stelle unterwegs Fragen"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"Stuck on something? Send me a message and I will help you find your footing."
+msgstr ""
+"Du kommst irgendwo nicht weiter? Schick mir eine Nachricht und ich helfe "
+"dir, wieder Tritt zu fassen."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"Stuck on something? Send us a message and we will help you find your "
+"footing."
+msgstr ""
+"Du kommst irgendwo nicht weiter? Schick uns eine Nachricht und wir helfen "
+"dir, wieder Tritt zu fassen."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "What I believe"
+msgstr "Woran ich glaube"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "What we believe"
+msgstr "Woran wir glauben"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Progress comes from small, steady practice, not from pushing harder."
+msgstr ""
+"Fortschritt entsteht durch kleine, stetige Übung, nicht durch mehr Druck."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Moments"
+msgstr "Momente"
+
+#: apps/core/onboarding/site_composer.py
+#, python-format, fuzzy
+msgid "A closer look at %(topic)s"
+msgstr "Ein genauerer Blick auf %(topic)s"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "A closer look"
+msgstr "Ein genauerer Blick"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Plans"
+msgstr "Tarife"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Plans and pricing"
+msgstr "Tarife und Preise"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Each plan lists what it includes. Pick the one that fits your week."
+msgstr ""
+"Jeder Tarif listet auf, was enthalten ist. Wähle den aus, der zu deiner "
+"Woche passt."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Questions"
+msgstr "Fragen"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Before your first session"
+msgstr "Vor deiner ersten Session"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Can't find yours? Send me a message."
+msgstr "Du findest deine Frage nicht? Schreib mir eine Nachricht."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Can't find yours? Send us a message."
+msgstr "Du findest deine Frage nicht? Schreib uns eine Nachricht."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Do I need experience to join?"
+msgstr "Brauche ich Vorerfahrung, um mitzumachen?"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"Each session says who it is for. If you are unsure, send a message and ask."
+msgstr ""
+"Bei jeder Session steht, für wen sie gedacht ist. Wenn du dir unsicher bist,"
+" schreib eine Nachricht und frag nach."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "How do I join a live session?"
+msgstr "Wie nehme ich an einer Live-Session teil?"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"Book your spot and the link to join arrives by email; it is on the session "
+"page too."
+msgstr ""
+"Buche deinen Platz und der Link zur Teilnahme kommt per E-Mail; er steht "
+"auch auf der Session-Seite."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "What should I bring?"
+msgstr "Was sollte ich mitbringen?"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"The session page lists anything you need. Comfortable clothes and water are "
+"a good start."
+msgstr ""
+"Die Session-Seite listet alles auf, was du brauchst. Bequeme Kleidung und "
+"Wasser sind ein guter Anfang."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Can I cancel?"
+msgstr "Kann ich stornieren?"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"Plans change. Send me a message as early as you can and I will sort it out."
+msgstr ""
+"Pläne ändern sich. Schick mir so früh wie möglich eine Nachricht und ich "
+"kümmere mich darum."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"Plans change. Send us a message as early as you can and we will sort it out."
+msgstr ""
+"Pläne ändern sich. Schick uns so früh wie möglich eine Nachricht und wir "
+"kümmern uns darum."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Questions, answered"
+msgstr "Fragen, beantwortet"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Do I need experience to start?"
+msgstr "Brauche ich Erfahrung, um anzufangen?"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"Each course says who it is for and what you need before you begin. If you "
+"are unsure, send a message and ask."
+msgstr ""
+"Bei jedem Kurs steht, für wen er ist und was du brauchst, bevor du anfängst."
+" Wenn du dir unsicher bist, schick eine Nachricht und frag nach."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "How do I access my courses?"
+msgstr "Wie greife ich auf meine Kurse zu?"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"Sign in to this site with your email address and your courses are waiting, "
+"ready whenever you are."
+msgstr ""
+"Melde dich mit deiner E-Mail-Adresse auf dieser Seite an und deine Kurse "
+"warten schon, bereit, wann immer du es bist."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Can I go at my own pace?"
+msgstr "Kann ich in meinem eigenen Tempo lernen?"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"Yes. Recorded lessons can be paused, repeated and picked up again whenever "
+"it suits you."
+msgstr ""
+"Ja. Aufgezeichnete Lektionen können pausiert, wiederholt und wieder "
+"aufgenommen werden, wann immer es dir passt."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "How do I get in touch?"
+msgstr "Wie kann ich Kontakt aufnehmen?"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"Use the contact page to send me a message and I will reply as soon as I can."
+msgstr ""
+"Nutze die Kontaktseite, um mir eine Nachricht zu schicken, und ich antworte,"
+" sobald ich kann."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"Use the contact page to send us a message and we will reply as soon as we "
+"can."
+msgstr ""
+"Nutze die Kontaktseite, um uns eine Nachricht zu schicken, und wir "
+"antworten, sobald wir können."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "See you soon"
+msgstr "Bis bald"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Pick a session above, or ask me which one suits you best."
+msgstr ""
+"Wähle oben eine Session aus oder frag mich, welche am besten zu dir passt."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Pick a session above, or ask us which one suits you best."
+msgstr ""
+"Wähle oben eine Session aus oder frag uns, welche am besten zu dir passt."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Ask a question"
+msgstr "Stell eine Frage"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Not sure where to start?"
+msgstr "Nicht sicher, wo du anfangen sollst?"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"Tell me a little about yourself and I will point you to the right course."
+msgstr "Erzähl mir ein wenig über dich und ich zeige dir den richtigen Kurs."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"Tell us a little about yourself and we will point you to the right course."
+msgstr "Erzähl uns ein wenig über dich und wir zeigen dir den richtigen Kurs."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Ready when you are"
+msgstr "Bereit, wenn du es bist"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Tell me where you are and I will help you take the first step."
+msgstr ""
+"Sag mir, wo du stehst, und ich helfe dir, den ersten Schritt zu machen."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Tell us where you are and we will help you take the first step."
+msgstr ""
+"Sag uns, wo du stehst, und wir helfen dir, den ersten Schritt zu machen."
+
+#: apps/core/onboarding/site_composer.py
+#: apps/tenant_config/interview_milestones.py
+#, fuzzy
+msgid "Contact"
+msgstr "Kontakt"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Say hello"
+msgstr "Sag Hallo"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"Questions about a course, where to begin or anything else? Send me a message"
+" and I will get back to you."
+msgstr ""
+"Fragen zu einem Kurs, wo du anfangen sollst oder zu etwas anderem? Schick "
+"mir eine Nachricht und ich melde mich bei dir."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"Questions about a course, where to begin or anything else? Send us a message"
+" and we will get back to you."
+msgstr ""
+"Fragen zu einem Kurs, wo du anfangen sollst oder zu etwas anderem? Schick "
+"uns eine Nachricht und wir melden uns bei dir."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Live"
+msgstr "Live"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Upcoming sessions"
+msgstr "Kommende Sessions"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Join a live session and learn together in real time."
+msgstr "Nimm an einer Live-Session teil und lerne gemeinsam in Echtzeit."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "See the calendar"
+msgstr "Kalender ansehen"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "In their words"
+msgstr "In ihren Worten"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy, python-format
+msgid "About %(brand)s"
+msgstr "Über %(brand)s"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy, python-format
+msgid "Behind %(brand)s"
+msgstr "Hinter %(brand)s"
+
+#: apps/core/onboarding/site_composer.py
+#, python-format, fuzzy
+msgid "%(why)s, how I work, and what you can expect from a session with me."
+msgstr ""
+"%(why)s, wie ich arbeite und was du von einer Session mit mir erwarten "
+"kannst."
+
+#: apps/core/onboarding/site_composer.py
+#, python-format, fuzzy
+msgid "%(why)s, how we work, and what you can expect from a session with us."
+msgstr ""
+"%(why)s, wie wir arbeiten und was du von einer Session mit uns erwarten "
+"kannst."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Find the right place to start"
+msgstr "Finde den richtigen Einstieg"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"Every course is laid out step by step, so you always know what comes next."
+msgstr ""
+"Jeder Kurs ist Schritt für Schritt aufgebaut, sodass du immer weißt, was als"
+" Nächstes kommt."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Choose how you want to learn"
+msgstr "Wähle, wie du lernen möchtest"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Good questions, plain answers"
+msgstr "Gute Fragen, klare Antworten"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "The things worth knowing before you start."
+msgstr "Wissenswertes, bevor du anfängst."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Sessions & events"
+msgstr "Sessions & Veranstaltungen"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Train with me live"
+msgstr "Trainiere live mit mir"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"Upcoming sessions and events, online and in person. Pick one and save your "
+"spot with me."
+msgstr ""
+"Bevorstehende Sessions und Veranstaltungen, online und in Präsenz. Wähle "
+"eine aus und sichere dir deinen Platz bei mir."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"Upcoming sessions and events, online and in person. Pick one and save your "
+"spot with us."
+msgstr ""
+"Bevorstehende Sessions und Veranstaltungen, online und in Präsenz. Wähle "
+"eine aus und sichere dir deinen Platz bei uns."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid "Let's talk"
+msgstr "Lass uns sprechen"
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"Questions about where to start or which course fits you? Send me a message."
+msgstr ""
+"Fragen dazu, wo du anfangen sollst oder welcher Kurs zu dir passt? Schick "
+"mir eine Nachricht."
+
+#: apps/core/onboarding/site_composer.py
+#, fuzzy
+msgid ""
+"Questions about where to start or which course fits you? Send us a message."
+msgstr ""
+"Fragen dazu, wo du anfangen sollst oder welcher Kurs zu dir passt? Schick "
+"uns eine Nachricht."
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy, python-format
@@ -471,11 +1377,6 @@ msgstr "Ein paar Dinge, die ich dir diesen Monat gerne zeigen möchte:"
 #, fuzzy
 msgid "Read it"
 msgstr "Jetzt lesen"
-
-#: apps/email_campaigns/starters.py
-#, fuzzy
-msgid "Save your spot"
-msgstr "Platz sichern"
 
 #: apps/email_campaigns/starters.py apps/notifications/transactional.py
 #, fuzzy
@@ -1255,11 +2156,6 @@ msgstr "Kalender"
 #, fuzzy
 msgid "Blog"
 msgstr "Blog"
-
-#: apps/tenant_config/interview_milestones.py
-#, fuzzy
-msgid "Contact"
-msgstr "Kontakt"
 
 #: apps/tenant_config/interview_milestones.py
 #, fuzzy

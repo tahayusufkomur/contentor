@@ -84,7 +84,7 @@ def _compose_full(monkeypatch, result_dict, **overrides):
         "niche": "yoga",
         "description": "Vinyasa for busy people",
         "goals": ["sell_courses"],
-        "locale": "en",
+        "language": "en",
         "tenant_schema": "glow",
     }
     kwargs.update(overrides)
@@ -168,17 +168,19 @@ def test_body_is_sanitized(monkeypatch):
         _fake_structured([{"page": "about", "block_id": "blk_intro", "body": "<p>Hi</p><script>evil()</script>"}]),
     )
     out, _extras = ai_compose.compose_pages(
-        pages, brand_name="G", niche="yoga", description="", goals=[], locale="en", tenant_schema="glow"
+        pages, brand_name="G", niche="yoga", description="", goals=[], language="en", tenant_schema="glow"
     )
     assert "<script>" not in out["about"]["blocks"][0]["body"]
     assert "<p>Hi</p>" in out["about"]["blocks"][0]["body"]
 
 
-def test_locale_reaches_prompt(monkeypatch):
+def test_language_reaches_the_call_and_no_prompt_names_one(monkeypatch):
     seen = {}
 
     def spy(**kwargs):
         seen["user"] = kwargs["user"]
+        seen["system"] = kwargs["system"]
+        seen["language"] = kwargs["language"]
         output_model = kwargs["output_model"]
         return output_model.model_validate({"blocks": []}), 0.01, "m"
 
@@ -189,11 +191,12 @@ def test_locale_reaches_prompt(monkeypatch):
         niche="yoga",
         description="desc",
         goals=["sell_courses"],
-        locale="en",
+        language="pl",
         tenant_schema="glow",
     )
-    assert "English" in seen["user"]
     assert "Glow" in seen["user"] and "desc" in seen["user"]
+    assert seen["language"] == "pl"
+    assert "English" not in seen["user"] and "language" not in seen["system"].lower()
 
 
 def test_usage_recorded_on_failure_and_success(monkeypatch):
@@ -205,7 +208,7 @@ def test_usage_recorded_on_failure_and_success(monkeypatch):
     monkeypatch.setattr(ai_compose.core_ai, "structured", boom)
     with pytest.raises(ai_compose.ComposeError):
         ai_compose.compose_pages(
-            PAGES, brand_name="G", niche="yoga", description="", goals=[], locale="en", tenant_schema="spend1"
+            PAGES, brand_name="G", niche="yoga", description="", goals=[], language="en", tenant_schema="spend1"
         )
     row = ai_compose.tenant_usage("spend1")
     row.refresh_from_db()

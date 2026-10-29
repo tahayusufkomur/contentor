@@ -42,7 +42,8 @@ from django.core.cache import cache
 from django.db import connection, transaction
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from django.utils.translation import override
+from django.utils.translation import gettext as render_marked  # for text marked with gettext_noop
+from django.utils.translation import gettext_noop, override
 from django_tenants.utils import tenant_context
 from pydantic import BaseModel, Field, create_model
 
@@ -165,29 +166,29 @@ _TOPICS = {
     "writing": "writing",
 }
 _HEADLINES = {
-    "yoga": "Steadier breath, quieter mind",
-    "pilates": "Strength that starts at your centre",
-    "fitness": "Get stronger at a pace you can keep",
-    "pole_dance": "Strength, flow and a little daring",
-    "belly_dance": "Find the rhythm already yours",
-    "face_yoga": "A few calm minutes for your face",
-    "makeup": "Makeup that still looks like you",
-    "general": "Clear next steps toward what matters",
-    "business": "Run the business, not the reverse",
-    "creative": "Make what you keep meaning to make",
-    "wellness": "Calmer days and better nights",
-    "learning": "Learn it properly, at your own pace",
-    "cooking": "Real food, every night of the week",
-    "music": "Play the music you always wanted to",
-    "outdoors": "Go further than you expected",
-    "martial_arts": "Focused training, quiet confidence",
-    "dance": "Move like nobody is watching",
-    "tech": "Build real skills on real projects",
-    "family": "Calmer days with the little ones",
-    "spiritual": "Find your own rhythm with the sky",
-    "beauty": "Care that still looks like you",
-    "crafts": "Make something with your own hands",
-    "writing": "Write the pages you keep putting off",
+    "yoga": gettext_noop("Steadier breath, quieter mind"),
+    "pilates": gettext_noop("Strength that starts at your centre"),
+    "fitness": gettext_noop("Get stronger at a pace you can keep"),
+    "pole_dance": gettext_noop("Strength, flow and a little daring"),
+    "belly_dance": gettext_noop("Find the rhythm already yours"),
+    "face_yoga": gettext_noop("A few calm minutes for your face"),
+    "makeup": gettext_noop("Makeup that still looks like you"),
+    "general": gettext_noop("Clear next steps toward what matters"),
+    "business": gettext_noop("Run the business, not the reverse"),
+    "creative": gettext_noop("Make what you keep meaning to make"),
+    "wellness": gettext_noop("Calmer days and better nights"),
+    "learning": gettext_noop("Learn it properly, at your own pace"),
+    "cooking": gettext_noop("Real food, every night of the week"),
+    "music": gettext_noop("Play the music you always wanted to"),
+    "outdoors": gettext_noop("Go further than you expected"),
+    "martial_arts": gettext_noop("Focused training, quiet confidence"),
+    "dance": gettext_noop("Move like nobody is watching"),
+    "tech": gettext_noop("Build real skills on real projects"),
+    "family": gettext_noop("Calmer days with the little ones"),
+    "spiritual": gettext_noop("Find your own rhythm with the sky"),
+    "beauty": gettext_noop("Care that still looks like you"),
+    "crafts": gettext_noop("Make something with your own hands"),
+    "writing": gettext_noop("Write the pages you keep putting off"),
 }
 # Words that mark a brand as a business rather than a person's name.
 _BUSINESS_WORDS = frozenset(
@@ -229,8 +230,8 @@ def speaker(brand, description="", answers=None) -> str:
 def _ctx(
     niche, brand, description="", subject="", links=ALLOWED_LINKS, first_name="", said="", focus=None, language="en"
 ) -> dict:
-    """``language``: the site's, for the labels and titles that are text a visitor reads (the fallback copy around
-    them is still English). ``said``: "I" or "we" as _coach_data read it from her answers. ``focus``: how her
+    """``language``: the site's, for the labels, titles and fallback copy (fallback_fields) that a visitor
+    reads. ``said``: "I" or "we" as _coach_data read it from her answers. ``focus``: how her
     disciplines shape the site (_coach_data["focus"]: mode "equal" | "primary", "disciplines" lead first, and for a
     main focus "primary" and "secondary"), None for one discipline."""
     from apps.tenant_config import interview_brief
@@ -272,6 +273,7 @@ def _ctx(
         "my": "my" if solo else "our",
         "i": "I" if solo else "we",
         "why": why,
+        "language": language,
     }
 
 
@@ -285,220 +287,344 @@ def _fit(text, limit, fallback="") -> str:
 
 def fallback_fields(family, page_key, variant, ctx) -> dict:
     """Honest, niche-aware copy for one section (no images). Never states a
-    fact the coach did not give: no credentials, prices, places or schedules."""
+    fact the coach did not give: no credentials, prices, places or schedules.
+    A visitor reads it, so it is written in the site's language (ctx["language"]):
+    every sentence is its own msgid, with me/us and I/we spelt out in it."""
+    with override(ctx.get("language") or "en"):
+        return _fallback_fields(family, page_key, variant, ctx)
+
+
+def _hero_subhead(c) -> str:
+    brand, t, solo = c["brand"], c["topic"], c["solo"]
+    coaching = t == "coaching"
+    if solo:
+        if coaching:
+            return _("I coach with clear guidance, patience and room for your questions.")
+        return _("I teach %(topic)s with clear guidance, patience and room for your questions.") % {"topic": t}
+    if coaching:
+        at = _("At %(brand)s we coach with clear guidance, patience and room for your questions.") % {"brand": brand}
+        return _fit(at, 180, _("We coach with clear guidance, patience and room for your questions."))
+    at = _("At %(brand)s we teach %(topic)s with clear guidance, patience and room for your questions.") % {
+        "brand": brand,
+        "topic": t,
+    }
+    return _fit(
+        at, 180, _("We teach %(topic)s with clear guidance, patience and room for your questions.") % {"topic": t}
+    )
+
+
+def _story_first(c) -> str:
+    brand, t, solo = html.escape(c["brand"]), c["topic"], c["solo"]
+    if c["description"]:
+        return f"<p>{html.escape(c['description'])}</p>"
+    if solo and t == "coaching":
+        text = _(
+            "I started %(brand)s to share my coaching the way I believe it should be taught: "
+            "clearly, patiently and without pressure."
+        )
+    elif solo:
+        text = _(
+            "I started %(brand)s to share %(topic)s the way I believe it should be taught: "
+            "clearly, patiently and without pressure."
+        )
+    elif t == "coaching":
+        text = _(
+            "%(brand)s exists to share our coaching the way we believe it should be taught: "
+            "clearly, patiently and without pressure."
+        )
+    else:
+        text = _(
+            "%(brand)s exists to share %(topic)s the way we believe it should be taught: "
+            "clearly, patiently and without pressure."
+        )
+    return "<p>" + text % {"brand": brand, "topic": t} + "</p>"
+
+
+def _story_find(c) -> str:
+    """The second paragraph of the story: what is on the site and how to reach her."""
+    offering, solo = c["offering"], c["solo"]
+    if offering == "courses":
+        text = (
+            _("Here you'll find my courses and a simple way to reach me whenever a question comes up.")
+            if solo
+            else _("Here you'll find our courses and a simple way to reach us whenever a question comes up.")
+        )
+    elif offering == "sessions":
+        text = (
+            _("Here you'll find my sessions and a simple way to reach me whenever a question comes up.")
+            if solo
+            else _("Here you'll find our sessions and a simple way to reach us whenever a question comes up.")
+        )
+    else:
+        text = (
+            _("Here you'll find my work and a simple way to reach me whenever a question comes up.")
+            if solo
+            else _("Here you'll find our work and a simple way to reach us whenever a question comes up.")
+        )
+    return f"<p>{text}</p>"
+
+
+def _cta_text(c) -> str:
+    """The closing call to action when there is something to look at (primary is not /about)."""
+    offering = c["offering"]
+    if offering == "courses":
+        return _("Take a look at the courses and start with what fits you today.")
+    if offering == "sessions":
+        return _("Take a look at the sessions and start with what fits you today.")
+    return _("Take a look at the work and start with what fits you today.")
+
+
+def _fallback_fields(family, page_key, variant, ctx) -> dict:
     c = ctx
     name = str(variant or "").partition(".")[2]
-    brand, t, me, my, i = c["brand"], c["topic"], c["me"], c["my"], c["i"]
+    brand, t, solo = c["brand"], c["topic"], c["solo"]
+    get_in_touch = _("Get in touch")
 
     if family == "hero":
         if name == "intro" or page_key != "home":
             return _hero_intro(page_key, c)
-        verb = "coach" if t == "coaching" else f"teach {t}"
-        tail = " with clear guidance, patience and room for your questions."
-        headline = _HEADLINES.get(
-            c["niche"],
-            _fit(f"{c['Topic']} that fits your real life", HOME_HERO_HEADLINE_MAX, _HEADLINES["general"]),
-        )
-        subhead = f"I {verb}{tail}" if c["solo"] else _fit(f"At {brand} we {verb}{tail}", 180, f"We {verb}{tail}")
+        if c["niche"] in _HEADLINES:
+            headline = render_marked(_HEADLINES[c["niche"]])
+        else:
+            headline = _fit(
+                _("%(topic)s that fits your real life") % {"topic": c["Topic"]},
+                HOME_HERO_HEADLINE_MAX,
+                render_marked(_HEADLINES["general"]),
+            )
+        subhead = _hero_subhead(c)
         if c["focus"] == "equal":  # the topic names them all: the headline too, none of them a niche's line
-            headline = _fit(f"{c['Topic']}, together", HOME_HERO_HEADLINE_MAX, headline)
+            headline = _fit(_("%(topic)s, together") % {"topic": c["Topic"]}, HOME_HERO_HEADLINE_MAX, headline)
         elif c["also"]:  # a main focus leads; the others support it
-            subhead = _fit(f"{subhead} {c['i'].capitalize()} also teach {c['also']}.", 180, subhead)
+            also = _("I also teach %(also)s.") if solo else _("We also teach %(also)s.")
+            subhead = _fit(f"{subhead} {also % {'also': c['also']}}", 180, subhead)
         return {
-            "kicker": _fit(f"{c['Topic']} with {brand}", 40, c["Topic"]),
+            "kicker": _fit(_("%(topic)s with %(brand)s") % {"topic": c["Topic"], "brand": brand}, 40, c["Topic"]),
             "headline": headline,
             "subhead": subhead,
             # One button, no second one and no meta line. With nothing to sell yet it asks, never About.
-            "ctaLabel": c["primaryLabel"] if c["primary"] != "/about" else "Get in touch",
+            "ctaLabel": c["primaryLabel"] if c["primary"] != "/about" else get_in_touch,
             "ctaHref": c["primary"] if c["primary"] != "/about" else "/contact",
         }
     if family == "story":
-        share = "my coaching" if t == "coaching" and c["solo"] else ("our coaching" if t == "coaching" else t)
-        if c["description"]:
-            first = f"<p>{html.escape(c['description'])}</p>"
-        elif c["solo"]:
-            first = (
-                f"<p>I started {html.escape(brand)} to share {share} the way I believe it should be taught: "
-                "clearly, patiently and without pressure.</p>"
-            )
+        if c["name_like"] and c["first_name"]:
+            kicker = _fit(_("Hello, I'm %(name)s") % {"name": c["first_name"]}, 40, _("Hello"))
         else:
-            first = (
-                f"<p>{html.escape(brand)} exists to share {share} the way we believe it should be taught: "
-                "clearly, patiently and without pressure.</p>"
-            )
+            kicker = _("Hello") if solo else _("Who we are")
         return {
-            "kicker": _fit(f"Hello, I'm {c['first_name']}", 40, "Hello")
-            if c["name_like"] and c["first_name"]
-            else ("Hello" if c["solo"] else "Who we are"),
+            "kicker": kicker,
             "heading": c["why"],
-            "body": first + f"<p>Here you'll find {my} {c['offering']} and a simple way to reach {me} whenever a "
-            "question comes up.</p>",
-            "ctaLabel": (c["primaryLabel"] if c["primary"] != "/about" else "Get in touch")
+            "body": _story_first(c) + _story_find(c),
+            "ctaLabel": (c["primaryLabel"] if c["primary"] != "/about" else get_in_touch)
             if page_key == "about"
-            else f"More about {me}",
+            else (_("More about me") if solo else _("More about us")),
             "ctaHref": (c["primary"] if c["primary"] != "/about" else "/contact") if page_key == "about" else "/about",
         }
     if family == "benefits":
         return {
-            "kicker": "What you can expect",
-            "heading": "Built for real weeks, not perfect ones",
-            "intro": _fit(f"A few things that shape every lesson at {brand}.", 220),
+            "kicker": _("What you can expect"),
+            "heading": _("Built for real weeks, not perfect ones"),
+            "intro": _fit(_("A few things that shape every lesson at %(brand)s.") % {"brand": brand}, 220),
             "items": [
                 {
-                    "title": "Clear guidance",
-                    "text": "Every lesson explains the why as well as the how, so you always know what you are "
-                    "working on.",
+                    "title": _("Clear guidance"),
+                    "text": _(
+                        "Every lesson explains the why as well as the how, so you always know what you are working on."
+                    ),
                 },
                 {
-                    "title": "Your own pace",
-                    "text": "Pause, repeat and come back to a lesson whenever your week allows.",
+                    "title": _("Your own pace"),
+                    "text": _("Pause, repeat and come back to a lesson whenever your week allows."),
                 },
-                {"title": "Someone to ask", "text": f"Questions come straight to {me}, not to a help desk."},
+                {
+                    "title": _("Someone to ask"),
+                    "text": _("Questions come straight to me, not to a help desk.")
+                    if solo
+                    else _("Questions come straight to us, not to a help desk."),
+                },
             ],
         }
     if family == "courseShowcase":
         return {
-            "kicker": "Courses",
-            "heading": "Where to begin",
-            "intro": "Pick the course that fits where you are today and work through it at your own pace.",
-            "ctaLabel": "See all courses",
+            "kicker": _("Courses"),
+            "heading": _("Where to begin"),
+            "intro": _("Pick the course that fits where you are today and work through it at your own pace."),
+            "ctaLabel": _("See all courses"),
             "limit": "3",
         }
     if family == "howItWorks" and page_key == "events":
         return {
-            "kicker": "How it works",
-            "heading": "Join a session in three steps",
+            "kicker": _("How it works"),
+            "heading": _("Join a session in three steps"),
             "steps": [
-                {"title": "Pick a session", "text": "Find a session above that fits your week, online or in person."},
-                {"title": "Save your spot", "text": "Book in a few clicks; live sessions send you the link to join."},
-                {"title": "Show up and train", "text": f"Come as you are. {i.capitalize()} take it from there."},
+                {
+                    "title": _("Pick a session"),
+                    "text": _("Find a session above that fits your week, online or in person."),
+                },
+                {
+                    "title": _("Save your spot"),
+                    "text": _("Book in a few clicks; live sessions send you the link to join."),
+                },
+                {
+                    "title": _("Show up and train"),
+                    "text": _("Come as you are. I take it from there.")
+                    if solo
+                    else _("Come as you are. We take it from there."),
+                },
             ],
         }
     if family == "howItWorks":
         return {
-            "kicker": "How it works",
-            "heading": "Getting started is simple",
+            "kicker": _("How it works"),
+            "heading": _("Getting started is simple"),
             "steps": [
-                {"title": "Choose a course", "text": "Browse the courses and pick the one that fits where you are."},
                 {
-                    "title": "Learn at your pace",
-                    "text": "Follow the lessons when it suits you. Pause, repeat and return whenever you like.",
+                    "title": _("Choose a course"),
+                    "text": _("Browse the courses and pick the one that fits where you are."),
                 },
                 {
-                    "title": "Ask along the way",
-                    "text": f"Stuck on something? Send {me} a message and {i} will help you find your footing.",
+                    "title": _("Learn at your pace"),
+                    "text": _("Follow the lessons when it suits you. Pause, repeat and return whenever you like."),
+                },
+                {
+                    "title": _("Ask along the way"),
+                    "text": _("Stuck on something? Send me a message and I will help you find your footing.")
+                    if solo
+                    else _("Stuck on something? Send us a message and we will help you find your footing."),
                 },
             ],
         }
     if family == "philosophy":
         return {
-            "kicker": f"What {i} believe",
-            "statement": "Progress comes from small, steady practice, not from pushing harder.",
+            "kicker": _("What I believe") if solo else _("What we believe"),
+            "statement": _("Progress comes from small, steady practice, not from pushing harder."),
         }
     if family == "moments":
         return {
-            "kicker": "Moments",
-            "heading": _fit(f"A closer look at {t}", 80, "A closer look"),
-            "photos": [{"caption": ""} for _ in range(3)],
+            "kicker": _("Moments"),
+            "heading": _fit(_("A closer look at %(topic)s") % {"topic": t}, 80, _("A closer look")),
+            "photos": [{"caption": ""} for _n in range(3)],
         }
     if family == "pricing":
         return {
-            "kicker": "Plans",
-            "heading": "Plans and pricing",
-            "intro": "Each plan lists what it includes. Pick the one that fits your week.",
+            "kicker": _("Plans"),
+            "heading": _("Plans and pricing"),
+            "intro": _("Each plan lists what it includes. Pick the one that fits your week."),
         }
     if family == "faq" and page_key == "events":
         return {
-            "kicker": "Questions",
-            "heading": "Before your first session",
-            "intro": f"Can't find yours? Send {me} a message.",
+            "kicker": _("Questions"),
+            "heading": _("Before your first session"),
+            "intro": _("Can't find yours? Send me a message.") if solo else _("Can't find yours? Send us a message."),
             "items": [
                 {
-                    "q": "Do I need experience to join?",
-                    "a": "Each session says who it is for. If you are unsure, send a message and ask.",
+                    "q": _("Do I need experience to join?"),
+                    "a": _("Each session says who it is for. If you are unsure, send a message and ask."),
                 },
                 {
-                    "q": "How do I join a live session?",
-                    "a": "Book your spot and the link to join arrives by email; it is on the session page too.",
+                    "q": _("How do I join a live session?"),
+                    "a": _("Book your spot and the link to join arrives by email; it is on the session page too."),
                 },
                 {
-                    "q": "What should I bring?",
-                    "a": "The session page lists anything you need. Comfortable clothes and water are a good start.",
+                    "q": _("What should I bring?"),
+                    "a": _("The session page lists anything you need. Comfortable clothes and water are a good start."),
                 },
                 {
-                    "q": "Can I cancel?",
-                    "a": f"Plans change. Send {me} a message as early as you can and {i} will sort it out.",
+                    "q": _("Can I cancel?"),
+                    "a": _("Plans change. Send me a message as early as you can and I will sort it out.")
+                    if solo
+                    else _("Plans change. Send us a message as early as you can and we will sort it out."),
                 },
             ],
         }
     if family == "faq":
         return {
-            "kicker": "Questions",
-            "heading": "Questions, answered",
-            "intro": f"Can't find yours? Send {me} a message.",
+            "kicker": _("Questions"),
+            "heading": _("Questions, answered"),
+            "intro": _("Can't find yours? Send me a message.") if solo else _("Can't find yours? Send us a message."),
             "items": [
                 {
-                    "q": "Do I need experience to start?",
-                    "a": "Each course says who it is for and what you need before you begin. If you are unsure, "
-                    "send a message and ask.",
+                    "q": _("Do I need experience to start?"),
+                    "a": _(
+                        "Each course says who it is for and what you need before you begin. If you are unsure, "
+                        "send a message and ask."
+                    ),
                 },
                 {
-                    "q": "How do I access my courses?",
-                    "a": "Sign in to this site with your email address and your courses are waiting, ready "
-                    "whenever you are.",
+                    "q": _("How do I access my courses?"),
+                    "a": _(
+                        "Sign in to this site with your email address and your courses are waiting, ready "
+                        "whenever you are."
+                    ),
                 },
                 {
-                    "q": "Can I go at my own pace?",
-                    "a": "Yes. Recorded lessons can be paused, repeated and picked up again whenever it suits you.",
+                    "q": _("Can I go at my own pace?"),
+                    "a": _("Yes. Recorded lessons can be paused, repeated and picked up again whenever it suits you."),
                 },
                 {
-                    "q": "How do I get in touch?",
-                    "a": f"Use the contact page to send {me} a message and {i} will reply as soon as {i} can.",
+                    "q": _("How do I get in touch?"),
+                    "a": _("Use the contact page to send me a message and I will reply as soon as I can.")
+                    if solo
+                    else _("Use the contact page to send us a message and we will reply as soon as we can."),
                 },
             ],
         }
     if family == "cta":
         if page_key == "events":
             return {
-                "heading": "See you soon",
-                "text": f"Pick a session above, or ask {me} which one suits you best.",
-                "ctaLabel": "Ask a question",
+                "heading": _("See you soon"),
+                "text": _("Pick a session above, or ask me which one suits you best.")
+                if solo
+                else _("Pick a session above, or ask us which one suits you best."),
+                "ctaLabel": _("Ask a question"),
                 "ctaHref": "/contact",
             }
         if page_key == "courses":
             return {
-                "heading": "Not sure where to start?",
-                "text": f"Tell {me} a little about yourself and {i} will point you to the right course.",
-                "ctaLabel": "Ask a question",
+                "heading": _("Not sure where to start?"),
+                "text": _("Tell me a little about yourself and I will point you to the right course.")
+                if solo
+                else _("Tell us a little about yourself and we will point you to the right course."),
+                "ctaLabel": _("Ask a question"),
                 "ctaHref": "/contact",
             }
         return {
-            "heading": "Ready when you are",
-            "text": f"Take a look at the {c['offering']} and start with what fits you today."
+            "heading": _("Ready when you are"),
+            "text": _cta_text(c)
             if c["primary"] != "/about"
-            else f"Tell {me} where you are and {i} will help you take the first step.",
-            "ctaLabel": c["primaryLabel"] if c["primary"] != "/about" else "Get in touch",
+            else (
+                _("Tell me where you are and I will help you take the first step.")
+                if solo
+                else _("Tell us where you are and we will help you take the first step.")
+            ),
+            "ctaLabel": c["primaryLabel"] if c["primary"] != "/about" else get_in_touch,
             "ctaHref": c["primary"] if c["primary"] != "/about" else "/contact",
         }
     if family == "contact":
         return {
-            "kicker": "Contact",
-            "heading": "Say hello" if c["solo"] else "Get in touch",
-            "text": f"Questions about a course, where to begin or anything else? Send {me} a message and {i} will "
-            "get back to you.",
+            "kicker": _("Contact"),
+            "heading": _("Say hello") if solo else get_in_touch,
+            "text": _(
+                "Questions about a course, where to begin or anything else? "
+                "Send me a message and I will get back to you."
+            )
+            if solo
+            else _(
+                "Questions about a course, where to begin or anything else? "
+                "Send us a message and we will get back to you."
+            ),
             "showForm": True,
         }
     if family == "events":
         return {
-            "kicker": "Live",
-            "heading": "Upcoming sessions",
-            "intro": "Join a live session and learn together in real time.",
-            "ctaLabel": "See the calendar",
+            "kicker": _("Live"),
+            "heading": _("Upcoming sessions"),
+            "intro": _("Join a live session and learn together in real time."),
+            "ctaLabel": _("See the calendar"),
         }
     given = c.get("given") or {}
     if family == "proof":
         proof = given.get("proof") or {}
-        return {"heading": "In their words" if proof.get("quotes") else "", **proof}
+        return {"heading": _("In their words") if proof.get("quotes") else "", **proof}
     if family == "statement":
         return {"statement": statement_line(given.get("belief") or "")}
     if family == "video" and given.get("clip"):
@@ -507,38 +633,49 @@ def fallback_fields(family, page_key, variant, ctx) -> dict:
 
 
 def _hero_intro(page_key, c) -> dict:
-    me, brand = c["me"], c["brand"]
+    brand, solo = c["brand"], c["solo"]
     if page_key == "about":
         if c["name_like"] and c["first_name"]:
-            headline = _fit(f"Hello, I'm {c['first_name']}", 70, f"About {brand}")
+            headline = _fit(
+                _("Hello, I'm %(name)s") % {"name": c["first_name"]}, 70, _("About %(brand)s") % {"brand": brand}
+            )
         else:
-            headline = _fit(f"Behind {brand}" if c["solo"] else f"About {brand}", 70, "About")
-        return {
-            "kicker": "About",
-            "headline": headline,
-            "subhead": f"{c['why']}, how {c['i']} work, and what you can expect from a session with {me}.",
-        }
+            headline = _fit(
+                _("Behind %(brand)s") % {"brand": brand} if solo else _("About %(brand)s") % {"brand": brand},
+                70,
+                _("About"),
+            )
+        subhead = (
+            _("%(why)s, how I work, and what you can expect from a session with me.")
+            if solo
+            else _("%(why)s, how we work, and what you can expect from a session with us.")
+        ) % {"why": c["why"]}
+        return {"kicker": _("About"), "headline": headline, "subhead": subhead}
     copy_ = {
         "courses": (
-            "Courses",
-            "Find the right place to start",
-            "Every course is laid out step by step, so you always know what comes next.",
+            _("Courses"),
+            _("Find the right place to start"),
+            _("Every course is laid out step by step, so you always know what comes next."),
         ),
         "pricing": (
-            "Pricing",
-            "Choose how you want to learn",
-            "Each plan lists what it includes. Pick the one that fits your week.",
+            _("Pricing"),
+            _("Choose how you want to learn"),
+            _("Each plan lists what it includes. Pick the one that fits your week."),
         ),
-        "faq": ("FAQ", "Good questions, plain answers", "The things worth knowing before you start."),
+        "faq": (_("FAQ"), _("Good questions, plain answers"), _("The things worth knowing before you start.")),
         "events": (
-            "Sessions & events",
-            "Train with me live",
-            f"Upcoming sessions and events, online and in person. Pick one and save your spot with {me}.",
+            _("Sessions & events"),
+            _("Train with me live"),
+            _("Upcoming sessions and events, online and in person. Pick one and save your spot with me.")
+            if solo
+            else _("Upcoming sessions and events, online and in person. Pick one and save your spot with us."),
         ),
         "contact": (
-            "Contact",
-            "Let's talk",
-            f"Questions about where to start or which course fits you? Send {me} a message.",
+            _("Contact"),
+            _("Let's talk"),
+            _("Questions about where to start or which course fits you? Send me a message.")
+            if solo
+            else _("Questions about where to start or which course fits you? Send us a message."),
         ),
     }
     kicker, headline, subhead = copy_.get(page_key, (c["Topic"], c["Topic"], ""))

@@ -18,9 +18,9 @@ def _clean_cache():
 
 
 def test_cache_key_normalizes_and_fingerprints():
-    a = assistant.answer_cache_key("student_bot", "student", 2, "abc", "  What   COURSES? ")
-    b = assistant.answer_cache_key("student_bot", "student", 2, "abc", "what courses?")
-    c = assistant.answer_cache_key("student_bot", "student", 2, "OTHER", "what courses?")
+    a = assistant.answer_cache_key("student_bot", "student", 2, "abc", "  What   COURSES? ", language="en")
+    b = assistant.answer_cache_key("student_bot", "student", 2, "abc", "what courses?", language="en")
+    c = assistant.answer_cache_key("student_bot", "student", 2, "OTHER", "what courses?", language="en")
     assert a == b != c and a.startswith("ai-answer:")
 
 
@@ -30,13 +30,19 @@ def test_cache_key_scope_isolates_otherwise_identical_keys():
     (account state, plan, setup progress) leaks to Coach B on an identical
     normalized first question. ``scope`` (e.g. the tenant schema / marketing
     bucket) must change the key even when every other component matches."""
-    a = assistant.answer_cache_key("help_bot", "coach", 3, "fp", "what should I set up next?", scope="tenant-a")
-    b = assistant.answer_cache_key("help_bot", "coach", 3, "fp", "what should I set up next?", scope="tenant-b")
-    same = assistant.answer_cache_key("help_bot", "coach", 3, "fp", "what should I set up next?", scope="tenant-a")
+    a = assistant.answer_cache_key(
+        "help_bot", "coach", 3, "fp", "what should I set up next?", scope="tenant-a", language="en"
+    )
+    b = assistant.answer_cache_key(
+        "help_bot", "coach", 3, "fp", "what should I set up next?", scope="tenant-b", language="en"
+    )
+    same = assistant.answer_cache_key(
+        "help_bot", "coach", 3, "fp", "what should I set up next?", scope="tenant-a", language="en"
+    )
     assert a != b
     assert a == same
     # Backward-compatible default: omitting scope must not raise.
-    assert assistant.answer_cache_key("student_bot", "student", 2, "abc", "hi").startswith("ai-answer:")
+    assert assistant.answer_cache_key("student_bot", "student", 2, "abc", "hi", language="en").startswith("ai-answer:")
 
 
 def test_replay_cached_contract():

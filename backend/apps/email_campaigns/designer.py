@@ -90,7 +90,7 @@ one of her items whose has_image is true, or "stock://<aspect>/<plain English de
 3:2 or 4:5) when nothing of hers fits. Prefer her photos, then her items' pictures. At most three stock pictures.
 Links: set a link to "item://<ref>" for one of her items, or to a path on her site such as "/courses" or "/about".
 Never write a web address. To feature an offer, use an item block: it always shows her real title, price and date.
-Writing: write in her language and her voice (the data's voice), warm and specific to what she teaches. Feature only
+Writing: write in her voice (the data's voice), warm and specific to what she teaches. Feature only
 her items as the data describes them: never invent offers, prices, dates, discounts, results, testimonials or people.
 Keep it short: a strong heading, a few short paragraphs, one clear next step. Greet the reader with {{FirstName}}.
 Never use html blocks. Her header and footer already carry her logo, name, socials and unsubscribe link: never add a
