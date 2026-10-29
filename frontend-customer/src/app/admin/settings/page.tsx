@@ -28,6 +28,7 @@ import { clientFetch } from "@/lib/api-client";
 import type { TenantConfig } from "@/types/tenant";
 import { MailboxSettingsSection } from "@/components/admin/mailbox/mailbox-settings";
 import { timeZones } from "@/lib/interview";
+import { LanguageSwitcher } from "@/components/shared/language-switcher";
 
 export default function SettingsPage() {
   const t = useTranslations("admin");
@@ -140,6 +141,14 @@ export default function SettingsPage() {
           </Card>
         </div>
       )}
+
+      <div className="max-w-lg">
+        <Card>
+          <CardContent className="pt-6">
+            <LanguageSwitcher />
+          </CardContent>
+        </Card>
+      </div>
 
       <MailboxSettingsSection />
 

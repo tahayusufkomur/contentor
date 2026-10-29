@@ -834,7 +834,9 @@
     "defaultLocaleLabel": "Öğrenciler için varsayılan dil",
     "defaultLocaleDescription": "Yeni öğrenciler ilk ziyaretlerinde bu dili kullanır. Her öğrenci kendi tercihini değiştirebilir.",
     "saved": "Kaydedildi.",
-    "saveFailed": "Kaydedilemedi. Lütfen tekrar dene."
+    "saveFailed": "Kaydedilemedi. Lütfen tekrar dene.",
+    "yourLanguage": "Dilin",
+    "yourLanguageHint": "Creator stüdyonun ve sana yazdıklarımızın dili. Öğrencilerinin dili ayrı olarak ayarlanır."
   },
   "subscription": {
     "title": "Abonelik",

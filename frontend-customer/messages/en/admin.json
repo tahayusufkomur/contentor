@@ -834,7 +834,9 @@
     "defaultLocaleLabel": "Default language for students",
     "defaultLocaleDescription": "New students inherit this language on first visit. Each student can override their preference.",
     "saved": "Saved.",
-    "saveFailed": "Could not save. Please try again."
+    "saveFailed": "Could not save. Please try again.",
+    "yourLanguage": "Your language",
+    "yourLanguageHint": "The language of your Creator studio and of what we write to you. Your students' language is set separately."
   },
   "subscription": {
     "title": "Subscription",

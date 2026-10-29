@@ -834,7 +834,9 @@
     "defaultLocaleLabel": "Domyślny język dla uczestników",
     "defaultLocaleDescription": "Nowi uczestnicy otrzymują ten język przy pierwszej wizycie. Każdy uczestnik może zmienić swoje ustawienie.",
     "saved": "Zapisano.",
-    "saveFailed": "Nie udało się zapisać. Spróbuj ponownie."
+    "saveFailed": "Nie udało się zapisać. Spróbuj ponownie.",
+    "yourLanguage": "Twój język",
+    "yourLanguageHint": "Język Twojego Studia twórcy i tego, co do Ciebie piszemy. Język Twoich uczestników ustawia się osobno."
   },
   "subscription": {
     "title": "Subskrypcja",

@@ -48,6 +48,11 @@ msgstr "Geçersiz veya süresi dolmuş belirteç"
 msgid "Token not valid for this tenant"
 msgstr "Belirteç bu kiracı için geçerli değil"
 
+#: apps/accounts/views.py apps/core/onboarding/views.py
+#, fuzzy
+msgid "Permission denied."
+msgstr "İzin reddedildi."
+
 #: apps/accounts/views.py
 #, fuzzy
 msgid "Unsupported locale"
@@ -264,7 +269,7 @@ msgid "Still want to build your site?"
 msgstr "Hâlâ siteni kurmak istiyor musun?"
 
 #: apps/core/onboarding/recovery.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "You started setting up your site but never finished. We'll remove this "
 "unfinished signup in %(grace)d day to free it up. Click below to pick up "
@@ -1375,11 +1380,6 @@ msgstr "Doğrulama e-postası gönderildi. Gelen kutunu kontrol et."
 #, fuzzy
 msgid "Brand name is required"
 msgstr "Marka adı zorunludur"
-
-#: apps/core/onboarding/views.py
-#, fuzzy
-msgid "Permission denied."
-msgstr "İzin reddedildi."
 
 #: apps/core/onboarding/views.py
 #, fuzzy

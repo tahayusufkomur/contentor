@@ -49,6 +49,11 @@ msgstr "Nieprawidłowy lub wygasły token"
 msgid "Token not valid for this tenant"
 msgstr "Token nie jest ważny dla tego tenanta"
 
+#: apps/accounts/views.py apps/core/onboarding/views.py
+#, fuzzy
+msgid "Permission denied."
+msgstr "Brak uprawnień."
+
 #: apps/accounts/views.py
 #, fuzzy
 msgid "Unsupported locale"
@@ -268,7 +273,7 @@ msgid "Still want to build your site?"
 msgstr "Nadal chcesz zbudować swoją stronę?"
 
 #: apps/core/onboarding/recovery.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "You started setting up your site but never finished. We'll remove this "
 "unfinished signup in %(grace)d day to free it up. Click below to pick up "
@@ -1407,11 +1412,6 @@ msgstr "Wysłano e-mail weryfikacyjny. Sprawdź swoją skrzynkę odbiorczą."
 #, fuzzy
 msgid "Brand name is required"
 msgstr "Nazwa marki jest wymagana"
-
-#: apps/core/onboarding/views.py
-#, fuzzy
-msgid "Permission denied."
-msgstr "Brak uprawnień."
 
 #: apps/core/onboarding/views.py
 #, fuzzy

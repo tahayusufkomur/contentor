@@ -834,7 +834,9 @@
     "defaultLocaleLabel": "Standardsprache für Teilnehmer",
     "defaultLocaleDescription": "Neue Teilnehmer übernehmen diese Sprache bei ihrem ersten Besuch. Jeder Teilnehmer kann seine Einstellung selbst ändern.",
     "saved": "Gespeichert.",
-    "saveFailed": "Speichern fehlgeschlagen. Bitte versuch es noch einmal."
+    "saveFailed": "Speichern fehlgeschlagen. Bitte versuch es noch einmal.",
+    "yourLanguage": "Deine Sprache",
+    "yourLanguageHint": "Die Sprache deines Creator-Studios und dessen, was wir dir schreiben. Die Sprache deiner Teilnehmer wird separat eingestellt."
   },
   "subscription": {
     "title": "Abonnement",

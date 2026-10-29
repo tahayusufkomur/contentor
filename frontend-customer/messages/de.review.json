@@ -2627,6 +2627,14 @@
     "src": "982fc91b",
     "reviewed": false
   },
+  "admin.settings.yourLanguage": {
+    "src": "cac6d44c",
+    "reviewed": false
+  },
+  "admin.settings.yourLanguageHint": {
+    "src": "02c4a8de",
+    "reviewed": false
+  },
   "admin.subscription.title": {
     "src": "8fde48f3",
     "reviewed": false

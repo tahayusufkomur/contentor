@@ -48,6 +48,11 @@ msgstr "Ungültiger oder abgelaufener Token"
 msgid "Token not valid for this tenant"
 msgstr "Token für diesen Mandanten nicht gültig"
 
+#: apps/accounts/views.py apps/core/onboarding/views.py
+#, fuzzy
+msgid "Permission denied."
+msgstr "Zugriff verweigert."
+
 #: apps/accounts/views.py
 #, fuzzy
 msgid "Unsupported locale"
@@ -264,7 +269,7 @@ msgid "Still want to build your site?"
 msgstr "Möchtest du deine Website noch erstellen?"
 
 #: apps/core/onboarding/recovery.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "You started setting up your site but never finished. We'll remove this "
 "unfinished signup in %(grace)d day to free it up. Click below to pick up "
@@ -1394,11 +1399,6 @@ msgstr "Bestätigungs-E-Mail gesendet. Prüfe deinen Posteingang."
 #, fuzzy
 msgid "Brand name is required"
 msgstr "Markenname ist erforderlich"
-
-#: apps/core/onboarding/views.py
-#, fuzzy
-msgid "Permission denied."
-msgstr "Zugriff verweigert."
 
 #: apps/core/onboarding/views.py
 #, fuzzy

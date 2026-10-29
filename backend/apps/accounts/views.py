@@ -11,7 +11,7 @@ from django.http import HttpResponseRedirect
 from django.utils import timezone, translation
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
-from django_tenants.utils import get_public_schema_name
+from django_tenants.utils import get_public_schema_name, schema_context
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -130,8 +130,6 @@ def _login_user_response(request, tenant, email, via="magic_link"):
     Args:
         via: Origin of the login ("magic_link" or "code") for logging.
     """
-    from apps.core.constants import REGION_DEFAULT_LOCALE
-
     email = email.lower()
     region = getattr(tenant, "region", None) or getattr(request, "region", "global")
     # Email is unique per-region; include region in the lookup key.
@@ -143,7 +141,6 @@ def _login_user_response(request, tenant, email, via="magic_link"):
             "email": email,  # already lowered above — store canonical form for new users
             "name": email.split("@")[0],
             "role": "student",
-            "preferred_locale": REGION_DEFAULT_LOCALE.get(region, "en"),
             "accessible_regions": [],
         },
     )
@@ -236,7 +233,10 @@ def _set_session_cookie(response, jwt_token, *, max_age=86400 * 7):
 
 
 def _set_locale_cookie(response, user, tenant):
-    locale = user.preferred_locale or _tenant_default_locale(tenant) or "en"
+    if user.role in languages.CREATOR_ROLES:
+        locale = languages.creator_language(user)
+    else:
+        locale = user.preferred_locale or _tenant_default_locale(tenant) or "en"
     response.set_cookie(
         "user-locale", locale, httponly=False, secure=_COOKIE_SECURE, samesite="Lax", max_age=86400 * 365
     )
@@ -378,21 +378,32 @@ def update_me(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def update_locale(request):
+    """The creator's language, written everywhere it lives: the public row and the owner row in every
+    studio they own (and the row they are signed in on, for a coach)."""
+    from apps.core.models import Tenant
+    from apps.core.permissions import IsCoachOrOwner
+
+    if not IsCoachOrOwner().has_permission(request, None):
+        return Response({"detail": _("Permission denied.")}, status=status.HTTP_403_FORBIDDEN)
     locale = (request.data.get("locale") or "").strip().lower()
-    if locale != "en":
+    if locale not in languages.enabled():
         return Response({"detail": _("Unsupported locale")}, status=400)
     user = request.user
+    schemas = {connection.schema_name, get_public_schema_name()}
+    with schema_context(get_public_schema_name()):
+        schemas.update(
+            Tenant.objects.filter(
+                owner_email__iexact=user.email, provisioning_status__in=("provisioned", "ready")
+            ).values_list("schema_name", flat=True)
+        )
+    for schema in schemas:
+        with schema_context(schema):
+            User.objects.filter(email__iexact=user.email, role__in=languages.CREATOR_ROLES).update(
+                preferred_locale=locale
+            )
     user.preferred_locale = locale
-    user.save(update_fields=["preferred_locale"])
     response = Response({"locale": locale})
-    response.set_cookie(
-        "user-locale",
-        locale,
-        httponly=False,
-        secure=_COOKIE_SECURE,
-        samesite="Lax",
-        max_age=86400 * 365,
-    )
+    _set_locale_cookie(response, user, connection.tenant)
     return response
 
 
@@ -672,8 +683,6 @@ def google_callback(request):
     # Determine default role: coach on public schema (main), student on tenant
     default_role = "coach" if tenant.schema_name == "public" else "student"
 
-    from apps.core.constants import REGION_DEFAULT_LOCALE
-
     # Region from the signed state — the request host at this point is the
     # OAuth callback domain (localhost), which is meaningless for region.
     region = state_data.get("region") or getattr(tenant, "region", None) or "global"
@@ -685,7 +694,8 @@ def google_callback(request):
             "name": name,
             "role": default_role,
             "avatar_url": avatar,
-            "preferred_locale": REGION_DEFAULT_LOCALE.get(region, "en"),
+            # A creator made on contentor.app speaks the page's language; a student row stays "" (the site's).
+            "preferred_locale": languages.resolve(translation.get_language()) if default_role == "coach" else "",
             "accessible_regions": [],
         },
     )

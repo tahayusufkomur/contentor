@@ -9,7 +9,8 @@ from typing import NamedTuple
 
 from django.conf import settings
 
-from .constants import REGION_DEFAULT_LOCALE, REGION_GLOBAL
+from . import languages
+from .constants import REGION_GLOBAL
 
 
 class HostInfo(NamedTuple):
@@ -25,7 +26,7 @@ _APEX_HOSTS = {"contentor.app", "localhost"}
 def resolve_host(host: str) -> HostInfo:
     """Parse a request host into (region, tenant_slug, locale)."""
     host = (host or "").split(":")[0].lower()
-    locale = REGION_DEFAULT_LOCALE[REGION_GLOBAL]
+    locale = languages.DEFAULT
 
     if host in _APEX_HOSTS:
         return HostInfo(region=REGION_GLOBAL, tenant_slug=None, locale=locale)

@@ -23,8 +23,6 @@ CURRENCY_CHOICES = [
     (CURRENCY_EUR, "Euro"),
 ]
 
-REGION_DEFAULT_LOCALE = {REGION_GLOBAL: LOCALE_EN}
-
 RESERVED_SLUGS = {
     "tr",
     "www",
