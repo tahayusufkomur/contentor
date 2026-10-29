@@ -228,6 +228,16 @@ def test_a_turkish_label_with_a_dotted_capital_maps_back_in_a_multi_pick():
         assert brief.english_picks(f"{form}, my own way", field, {}) == "Contact form, my own way"
 
 
+def test_her_own_words_with_a_dotted_capital_keep_their_letters_in_any_language():
+    """A Turkish name typed in an en/de/pl UI: the tile still maps, her words are kept exactly as typed."""
+    field = brief.FIELD_BY_ID["contact"]
+    for lang in ("en", "de", "pl", "tr"):
+        with override(lang):
+            email = brief.tx("Email")
+            assert brief.english_picks(f"{email}, İstanbul Yoga Studio", field, {}) == "Email, İstanbul Yoga Studio"
+            assert brief.english_picks("İstanbul Yoga Studio, IŞIK", field, {}) == "İstanbul Yoga Studio, IŞIK"
+
+
 def test_english_names_in_sentences_are_left_as_written():
     """Only our own tile names are lower-cased mid-sentence; hers and proper names keep their case."""
     assert brief.tx("Mostly Pottery") == "Mostly Pottery"

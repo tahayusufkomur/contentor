@@ -2133,13 +2133,15 @@ def options_for(
 def english_picks(text: str, field: Field, answers: dict, brand: str = "") -> str:
     """Tiles a creator tapped, as the English options they stand for: the screen shows ``tx(option)`` and sends it
     back as typed text, while code matches and stores the English identity. Text that is no tile stays as it is."""
-    by_shown = {lc(tx(o)): o for o in options_for(field, answers, brand)[0]}
+
+    def fold(s: str) -> str:  # lower-case one character at a time, so "İ" (two characters in .lower()) keeps its place
+        return "".join(c if len(c := lc(ch)) == 1 else "i" for ch in s)
+
+    by_shown = {fold(tx(o)): o for o in options_for(field, answers, brand)[0]}
     labels = sorted(by_shown, key=len, reverse=True)  # a label may hold a comma ("Jeder, der den Kurs kauft")
-    # One normalised string is compared and sliced (Turkish "İ" has two characters in a plain lower()); her own
-    # words come from the original when the two are as long as each other.
-    text = text.strip()
-    rest = lc(text)
-    original = text if len(rest) == len(text) else rest
+    # Matched on the folded string, sliced from the original: her own words are never taken from a lowered copy.
+    original = text.strip()
+    rest = fold(original)
     picked = []
     while rest:
         found = next((s for s in labels if rest.startswith(s) and rest[len(s) :][:1] in ("", ",")), None)
