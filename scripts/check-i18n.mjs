@@ -29,7 +29,7 @@ const DEFAULT = "en";
 
 // Skipped by the ratchet (relative to the repo root).
 const SKIP = [
-  /^frontend-main\/src\/app\/admin\//, // superadmin stays English
+  /^frontend-main\/src\/app\/\(admin\)\/admin\//, // superadmin stays English
   /^frontend-main\/src\/components\/admin\//,
   /^frontend-customer\/src\/app\/design-showcase\//,
   /^frontend-customer\/src\/components\/sections\/fixtures\.ts$/,

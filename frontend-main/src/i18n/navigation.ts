@@ -1,6 +1,6 @@
 "use client";
 
-import { createElement, type ComponentProps } from "react";
+import { createElement, useCallback, type ComponentProps } from "react";
 import { useLocale } from "next-intl";
 
 import { NavLink } from "@/components/ui/nav-link";
@@ -24,5 +24,10 @@ export function LocaleNavLink({
 export function useLocaleNavigate(): (href: string) => void {
   const navigate = useNavigate();
   const locale = useLocale();
-  return (href) => navigate(localizedHref(href, locale));
+  // Stable, like the provider's own `navigate`: callers list it in effect
+  // deps, and a new identity per render would re-run those effects.
+  return useCallback(
+    (href) => navigate(localizedHref(href, locale)),
+    [navigate, locale],
+  );
 }

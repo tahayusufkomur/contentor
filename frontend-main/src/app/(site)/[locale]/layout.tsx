@@ -1,3 +1,4 @@
+import { hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 
 import { routing } from "@/i18n/routing";
@@ -11,6 +12,6 @@ export default function LocaleLayout({
   children: React.ReactNode;
   params: { locale: string };
 }) {
-  if (!routing.locales.includes(params.locale)) notFound();
+  if (!hasLocale(routing.locales, params.locale)) notFound();
   return children;
 }

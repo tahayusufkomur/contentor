@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
-import type auth from "../../../../../messages/en/auth.json";
+import type auth from "../../../../../../messages/en/auth.json";
 import {
   AlertCircle,
   CheckCircle2,

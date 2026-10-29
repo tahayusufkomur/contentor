@@ -13,5 +13,11 @@ export default defineConfig({
   },
   // The wizard (and its tests) moved to the tenant /setup interview; keep
   // `make test-frontend` green while this app has no pure-logic tests.
-  test: { include: ["src/**/__tests__/**/*.test.ts"], passWithNoTests: true },
+  test: {
+    include: ["src/**/__tests__/**/*.test.ts"],
+    passWithNoTests: true,
+    // next-intl's ESM imports "next/server" without an extension, which node
+    // cannot resolve; bundling it lets the middleware test load it.
+    server: { deps: { inline: ["next-intl"] } },
+  },
 });
