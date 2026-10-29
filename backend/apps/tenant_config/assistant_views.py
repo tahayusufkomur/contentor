@@ -6,6 +6,8 @@ from decimal import Decimal
 from django.conf import settings
 from django.db import connection
 from django.http import StreamingHttpResponse
+from django.utils import translation
+from django.utils.translation import gettext as _
 from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -13,6 +15,7 @@ from rest_framework.throttling import UserRateThrottle
 
 from apps.core import assistant, ipblock
 from apps.core.email import send_email
+from apps.core.languages import creator_language
 from apps.core.models import AiConversation
 from apps.core.permissions import IsCoachOrOwner
 from apps.core.throttling import AiHumanMessageThrottle, AiHumanRequestThrottle, AiThreadThrottle, ClientIpAnonThrottle
@@ -164,7 +167,7 @@ def assistant_human_message(request):
     session = str(data.get("session_id") or "").strip()[:36]
     content = str(data.get("content") or "").strip()[:2000]
     if not content:
-        return Response({"error": "empty message"}, status=400)
+        return Response({"error": _("empty message")}, status=400)
     convo = (
         AiConversation.objects.filter(
             session_id=session, feature="student_bot", tenant_schema=connection.tenant.schema_name
@@ -218,16 +221,15 @@ def assistant_human_request(request):
                 or tenant.domains.values_list("domain", flat=True).first()
                 or ""
             )
-            label = convo.user_label or "A visitor"
-            send_email(
-                to=tenant.owner_email,
-                subject=f"{label} asked to talk to a human on your site",
-                html=(
-                    f"<p>{label} asked to talk to a human in your site assistant chat.</p>"
-                    f'<p><a href="https://{domain}/admin/assistant">Open your conversations</a> '
-                    f"to reply — the assistant pauses while you chat.</p>"
-                ),
-            )
+            with translation.override(creator_language()):  # the creator reads this alert
+                label = convo.user_label or _("A visitor")
+                subject = _("%(label)s asked to talk to a human on your site") % {"label": label}
+                html = "<p>{}</p><p>{}</p>".format(
+                    _("%(label)s asked to talk to a human in your site assistant chat.") % {"label": label},
+                    _('<a href="%(url)s">Open your conversations</a> to reply — the assistant pauses while you chat.')
+                    % {"url": f"https://{domain}/admin/assistant"},
+                )
+            send_email(to=tenant.owner_email, subject=subject, html=html)
         except Exception:
             import logging
 
@@ -276,12 +278,14 @@ def assistant_config(request):
                 or len(qs) > 3
                 or any(not isinstance(q, str) or not q.strip() or len(q) > 80 for q in qs)
             ):
-                return Response({"error": "suggested_questions: up to 3 strings of at most 80 characters"}, status=400)
+                return Response(
+                    {"error": _("suggested_questions: up to 3 strings of at most 80 characters")}, status=400
+                )
             cfg.suggested_questions = [q.strip() for q in qs]
         if "greeting" in data:
             greeting = str(data["greeting"] or "").strip()
             if len(greeting) > 200:
-                return Response({"error": "greeting: at most 200 characters"}, status=400)
+                return Response({"error": _("greeting: at most 200 characters")}, status=400)
             cfg.greeting = greeting
         if "enabled" in data:
             cfg.enabled = bool(data["enabled"])
@@ -300,11 +304,11 @@ def _validate_entry(data, partial=False):
     if not partial or "title" in data:
         title = str(data.get("title") or "").strip()
         if not title or len(title) > 120:
-            errors["title"] = "1-120 characters"
+            errors["title"] = _("1-120 characters")
     if not partial or "content" in data:
         content = str(data.get("content") or "").strip()
         if not content or len(content) > AssistantKnowledgeEntry.MAX_CONTENT_CHARS:
-            errors["content"] = f"1-{AssistantKnowledgeEntry.MAX_CONTENT_CHARS} characters"
+            errors["content"] = _("1-%(max)s characters") % {"max": AssistantKnowledgeEntry.MAX_CONTENT_CHARS}
     return errors
 
 
@@ -318,7 +322,9 @@ def assistant_knowledge(request):
     if errors:
         return Response(errors, status=400)
     if AssistantKnowledgeEntry.objects.count() >= AssistantKnowledgeEntry.MAX_ENTRIES:
-        return Response({"error": f"limit of {AssistantKnowledgeEntry.MAX_ENTRIES} entries reached"}, status=400)
+        return Response(
+            {"error": _("limit of %(max)s entries reached") % {"max": AssistantKnowledgeEntry.MAX_ENTRIES}}, status=400
+        )
     e = AssistantKnowledgeEntry.objects.create(
         title=str(data["title"]).strip(),
         content=str(data["content"]).strip(),
@@ -368,19 +374,19 @@ def _validate_link(data, partial=False):
     if not partial or "label" in data:
         label = str(data.get("label") or "").strip()
         if not label or len(label) > 60:
-            errors["label"] = "1-60 characters"
+            errors["label"] = _("1-60 characters")
     if not partial or "url" in data:
         url = str(data.get("url") or "").strip()
         if len(url) > 500:
-            errors["url"] = "at most 500 characters"
+            errors["url"] = _("at most 500 characters")
         elif url.startswith("/") and not url.startswith("//") and "\\" not in url:
             pass  # same-site path
         else:
             parsed = urlparse(url)
             if parsed.scheme != "https" or not parsed.netloc:
-                errors["url"] = "must be a same-site path (/…) or an https:// URL"
+                errors["url"] = _("must be a same-site path (/…) or an https:// URL")
     if "note" in data and len(str(data.get("note") or "")) > 160:
-        errors["note"] = "at most 160 characters"
+        errors["note"] = _("at most 160 characters")
     return errors
 
 
@@ -394,7 +400,7 @@ def assistant_links(request):
     if errors:
         return Response(errors, status=400)
     if AssistantLink.objects.count() >= AssistantLink.MAX_LINKS:
-        return Response({"error": f"limit of {AssistantLink.MAX_LINKS} links reached"}, status=400)
+        return Response({"error": _("limit of %(max)s links reached") % {"max": AssistantLink.MAX_LINKS}}, status=400)
     link = AssistantLink.objects.create(
         label=str(data["label"]).strip(),
         url=str(data["url"]).strip(),
@@ -589,7 +595,7 @@ def assistant_conversation_message(request, pk):
     data = request.data if isinstance(request.data, dict) else {}
     content = str(data.get("content") or "").strip()[:2000]
     if not content:
-        return Response({"error": "empty message"}, status=400)
+        return Response({"error": _("empty message")}, status=400)
     convo = assistant.maybe_auto_release(convo)
     if convo.status != AiConversation.STATUS_HUMAN:
         return Response({"error": "not_taken_over"}, status=403)

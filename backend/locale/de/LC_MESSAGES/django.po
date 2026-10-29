@@ -147,6 +147,43 @@ msgstr "Kurs nicht gefunden."
 msgid "Access granted successfully."
 msgstr "Zugriff erfolgreich gewährt."
 
+#: apps/adminkit/introspection.py
+#, fuzzy
+msgid "Yes"
+msgstr "Ja"
+
+#: apps/adminkit/introspection.py
+#, fuzzy
+msgid "No"
+msgstr "Nein"
+
+#: apps/adminkit/views.py
+#, fuzzy
+msgid "Creating is not allowed."
+msgstr "Erstellen ist nicht erlaubt."
+
+#: apps/adminkit/views.py
+#, fuzzy
+msgid "Editing is not allowed."
+msgstr "Bearbeiten ist nicht erlaubt."
+
+#: apps/adminkit/views.py
+#, fuzzy
+msgid "Deleting is not allowed."
+msgstr "Löschen ist nicht erlaubt."
+
+#: apps/adminkit/views.py
+#, python-format, fuzzy
+msgid "This %(label)s is referenced by other records and cannot be deleted."
+msgstr ""
+"Dieses %(label)s wird von anderen Datensätzen referenziert und kann nicht "
+"gelöscht werden."
+
+#: apps/adminkit/views.py
+#, fuzzy
+msgid "Provide a non-empty `ids` list."
+msgstr "Gib eine nicht leere `ids`-Liste an."
+
 #: apps/billing/admin_panels.py apps/billing/tests/test_error_language.py
 #, fuzzy, python-format
 msgid "Deactivated %(count)d plan."
@@ -215,8 +252,10 @@ msgstr "Ich konnte dieses Element nicht finden."
 msgid "I could not read those settings."
 msgstr "Ich konnte diese Einstellungen nicht lesen."
 
-#: apps/billing/views/bundles.py apps/courses/views.py apps/downloads/views.py
-#: apps/media/design_views.py apps/media/views.py apps/reels/views.py
+#: apps/billing/views/bundles.py apps/core/curated_images/views.py
+#: apps/core/curated_photos/views.py apps/core/me/views.py
+#: apps/courses/views.py apps/downloads/views.py apps/media/design_views.py
+#: apps/media/views.py apps/reels/views.py
 #, fuzzy
 msgid "Not found."
 msgstr "Nicht gefunden."
@@ -437,50 +476,50 @@ msgid "Pick a subscription first, then include this in it."
 msgstr "Wähle zuerst ein Abonnement aus und schließe dies dann darin ein."
 
 #: apps/billing/ways.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(n)d year"
 msgid_plural "%(n)d years"
 msgstr[0] "%(n)d Jahr"
 msgstr[1] "%(n)d Jahre"
 
 #: apps/billing/ways.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(n)d month"
 msgid_plural "%(n)d months"
 msgstr[0] "%(n)d Monat"
 msgstr[1] "%(n)d Monate"
 
 #: apps/billing/ways.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(n)d week"
 msgid_plural "%(n)d weeks"
 msgstr[0] "%(n)d Woche"
 msgstr[1] "%(n)d Wochen"
 
 #: apps/billing/ways.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(n)d day"
 msgid_plural "%(n)d days"
 msgstr[0] "%(n)d Tag"
 msgstr[1] "%(n)d Tage"
 
 #: apps/billing/ways.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "from %(date)s"
 msgstr "ab %(date)s"
 
 #: apps/billing/ways.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "until %(date)s"
 msgstr "bis %(date)s"
 
 #: apps/billing/ways.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "After %(span)s of membership"
 msgstr "Nach %(span)s Mitgliedschaft"
 
 #: apps/billing/ways.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "From %(date)s"
 msgstr "Ab %(date)s"
 
@@ -490,12 +529,12 @@ msgid "Right away"
 msgstr "Sofort"
 
 #: apps/billing/ways.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "closes after %(span)s"
 msgstr "schließt nach %(span)s"
 
 #: apps/billing/ways.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "closes %(date)s"
 msgstr "schließt am %(date)s"
 
@@ -505,17 +544,17 @@ msgid "never closes"
 msgstr "schließt nie"
 
 #: apps/billing/ways.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "after %(span)s of joining"
 msgstr "%(span)s nach dem Beitritt"
 
 #: apps/billing/ways.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "for %(span)s after joining"
 msgstr "für %(span)s nach dem Beitritt"
 
 #: apps/billing/ways.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "until %(span)s after joining"
 msgstr "bis %(span)s nach dem Beitritt"
 
@@ -531,22 +570,22 @@ msgid "Free for everyone"
 msgstr "Kostenlos für alle"
 
 #: apps/billing/ways.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "opening %(span)s after purchase"
 msgstr "öffnet %(span)s nach dem Kauf"
 
 #: apps/billing/ways.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "with %(span)s of access"
 msgstr "mit %(span)s Zugang"
 
 #: apps/billing/ways.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "until %(span)s after purchase"
 msgstr "bis %(span)s nach dem Kauf"
 
 #: apps/billing/ways.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(price)s once"
 msgstr "%(price)s einmalig"
 
@@ -556,22 +595,22 @@ msgid ", theirs to keep"
 msgstr ", dauerhafter Zugang"
 
 #: apps/billing/ways.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "after %(span)s of membership"
 msgstr "nach %(span)s Mitgliedschaft"
 
 #: apps/billing/ways.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "for %(span)s of membership"
 msgstr "für %(span)s Mitgliedschaft"
 
 #: apps/billing/ways.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "until %(span)s into membership"
 msgstr "bis %(span)s nach Beginn der Mitgliedschaft"
 
 #: apps/billing/ways.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "in %(plans)s"
 msgstr "in %(plans)s"
 
@@ -655,8 +694,24 @@ msgstr "Ungültiger Bildschlüssel."
 msgid "Invalid emoji."
 msgstr "Ungültiges Emoji."
 
+#: apps/core/assistant_views.py
+#, fuzzy
+msgid "rating must be up|down"
+msgstr "rating muss up|down sein"
+
+#: apps/core/assistant_views.py
+#, fuzzy
+msgid "bad token"
+msgstr "ungültiges Token"
+
+#: apps/core/contact/views.py
+#, python-format, fuzzy
+msgid "New message from %(name)s"
+msgstr "Neue Nachricht von %(name)s"
+
 #: apps/core/copilot/blocks.py apps/core/onboarding/compose.py
 #: apps/notifications/templates_builtin.py apps/tenant_config/defaults.py
+#: apps/tenant_config/setup_flow.py
 #, fuzzy
 msgid "Welcome"
 msgstr "Willkommen"
@@ -677,7 +732,7 @@ msgid "Get started"
 msgstr "Jetzt starten"
 
 #: apps/core/copilot/blocks.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(label)s %(n)d"
 msgstr "%(label)s %(n)d"
 
@@ -687,7 +742,7 @@ msgid "A short line about this."
 msgstr "Eine kurze Zeile dazu."
 
 #: apps/core/copilot/blocks.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Question %(n)d?"
 msgstr "Frage %(n)d?"
 
@@ -734,57 +789,57 @@ msgid "links must be site paths like /courses or https:// URLs"
 msgstr "links müssen Website-Pfade wie /courses oder https:// URLs sein"
 
 #: apps/core/copilot/blocks.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(block_type)s has no editable field '%(field)s'"
 msgstr "%(block_type)s hat kein bearbeitbares Feld '%(field)s'"
 
 #: apps/core/copilot/blocks.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(field)s must be one of: %(options)s"
 msgstr "%(field)s muss eines der folgenden sein: %(options)s"
 
 #: apps/core/copilot/blocks.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(field)s must be true or false"
 msgstr "%(field)s muss wahr oder falsch sein"
 
 #: apps/core/copilot/blocks.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "unknown block type: %(block_type)s"
 msgstr "unbekannter Blocktyp: %(block_type)s"
 
 #: apps/core/copilot/blocks.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "the %(family)s section needs photos — add it from the page editor"
 msgstr ""
 "der Abschnitt %(family)s braucht Fotos — füge ihn über den Seiteneditor "
 "hinzu"
 
 #: apps/core/copilot/blocks.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(block_type)s needs a site style — switch to a style first"
 msgstr ""
 "%(block_type)s braucht einen Website-Stil — wechsle zuerst zu einem Stil"
 
 #: apps/core/copilot/blocks.py apps/core/copilot/engine.py
 #: apps/core/copilot/photos.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "unknown page: %(page)s"
 msgstr "unbekannte Seite: %(page)s"
 
 #: apps/core/copilot/blocks.py apps/core/copilot/engine.py
 #: apps/core/copilot/photos.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "no block %(block_id)s on %(page)s"
 msgstr "kein Block %(block_id)s auf %(page)s"
 
 #: apps/core/copilot/blocks.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(id)s is already visible"
 msgstr "%(id)s ist bereits sichtbar"
 
 #: apps/core/copilot/blocks.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(id)s is already hidden"
 msgstr "%(id)s ist bereits ausgeblendet"
 
@@ -804,12 +859,12 @@ msgid "no site styles are available yet"
 msgstr "es sind noch keine Website-Stile verfügbar"
 
 #: apps/core/copilot/chrome.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "style must be one of: %(options)s"
 msgstr "der Stil muss eines der folgenden sein: %(options)s"
 
 #: apps/core/copilot/chrome.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "layout must be one of: %(options)s"
 msgstr "das Layout muss eines der folgenden sein: %(options)s"
 
@@ -836,7 +891,7 @@ msgid "the description cannot be empty"
 msgstr "die Beschreibung darf nicht leer sein"
 
 #: apps/core/copilot/content.py apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "no course with id %(course_id)s"
 msgstr "kein Kurs mit der ID %(course_id)s"
 
@@ -846,7 +901,7 @@ msgid "nothing to change on the course"
 msgstr "nichts am Kurs zu ändern"
 
 #: apps/core/copilot/content.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "no %(kind)s event with id %(event_id)s"
 msgstr "keine %(kind)s-Veranstaltung mit der ID %(event_id)s"
 
@@ -886,7 +941,7 @@ msgid "that lesson is not in this course"
 msgstr "diese Lektion ist nicht in diesem Kurs"
 
 #: apps/core/copilot/content.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "that is more than %(MAX_CURRICULUM_OPS)s changes at once — split it into two"
 " requests"
@@ -905,7 +960,7 @@ msgid "nothing to change in the curriculum"
 msgstr "nichts am Lehrplan zu ändern"
 
 #: apps/core/copilot/content.py apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "no blog post with id %(post_id)s"
 msgstr "kein Blogbeitrag mit der ID %(post_id)s"
 
@@ -958,12 +1013,12 @@ msgid "that attached photo is not in your library"
 msgstr "das angehängte Foto ist nicht in deiner Mediathek"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "no %(event_kind)s event with id %(event_id)s"
 msgstr "keine %(event_kind)s-Veranstaltung mit ID %(event_id)s"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "no event with id %(event_id)s"
 msgstr "keine Veranstaltung mit ID %(event_id)s"
 
@@ -983,24 +1038,24 @@ msgid "Change this email"
 msgstr "Diese E-Mail ändern"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Set access for %(title)s"
 msgstr "Zugriff für %(title)s festlegen"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(n)d field changes"
 msgid_plural "%(n)d fields change"
 msgstr[0] "%(n)d Feld ändert sich"
 msgstr[1] "%(n)d Felder ändern sich"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Add a %(block)s to %(page)s"
 msgstr "Einen %(block)s zu %(page)s hinzufügen"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Remove the %(block)s from %(page)s"
 msgstr "Den %(block)s von %(page)s entfernen"
 
@@ -1010,32 +1065,32 @@ msgid "to the top"
 msgstr "nach ganz oben"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "after %(id)s"
 msgstr "nach %(id)s"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "to %(page)s (%(where)s)"
 msgstr "zu %(page)s (%(where)s)"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Move the %(block)s on %(page)s"
 msgstr "Den %(block)s auf %(page)s verschieben"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Update the %(block)s on %(page)s"
 msgstr "Den %(block)s auf %(page)s aktualisieren"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Show %(id)s on %(page)s"
 msgstr "%(id)s auf %(page)s anzeigen"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Hide %(id)s on %(page)s"
 msgstr "%(id)s auf %(page)s ausblenden"
 
@@ -1045,7 +1100,7 @@ msgid "The section stays saved — flip it back anytime."
 msgstr "Der Abschnitt bleibt gespeichert — blende ihn jederzeit wieder ein."
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Duplicate %(id)s on %(page)s"
 msgstr "%(id)s auf %(page)s duplizieren"
 
@@ -1055,7 +1110,7 @@ msgid "The copy lands right below the original."
 msgstr "Die Kopie landet direkt unter dem Original."
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Use your photo '%(photo)s'"
 msgstr "Dein Foto '%(photo)s' verwenden"
 
@@ -1072,7 +1127,7 @@ msgstr ""
 "anwendest."
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Use the photo '%(photo)s'"
 msgstr "Das Foto '%(photo)s' verwenden"
 
@@ -1084,12 +1139,12 @@ msgstr ""
 "anwendest."
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Cover for '%(title)s': your photo '%(photo)s'"
 msgstr "Titelbild für '%(title)s': dein Foto '%(photo)s'"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Cover for '%(title)s': the photo '%(photo)s'"
 msgstr "Titelbild für '%(title)s': das Foto '%(photo)s'"
 
@@ -1099,7 +1154,7 @@ msgid "the photo note is empty"
 msgstr "die Fotonotiz ist leer"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Remember this photo as: %(description)s"
 msgstr "Dieses Foto merken als: %(description)s"
 
@@ -1110,17 +1165,17 @@ msgstr ""
 "In deiner Mediathek gespeichert, damit es später wiedergefunden werden kann."
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Use your photo '%(photo)s' as the logo"
 msgstr "Dein Foto '%(photo)s' als Logo verwenden"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Use the logo '%(logo)s'"
 msgstr "Das Logo '%(logo)s' verwenden"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "title → '%(title)s'"
 msgstr "titel → '%(title)s'"
 
@@ -1130,27 +1185,27 @@ msgid "new description"
 msgstr "neue Beschreibung"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "price → %(price)s"
 msgstr "preis → %(price)s"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Update course: %(title)s"
 msgstr "Kurs aktualisieren: %(title)s"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Update the curriculum: %(title)s"
 msgstr "Lehrplan aktualisieren: %(title)s"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "when → %(when)s"
 msgstr "wann → %(when)s"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "location → '%(location)s'"
 msgstr "ort → '%(location)s'"
 
@@ -1160,12 +1215,12 @@ msgid "new Zoom link"
 msgstr "neuer Zoom-Link"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Update event: %(title)s"
 msgstr "Veranstaltung aktualisieren: %(title)s"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "summary → '%(summary)s'"
 msgstr "Zusammenfassung → '%(summary)s'"
 
@@ -1180,12 +1235,12 @@ msgid "your photo as the cover"
 msgstr "dein Foto als Cover"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Update post: %(title)s"
 msgstr "Beitrag aktualisieren: %(title)s"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Publish course: %(title)s"
 msgstr "Kurs veröffentlichen: %(title)s"
 
@@ -1195,12 +1250,12 @@ msgid "Goes live for students the moment you confirm."
 msgstr "Geht für Teilnehmer live, sobald du bestätigst."
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Publish post: %(title)s"
 msgstr "Beitrag veröffentlichen: %(title)s"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Switch the site style to %(style)s"
 msgstr "Website-Stil zu %(style)s wechseln"
 
@@ -1219,17 +1274,17 @@ msgid "nothing to change on the navbar"
 msgstr "nichts an der Navigationsleiste zu ändern"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "layout: %(layout)s"
 msgstr "Layout: %(layout)s"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "button: '%(text)s' → %(href)s"
 msgstr "Button: '%(text)s' → %(href)s"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "links: %(links)s"
 msgstr "Links: %(links)s"
 
@@ -1274,41 +1329,41 @@ msgid "free"
 msgstr "kostenlos"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(modules)s, %(lessons)s — %(price)s"
 msgstr "%(modules)s, %(lessons)s — %(price)s"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(n)d module"
 msgid_plural "%(n)d modules"
 msgstr[0] "%(n)d Modul"
 msgstr[1] "%(n)d Module"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(n)d lesson"
 msgid_plural "%(n)d lessons"
 msgstr[0] "%(n)d Lektion"
 msgstr[1] "%(n)d Lektionen"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Create draft course: %(title)s"
 msgstr "Kursentwurf erstellen: %(title)s"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(when)s — visible to students once confirmed"
 msgstr "%(when)s — für Teilnehmer sichtbar, sobald bestätigt"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Schedule %(kind)s: %(title)s"
 msgstr "%(kind)s planen: %(title)s"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "in your %(template)s design"
 msgstr "in deinem %(template)s-Design"
 
@@ -1318,12 +1373,12 @@ msgid "in your brand's design"
 msgstr "im Design deiner Marke"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Draft email: %(subject)s"
 msgstr "E-Mail entwerfen: %(subject)s"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "Saved as a draft %(look)s. Review and send it from Messages. Nothing is sent"
 " now."
@@ -1337,7 +1392,7 @@ msgid "that video does not exist"
 msgstr "dieses Video existiert nicht"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Make %(n)d reel from %(title)s"
 msgid_plural "Make %(n)d reels from %(title)s"
 msgstr[0] "Erstelle %(n)d Reel aus %(title)s"
@@ -1354,7 +1409,7 @@ msgstr ""
 "nichts gepostet."
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Draft announcement: %(title)s"
 msgstr "Ankündigung entwerfen: %(title)s"
 
@@ -1367,7 +1422,7 @@ msgstr ""
 " jetzt nichts gesendet."
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Draft blog post: %(title)s"
 msgstr "Entwurf für Blogbeitrag: %(title)s"
 
@@ -1377,7 +1432,7 @@ msgid "Draft for your review"
 msgstr "Entwurf für deine Überprüfung"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(detail)s — with your photo as the cover"
 msgstr "%(detail)s — mit deinem Foto als Cover"
 
@@ -1389,7 +1444,7 @@ msgstr ""
 " du das umformulieren?"
 
 #: apps/core/copilot/engine.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "I couldn't make that change: %(reason)s. Nothing on your site was changed."
 msgstr ""
@@ -1402,12 +1457,12 @@ msgid "no logos are available in the library yet"
 msgstr "in der Bibliothek sind noch keine Logos verfügbar"
 
 #: apps/core/copilot/photos.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "photos can go on these sections only: %(options)s"
 msgstr "nur in diesen Abschnitten können Fotos platziert werden: %(options)s"
 
 #: apps/core/copilot/photos.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(block)s has photo fields: %(fields)s"
 msgstr "%(block)s hat Fotofelder: %(fields)s"
 
@@ -1457,7 +1512,7 @@ msgid "that logo is no longer available"
 msgstr "dieses Logo ist nicht mehr verfügbar"
 
 #: apps/core/copilot/views.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "unknown action: %(kind)s"
 msgstr "unbekannte Aktion: %(kind)s"
 
@@ -1480,6 +1535,41 @@ msgstr "nur die letzte Änderung kann rückgängig gemacht werden"
 #, fuzzy
 msgid "nothing to update"
 msgstr "nichts zu aktualisieren"
+
+#: apps/core/curated_images/views.py
+#, fuzzy
+msgid "Unknown orientation."
+msgstr "Unbekannte Ausrichtung."
+
+#: apps/core/curated_images/views.py
+#, fuzzy
+msgid "Describe the image you want."
+msgstr "Beschreibe das Bild, das du möchtest."
+
+#: apps/core/curated_images/views.py apps/media/views.py
+#, fuzzy
+msgid "You have used this month's image generations."
+msgstr "Du hast die Bildgenerierungen für diesen Monat aufgebraucht."
+
+#: apps/core/curated_images/views.py
+#, fuzzy
+msgid "That description could not be turned into an image."
+msgstr "Diese Beschreibung konnte nicht in ein Bild umgewandelt werden."
+
+#: apps/core/curated_logos/views.py
+#, fuzzy
+msgid "That logo isn't available right now."
+msgstr "Dieses Logo ist gerade nicht verfügbar."
+
+#: apps/core/dev/views.py
+#, fuzzy
+msgid "prompt required"
+msgstr "prompt erforderlich"
+
+#: apps/core/dev/views.py
+#, fuzzy
+msgid "generation failed (see django logs)"
+msgstr "generierung fehlgeschlagen (siehe django-logs)"
 
 #: apps/core/email.py
 #, fuzzy
@@ -1548,7 +1638,7 @@ msgid "Writing lesson descriptions"
 msgstr "Lektionsbeschreibungen werden geschrieben"
 
 #: apps/core/focus/descriptions.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Wrote %(n)d lesson description."
 msgid_plural "Wrote %(n)d lesson descriptions."
 msgstr[0] "%(n)d Lektionsbeschreibung geschrieben."
@@ -1602,7 +1692,7 @@ msgstr ""
 "ändern."
 
 #: apps/core/focus/flow.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid ""
 "Your announcement is scheduled for %(weekday)s %(day)d %(month)s at "
 "%(time)s."
@@ -1616,22 +1706,22 @@ msgid "Your announcement is scheduled."
 msgstr "Deine Ankündigung ist geplant."
 
 #: apps/core/focus/flow.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(label)s: you decide"
 msgstr "%(label)s: du entscheidest"
 
 #: apps/core/focus/flow.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "In %(plan)s"
 msgstr "In %(plan)s"
 
 #: apps/core/focus/flow.py apps/core/focus/kinds/event.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "One-time price: %(price)s"
 msgstr "Einmaliger Preis: %(price)s"
 
 #: apps/core/focus/flow.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Sell it for %(price)s"
 msgstr "Für %(price)s verkaufen"
 
@@ -1646,7 +1736,7 @@ msgid "Add it later"
 msgstr "Später hinzufügen"
 
 #: apps/core/focus/kinds/membership.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(n)d item"
 msgid_plural "%(n)d items"
 msgstr[0] "%(n)d Element"
@@ -1663,26 +1753,26 @@ msgid "%(price)s a year"
 msgstr "%(price)s pro Jahr"
 
 #: apps/core/focus/kinds/membership.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(price)s every %(n)d month"
 msgid_plural "%(price)s every %(n)d months"
 msgstr[0] "%(price)s alle %(n)d Monat"
 msgstr[1] "%(price)s alle %(n)d Monate"
 
 #: apps/core/focus/kinds/message.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(n)d student"
 msgid_plural "%(n)d students"
 msgstr[0] "%(n)d Teilnehmer"
 msgstr[1] "%(n)d Teilnehmer"
 
 #: apps/core/focus/kinds/message.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "All my students (%(students)s)"
 msgstr "Alle meine Teilnehmer (%(students)s)"
 
 #: apps/core/focus/kinds/message.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Students of %(name)s"
 msgstr "Teilnehmer von %(name)s"
 
@@ -1692,14 +1782,41 @@ msgid "Writing your outline"
 msgstr "Deine Gliederung wird erstellt"
 
 #: apps/core/focus/outline.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Module %(n)d"
 msgstr "Modul %(n)d"
 
 #: apps/core/focus/outline.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Lesson %(n)d"
 msgstr "Lektion %(n)d"
+
+#: apps/core/help/views.py apps/tenant_config/assistant_views.py
+#: apps/tenant_config/views.py
+#, fuzzy
+msgid "empty message"
+msgstr "leere Nachricht"
+
+#: apps/core/help/views.py
+#, fuzzy
+msgid "A visitor on contentor.app asked for a human in Ask Contentor"
+msgstr ""
+"Ein Besucher auf contentor.app hat in Ask Contentor nach einem Menschen "
+"gefragt"
+
+#: apps/core/help/views.py
+#, fuzzy
+msgid ""
+"A visitor on contentor.app asked for a human in the marketing site's Ask "
+"Contentor chat."
+msgstr ""
+"Ein Besucher auf contentor.app hat im Ask Contentor-Chat der Marketing-"
+"Website nach einem Menschen gefragt."
+
+#: apps/core/middleware/rate_limit.py
+#, fuzzy
+msgid "Rate limit exceeded"
+msgstr "Rate-Limit überschritten"
 
 #: apps/core/monetization.py
 #, fuzzy
@@ -3135,6 +3252,16 @@ msgstr "Unbekannte Nische '%(niche)s'."
 msgid "slug parameter required"
 msgstr "slug-Parameter erforderlich"
 
+#: apps/core/signals.py
+#, fuzzy
+msgid "Tenant.region is immutable once a tenant has been created."
+msgstr "Tenant.region ist unveränderlich, sobald ein Tenant erstellt wurde."
+
+#: apps/core/signals.py
+#, fuzzy
+msgid "Tenant.billing_currency is immutable once set."
+msgstr "Tenant.billing_currency ist unveränderlich, sobald festgelegt."
+
 #: apps/core/tasks.py apps/tenant_config/interview_milestones.py
 #, fuzzy
 msgid "Get Started"
@@ -3257,6 +3384,17 @@ msgstr "Foto hochgeladen."
 #, fuzzy
 msgid "Invalid category."
 msgstr "Ungültige Kategorie."
+
+#: apps/core/validators.py
+#, fuzzy
+msgid "Slug is required."
+msgstr "Slug ist erforderlich."
+
+#: apps/core/validators.py
+#, python-format, fuzzy
+msgid "'%(slug)s' is a reserved subdomain and cannot be used."
+msgstr ""
+"'%(slug)s' ist eine reservierte Subdomain und kann nicht verwendet werden."
 
 #: apps/courses/models.py
 #, fuzzy
@@ -3667,7 +3805,7 @@ msgstr ""
 msgid "Click here"
 msgstr "Hier klicken"
 
-#: apps/email_campaigns/serializers.py
+#: apps/email_campaigns/serializers.py apps/platform_email/serializers.py
 #, fuzzy
 msgid "recipient_filter must be an object."
 msgstr "recipient_filter muss ein Objekt sein."
@@ -3687,7 +3825,7 @@ msgstr "course_ids muss eine nicht leere Liste sein."
 msgid "user_ids must be a non-empty list."
 msgstr "user_ids muss eine nicht leere Liste sein."
 
-#: apps/email_campaigns/serializers.py
+#: apps/email_campaigns/serializers.py apps/platform_email/serializers.py
 #, fuzzy
 msgid "No recipients match the filter."
 msgstr "Keine Empfänger entsprechen dem Filter."
@@ -3882,7 +4020,7 @@ msgstr "%(coach)s über %(brand)s"
 msgid "Photo not found."
 msgstr "Foto nicht gefunden."
 
-#: apps/email_campaigns/views.py
+#: apps/email_campaigns/views.py apps/platform_email/views.py
 #, fuzzy
 msgid "Template not found."
 msgstr "Vorlage nicht gefunden."
@@ -3892,22 +4030,22 @@ msgstr "Vorlage nicht gefunden."
 msgid "Only drafts and scheduled emails can be deleted."
 msgstr "Nur Entwürfe und geplante E-Mails können gelöscht werden."
 
-#: apps/email_campaigns/views.py
+#: apps/email_campaigns/views.py apps/platform_email/views.py
 #, fuzzy
 msgid "This email was already sent."
 msgstr "Diese E-Mail wurde bereits gesendet."
 
-#: apps/email_campaigns/views.py
+#: apps/email_campaigns/views.py apps/platform_email/views.py
 #, fuzzy
 msgid "This email is already on its way."
 msgstr "Diese E-Mail ist bereits unterwegs."
 
-#: apps/email_campaigns/views.py
+#: apps/email_campaigns/views.py apps/platform_email/views.py
 #, fuzzy
 msgid "Give your email a subject first."
 msgstr "Gib deiner E-Mail zuerst einen Betreff."
 
-#: apps/email_campaigns/views.py
+#: apps/email_campaigns/views.py apps/platform_email/views.py
 #, fuzzy
 msgid "This email is empty."
 msgstr "Diese E-Mail ist leer."
@@ -3922,7 +4060,7 @@ msgstr "E-Mail-Kontingent für diesen Monat überschritten."
 msgid "That's a lot of tests. Try again in an hour."
 msgstr "Das sind ganz schön viele Tests. Versuche es in einer Stunde erneut."
 
-#: apps/email_campaigns/views.py
+#: apps/email_campaigns/views.py apps/platform_email/views.py
 #, fuzzy, python-format
 msgid "[Test] %(subject)s"
 msgstr "[Test] %(subject)s"
@@ -3932,7 +4070,7 @@ msgstr "[Test] %(subject)s"
 msgid "(no subject)"
 msgstr "(kein Betreff)"
 
-#: apps/email_campaigns/views.py
+#: apps/email_campaigns/views.py apps/platform_email/views.py
 #, fuzzy
 msgid "The test email could not be sent."
 msgstr "Die Test-E-Mail konnte nicht gesendet werden."
@@ -4028,6 +4166,26 @@ msgstr "Ungültiger Veranstaltungstyp."
 #, fuzzy
 msgid "bad signature"
 msgstr "ungültige Signatur"
+
+#: apps/logbook/views/panel.py
+#, python-format, fuzzy
+msgid "invalid '%(name)s' timestamp"
+msgstr "ungültiger Zeitstempel für '%(name)s'"
+
+#: apps/logbook/views/panel.py
+#, fuzzy
+msgid "invalid cursor"
+msgstr "ungültiger Cursor"
+
+#: apps/logbook/views/panel.py
+#, fuzzy
+msgid "invalid 'status_class' value"
+msgstr "ungültiger Wert für 'status_class'"
+
+#: apps/logbook/views/panel.py
+#, fuzzy
+msgid "invalid 'ip' address"
+msgstr "ungültige 'ip'-Adresse"
 
 #: apps/mailbox/attachments.py
 #, fuzzy
@@ -4240,11 +4398,6 @@ msgstr "Gib an, was geändert werden soll."
 #, fuzzy
 msgid "Unknown edit."
 msgstr "Unbekannte Bearbeitung."
-
-#: apps/media/views.py
-#, fuzzy
-msgid "You have used this month's image generations."
-msgstr "Du hast die Bildgenerierungen für diesen Monat aufgebraucht."
 
 #: apps/notifications/admin_views.py
 #, fuzzy
@@ -4787,9 +4940,24 @@ msgid "You've been unsubscribed from these emails."
 msgstr "Du wurdest von diesen E-Mails abgemeldet."
 
 #: apps/platform_email/serializers.py
+#, python-format, fuzzy
+msgid "Invalid filter type. Must be one of: %(types)s."
+msgstr "Ungültiger Filtertyp. Muss einer der folgenden sein: %(types)s."
+
+#: apps/platform_email/serializers.py
 #, fuzzy, python-format
 msgid "Invalid language. Must be one of: %(codes)s."
 msgstr "Ungültige Sprache. Muss eine der folgenden sein: %(codes)s."
+
+#: apps/platform_email/serializers.py
+#, python-format, fuzzy
+msgid "%(field)s must be a non-empty list."
+msgstr "%(field)s muss eine nicht leere Liste sein."
+
+#: apps/platform_email/views.py
+#, fuzzy
+msgid "Only drafts can be deleted."
+msgstr "Nur Entwürfe können gelöscht werden."
 
 #: apps/reels/jobs.py
 #, fuzzy
@@ -4909,7 +5077,7 @@ msgstr ""
 "Start."
 
 #: apps/reels/views.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(key)s is a number from %(low)s to %(high)s."
 msgstr "%(key)s ist eine Zahl von %(low)s bis %(high)s."
 
@@ -4954,7 +5122,7 @@ msgid "Start and end are seconds."
 msgstr "Start und Ende sind Sekunden."
 
 #: apps/reels/views.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "A reel is %(low)d s to %(high)d min of the video."
 msgstr "Ein Reel umfasst %(low)d s bis %(high)d min des Videos."
 
@@ -4964,7 +5132,7 @@ msgid "Choose one of the caption languages."
 msgstr "Wähle eine der Untertitelsprachen aus."
 
 #: apps/reels/views.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Keep at least %(n)d second of the clip."
 msgid_plural "Keep at least %(n)d seconds of the clip."
 msgstr[0] "Behalte mindestens %(n)d Sekunde des Clips."
@@ -4985,6 +5153,94 @@ msgstr "Sende Wörter."
 msgid "Too few words for a reel."
 msgstr "Zu wenige Wörter für ein Reel."
 
+#: apps/tenant_config/assistant_views.py
+#, fuzzy
+msgid "A visitor"
+msgstr "Ein Besucher"
+
+#: apps/tenant_config/assistant_views.py
+#, python-format, fuzzy
+msgid "%(label)s asked to talk to a human on your site"
+msgstr ""
+"%(label)s hat darum gebeten, mit einem Menschen auf deiner Website zu "
+"sprechen"
+
+#: apps/tenant_config/assistant_views.py
+#, python-format, fuzzy
+msgid "%(label)s asked to talk to a human in your site assistant chat."
+msgstr ""
+"%(label)s hat darum gebeten, im Assistenten-Chat deiner Website mit einem "
+"Menschen zu sprechen."
+
+#: apps/tenant_config/assistant_views.py
+#, python-format, fuzzy
+msgid ""
+"<a href=\"%(url)s\">Open your conversations</a> to reply — the assistant "
+"pauses while you chat."
+msgstr ""
+"<a href=\"%(url)s\">Öffne deine Unterhaltungen</a>, um zu antworten — der "
+"Assistent pausiert, während du chattest."
+
+#: apps/tenant_config/assistant_views.py
+#, fuzzy
+msgid "suggested_questions: up to 3 strings of at most 80 characters"
+msgstr "suggested_questions: bis zu 3 Zeichenfolgen von höchstens 80 Zeichen"
+
+#: apps/tenant_config/assistant_views.py
+#, fuzzy
+msgid "greeting: at most 200 characters"
+msgstr "greeting: höchstens 200 Zeichen"
+
+#: apps/tenant_config/assistant_views.py
+#, fuzzy
+msgid "1-120 characters"
+msgstr "1-120 Zeichen"
+
+#: apps/tenant_config/assistant_views.py
+#, python-format, fuzzy
+msgid "1-%(max)s characters"
+msgstr "1-%(max)s Zeichen"
+
+#: apps/tenant_config/assistant_views.py
+#, python-format, fuzzy
+msgid "limit of %(max)s entries reached"
+msgstr "limit von %(max)s Einträgen erreicht"
+
+#: apps/tenant_config/assistant_views.py
+#, fuzzy
+msgid "1-60 characters"
+msgstr "1-60 Zeichen"
+
+#: apps/tenant_config/assistant_views.py
+#, fuzzy
+msgid "at most 500 characters"
+msgstr "höchstens 500 Zeichen"
+
+#: apps/tenant_config/assistant_views.py
+#, fuzzy
+msgid "must be a same-site path (/…) or an https:// URL"
+msgstr "muss ein Same-Site-Pfad (/…) oder eine https://-URL sein"
+
+#: apps/tenant_config/assistant_views.py
+#, fuzzy
+msgid "at most 160 characters"
+msgstr "höchstens 160 Zeichen"
+
+#: apps/tenant_config/assistant_views.py
+#, fuzzy, python-format
+msgid "limit of %(max)s links reached"
+msgstr "Limit von %(max)s Links erreicht"
+
+#: apps/tenant_config/cx/validate.py
+#, fuzzy
+msgid "Kicker"
+msgstr "Dachzeile"
+
+#: apps/tenant_config/cx/validate.py
+#, fuzzy
+msgid "Intro"
+msgstr "Intro"
+
 #: apps/tenant_config/defaults.py
 #, fuzzy
 msgid "Start a course"
@@ -4994,6 +5250,13 @@ msgstr "Einen Kurs starten"
 #, fuzzy
 msgid "Book a session"
 msgstr "Eine Session buchen"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "I couldn't make that change just now. Ask again in a moment."
+msgstr ""
+"Ich konnte diese Änderung gerade nicht vornehmen. Frag in einem Moment noch "
+"einmal."
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
@@ -5091,6 +5354,42 @@ msgstr "Die Mitglieder-Community, Artikel nur für Mitglieder"
 msgid "Everything I offer"
 msgstr "Alles, was ich anbiete"
 
+#: apps/tenant_config/interview_golive.py
+#, fuzzy
+msgid "Start your free trial"
+msgstr "Starte deine kostenlose Testphase"
+
+#: apps/tenant_config/interview_golive.py
+#, fuzzy
+msgid "Choose a plan"
+msgstr "Wähle einen Tarif"
+
+#: apps/tenant_config/interview_golive.py
+#, fuzzy
+msgid "Connect payouts with Stripe"
+msgstr "Verbinde Auszahlungen mit Stripe"
+
+#: apps/tenant_config/interview_golive.py
+#, fuzzy
+msgid "Go live"
+msgstr "Geh live"
+
+#: apps/tenant_config/interview_golive.py
+#, fuzzy
+msgid "Pages"
+msgstr "Seiten"
+
+#: apps/tenant_config/interview_golive.py
+#, fuzzy
+msgid "First course"
+msgstr "Erster Kurs"
+
+#: apps/tenant_config/interview_golive.py
+#, fuzzy
+msgid "Memberships"
+msgstr "Mitgliedschaften"
+
+#: apps/tenant_config/interview_golive.py
 #: apps/tenant_config/interview_milestones.py
 #, fuzzy
 msgid "Calendar"
@@ -5115,6 +5414,121 @@ msgstr "Jederzeit kündbar."
 #, fuzzy, python-format
 msgid "%(perks)s, for %(teaches)s."
 msgstr "%(perks)s, für %(teaches)s."
+
+#: apps/tenant_config/logo_recipe.py
+#, fuzzy, python-format
+msgid "%(field)s must be one of: %(choices)s."
+msgstr "%(field)s muss eines der folgenden sein: %(choices)s."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Original"
+msgstr "Original"
+
+#: apps/tenant_config/serializers.py
+#, fuzzy
+msgid "Unknown time zone."
+msgstr "Unbekannte Zeitzone."
+
+#: apps/tenant_config/serializers.py
+#, fuzzy
+msgid "navbar_config must be an object."
+msgstr "navbar_config muss ein Objekt sein."
+
+#: apps/tenant_config/serializers.py
+#, fuzzy, python-format
+msgid "layout must be one of: %(choices)s."
+msgstr "layout muss eines der folgenden sein: %(choices)s."
+
+#: apps/tenant_config/serializers.py
+#, fuzzy
+msgid "logo_size must be one of: lg, md, sm, xl."
+msgstr "logo_size muss eines der folgenden sein: lg, md, sm, xl."
+
+#: apps/tenant_config/serializers.py
+#, fuzzy, python-format
+msgid "logo_layout must be one of: %(choices)s."
+msgstr "logo_layout muss eines der folgenden sein: %(choices)s."
+
+#: apps/tenant_config/serializers.py
+#, fuzzy, python-format
+msgid "footer_layout must be one of: %(choices)s."
+msgstr "footer_layout muss eines der folgenden sein: %(choices)s."
+
+#: apps/tenant_config/serializers.py
+#, fuzzy
+msgid "pages must be an object."
+msgstr "pages muss ein Objekt sein."
+
+#: apps/tenant_config/serializers.py
+#, fuzzy
+msgid "page_templates must be a list."
+msgstr "page_templates muss eine Liste sein."
+
+#: apps/tenant_config/serializers.py
+#, fuzzy
+msgid "logo_recipe must be an object."
+msgstr "logo_recipe muss ein Objekt sein."
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid "my practice"
+msgstr "meine Praxis"
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy, python-format
+msgid "Getting started with %(teaches)s"
+msgstr "Erste Schritte mit %(teaches)s"
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy, python-format
+msgid "A first course for %(audience)s."
+msgstr "Ein erster Kurs für %(audience)s."
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid "new students"
+msgstr "neue Teilnehmer"
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid "Foundations"
+msgstr "Grundlagen"
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid "Your first practice"
+msgstr "Deine erste Praxis"
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy, python-format
+msgid "%(teaches)s event"
+msgstr "%(teaches)s Veranstaltung"
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy, python-format
+msgid "%(teaches)s live session"
+msgstr "%(teaches)s Live-Session"
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid "A live session to practise together."
+msgstr "Eine Live-Session, um gemeinsam zu üben."
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid "Welcome to my new site."
+msgstr "Willkommen auf meiner neuen Website."
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy, python-format
+msgid "Why I teach %(teaches)s"
+msgstr "Warum ich %(teaches)s unterrichte"
+
+#: apps/tenant_config/setup_flow.py
+#, fuzzy
+msgid "A short note to start."
+msgstr "Eine kurze Notiz zum Einstieg."
 
 #: apps/tenant_config/site_qa.py
 #, fuzzy
@@ -5180,3 +5594,20 @@ msgstr "Diese Sprache ist nicht verfügbar."
 #, fuzzy
 msgid "Your site is live, so its language stays as it is."
 msgstr "Deine Website ist live, daher bleibt ihre Sprache so, wie sie ist."
+
+#: apps/tenant_config/views.py
+#, fuzzy
+msgid "A creator"
+msgstr "Ein Creator"
+
+#: apps/tenant_config/views.py
+#, fuzzy, python-format
+msgid "%(label)s asked for a human in Ask Contentor"
+msgstr "%(label)s hat in Ask Contentor nach einem Menschen gefragt"
+
+#: apps/tenant_config/views.py
+#, fuzzy, python-format
+msgid "%(label)s asked for a human in Ask Contentor (tenant: %(tenant)s)."
+msgstr ""
+"%(label)s hat in Ask Contentor nach einem Menschen gefragt (Mandant: "
+"%(tenant)s)."

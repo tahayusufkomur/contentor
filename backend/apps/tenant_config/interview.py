@@ -10,6 +10,7 @@ import time
 
 from django.conf import settings
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from pydantic import BaseModel
 
 from . import interview_brief as brief
@@ -588,7 +589,7 @@ def _run_edit(tenant, request: str, selections: list | None = None) -> dict:
         )
     except Exception:
         logger.exception("interview edit failed schema=%s", tenant.schema_name)
-        return {"kind": "answer", "text": "I couldn't make that change just now. Ask again in a moment."}
+        return {"kind": "answer", "text": _("I couldn't make that change just now. Ask again in a moment.")}
     ai_compose.record_spend(tenant.schema_name, cost)
     return payload
 

@@ -9,7 +9,9 @@ open relay.
 import logging
 
 from django.db import connection
+from django.utils import translation
 from django.utils.html import escape
+from django.utils.translation import gettext as _
 from rest_framework import serializers
 from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny
@@ -18,6 +20,7 @@ from rest_framework.throttling import AnonRateThrottle
 
 from apps.accounts.models import User
 from apps.core.email import send_email
+from apps.core.languages import creator_language
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +46,12 @@ def _coach_recipient() -> str | None:
         if user and user.email:
             return user.email
     return None
+
+
+def _default_subject(name: str) -> str:
+    """The subject of a message sent without one: the creator reads it, in her language."""
+    with translation.override(creator_language()):
+        return _("New message from %(name)s") % {"name": name}
 
 
 @api_view(["POST"])
@@ -76,14 +85,14 @@ def contact_submit(request):
         from apps.mailbox.identity import sending_identity
         from apps.mailbox.inbound import receive_inbound
 
-        inbox_address, _ = sending_identity(tenant)
+        inbox_address, _from_name = sending_identity(tenant)
         text = data["message"]
         if data.get("phone"):
             text += f"\n\nPhone: {data['phone']}"
         receive_inbound(
             from_email=data["email"],
             to_email=inbox_address,
-            subject=data.get("subject") or f"New message from {data['name']}",
+            subject=data.get("subject") or _default_subject(data["name"]),
             text=text,
         )
         return Response({"detail": "sent"})
@@ -95,7 +104,7 @@ def contact_submit(request):
         name = escape(data["name"])
         reply_email = escape(data["email"])
         phone = escape(data.get("phone", ""))
-        subject = data.get("subject") or f"New message from {data['name']}"
+        subject = data.get("subject") or _default_subject(data["name"])
         body = escape(data["message"]).replace("\n", "<br/>")
         phone_row = f"<p style='color:#888;font-size:13px;'>Phone: {phone}</p>" if phone else ""
         html = f"""

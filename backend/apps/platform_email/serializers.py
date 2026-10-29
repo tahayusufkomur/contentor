@@ -10,10 +10,12 @@ from .recipients import FILTER_TYPES, get_recipient_count
 
 def validate_recipient_filter(value, *, require_recipients=True):
     if not isinstance(value, dict):
-        raise serializers.ValidationError("recipient_filter must be an object.")
+        raise serializers.ValidationError(_("recipient_filter must be an object."))
     filter_type = value.get("type")
     if filter_type not in FILTER_TYPES:
-        raise serializers.ValidationError(f"Invalid filter type. Must be one of: {', '.join(FILTER_TYPES)}.")
+        raise serializers.ValidationError(
+            _("Invalid filter type. Must be one of: %(types)s.") % {"types": ", ".join(FILTER_TYPES)}
+        )
     if value.get("language") and value["language"] not in languages.CODES:
         raise serializers.ValidationError(
             _("Invalid language. Must be one of: %(codes)s.") % {"codes": ", ".join(languages.CODES)}
@@ -22,9 +24,11 @@ def validate_recipient_filter(value, *, require_recipients=True):
     if filter_type in list_fields:
         ids = value.get(list_fields[filter_type])
         if not isinstance(ids, list) or not ids:
-            raise serializers.ValidationError(f"{list_fields[filter_type]} must be a non-empty list.")
+            raise serializers.ValidationError(
+                _("%(field)s must be a non-empty list.") % {"field": list_fields[filter_type]}
+            )
     if require_recipients and get_recipient_count(value) == 0:
-        raise serializers.ValidationError("No recipients match the filter.")
+        raise serializers.ValidationError(_("No recipients match the filter."))
     return value
 
 

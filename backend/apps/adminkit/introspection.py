@@ -14,6 +14,7 @@ from __future__ import annotations
 from django.core.exceptions import FieldDoesNotExist
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.utils.translation import gettext as _
 from rest_framework import serializers
 from rest_framework.fields import empty
 
@@ -172,7 +173,7 @@ def filter_schema(admin) -> list[dict]:
 
             if ftype in ("choice", "boolean"):
                 if ftype == "boolean" and "choices" not in schema:
-                    schema["choices"] = [{"value": "true", "label": "Yes"}, {"value": "false", "label": "No"}]
+                    schema["choices"] = [{"value": "true", "label": _("Yes")}, {"value": "false", "label": _("No")}]
                 if "choices" in schema:
                     new_choices = []
                     for c in schema["choices"]:

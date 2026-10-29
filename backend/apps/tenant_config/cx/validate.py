@@ -13,6 +13,8 @@ from __future__ import annotations
 import json
 import re
 
+from django.utils.translation import gettext as _
+
 from apps.tenant_config import sections
 
 from .catalog import DYNAMIC_SOURCES, icons, limits, primitives
@@ -25,11 +27,15 @@ ASPECTS = ("1:1", "4:5", "3:4", "2:3", "3:2", "4:3", "16:9")
 # Family field type -> the spec field types that may fill it (Layout.map). A
 # richtext slot is rendered as HTML, so only a (sanitised) richtext field fills it.
 _FILLS = {"text": {"text"}, "richtext": {"richtext"}, "link": {"link"}, "image": {"image"}}
-_OPENER_FIELDS = {
-    "kicker": {"type": "text", "label": "Kicker", "max": 40},
-    "intro": {"type": "text", "label": "Intro", "max": 220},
-}
 _MISSING = object()
+
+
+def _opener_fields() -> dict:
+    """The Opener's own fields; their labels are stored in the spec, in the language of whoever saves it."""
+    return {
+        "kicker": {"type": "text", "label": _("Kicker"), "max": 40},
+        "intro": {"type": "text", "label": _("Intro"), "max": 220},
+    }
 
 
 def _int(value, lo, hi, default):
@@ -262,7 +268,7 @@ def validate_spec(raw):
     if walker.has_opener:
         # The Opener draws a kicker and an intro too; declare them so inline
         # edits of those slots are stored instead of dropped on the next save.
-        for name, field in _OPENER_FIELDS.items():
+        for name, field in _opener_fields().items():
             if name not in fields and len(fields) < limits()["fields"]:
                 fields[name] = dict(field)
     spec = {

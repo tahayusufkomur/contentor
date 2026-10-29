@@ -5,6 +5,7 @@ which is locked to superusers managing the whole platform.
 """
 
 from django.conf import settings
+from django.utils.translation import gettext as _
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -91,7 +92,7 @@ def update_my_tenant(request, slug):
     try:
         tenant = Tenant.objects.exclude(schema_name="public").get(slug=slug, owner_email__iexact=email)
     except Tenant.DoesNotExist:
-        return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Not found.")}, status=status.HTTP_404_NOT_FOUND)
 
     if request.method == "DELETE":
         from apps.core.onboarding.cancel import CancelBlockedError, delete_platform

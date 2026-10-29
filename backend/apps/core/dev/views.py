@@ -3,6 +3,7 @@ import time
 
 from django.conf import settings
 from django.http import Http404, HttpResponse
+from django.utils.translation import gettext as _
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -112,7 +113,7 @@ def logo_image_debug(request):
     prompt = str(data.get("prompt") or "").strip()[:2000]
     model = data.get("model") if data.get("model") in _LOGO_IMAGE_MODELS else _LOGO_IMAGE_MODELS[0]
     if not prompt:
-        return Response({"error": "prompt required"}, status=400)
+        return Response({"error": _("prompt required")}, status=400)
     if data.get("suffix", True):
         prompt = prompt.rstrip(". ") + logo_image._STRICT_MARK_SUFFIX
 
@@ -120,7 +121,7 @@ def logo_image_debug(request):
     png, cost = logo_image._generate_one(prompt, model=model)
     generate_seconds = round(time.monotonic() - started, 1)
     if not png:
-        return Response({"error": "generation failed (see django logs)"}, status=502)
+        return Response({"error": _("generation failed (see django logs)")}, status=502)
 
     started = time.monotonic()
     traced = logo_trace.trace_mark(png)

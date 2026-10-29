@@ -7,6 +7,7 @@ from django.core.cache import cache
 from django.db import connection
 from django.db.models import Sum
 from django.http import StreamingHttpResponse
+from django.utils import translation
 from django.utils.translation import gettext as _
 from rest_framework.decorators import api_view, permission_classes, renderer_classes, throttle_classes
 from rest_framework.generics import RetrieveUpdateAPIView
@@ -404,7 +405,7 @@ def help_bot_human_message(request):
     session = str(data.get("session_id") or "").strip()[:36]
     content = str(data.get("content") or "").strip()[:2000]
     if not content:
-        return Response({"error": "empty message"}, status=400)
+        return Response({"error": _("empty message")}, status=400)
     convo = (
         AiConversation.objects.filter(
             session_id=session, feature="help_bot", tenant_schema=connection.tenant.schema_name
@@ -446,12 +447,14 @@ def help_bot_human_request(request):
         convo.save(update_fields=["human_requested", "human_requested_at", "updated_at"])
         assistant.append_message(convo, "system", "human_requested")
         try:
-            label = convo.user_label or "A creator"
-            send_email(
-                to=settings.HELP_BOT_ALERT_EMAIL or settings.RESEND_FROM_EMAIL,
-                subject=f"{label} asked for a human in Ask Contentor",
-                html=(f"<p>{label} asked for a human in Ask Contentor (tenant: {tenant.schema_name}).</p>"),
-            )
+            with translation.override(languages.DEFAULT):  # the team reads this alert, whatever the creator's language
+                label = convo.user_label or _("A creator")
+                subject = _("%(label)s asked for a human in Ask Contentor") % {"label": label}
+                html = "<p>{}</p>".format(
+                    _("%(label)s asked for a human in Ask Contentor (tenant: %(tenant)s).")
+                    % {"label": label, "tenant": tenant.schema_name}
+                )
+            send_email(to=settings.HELP_BOT_ALERT_EMAIL or settings.RESEND_FROM_EMAIL, subject=subject, html=html)
         except Exception:
             logger.exception("help bot: human-request email failed")
     return Response({"ok": True})

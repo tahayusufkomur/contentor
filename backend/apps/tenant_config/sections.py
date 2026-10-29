@@ -20,6 +20,8 @@ import re
 from functools import cache
 from pathlib import Path
 
+from django.utils.translation import gettext as _
+
 MANIFEST_DIR = Path(__file__).resolve().parent / "sections_manifest"
 SECTION_PREFIX = "section."
 
@@ -103,7 +105,7 @@ def looks() -> list[dict]:
             "group": HERO_LAYOUTS.get(s.get("heroLayout") or "", ""),
             "tags": list(s.get("tags") or []),
             "palettes": [
-                {"id": "", "label": s.get("paletteLabel") or "Original"},
+                {"id": "", "label": s.get("paletteLabel") or _("Original")},
                 *[{"id": p["id"], "label": p.get("label") or p["id"]} for p in s.get("palettes") or []],
             ],
         }

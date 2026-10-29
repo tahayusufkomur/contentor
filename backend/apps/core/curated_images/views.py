@@ -14,6 +14,7 @@ from django.core.cache import cache
 from django.db import connection
 from django.http import FileResponse, Http404
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import AllowAny
@@ -47,7 +48,7 @@ def _serialize(image: client.RemoteImage) -> dict:
 def curated_image_search(request):
     orientation = request.query_params.get("orientation", "").strip() or None
     if orientation and orientation not in client.ORIENTATIONS:
-        return Response({"detail": "Unknown orientation."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": _("Unknown orientation.")}, status=status.HTTP_400_BAD_REQUEST)
     try:
         page_number = max(1, int(request.query_params.get("page", "1")))
     except ValueError:
@@ -77,7 +78,7 @@ def curated_image_use(request, asset_id):
     except CuratedImageError as exc:
         return Response({"detail": str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
     if image is None:
-        return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Not found.")}, status=status.HTTP_404_NOT_FOUND)
     try:
         photo = cache_remote_image(image)
     except CuratedImageError as exc:
@@ -133,11 +134,11 @@ def curated_image_generate(request):
     prompt = str(request.data.get("prompt") or "").strip()
     aspect_ratio = str(request.data.get("aspect_ratio") or "16:9")
     if not prompt or aspect_ratio not in client.GENERATION_ASPECT_RATIOS:
-        return Response({"detail": "Describe the image you want."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": _("Describe the image you want.")}, status=status.HTTP_400_BAD_REQUEST)
     count_key = _count_key()
     if cache.get(count_key, 0) >= settings.CURATED_IMAGE_GENERATE_MONTHLY_LIMIT:
         return Response(
-            {"detail": "You have used this month's image generations."}, status=status.HTTP_429_TOO_MANY_REQUESTS
+            {"detail": _("You have used this month's image generations.")}, status=status.HTTP_429_TOO_MANY_REQUESTS
         )
     try:
         job = client.generate(prompt, aspect_ratio=aspect_ratio, idempotency_key=uuid.uuid4().hex)
@@ -145,7 +146,7 @@ def curated_image_generate(request):
     except CuratedImageError as exc:
         return Response({"detail": str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
     if job.done and job.image is None:  # the service refused the description outright
-        return Response({"detail": "That description could not be turned into an image."}, status=422)
+        return Response({"detail": _("That description could not be turned into an image.")}, status=422)
     count_generation()
     # Job ids belong to the platform's one account; remember whose this is so a
     # tenant can only poll (and collect the image of) jobs it started.
@@ -157,13 +158,13 @@ def curated_image_generate(request):
 @permission_classes([IsCoachOrOwner])
 def curated_image_generation(request, job_id):
     if cache.get(_job_key(job_id)) != connection.schema_name:
-        return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Not found.")}, status=status.HTTP_404_NOT_FOUND)
     try:
         # Long-poll: most jobs take about a minute, so hold each status call a
         # few seconds rather than have the picker hammer the endpoint.
         job = client.generation(job_id, wait=8)
         if job is None:
-            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": _("Not found.")}, status=status.HTTP_404_NOT_FOUND)
         return Response(_job_response(job))
     except CuratedImageError as exc:
         return Response({"detail": str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)

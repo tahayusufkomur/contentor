@@ -4,6 +4,7 @@ import jwt
 from django.conf import settings
 from django.db import connection
 from django.http import JsonResponse
+from django.utils.translation import gettext as _
 from django_redis import get_redis_connection
 
 
@@ -84,7 +85,7 @@ class TenantRateLimitMiddleware:
             results = pipe.execute()
             request_count = results[2]
             if request_count > rate:
-                return JsonResponse({"detail": "Rate limit exceeded"}, status=429, headers={"Retry-After": "60"})
+                return JsonResponse({"detail": _("Rate limit exceeded")}, status=429, headers={"Retry-After": "60"})
         except Exception:  # noqa: S110
             pass
         return self.get_response(request)

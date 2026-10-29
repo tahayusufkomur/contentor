@@ -13,6 +13,7 @@ bucket's spend sums into help_bot.global_spend like every tenant's).
 from django.conf import settings
 from django.http import StreamingHttpResponse
 from django.utils import translation
+from django.utils.translation import gettext as _
 from rest_framework.decorators import (
     api_view,
     authentication_classes,
@@ -163,7 +164,7 @@ def help_bot_public_human_message(request):
     session = str(data.get("session_id") or "").strip()[:36]
     content = str(data.get("content") or "").strip()[:2000]
     if not content:
-        return Response({"error": "empty message"}, status=400)
+        return Response({"error": _("empty message")}, status=400)
     convo = (
         AiConversation.objects.filter(session_id=session, feature="help_bot", tenant_schema=MARKETING_BUCKET).first()
         if session
@@ -204,13 +205,13 @@ def help_bot_public_human_request(request):
         convo.human_requested_at = timezone.now()
         convo.save(update_fields=["human_requested", "human_requested_at", "updated_at"])
         assistant.append_message(convo, "system", "human_requested")
-        label = "A visitor on contentor.app"
         try:
-            send_email(
-                to=settings.HELP_BOT_ALERT_EMAIL or settings.RESEND_FROM_EMAIL,
-                subject=f"{label} asked for a human in Ask Contentor",
-                html=f"<p>{label} asked for a human in the marketing site's Ask Contentor chat.</p>",
-            )
+            with translation.override(languages.DEFAULT):  # the team reads this alert, whatever the visitor's page
+                subject = _("A visitor on contentor.app asked for a human in Ask Contentor")
+                html = "<p>{}</p>".format(
+                    _("A visitor on contentor.app asked for a human in the marketing site's Ask Contentor chat.")
+                )
+            send_email(to=settings.HELP_BOT_ALERT_EMAIL or settings.RESEND_FROM_EMAIL, subject=subject, html=html)
         except Exception:
             import logging
 

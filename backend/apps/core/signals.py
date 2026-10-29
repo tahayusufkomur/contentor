@@ -6,6 +6,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
+from django.utils.translation import gettext as _
 from django_tenants.utils import schema_context
 
 from .constants import CURRENCY_USD
@@ -38,9 +39,9 @@ def tenant_pre_save(sender, instance, **kwargs):
     except Tenant.DoesNotExist:
         return
     if old.region and old.region != instance.region:
-        raise ValidationError("Tenant.region is immutable once a tenant has been created.")
+        raise ValidationError(_("Tenant.region is immutable once a tenant has been created."))
     if old.billing_currency and old.billing_currency != instance.billing_currency:
-        raise ValidationError("Tenant.billing_currency is immutable once set.")
+        raise ValidationError(_("Tenant.billing_currency is immutable once set."))
 
 
 # --- PlatformSubscription is the single source of truth for a tenant's plan;

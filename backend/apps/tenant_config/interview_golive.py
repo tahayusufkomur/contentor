@@ -7,6 +7,8 @@ trial whose site sells starts its plan now or sells later."""
 import logging
 from contextlib import suppress
 
+from django.utils.translation import gettext as _
+
 from apps.core.models import PlatformSubscription
 from apps.core.monetization import can_monetize, is_paid_active, trial_days_for
 
@@ -73,7 +75,7 @@ def golive_state(tenant) -> dict:
             [
                 {
                     "id": "plan",
-                    "label": "Start your free trial" if tenant.requires_plan else "Choose a plan",
+                    "label": _("Start your free trial") if tenant.requires_plan else _("Choose a plan"),
                     "minutes": 2,
                     "done": not needs_plan,
                 }
@@ -85,7 +87,7 @@ def golive_state(tenant) -> dict:
             [
                 {
                     "id": "payouts",
-                    "label": "Connect payouts with Stripe",
+                    "label": _("Connect payouts with Stripe"),
                     "minutes": 5,
                     "done": paid and not needs_payouts,
                 }
@@ -93,7 +95,7 @@ def golive_state(tenant) -> dict:
             if sells
             else []
         ),
-        {"id": "publish", "label": "Go live", "minutes": 1, "done": False},
+        {"id": "publish", "label": _("Go live"), "minutes": 1, "done": False},
     ]
     ready = not brief.missing(answers) and not building
     from .interview_team import handoff  # it reads _PAGE_LABELS from here
@@ -144,16 +146,16 @@ def _summary(tenant, answers, flow) -> list[dict]:
     lines = []
     builds = flow.get("page_builds") or {}
     if pages := [label for key, label in _PAGE_LABELS.items() if key in builds]:
-        lines.append({"label": "Pages", "value": ", ".join(pages)})
+        lines.append({"label": _("Pages"), "value": ", ".join(pages)})
     drafts = flow.get("drafts") or {}
     course = Course.objects.filter(pk=drafts["course"]).first() if drafts.get("course") else None
     if course:
         price = {"paid": _money(course.price, tenant), "subscription": "members only"}.get(course.pricing_type, "free")
-        lines.append({"label": "First course", "value": f"{course.title} ({price})"})
+        lines.append({"label": _("First course"), "value": f"{course.title} ({price})"})
     plans = SubscriptionPlan.objects.filter(pk__in=membership_plan_ids(flow), is_active=True)
     if plans:
         value = ", ".join(f"{p.name} ({_money(p.price, tenant)} a month)" for p in plans)
-        lines.append({"label": "Memberships", "value": value})
+        lines.append({"label": _("Memberships"), "value": value})
     offers = set(answers.get("offers") or [])
     runs = False
     for offer, label, when_id, price_id, key in (
@@ -171,7 +173,7 @@ def _summary(tenant, answers, flow) -> list[dict]:
             )
             runs = True
     if runs and answers.get("calendar_nav") != "no":
-        lines.append({"label": "Calendar", "value": "A month grid, linked in your menu"})
+        lines.append({"label": _("Calendar"), "value": "A month grid, linked in your menu"})
     return lines
 
 

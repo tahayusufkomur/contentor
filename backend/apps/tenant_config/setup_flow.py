@@ -18,8 +18,10 @@ from django.conf import settings
 from django.core.cache import cache
 from django.db import transaction
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from pydantic import BaseModel
 
+from apps.core.languages import in_site_language
 from apps.core.models import Tenant
 from apps.core.monetization import is_paid_active
 
@@ -636,20 +638,22 @@ def _store_draft(tenant, user, config, kind: str, parsed) -> dict:
     }
 
 
+@in_site_language  # what she and her students read on the site is in its language
 def fallback_draft(kind: str, answers: dict):
     """A plain, honest first draft from the brief alone — used when the AI
     call fails so go-live is never blocked on a provider."""
     from html import escape
 
-    teaches = answers.get("teaches") or "my practice"
+    teaches = answers.get("teaches") or _("my practice")
     offers = answers.get("offers") or []
     if kind == "course":
         price = brief_price(answers, "course") or 0
         paid = price > 0
         return CourseDraft(
-            title=str(answers.get("course_topic") or f"Getting started with {teaches}")[:80],
-            description=f"A first course for {answers.get('audience') or 'new students'}.",
-            modules=[_Module(title="Foundations", lessons=["Welcome", "Your first practice"])],
+            title=str(answers.get("course_topic") or _("Getting started with %(teaches)s") % {"teaches": teaches})[:80],
+            description=_("A first course for %(audience)s.")
+            % {"audience": answers.get("audience") or _("new students")},
+            modules=[_Module(title=_("Foundations"), lessons=[_("Welcome"), _("Your first practice")])],
             pricing_type="paid" if paid else "free",
             price=price if paid else 0,
         )
@@ -657,17 +661,18 @@ def fallback_draft(kind: str, answers: dict):
         return EventDraft(
             title=str(
                 answers.get("onsite_topic" if kind == "onsite" else "live_topic")
-                or f"{teaches} {'event' if kind == 'onsite' else 'live session'}"
+                or (_("%(teaches)s event") if kind == "onsite" else _("%(teaches)s live session"))
+                % {"teaches": teaches}
             )[:80],
-            description="A live session to practise together.",
+            description=_("A live session to practise together."),
             event_kind="onsite" if kind == "onsite" or ("onsite" in offers and "live" not in offers) else "live",
             scheduled_at=timezone.now() + timedelta(days=3),
             location=str(answers.get("location") or ""),
         )
-    intro = escape(str(answers.get("story") or answers.get("pitch") or "Welcome to my new site."))
+    intro = escape(str(answers.get("story") or answers.get("pitch") or _("Welcome to my new site.")))
     return PostDraft(
-        title=str(answers.get("article_topic") or f"Why I teach {teaches}")[:90],
-        excerpt="A short note to start.",
+        title=str(answers.get("article_topic") or _("Why I teach %(teaches)s") % {"teaches": teaches})[:90],
+        excerpt=_("A short note to start."),
         body_html=f"<p>{intro}</p>",
     )
 

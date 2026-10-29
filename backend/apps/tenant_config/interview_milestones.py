@@ -1131,7 +1131,8 @@ def chrome_cards(tenant, answers: dict, field_id: str) -> dict:
     pick, reason = chrome_pick(field_id, answers)
     links = [link for link in nav.get("links") or [] if link.get("label") and link.get("href")]
     if "articles" in (answers.get("offers") or []) and not any(link.get("href") == "/blog" for link in links):
-        links.append({"label": "Blog", "href": "/blog"})
+        with override(site_language()):  # it is drawn on her site's header
+            links.append({"label": gettext("Blog"), "href": "/blog"})
     socials = [n for n, u in ((cfg.social_links if cfg else None) or {}).items() if u]
     # Her mark and the ways it can sit beside her name; the way her header has it now is picked.
     logo = {}

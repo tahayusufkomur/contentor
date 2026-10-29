@@ -18,6 +18,7 @@ import ipaddress
 from datetime import datetime
 
 from django.db.models import Count, Q
+from django.utils.translation import gettext as _
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
@@ -72,7 +73,7 @@ def _apply_time_and_q(qs, params, q_field):
             continue
         parsed = _parse_dt(raw)
         if parsed is None:
-            raise ValidationError({"detail": f"invalid '{name}' timestamp"})
+            raise ValidationError({"detail": _("invalid '%(name)s' timestamp") % {"name": name}})
         qs = qs.filter(**{lookup: parsed})
     q = (params.get("q") or "").strip()
     if q:
@@ -104,7 +105,7 @@ def _paginate(qs, params, fields):
         ts_raw, sep, id_raw = cursor.partition("|")
         cts = _parse_dt(ts_raw)
         if not sep or cts is None or not id_raw.isdigit():
-            raise ValidationError({"detail": "invalid cursor"})
+            raise ValidationError({"detail": _("invalid cursor")})
         qs = qs.filter(Q(ts__lt=cts) | (Q(ts=cts) & Q(id__lt=int(id_raw))))
     rows = list(qs.order_by("-ts", "-id").values(*fields)[: PAGE_SIZE + 1])
     next_cursor = None
@@ -174,7 +175,7 @@ def _activity_queryset(params, skip=""):
     # a malformed param is a 400 regardless of which facet build sees it first.
     classes = _multi(params, "status_class")
     if any(v not in _STATUS_CLASSES for v in classes):
-        raise ValidationError({"detail": "invalid 'status_class' value"})
+        raise ValidationError({"detail": _("invalid 'status_class' value")})
     if classes and skip != "status_class":
         filters &= _status_class_q(classes)
     ip = (params.get("ip") or "").strip()
@@ -182,7 +183,7 @@ def _activity_queryset(params, skip=""):
         try:
             ipaddress.ip_address(ip)
         except ValueError as exc:
-            raise ValidationError({"detail": "invalid 'ip' address"}) from exc
+            raise ValidationError({"detail": _("invalid 'ip' address")}) from exc
         if skip != "ip":
             filters &= Q(ip=ip)
     qs = RequestEvent.objects.filter(filters)

@@ -2,6 +2,7 @@
 entrance fetches this from tenant subdomains. Unauthenticated by design —
 the catalog is platform-global marketing-style content."""
 
+from django.utils.translation import gettext as _
 from django_tenants.utils import schema_context
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import AllowAny
@@ -106,5 +107,5 @@ def library_use(request, asset_id):
         asset_id = ""
     photo = cached_asset(asset_id) if asset_id and client.logos_available() else None
     if photo is None:
-        return Response({"detail": "That logo isn't available right now."}, status=404)
+        return Response({"detail": _("That logo isn't available right now.")}, status=404)
     return Response({"photo": PhotoSerializer(photo).data, "mark_paths": traced_paths(photo.s3_key) or None})

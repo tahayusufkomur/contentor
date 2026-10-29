@@ -6,6 +6,7 @@ Coach-auth (IsCoachOrOwner) — unlike the curated LOGO catalog this is not an
 anonymous endpoint; only the coach's editor and the AI writer consume it."""
 
 from django.db.models import Q
+from django.utils.translation import gettext as _
 from django_tenants.utils import schema_context
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -58,7 +59,7 @@ def curated_photo_use(request, pk):
     with schema_context("public"):
         row = CuratedPhoto.objects.filter(pk=pk, enabled=True).first()
     if row is None:
-        return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Not found.")}, status=status.HTTP_404_NOT_FOUND)
     photo = materialize_curated_photo(row)
     from apps.media.serializers import PhotoSerializer
 

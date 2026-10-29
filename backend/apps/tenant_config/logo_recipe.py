@@ -12,6 +12,7 @@ them); free text and numbers are clamped, not rejected.
 
 import re
 
+from django.utils.translation import gettext as _
 from rest_framework import serializers
 
 LAYOUTS = {"horizontal", "horizontal_reversed", "stacked", "name_only", "emblem"}
@@ -132,7 +133,9 @@ def upgrade_recipe(value):
 def _enum(value, allowed, field):
     if value not in allowed:
         choices = ", ".join(sorted(str(a) for a in allowed))
-        raise serializers.ValidationError(f"{field} must be one of: {choices}.")
+        raise serializers.ValidationError(
+            _("%(field)s must be one of: %(choices)s.") % {"field": field, "choices": choices}
+        )
     return value
 
 

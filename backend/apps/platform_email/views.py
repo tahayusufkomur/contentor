@@ -7,6 +7,7 @@ to oneself and the send, all on the email engine in Contentor's own kit. Recipie
 import logging
 
 from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext as _
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -116,7 +117,7 @@ def campaign_list(request):
         if serializer.validated_data.get("template_id"):
             template = PlatformEmailTemplate.objects.filter(pk=serializer.validated_data["template_id"]).first()
             if template is None:
-                return Response({"detail": "Template not found."}, status=status.HTTP_404_NOT_FOUND)
+                return Response({"detail": _("Template not found.")}, status=status.HTTP_404_NOT_FOUND)
         campaign = PlatformEmailCampaign.objects.create(
             status=CampaignStatus.DRAFT,
             design=template.design if template else blank_design(),
@@ -147,12 +148,12 @@ def campaign_detail(request, pk: int):
     campaign = get_object_or_404(PlatformEmailCampaign.objects.select_related("sender"), pk=pk)
     if request.method == "DELETE":
         if campaign.status != CampaignStatus.DRAFT:
-            return Response({"detail": "Only drafts can be deleted."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": _("Only drafts can be deleted.")}, status=status.HTTP_400_BAD_REQUEST)
         campaign.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     if request.method == "PATCH":
         if campaign.status != CampaignStatus.DRAFT:
-            return Response({"detail": "This email was already sent."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": _("This email was already sent.")}, status=status.HTTP_400_BAD_REQUEST)
         serializer = DraftUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         for field, value in serializer.validated_data.items():
@@ -166,11 +167,11 @@ def campaign_detail(request, pk: int):
 def campaign_send(request, pk: int):
     campaign = get_object_or_404(PlatformEmailCampaign, pk=pk)
     if campaign.status != CampaignStatus.DRAFT:
-        return Response({"detail": "This email is already on its way."}, status=status.HTTP_409_CONFLICT)
+        return Response({"detail": _("This email is already on its way.")}, status=status.HTTP_409_CONFLICT)
     if not campaign.subject.strip():
-        return Response({"detail": "Give your email a subject first."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": _("Give your email a subject first.")}, status=status.HTTP_400_BAD_REQUEST)
     if not any(brand.blocks_of(campaign.design)):
-        return Response({"detail": "This email is empty."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": _("This email is empty.")}, status=status.HTTP_400_BAD_REQUEST)
     serializer = SendSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     recipient_filter = serializer.validated_data["recipient_filter"]
@@ -181,7 +182,7 @@ def campaign_send(request, pk: int):
         sender=request.user,
     )
     if not claimed:
-        return Response({"detail": "This email is already on its way."}, status=status.HTTP_409_CONFLICT)
+        return Response({"detail": _("This email is already on its way.")}, status=status.HTTP_409_CONFLICT)
     from .tasks import send_platform_campaign_emails
 
     send_platform_campaign_emails.delay(campaign.id)
@@ -195,10 +196,9 @@ def campaign_test(request, pk: int):
     from .tasks import send_one
 
     campaign = get_object_or_404(PlatformEmailCampaign, pk=pk)
-    if not send_one(
-        campaign, to=request.user.email, name=request.user.name or "", subject=f"[Test] {campaign.subject}"
-    ):
-        return Response({"detail": "The test email could not be sent."}, status=status.HTTP_502_BAD_GATEWAY)
+    subject = _("[Test] %(subject)s") % {"subject": campaign.subject}
+    if not send_one(campaign, to=request.user.email, name=request.user.name or "", subject=subject):
+        return Response({"detail": _("The test email could not be sent.")}, status=status.HTTP_502_BAD_GATEWAY)
     return Response({"sent_to": request.user.email})
 
 

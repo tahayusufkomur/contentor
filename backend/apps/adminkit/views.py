@@ -6,6 +6,7 @@ from django.core.exceptions import FieldDoesNotExist
 from django.db import connection
 from django.db.models import ProtectedError, Q
 from django.http import Http404
+from django.utils.translation import gettext as _
 from django_tenants.utils import get_public_schema_name
 from rest_framework import status, viewsets
 from rest_framework.pagination import PageNumberPagination
@@ -100,23 +101,26 @@ class AdminKitViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         if not self.model_admin.can_create:
-            return Response({"detail": "Creating is not allowed."}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+            return Response({"detail": _("Creating is not allowed.")}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
         return super().create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
         if not self.model_admin.can_edit:
-            return Response({"detail": "Editing is not allowed."}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+            return Response({"detail": _("Editing is not allowed.")}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
         return super().update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
         if not self.model_admin.can_delete:
-            return Response({"detail": "Deleting is not allowed."}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+            return Response({"detail": _("Deleting is not allowed.")}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
         try:
             return super().destroy(request, *args, **kwargs)
         except ProtectedError:
             label = self.model_admin.label.lower()
             return Response(
-                {"detail": f"This {label} is referenced by other records and cannot be deleted."},
+                {
+                    "detail": _("This %(label)s is referenced by other records and cannot be deleted.")
+                    % {"label": label}
+                },
                 status=status.HTTP_409_CONFLICT,
             )
 
@@ -140,7 +144,7 @@ class AdminKitViewSet(viewsets.ModelViewSet):
             raise Http404
         ids = request.data.get("ids")
         if not isinstance(ids, list) or not ids:
-            return Response({"detail": "Provide a non-empty `ids` list."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": _("Provide a non-empty `ids` list.")}, status=status.HTTP_400_BAD_REQUEST)
         queryset = self.filter_queryset(self.get_queryset()).filter(pk__in=ids)
         result = getattr(self.model_admin, action_name)(request, queryset)
         payload = result if isinstance(result, dict) else {"detail": str(result)}

@@ -1,6 +1,7 @@
 from uuid import UUID, uuid4
 
 from django.db import connection
+from django.utils.translation import gettext as _
 from django.utils.translation import override
 from rest_framework import serializers
 
@@ -85,7 +86,7 @@ class TenantConfigSerializer(serializers.ModelSerializer):
         from zoneinfo import available_timezones
 
         if value not in available_timezones():
-            raise serializers.ValidationError("Unknown time zone.")
+            raise serializers.ValidationError(_("Unknown time zone."))
         return value
 
     def validate_navbar_config(self, value):
@@ -94,11 +95,13 @@ class TenantConfigSerializer(serializers.ModelSerializer):
         the serializer applies to ``pages``.
         """
         if not isinstance(value, dict):
-            raise serializers.ValidationError("navbar_config must be an object.")
+            raise serializers.ValidationError(_("navbar_config must be an object."))
         cleaned = dict(value)
         layout = cleaned.get("layout") or "classic"
         if layout not in _NAVBAR_LAYOUTS:
-            raise serializers.ValidationError("layout must be one of: " + ", ".join(sorted(_NAVBAR_LAYOUTS)) + ".")
+            raise serializers.ValidationError(
+                _("layout must be one of: %(choices)s.") % {"choices": ", ".join(sorted(_NAVBAR_LAYOUTS))}
+            )
         cleaned["layout"] = layout
         links = []
         for raw in (cleaned.get("links") or [])[:20]:
@@ -116,12 +119,14 @@ class TenantConfigSerializer(serializers.ModelSerializer):
         cleaned["transparent_over_hero"] = bool(cleaned.get("transparent_over_hero", False))
         logo_size = cleaned.get("logo_size") or "md"
         if logo_size not in {"sm", "md", "lg", "xl"}:
-            raise serializers.ValidationError("logo_size must be one of: lg, md, sm, xl.")
+            raise serializers.ValidationError(_("logo_size must be one of: lg, md, sm, xl."))
         cleaned["logo_size"] = logo_size
         cleaned["show_brand_name"] = bool(cleaned.get("show_brand_name", False))
         logo_layout = cleaned.get("logo_layout") or "horizontal"
         if logo_layout not in _LOGO_LAYOUTS:
-            raise serializers.ValidationError("logo_layout must be one of: " + ", ".join(sorted(_LOGO_LAYOUTS)) + ".")
+            raise serializers.ValidationError(
+                _("logo_layout must be one of: %(choices)s.") % {"choices": ", ".join(sorted(_LOGO_LAYOUTS))}
+            )
         cleaned["logo_layout"] = logo_layout
         cleaned["show_social"] = bool(cleaned.get("show_social", False))
         if "custom_links" in cleaned:
@@ -129,7 +134,7 @@ class TenantConfigSerializer(serializers.ModelSerializer):
         footer_layout = cleaned.get("footer_layout") or "simple"
         if footer_layout not in _FOOTER_LAYOUTS:
             raise serializers.ValidationError(
-                "footer_layout must be one of: " + ", ".join(sorted(_FOOTER_LAYOUTS)) + "."
+                _("footer_layout must be one of: %(choices)s.") % {"choices": ", ".join(sorted(_FOOTER_LAYOUTS))}
             )
         cleaned["footer_layout"] = footer_layout
         if cleaned.get("calendar_view") not in {"month", "agenda"}:
@@ -143,7 +148,7 @@ class TenantConfigSerializer(serializers.ModelSerializer):
         fields (forward-compat with the frontend).
         """
         if not isinstance(value, dict):
-            raise serializers.ValidationError("pages must be an object.")
+            raise serializers.ValidationError(_("pages must be an object."))
         cleaned = {}
         for page_key, page in value.items():
             if page_key not in KNOWN_PAGE_KEYS or not isinstance(page, dict):
@@ -158,7 +163,7 @@ class TenantConfigSerializer(serializers.ModelSerializer):
         Capped to keep the config payload bounded.
         """
         if not isinstance(value, list):
-            raise serializers.ValidationError("page_templates must be a list.")
+            raise serializers.ValidationError(_("page_templates must be a list."))
         cleaned = []
         for tmpl in value[:50]:
             if not isinstance(tmpl, dict):
@@ -188,7 +193,7 @@ class TenantConfigSerializer(serializers.ModelSerializer):
         upgraded first). Empty dict clears the saved design. See
         logo_recipe.validate_recipe for the shape contract."""
         if not isinstance(value, dict):
-            raise serializers.ValidationError("logo_recipe must be an object.")
+            raise serializers.ValidationError(_("logo_recipe must be an object."))
         if not value:
             return {}
         return logo_recipe_lib.validate_recipe(logo_recipe_lib.upgrade_recipe(value), clean_photo_id=_clean_photo_id)
