@@ -1358,7 +1358,7 @@ def _compose_home(tenant, monkeypatch, teaches, focus=None):
     shown = []
 
     def spy(queries, aspect, used, ctx, *args, **kwargs):
-        shown.append((ctx["topic"], queries[0]))
+        shown.append((ctx["search"], queries[0]))
         return _FIND_PHOTO(queries, aspect, used, ctx, *args, **kwargs)
 
     monkeypatch.setattr(sc, "_find_photo", spy)
@@ -1456,7 +1456,9 @@ def test_the_photos_of_every_discipline_are_allowed_and_the_generic_briefs_leave
     ctx = sc._ctx("fitness", "Iron", "", "boxing", focus={"mode": "primary", "disciplines": ["boxing", "yoga"]})
     assert {"boxing", "yoga"} <= ctx["allowed"]  # the supporting discipline's photos are never "off topic"
     assert sc._generic_brief("hero", "image", ctx, "home")["subject"] == "instructor teaching a class"
-    assert "boxing" not in sc._queries(sc._generic_brief("hero", "image", ctx, "home"), {**ctx, "topic": "yoga"}, "")[0]
+    assert (
+        "boxing" not in sc._queries(sc._generic_brief("hero", "image", ctx, "home"), {**ctx, "search": "yoga"}, "")[0]
+    )
 
 
 def test_the_photo_brief_fields_are_asked_for_in_english():

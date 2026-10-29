@@ -157,7 +157,7 @@ def test_her_photos_are_preferred_only_once_she_said_so(tenant):
 def test_the_composer_places_her_photos_before_any_catalog_photo(tenant, monkeypatch):
     wide, tall = photo("wide class", 3000, 2000), photo("tall portrait", 2000, 3000)
     monkeypatch.setattr(sc.curated_client, "search", lambda *a, **k: pytest.fail("searched the catalog"))
-    ctx = {"topic": "boxing", "allowed": frozenset()}
+    ctx = {"topic": "boxing", "search": "boxing", "allowed": frozenset()}
 
     image, placed = sc._find_photo(["boxing coach teaching"], "16:9", set(), ctx, own=True)
     assert (image.asset_id, placed) == (f"own:{wide.pk}", wide)
@@ -194,7 +194,7 @@ def test_a_photo_whose_subject_sits_under_the_text_goes_last(tenant, monkeypatch
         return [i for i in seen if i.asset_id not in exclude]
 
     monkeypatch.setattr(own_photos, "search", search)
-    ctx = {"topic": "x", "allowed": frozenset()}
+    ctx = {"topic": "x", "search": "x", "allowed": frozenset()}
     image, placed = sc._find_photo(["x"], "16:9", set(), ctx, wanted="left_third", own=True)
     assert placed == beside
     # With only the centered one left it is still used: her photo before a stranger's.
@@ -261,7 +261,7 @@ def test_a_photo_of_hers_is_placed_without_a_guessed_alt_text(tenant, monkeypatc
     block = {"type": f"section.{family}", "image": None}
     entry = {"family": family, "variant": "", "images": {"image": {"subject": "a woman teaching a yoga class"}}}
     monkeypatch.setattr(sc, "wanted_placement", lambda *a: None)
-    ctx = {"topic": "yoga", "allowed": frozenset()}
+    ctx = {"topic": "yoga", "search": "yoga", "allowed": frozenset()}
 
     placed = sc._attach_images(tenant, "home", [block], [entry], ctx, "journal", {})
 

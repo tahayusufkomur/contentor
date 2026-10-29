@@ -342,6 +342,7 @@ def _apply(reel, data, length_cap, words) -> str | None:
         reel.start, reel.end = round(start, 3), round(end, 3)
     if "options" in data:
         given = data["options"] if isinstance(data["options"], dict) else {}
+        chosen = "language" in (reel.options or {})
         options = render.options_of(reel)
         for key, value in given.items():
             if key in _BOOLEAN_OPTIONS:
@@ -352,6 +353,8 @@ def _apply(reel, data, length_cap, words) -> str | None:
                 options[key] = value
             elif key == "end_text":
                 options[key] = str(value or "")[:80]
+        if not chosen and "language" not in given:
+            options.pop("language", None)  # the site's default is derived each time, never saved as her choice
         reel.options = options
     if "edits" in data:
         refused = _apply_edits(reel, data["edits"], words)

@@ -1704,7 +1704,16 @@ def focus_of(answers: dict, *, language: str | None = None) -> dict | None:
     if language:
         from apps.core.onboarding.ai_curate import english_terms
 
-        rows = [(niche, english_terms(subject, language=language) if subject else subject) for niche, subject in rows]
+        # (A subject that is already its niche's English name needs no translating, as in subject_of.)
+        rows = [
+            (
+                niche,
+                english_terms(subject, language=language)
+                if subject and subject != niche.replace("_", " ")
+                else subject,
+            )
+            for niche, subject in rows
+        ]
     view = {"mode": saved["mode"], "disciplines": [s for _, s in rows], "niches": [n for n, _ in rows]}
     if saved["mode"] == "primary":
         view |= {"primary": rows[0][1], "secondary": [s for _, s in rows[1:]]}

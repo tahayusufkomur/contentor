@@ -237,17 +237,20 @@ def _ctx(
     said="",
     focus=None,
     language="en",
-    also="",
+    search=None,
 ) -> dict:
     """``language``: the site's, for the labels, titles and fallback copy (fallback_fields) that a visitor
     reads. ``said``: "I" or "we" as _coach_data read it from her answers. ``focus``: how her
     disciplines shape the site (_coach_data["focus"]: mode "equal" | "primary", "disciplines" lead first, and for a
-    main focus "primary" and "secondary"), None for one discipline. ``also``: the supporting disciplines in her own
-    words (the focus has them in English, for searches), for the hero line a visitor reads."""
+    main focus "primary" and "secondary"), None for one discipline: her own words, which the page's text uses.
+    ``search``: what the photo searches use instead when she wrote in another language (_coach_data["search"]:
+    "topic" and "topics", in English); absent, the same words as the text."""
     from apps.tenant_config import interview_brief
 
     t = subject or topic(niche)
-    topics = tuple((focus or {}).get("disciplines") or ())
+    search = search or {}
+    searched = search.get("topic") or t  # what the catalog is asked for (English), not what the page says
+    topics = tuple(search.get("topics") or (focus or {}).get("disciplines") or ())
     solo = (said or speaker(brand, description)) == "I"
     # Buttons lead to her main offer: the courses, else the classes, else her story.
     primary = next(h for h in ("/courses", "/events", "/about") if h in links)
@@ -265,14 +268,15 @@ def _ctx(
         "offering": {"/courses": "courses", "/events": "sessions"}.get(primary, "work"),
         "niche": str(niche or "general"),
         # Photo disciplines this coach's words allow (see ai_curate.off_topic).
-        "allowed": ai_curate.allowed_disciplines(t, *topics, str(description or "")),
+        "allowed": ai_curate.allowed_disciplines(searched, *topics, str(description or "")),
         # Several disciplines (empty for one): each photo shows one of them (_slot_topic); a main focus
         # names the others beside it in the hero (``also``); with equal, ``topic`` already names them all.
         "topics": topics,
         "focus": (focus or {}).get("mode"),
-        "also": also or interview_brief.say_list((focus or {}).get("secondary") or ()),
+        "also": interview_brief.say_list((focus or {}).get("secondary") or ()),
         "brand": brand or "this studio",
         "topic": t,
+        "search": searched,
         "Topic": t[:1].upper() + t[1:],
         "solo": solo,
         "name_like": _name_like(brand),
@@ -1117,7 +1121,7 @@ def _generic_brief(family, slot, ctx, page_key) -> dict:
     # R2: the coach's portrait is hero.image on home and story.image elsewhere; the page's other one shows students.
     if (family, slot) == (("story", "image") if page_key == "home" else ("hero", "image")):
         subject = "students practising together in class"
-    lead = "" if ctx.get("topics") else ctx["topic"]  # several disciplines: each photo's own, added by _queries
+    lead = "" if ctx.get("topics") else ctx["search"]  # several disciplines: each photo's own, added by _queries
     return {"subject": f"{lead} {subject}".strip()[:BRIEF_FIELD_MAX], "action": "", "setting": "", "person": ""}
 
 
@@ -1207,7 +1211,7 @@ def _plan_site(tenant, *, force=False) -> dict:
         said=coach["speaker"],
         focus=coach.get("focus"),
         language=site_language(tenant),
-        also=coach.get("also", ""),
+        search=coach.get("search"),
     )
     raw, source = None, "fallback"
     if ai_compose.compose_available():
@@ -1336,16 +1340,19 @@ def _coach_data(tenant, brand) -> dict:
     niche = answers.get("niche") or getattr(tenant, "template_niche", "") or "general"
     # She offers several things and said how they weigh (interview_brief.focus_of): equal names them all in
     # the topic, a main focus makes it the topic and lists the others as supporting. One discipline: no focus.
-    words = ai_curate.words_language(tenant)  # the language she wrote in; her subjects are searched in English
-    focus = interview_brief.focus_of(answers, language=words)
-    subject = (
-        interview_brief.say_list(focus["disciplines"])
-        if focus and focus["mode"] == "equal"
-        else interview_brief.subject_of(answers, language=words)
+    # Her words are what the page says; the same subjects in English (she wrote in another language) are only
+    # what the photo searches use.
+    words = ai_curate.words_language(tenant)
+    focus = interview_brief.focus_of(answers)
+    found = interview_brief.focus_of(answers, language=words)
+    equal = bool(focus) and focus["mode"] == "equal"
+    subject = interview_brief.say_list(focus["disciplines"]) if equal else interview_brief.subject_of(answers)
+    searched = (
+        interview_brief.say_list(found["disciplines"]) if equal else interview_brief.subject_of(answers, language=words)
     )
-    # What a visitor reads ("I also teach ..."): her own words; the searches get the English ones above.
-    said = interview_brief.focus_of(answers)
-    also = {"also": interview_brief.say_list(said["secondary"])} if said and said["mode"] == "primary" else {}
+    search = {"topic": searched or topic(niche), "topics": found["disciplines"] if found else []}
+    if search == {"topic": subject or topic(niche), "topics": focus["disciplines"] if focus else []}:
+        search = None  # one language: nothing to tell apart
     followups = [
         {"q": str(item.get("q") or "").strip()[:200], "a": str(item.get("a") or "").strip()[:500]}
         for item in ((answers.get("description_followups") or {}).get("items") or [])
@@ -1363,7 +1370,7 @@ def _coach_data(tenant, brand) -> dict:
         # The pages her site may link to (every Href field is one of them).
         "links": list(coach_links(answers)),
         **({"focus": {k: v for k, v in focus.items() if k != "niches"}} if focus else {}),
-        **also,
+        **({"search": search} if search else {}),
         # The statement is made from it (GIVEN_FAMILIES); absent when she gave none.
         **({"belief": belief} if (belief := " ".join(str(answers.get("belief") or "").split())[:300]) else {}),
     }
@@ -1937,10 +1944,10 @@ def _finish_copy(page_key, entries, fields, ctx, first_name="") -> None:
 
 def _queries(brief, ctx, photo_words) -> list[str]:
     words = " ".join(brief.get(k, "") for k in ("person", "subject", "action", "setting")).strip()
-    if ctx["topic"].lower() not in words.lower():
-        words = f"{ctx['topic']} {words}".strip()
-    short = " ".join(f"{ctx['topic']} {brief.get('person', '')} {brief.get('subject', '')}".split())
-    return list(dict.fromkeys(q for q in (f"{words} {photo_words}".strip(), short, ctx["topic"]) if q))
+    if ctx["search"].lower() not in words.lower():
+        words = f"{ctx['search']} {words}".strip()
+    short = " ".join(f"{ctx['search']} {brief.get('person', '')} {brief.get('subject', '')}".split())
+    return list(dict.fromkeys(q for q in (f"{words} {photo_words}".strip(), short, ctx["search"]) if q))
 
 
 POOL_PAGES = 3  # catalog pages per orientation per page build: up to 36 candidates for ~13 slots
@@ -1989,7 +1996,9 @@ def _ranked(images, query: str, ctx, wanted: str | None = None, allow_wrong: boo
 
     rank = {i.asset_id: curated_client.placement_rank(wanted, i) for i in images}
     kept = [
-        i for i in ai_curate.on_topic_first(images, ctx["topic"], ctx["allowed"]) if allow_wrong or rank[i.asset_id] < 2
+        i
+        for i in ai_curate.on_topic_first(images, ctx["search"], ctx["allowed"])
+        if allow_wrong or rank[i.asset_id] < 2
     ]
     return sorted(kept, key=lambda i: (rank[i.asset_id], -overlap(i)))
 
@@ -2001,7 +2010,7 @@ def _slot_topic(ctx, page_key, family, n_all, n_rest) -> str:
     (``n_rest``: the place among them) are the main one's twice, then each supporting one's in turn."""
     topics = ctx.get("topics") or ()
     if not topics:
-        return ctx["topic"]
+        return ctx["search"]
     if ctx.get("focus") == "equal":
         return topics[(KNOWN_PAGE_KEYS.index(page_key) + n_all) % len(topics)]
     if family == "hero":
@@ -2049,13 +2058,13 @@ def _find_photo(queries, aspect, used, ctx, pools=None, wanted=None, own=False, 
     for skip in [taken | avoid, taken] if avoid - taken else [taken]:  # a peer's photo is the last resort
         for placement in dict.fromkeys((only, None)):
             candidates = _ranked(
-                _pool_candidates(pools, ctx["topic"], orientation, skip, placement), queries[0], ctx, wanted
+                _pool_candidates(pools, ctx["search"], orientation, skip, placement), queries[0], ctx, wanted
             )
             if candidates:
                 break
         if not candidates:
             for query in queries:
-                if query == ctx["topic"]:
+                if query == ctx["search"]:
                     continue  # that is the pool, already exhausted
                 for placement in dict.fromkeys((only, None)):
                     try:
@@ -2081,7 +2090,7 @@ def _find_photo(queries, aspect, used, ctx, pools=None, wanted=None, own=False, 
     # the slot empty — a fitting repeat before a fresh photo that would sit under the text.
     seen = {}
     for (pool_topic, pool_orientation, _placement), state in pools.items():
-        if pool_orientation == orientation and pool_topic == ctx["topic"]:
+        if pool_orientation == orientation and pool_topic == ctx["search"]:
             seen.update({i.asset_id: i for i in state["images"]})
     for image in _ranked(list(seen.values()), queries[0], ctx, wanted, allow_wrong=True):
         try:
@@ -2131,7 +2140,7 @@ def _attach_images(tenant, page_key, blocks, entries, ctx, style_id, plan) -> li
             brief = entry.get("images", {}).get(slot) or _generic_brief(family, slot, ctx, page_key)
             shows = _slot_topic(ctx, page_key, family, n_all, n_rest)
             n_all, n_rest = n_all + 1, n_rest + (family != "hero")
-            slot_ctx = ctx if shows == ctx["topic"] else {**ctx, "topic": shows}  # this photo's own discipline
+            slot_ctx = ctx if shows == ctx["search"] else {**ctx, "search": shows}  # this photo's own discipline
             try:
                 image, photo = _find_photo(
                     _queries(brief, slot_ctx, photo_words),
@@ -2213,7 +2222,7 @@ def compose_page(tenant, page_key, *, instruction=None) -> list[dict]:
         coach["speaker"],
         coach.get("focus"),
         site_language(tenant),
-        coach.get("also", ""),
+        coach.get("search"),
     )
     ctx["given"] = given  # her proof and clip ride the fallback fields the model never writes (_fill_page)
 

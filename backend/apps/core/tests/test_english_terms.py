@@ -8,6 +8,7 @@ from django.core.cache import cache
 from apps.core import ai as core_ai
 from apps.core.onboarding import ai_curate
 from apps.tenant_config import interview_brief
+from apps.tenant_config.models import TenantConfig
 
 
 @pytest.fixture(autouse=True)
@@ -121,11 +122,18 @@ def test_every_discipline_of_a_focus_is_searched_in_english(two_disciplines):
     assert interview_brief.subject_of(answers) == "yüz yogası"  # read as text: her words
 
 
+def test_a_subject_that_is_already_its_niches_english_name_is_not_translated(monkeypatch, model):
+    english = {"beslenme": "nutrition"}  # "yoga" is not in it: asking the model about it would raise
+    monkeypatch.setattr(interview_brief, "niche_for", lambda text: "yoga" if "yoga" in text else "general")
+    monkeypatch.setattr(core_ai, "structured", lambda **k: (SimpleNamespace(terms=english[k["user"]]), 0, "fake"))
+    answers = {"niche": "yoga", "teaches": "yoga, beslenme", "discipline_focus": {"mode": "equal"}}
+    assert interview_brief.focus_of(answers, language="tr")["disciplines"] == ["yoga", "nutrition"]
+
+
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.parametrize("mode", ["equal", "primary"])
-def test_the_composers_topic_and_photo_disciplines_are_english(tenant_ctx, two_disciplines, mode):
+def test_the_page_says_her_words_and_the_searches_ask_in_english(tenant_ctx, two_disciplines, mode):
     from apps.core.onboarding import site_composer
-    from apps.tenant_config.models import TenantConfig
 
     TenantConfig.objects.all().delete()
     TenantConfig.objects.create(brand_name="Glow", default_locale="tr")
@@ -134,10 +142,30 @@ def test_the_composers_topic_and_photo_disciplines_are_english(tenant_ctx, two_d
         answers["discipline_focus"] = {"mode": "primary", "primary": "yüz yogası"}
     tenant = SimpleNamespace(schema_name=tenant_ctx.schema_name, wizard_state={"answers": answers}, name="Glow")
     coach = site_composer._coach_data(tenant, "Glow")
-    assert coach["topic"] == ("face yoga and nutrition" if mode == "equal" else "face yoga")
-    assert coach["focus"]["disciplines"] == ["face yoga", "nutrition"]
-    # What a visitor reads ("I also teach ...") stays her own words.
+    # What a visitor reads: her own words, in both modes.
+    assert coach["topic"] == ("yüz yogası and beslenme" if mode == "equal" else "yüz yogası")
+    assert coach["focus"]["disciplines"] == ["yüz yogası", "beslenme"]
+    # What is searched: English.
+    assert coach["search"] == {
+        "topic": "face yoga and nutrition" if mode == "equal" else "face yoga",
+        "topics": ["face yoga", "nutrition"],
+    }
     ctx = site_composer._ctx(
-        "general", "Glow", subject=coach["topic"], focus=coach["focus"], language="tr", also=coach.get("also", "")
+        "general", "Glow", subject=coach["topic"], focus=coach["focus"], language="tr", search=coach["search"]
     )
-    assert ctx["topics"] == ("face yoga", "nutrition") and ctx["also"] == ("" if mode == "equal" else "beslenme")
+    assert ctx["topic"] == coach["topic"] and ctx["also"] == ("" if mode == "equal" else "beslenme")
+    assert ctx["search"] == coach["search"]["topic"] and ctx["topics"] == ("face yoga", "nutrition")
+    queries = site_composer._queries({"subject": "class", "person": "", "action": "", "setting": ""}, ctx, "")
+    assert all("yüz" not in q and "beslenme" not in q for q in queries) and queries[-1] == ctx["search"]
+
+
+@pytest.mark.django_db(transaction=True)
+def test_an_english_creators_coach_data_is_unchanged(tenant_ctx, monkeypatch, model):
+    from apps.core.onboarding import site_composer
+
+    TenantConfig.objects.all().delete()
+    TenantConfig.objects.create(brand_name="Glow", default_locale="en")
+    answers = {"niche": "general", "teaches": "yoga, nutrition", "discipline_focus": {"mode": "equal"}}
+    tenant = SimpleNamespace(schema_name=tenant_ctx.schema_name, wizard_state={"answers": answers}, name="Glow")
+    coach = site_composer._coach_data(tenant, "Glow")
+    assert "search" not in coach and coach["topic"] == "yoga and nutrition"

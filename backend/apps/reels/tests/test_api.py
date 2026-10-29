@@ -455,6 +455,18 @@ class TestRender:
         reel.refresh_from_db()
         assert reel.end == 24 and not reel.translation
 
+    def test_an_option_edit_does_not_save_the_default_language_as_her_choice(self, coach, reel, german):
+        with mock.patch("apps.reels.moments.translate", side_effect=moments.TranslationError("hub down")) as ask:
+            res = make_client(coach).patch(
+                f"/api/v1/reels/{reel.pk}/", {"options": {"end_text": "Join me"}}, format="json"
+            )
+            assert res.status_code == 200 and not ask.called
+            reel.refresh_from_db()
+            assert reel.options["end_text"] == "Join me" and "language" not in reel.options
+            # ... so a trim after it is no model call either.
+            res = make_client(coach).patch(f"/api/v1/reels/{reel.pk}/", {"end": 24}, format="json")
+        assert res.status_code == 200 and not ask.called
+
     def test_an_edit_to_a_chosen_language_saves_when_the_translation_fails(self, coach, reel, german):
         Reel.objects.filter(pk=reel.pk).update(options={"language": "de"})
         with mock.patch("apps.reels.moments.translate", side_effect=moments.TranslationError("hub down")):
