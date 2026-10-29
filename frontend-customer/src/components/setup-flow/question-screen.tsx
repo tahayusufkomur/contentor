@@ -13,6 +13,7 @@ import {
   addressOk,
   browserTimeZone,
   CONTACT_DETAILS,
+  idOf,
   contactOk,
   priceOk,
   defaultSchedule,
@@ -166,7 +167,9 @@ export function QuestionScreen({
   // A schedule question: the tile picks weekly or one-time, the picker the dates.
   // (The tiles show in the creator's language: One-time is the second, whatever it reads.)
   const mode: ScheduleMode =
-    ticked[0] === step.options[1] ? "once" : "recurring";
+    idOf(ticked[0] ?? "", step.options, step.ids) === "One-time"
+      ? "once"
+      : "recurring";
   const sched = step.schedule
     ? (draft.schedule ?? defaultSchedule(mode))
     : null;
@@ -179,14 +182,16 @@ export function QuestionScreen({
   const ways = step.address
     ? ADDRESS_BOXES
     : step.contact
-      ? ticked.filter((k) => k in CONTACT_DETAILS)
+      ? ticked.filter((k) => idOf(k, step.options, step.ids) in CONTACT_DETAILS)
       : [];
   const details =
     step.contact || step.address
       ? { ...(step.prefill ?? {}), ...(draft.details ?? {}) }
       : null;
   const detailOk = (w: string, raw: string) =>
-    step.address ? addressOk(raw) : contactOk(w, raw);
+    step.address
+      ? addressOk(raw)
+      : contactOk(idOf(w, step.options, step.ids), raw);
   // A membership question: a monthly price for each tier ticked, hers to change.
   // A membership she named starts at the default own price, so a typed tile
   // and "Select all" never leave a price box empty.
@@ -700,7 +705,8 @@ export function QuestionScreen({
                       ? w === "Place"
                         ? "Studio Lumen, Kreuzberg"
                         : "Hauptstraße 12, 10827 Berlin"
-                      : CONTACT_DETAILS[w] === "email"
+                      : CONTACT_DETAILS[idOf(w, step.options, step.ids)] ===
+                          "email"
                         ? "you@example.com"
                         : "+49 170 1234567"
                   }
@@ -710,7 +716,8 @@ export function QuestionScreen({
                       ? w === "Place"
                         ? "Add the name of the place."
                         : "Add the street address."
-                      : CONTACT_DETAILS[w] === "email"
+                      : CONTACT_DETAILS[idOf(w, step.options, step.ids)] ===
+                          "email"
                         ? "That doesn’t look like an email address."
                         : "Add the number with its country code, like +49 170 1234567."
                   }

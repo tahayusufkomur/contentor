@@ -773,7 +773,11 @@ def style_reason(style: dict | None, niche: str, tones: list[str], answers: dict
         return ""
     matched = [t for t in tones if t in sections.tones_of_style(style)]
     focus = brief.focus_of(answers)
-    subject = brief.say_list(focus["disciplines"]) if focus and focus["mode"] == "equal" else brief.subject_of(answers)
+    subject = (
+        brief.list_phrase(brief.name_shown(d) for d in focus["disciplines"])
+        if focus and focus["mode"] == "equal"
+        else brief.name_shown(brief.subject_of(answers))
+    )
     made = bool({niche, *brief.also_niches(answers)} & set(style.get("niches") or []) and subject)
     tones_said = brief.list_phrase(_tone_word(t) for t in matched)
     if made and matched:
@@ -1452,6 +1456,9 @@ def choose(tenant, answers: dict, field_id: str, value) -> None:
             raise ChoiceError("invalid_value") from None
         if not isinstance(picked, dict) or not picked:
             raise ChoiceError("invalid_value")
+        # The ways come back under the words the screen showed her: map them to the English ways.
+        shown = {brief.tx(way).lower(): way for way in field.options}
+        picked = {shown.get(str(k).lower(), k): v for k, v in picked.items()}
         parts = []
         for way in field.options:
             if way not in picked:

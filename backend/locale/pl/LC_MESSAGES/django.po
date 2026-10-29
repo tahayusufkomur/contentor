@@ -2083,7 +2083,7 @@ msgid "Your announcement is scheduled."
 msgstr "Twoje ogłoszenie jest zaplanowane."
 
 #: apps/core/focus/flow.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(gap)s. Until then it stays a hidden draft."
 msgstr "%(gap)s. Do tego czasu pozostaje ukrytym szkicem."
 
@@ -2093,7 +2093,7 @@ msgid "%(label)s: you decide"
 msgstr "%(label)s: ty decydujesz"
 
 #: apps/core/focus/flow.py apps/core/tests/test_focus_language.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(n)d lesson each"
 msgid_plural "%(n)d lessons each"
 msgstr[0] "%(n)d lekcja w każdym"
@@ -2101,7 +2101,7 @@ msgstr[1] "%(n)d lekcje w każdym"
 msgstr[2] "%(n)d lekcji w każdym"
 
 #: apps/core/focus/flow.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(n)d lesson per module"
 msgid_plural "%(n)d lessons per module"
 msgstr[0] "%(n)d lekcja na moduł"
@@ -2209,12 +2209,12 @@ msgid "Published. Students can buy it in your store now."
 msgstr "Opublikowano. Uczestnicy mogą go teraz kupić w twoim sklepie."
 
 #: apps/core/focus/kinds/bundle.py apps/core/focus/kinds/post.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Saved as a draft. %(gap)s, then publish it from this page."
 msgstr "Zapisano jako szkic. %(gap)s, a potem opublikuj na tej stronie."
 
 #: apps/core/focus/kinds/bundle.py apps/core/focus/kinds/download.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Saved as a draft. %(selling)s Then publish it from this page."
 msgstr "Zapisano jako szkic. %(selling)s Potem opublikuj na tej stronie."
 
@@ -2334,7 +2334,7 @@ msgid "the same as buying them apart"
 msgstr "tyle samo, co przy zakupie osobno"
 
 #: apps/core/focus/kinds/bundle.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(price)s bought apart; 25%% off"
 msgstr "%(price)s przy zakupie osobno; 25%% taniej"
 
@@ -2527,17 +2527,17 @@ msgstr "Gotowe. Opublikować teraz?"
 
 #: apps/core/focus/kinds/course.py apps/core/focus/kinds/download.py
 #: apps/core/focus/kinds/event.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(title)s sells for %(price)s"
 msgstr "%(title)s kosztuje %(price)s"
 
 #: apps/core/focus/kinds/course.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Your other courses sell for %(price)s"
 msgstr "Twoje pozostałe kursy kosztują %(price)s"
 
 #: apps/core/focus/kinds/course.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "%(title)s has %(n)d student"
 msgid_plural "%(title)s has %(n)d students"
 msgstr[0] "%(title)s ma %(n)d uczestnika"
@@ -6972,6 +6972,36 @@ msgid "Which kinds of %(tile)s do you offer?"
 msgstr "Jakie rodzaje %(tile)s oferujesz?"
 
 #: apps/tenant_config/interview.py
+#, fuzzy
+msgid "Designer"
+msgstr "Projektant"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "Content Creating Specialist"
+msgstr "Specjalista ds. tworzenia treści"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "Marketing Specialist"
+msgstr "Specjalista ds. marketingu"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "Community manager"
+msgstr "Menedżer społeczności"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "Financial Strategist"
+msgstr "Strateg Finansowy"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "Assistant"
+msgstr "Asystent"
+
+#: apps/tenant_config/interview.py
 #, fuzzy, python-format
 msgid "your %(role)s on %(things)s"
 msgstr "twój %(role)s zajmuje się %(things)s"
@@ -8123,6 +8153,11 @@ msgstr "Głównie %(name)s"
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy, python-format
+msgid "Weekly %(subject)s classes"
+msgstr "Cotygodniowe zajęcia z %(subject)s"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy, python-format
 msgid "Only %(kind)s"
 msgstr "Tylko %(kind)s"
 
@@ -9237,14 +9272,14 @@ msgid "times to suit your students"
 msgstr "terminy dopasowane do twoich uczestników"
 
 #: apps/tenant_config/interview_golive.py
-#, fuzzy
-msgid ", members only"
-msgstr ", tylko dla członków"
+#, fuzzy, python-format
+msgid "%(when)s, members only"
+msgstr "%(when)s, tylko dla członków"
 
 #: apps/tenant_config/interview_golive.py
 #, fuzzy, python-format
-msgid ", %(price)s each"
-msgstr ", %(price)s za udział"
+msgid "%(when)s, %(price)s each"
+msgstr "%(when)s, %(price)s za sztukę"
 
 #: apps/tenant_config/interview_golive.py
 #: apps/tenant_config/interview_milestones.py

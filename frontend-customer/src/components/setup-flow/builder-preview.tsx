@@ -28,6 +28,9 @@ import { useLocale } from "next-intl";
  * what the coach teaches to stand in for a cover. */
 export interface BuilderData {
   answers: Record<string, string>;
+  /** The ways into each item ("course_access"), as what the tiles stand for: the answer's own words are in
+   * the creator's language. */
+  wayIds?: Record<string, string[]>;
   review: ReviewCard | null;
   /** Covers to choose from, offered before the draft is reviewed. */
   covers: ReviewItem["covers"];
@@ -109,7 +112,7 @@ function ItemCard({
   // Who can open it, as ticked so far: the badge and the chips follow.
   const ways = waysIn(a[`${kind}_access`]);
   const price =
-    accessBadge(ways) ??
+    accessBadge(data.wayIds?.[`${kind}_access`] ?? ways) ??
     (priceText
       ? /free/i.test(priceText)
         ? "Free"

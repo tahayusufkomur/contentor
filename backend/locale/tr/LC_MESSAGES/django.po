@@ -6851,6 +6851,36 @@ msgid "Which kinds of %(tile)s do you offer?"
 msgstr "Hangi %(tile)s türlerini sunuyorsun?"
 
 #: apps/tenant_config/interview.py
+#, fuzzy
+msgid "Designer"
+msgstr "Tasarımcı"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "Content Creating Specialist"
+msgstr "İçerik Üretim Uzmanı"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "Marketing Specialist"
+msgstr "Pazarlama Uzmanı"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "Community manager"
+msgstr "Topluluk yöneticisi"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "Financial Strategist"
+msgstr "Finans Stratejisti"
+
+#: apps/tenant_config/interview.py
+#, fuzzy
+msgid "Assistant"
+msgstr "Asistan"
+
+#: apps/tenant_config/interview.py
 #, fuzzy, python-format
 msgid "your %(role)s on %(things)s"
 msgstr "%(things)s üzerinde %(role)s"
@@ -8006,6 +8036,11 @@ msgstr "Çoğunlukla %(name)s"
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy, python-format
+msgid "Weekly %(subject)s classes"
+msgstr "Haftalık %(subject)s dersleri"
+
+#: apps/tenant_config/interview_brief.py
+#, fuzzy, python-format
 msgid "Only %(kind)s"
 msgstr "Yalnızca %(kind)s"
 
@@ -9110,14 +9145,14 @@ msgid "times to suit your students"
 msgstr "öğrencilerine uygun saatlerde"
 
 #: apps/tenant_config/interview_golive.py
-#, fuzzy
-msgid ", members only"
-msgstr ", yalnızca üyelere"
+#, fuzzy, python-format
+msgid "%(when)s, members only"
+msgstr "%(when)s, sadece üyelere özel"
 
 #: apps/tenant_config/interview_golive.py
 #, fuzzy, python-format
-msgid ", %(price)s each"
-msgstr ", her biri %(price)s"
+msgid "%(when)s, %(price)s each"
+msgstr "%(when)s, her biri %(price)s"
 
 #: apps/tenant_config/interview_golive.py
 #: apps/tenant_config/interview_milestones.py

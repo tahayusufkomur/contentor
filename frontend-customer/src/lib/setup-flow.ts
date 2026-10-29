@@ -410,6 +410,9 @@ export interface GuideTurn {
   ack: string;
   question: string;
   options: string[];
+  /** What each option stands for in code, in the same order: the words on a tile
+   * are in the creator's language, so a tile's meaning is read from here. */
+  ids?: string[];
   field: string | null;
   can_delegate: boolean;
   /** Several options can be ticked, then sent together. */

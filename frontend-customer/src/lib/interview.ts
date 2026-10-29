@@ -201,7 +201,40 @@ export function socialLink(network: string, raw: string): string | null {
 export const socialOk = (network: string, raw: string): boolean =>
   socialLink(network, raw) !== null;
 
-/** Contact ways that need a detail, as interview_brief.CONTACT_DETAILS. */
+/** What a tile stands for in code (the guide's `ids`, in the order of `options`): the tile's words are in the
+ * creator's language, so a contact way, "One-time" or a way into an item is read from its identity. */
+export const idOf = (label: string, options: string[], ids?: string[]) =>
+  ids?.[options.indexOf(label)] ?? label;
+
+/** Tiles joined in an answer ("Jeder, der den Kurs kauft, Premium"), as their identities. Longest label first,
+ * because a label can hold a comma. Text that is no tile stays as it is. */
+export function idsOfText(
+  text: string,
+  options: string[],
+  ids?: string[],
+): string[] {
+  const out: string[] = [];
+  let rest = text.trim();
+  const known = options
+    .map((o, i) => [o, ids?.[i] ?? o] as const)
+    .sort((a, b) => b[0].length - a[0].length);
+  while (rest) {
+    const hit = known.find(
+      ([label]) =>
+        rest.startsWith(label) &&
+        (rest.length === label.length || rest[label.length] === ","),
+    );
+    const cut = hit
+      ? hit[0].length
+      : (rest.indexOf(",") + 1 || rest.length + 1) - 1;
+    const part = hit ? hit[1] : rest.slice(0, cut).trim();
+    if (part) out.push(part);
+    rest = rest.slice(cut).replace(/^,\s*/, "");
+  }
+  return out;
+}
+
+/** Contact ways that need a detail, as interview_brief.CONTACT_DETAILS (keyed by the way's identity). */
 export const CONTACT_DETAILS: Record<string, "email" | "phone"> = {
   Email: "email",
   WhatsApp: "phone",

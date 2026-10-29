@@ -12,6 +12,8 @@ import {
   ADDRESS_BOXES,
   addressOk,
   contactOk,
+  idOf,
+  idsOfText,
   priceOk,
   defaultSchedule,
   finishedNotes,
@@ -505,5 +507,48 @@ describe("reviewPages / nextToReview", () => {
     expect(
       nextToReview(reviewPages(steps, builds, ["home", "about", "faq"])),
     ).toBeUndefined();
+  });
+});
+
+describe("tiles in the creator's language keep their meaning", () => {
+  const options = [
+    "Jeder, der den Kurs kauft",
+    "Digitale Mitgliedschaft",
+    "Kostenlos für alle",
+  ];
+  const ids = [
+    "Anyone who buys the course",
+    "Digital membership",
+    "Free for everyone",
+  ];
+
+  it("reads a pick with a comma in its label back as identities", () => {
+    expect(
+      idsOfText(
+        "Jeder, der den Kurs kauft, Digitale Mitgliedschaft",
+        options,
+        ids,
+      ),
+    ).toEqual(["Anyone who buys the course", "Digital membership"]);
+  });
+
+  it("gives the access badge from identities, never from the words shown", () => {
+    const free = idsOfText("Kostenlos für alle", options, ids);
+    expect(accessBadge(free)).toBe("Free");
+    expect(
+      accessBadge(idsOfText("Digitale Mitgliedschaft", options, ids)),
+    ).toBe("Members only");
+    expect(accessBadge(idsOfText(options[0], options, ids))).toBeNull();
+  });
+
+  it("keeps text that is no tile, and a tile without ids is its own identity", () => {
+    expect(idsOfText("Night owls, Kostenlos für alle", options, ids)).toEqual([
+      "Night owls",
+      "Free for everyone",
+    ]);
+    expect(idOf("E-Mail", ["E-Mail"], undefined)).toBe("E-Mail");
+    expect(idOf("E-Mail", ["E-Mail", "Telefon"], ["Email", "Phone"])).toBe(
+      "Email",
+    );
   });
 });

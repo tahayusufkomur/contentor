@@ -1,9 +1,11 @@
 """The setup interview's fixed copy follows the creator's language (Task 4.4a): questions, tiles, hints, help,
 acks and labels reach a Turkish creator in Turkish; tapped tiles still apply by their English identity."""
 
+import json
 from unittest import mock
 
 import pytest
+from django.utils.translation import override
 
 from apps.accounts.models import User
 from apps.core.models import Tenant
@@ -116,3 +118,100 @@ def test_fixed_labels_follow_the_creator_language(setup_running):
     assert page == translated("Home")
     assert lines[0]["next"] == translated("Ask me to change any page, any time.")
     assert lines[-1]["did"] == translated("Ran your setup.")
+
+
+def _answers(**more):
+    return {"photos": "stock", "teaches": "Pottery", **more}
+
+
+def test_the_contact_question_takes_the_turkish_labels_and_details(setup_running, owner):
+    """The ways are ticked by their Turkish labels: the details are stored under the English ways."""
+    from apps.tenant_config import interview_brief
+
+    email, phone = translated("Email"), translated("Phone")
+    response = creator_client(setup_running, owner).post(
+        "/api/v1/admin/setup-flow/turn/",
+        {
+            "message": "",
+            "choice": {
+                "field": "contact",
+                "value": json.dumps({email: "maya@example.com", phone: "+49 170 1234567"}),
+            },
+        },
+        content_type="application/json",
+        HTTP_HOST=HOST,
+    )
+
+    assert response.status_code == 200, response.content
+    stored = Tenant.objects.get(pk=setup_running.pk).wizard_state["answers"]["contact"]
+    assert stored == "Email: maya@example.com; Phone: +49 170 1234567"
+    # ...and the signup email is prefilled under the label the screen shows.
+    with override("tr"):
+        assert list(interview.prefill_for("contact", {})) == [interview_brief.tx("Email")]
+
+
+def test_a_german_pick_of_tiles_with_commas_maps_back(setup_running, owner):
+    """ "Jeder, der den Kurs kauft" holds a comma: buy and a membership both reach the answers."""
+    answers = _answers(offers=["course"], payments=["course", "membership"], memberships=["digital"])
+    Tenant.objects.filter(pk=setup_running.pk).update(wizard_state={"flow": "interview", "answers": answers})
+    field = brief.FIELD_BY_ID["course_access"]
+    with override("de"):
+        buy, member = brief.tx("Anyone who buys the course"), brief.tx("Digital membership")
+        assert "," in buy  # (the reason for this test)
+        assert (
+            brief.english_picks(f"{buy}, {member}", field, answers) == "Anyone who buys the course, Digital membership"
+        )
+
+    response = creator_client(setup_running, owner, "de").post(
+        "/api/v1/admin/setup-flow/turn/",
+        {"message": f"{buy}, {member}", "field": "course_access"},
+        content_type="application/json",
+        HTTP_HOST=HOST,
+    )
+
+    assert response.status_code == 200, response.content
+    assert Tenant.objects.get(pk=setup_running.pk).wizard_state["answers"]["course_access"] == ["buy", "digital"]
+
+
+def test_names_in_sentences_keep_german_nouns_and_turkish_acronyms():
+    with override("de"):
+        assert brief.name_shown("dance") == "Tanz"
+    with override("tr"):
+        assert brief.name_shown("hiit") == "HIIT"
+        assert brief.name_shown("yoga") == "yoga"
+    assert brief.name_shown("dance") == "dance"
+
+
+def test_bio_ticks_the_translated_tiles(setup_running):
+    """The bio import names English tiles; a Turkish creator sees them ticked as Turkish tiles, her own words kept."""
+    Tenant.objects.filter(pk=setup_running.pk).update(
+        wizard_state={
+            "flow": "interview",
+            "answers": _answers(),
+            "about_prefills": {"offers": "Digital content", "audience": "Complete beginners, Night owls"},
+            "about_items": {"audience": ["Complete beginners", "Night owls"]},
+        }
+    )
+    setup_running.refresh_from_db()
+    with override("tr"):
+        offers = interview.guide_for(brief.FIELD_BY_ID["offers"], answers=_answers())
+        interview._apply_prefills_to_guide(offers, brief.FIELD_BY_ID["offers"], setup_running, _answers())
+        audience = interview.guide_for(brief.FIELD_BY_ID["audience"], answers=_answers())
+        interview._apply_prefills_to_guide(audience, brief.FIELD_BY_ID["audience"], setup_running, _answers())
+
+    assert offers["prefill_options"] == [translated("Digital content")]
+    assert audience["prefill_options"] == [translated("Complete beginners"), "Night owls"]
+
+
+def test_a_weekly_membership_tile_and_the_team_names_are_translated():
+    with override("tr"):
+        tile = brief.tx("Weekly face yoga classes")
+        note, _owner = interview.started_note(["draft:course"])
+    assert tile != "Weekly face yoga classes" and "face yoga" not in tile.lower().replace("yoga", "")
+    assert "Content Creating Specialist" not in note and "İçerik Üretim Uzmanı" in note
+
+
+def test_the_summary_keeps_each_sentence_whole(setup_running):
+    """ "%(when)s, members only" is one sentence in the catalog, not a suffix glued on."""
+    assert translated("%(when)s, members only")
+    assert translated("%(when)s, %(price)s each")

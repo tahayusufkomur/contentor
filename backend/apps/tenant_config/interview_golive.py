@@ -172,9 +172,13 @@ def _summary(tenant, answers, flow) -> list[dict]:
             # The drafted class says how it is opened: sold per class, to members only, or free.
             row = _draft_row(flow, key)
             price = answers.get(price_id) if row is None or row.pricing_type == "paid" else None
-            how = _(", members only") if row is not None and row.pricing_type == "subscription" else ""
-            each = _(", %(price)s each") % {"price": _money(price, tenant)} if price else ""
-            lines.append({"label": label, "value": f"{when}{how}{each}"})
+            if row is not None and row.pricing_type == "subscription":
+                value = _("%(when)s, members only") % {"when": when}
+            elif price:
+                value = _("%(when)s, %(price)s each") % {"when": when, "price": _money(price, tenant)}
+            else:
+                value = when
+            lines.append({"label": label, "value": value})
             runs = True
     if runs and answers.get("calendar_nav") != "no":
         lines.append({"label": _("Calendar"), "value": _("A month grid, linked in your menu")})

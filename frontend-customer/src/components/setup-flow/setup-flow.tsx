@@ -18,6 +18,8 @@ import {
   landedPage,
   nextToReview,
   pageLabel,
+  idOf,
+  idsOfText,
   questionSteps,
   reviewPages,
   scheduleSummary,
@@ -523,12 +525,19 @@ function Flow({
     let builder: BuilderData | undefined;
     if (step?.builder) {
       const answers: Record<string, string> = {};
-      for (const q of steps)
+      // The ways into each item, as what they stand for (the tiles read in her language).
+      const wayIds: Record<string, string[]> = {};
+      for (const q of steps) {
         if (q.field && q.answer) answers[q.field] = q.answer;
+        if (q.field?.endsWith("_access") && q.answer)
+          wayIds[q.field] = idsOfText(q.answer, q.options, q.ids);
+      }
       const now = step.schedule
         ? draft.ticked?.length && draft.schedule
           ? scheduleSummary(
-              draft.ticked[0] === step.options[1] ? "once" : "recurring",
+              idOf(draft.ticked[0], step.options, step.ids) === "One-time"
+                ? "once"
+                : "recurring",
               draft.schedule,
               locale,
             )
@@ -539,7 +548,13 @@ function Flow({
             ? // The ways in ticked to start with show before she touches them.
               step.prefill_options?.join(", ")
             : draft.text;
-      if (step.field && now) answers[step.field] = now;
+      if (step.field && now) {
+        answers[step.field] = now;
+        if (step.field.endsWith("_access"))
+          wayIds[step.field] = draft.ticked?.length
+            ? draft.ticked.map((t) => idOf(t, step.options, step.ids))
+            : idsOfText(now, step.options, step.ids);
+      }
       const reviewField = `${step.builder}_review`;
       const card = iv.cards?.[reviewField];
       const review = isReview(card) ? card : null;
@@ -549,6 +564,7 @@ function Flow({
         step.builder === "membership" ? (now ?? "").split(", ") : [];
       builder = {
         answers,
+        wayIds,
         // The draft itself only once its review has been reached; until
         // then the preview is built from the answers (covers offered early).
         review: steps.some((q) => q.field === reviewField) ? review : null,

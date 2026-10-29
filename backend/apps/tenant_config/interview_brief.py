@@ -789,6 +789,16 @@ def lc(text: str) -> str:
     return text.lower()
 
 
+def lc_shown(text: str) -> str:
+    """Lower-case a name in the middle of a sentence a person reads. German keeps its nouns capitalised and an
+    acronym ("HIIT") stays as written; ``lc`` is the plain tr-aware lower for matching her own words."""
+    text = str(text)
+    first = text.split(" ")[0]
+    if (get_language() or "").startswith("de") or (len(first) > 1 and first.isupper()):
+        return text
+    return lc(text)
+
+
 def _known_names() -> dict[str, str]:
     """The tile and kind names of the first questions by lower-case English text (the identity values)."""
     names = [*SPECIALTIES, *(k for _, kinds in SPECIALTIES.values() for k in kinds)]
@@ -798,7 +808,7 @@ def _known_names() -> dict[str, str]:
 def name_shown(name: str) -> str:
     """A tile or kind name in the middle of a sentence ("yoga" for "Yoga"): ours is translated, hers stays hers."""
     known = _known_names().get(name.lower())
-    return lc(render_marked(known)) if known else name
+    return lc_shown(render_marked(known)) if known else lc_shown(name)
 
 
 def tx(option: str) -> str:
@@ -808,6 +818,8 @@ def tx(option: str) -> str:
     option = str(option)
     if match := re.fullmatch(r"Mostly (.+)", option):
         return gettext("Mostly %(name)s") % {"name": name_shown(match[1])}
+    if match := re.fullmatch(r"Weekly (.+) classes", option):
+        return gettext("Weekly %(subject)s classes") % {"subject": name_shown(match[1])}
     if match := re.fullmatch(r"Only (.+)", option):
         return gettext("Only %(kind)s") % {"kind": name_shown(match[1])}
     if match := re.fullmatch(r"(.+) and more", option):
@@ -2119,11 +2131,19 @@ def english_picks(text: str, field: Field, answers: dict, brand: str = "") -> st
     """Tiles a creator tapped, as the English options they stand for: the screen shows ``tx(option)`` and sends it
     back as typed text, while code matches and stores the English identity. Text that is no tile stays as it is."""
     by_shown = {tx(o).lower(): o for o in options_for(field, answers, brand)[0]}
-    whole = by_shown.get(text.strip().lower())
-    if whole:
-        return whole
-    parts = [p.strip() for p in text.split(",") if p.strip()]
-    return ", ".join(by_shown.get(p.lower(), p) for p in parts)
+    labels = sorted(by_shown, key=len, reverse=True)  # a label may hold a comma ("Jeder, der den Kurs kauft")
+    rest, picked = text.strip(), []
+    while rest:
+        found = next((s for s in labels if rest.lower().startswith(s) and rest[len(s) :][:1] in ("", ",")), None)
+        if found:
+            picked.append(by_shown[found])
+            rest = rest[len(found) :]
+        else:
+            part, _comma, rest = rest.partition(",")
+            if part.strip():
+                picked.append(part.strip())
+        rest = rest.removeprefix(",").strip()
+    return ", ".join(picked)
 
 
 def details_for(field: Field, answers: dict) -> dict[str, str]:

@@ -11,7 +11,8 @@ import time
 from django.conf import settings
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from django.utils.translation import gettext_lazy
+from django.utils.translation import gettext as render_marked
+from django.utils.translation import gettext_lazy, gettext_noop
 from pydantic import BaseModel
 
 from . import interview_brief as brief
@@ -163,6 +164,7 @@ GUIDE_KEYS = (
     "ack",
     "question",
     "options",
+    "ids",
     "field",
     "can_delegate",
     "multi",
@@ -199,6 +201,7 @@ def guide_for(
             "ack": str(ack)[:300],
             "question": str(READY_QUESTION),
             "options": [],
+            "ids": [],
             "field": None,
             "can_delegate": False,
             "multi": False,
@@ -238,6 +241,9 @@ def guide_for(
             field.question if field.kind in REVIEW_KINDS else question or default_question(field, answers, brand)
         )[:300],
         "options": chosen,
+        # What each tile stands for in code, in the same order: the screen reads a tile's meaning (a contact way,
+        # who can open an item, one-time) from here, never from the words it shows.
+        "ids": english,
         "field": field.id,
         "can_delegate": field.delegable and field.kind not in REVIEW_KINDS,
         # A studio name that names one kind asks "only that, or more?": one pick.
@@ -287,28 +293,28 @@ def default_question(field: brief.Field, answers, brand="") -> str:
     """The pre-written question, naming the niche where the screen shows its kinds."""
     if field.kind == "specialty":
         if base := (answers or {}).get("specialty_base"):
-            return _("What else do you offer besides %(kind)s?") % {"kind": brief.name_shown(base.lower())}
+            return _("What else do you offer besides %(kind)s?") % {"kind": brief.name_shown(base)}
         tiles = str((answers or {}).get("teaches") or "").split(",")
         return _("Which kinds of %(tiles)s do you offer?") % {
-            "tiles": brief.list_phrase(brief.name_shown(t.strip().lower()) for t in tiles)
+            "tiles": brief.list_phrase(brief.name_shown(t.strip()) for t in tiles)
         }
     if field.kind == "focus":
         return _("Are %(names)s equally important, or is one your main focus?") % {
-            "names": brief.list_phrase(brief.name_shown(n.lower()) for n in brief.disciplines_of(answers or {}))
+            "names": brief.list_phrase(brief.name_shown(n) for n in brief.disciplines_of(answers or {}))
         }
     if field.id == "teaches" and (bio := (answers or {}).get("bio_teaches")):
         # Her bio settles what the name only hints at; a name that says
         # something else is asked about first, before anything builds on it.
         if named := brief.teaching_conflict(brand, bio):
             return _("Your bio is about %(said)s, but your studio name says %(named)s. What do you offer?") % {
-                "said": brief.list_phrase(brief.name_shown(b.lower()) for b in bio),
-                "named": brief.name_shown(named.lower()),
+                "said": brief.list_phrase(brief.name_shown(b) for b in bio),
+                "named": brief.name_shown(named),
             }
         return _("What do you offer? I ticked what your bio says.")
     if field.id == "teaches" and (named := brief.kind_of_brand(brand)):
-        return _("Do you only offer %(kind)s?") % {"kind": brief.name_shown(named[1].lower())}
+        return _("Do you only offer %(kind)s?") % {"kind": brief.name_shown(named[1])}
     if field.id == "teaches" and (tile := brief.tile_of_brand(brand)):
-        return _("Which kinds of %(tile)s do you offer?") % {"tile": brief.name_shown(tile.lower())}
+        return _("Which kinds of %(tile)s do you offer?") % {"tile": brief.name_shown(tile)}
     return str(field.question)
 
 
@@ -325,11 +331,24 @@ def builder_of(field: brief.Field) -> str | None:
     return None
 
 
+# The specialists' names as the creator reads them mid-sentence (core.copilot.team.NAMES stays English: prompts).
+TEAM_NAMES = {
+    "designer": gettext_noop("Designer"),
+    "content": gettext_noop("Content Creating Specialist"),
+    "marketing": gettext_noop("Marketing Specialist"),
+    "community": gettext_noop("Community manager"),
+    "finance": gettext_noop("Financial Strategist"),
+    "assistant": gettext_noop("Assistant"),
+}
+
+
+def team_name(key: str) -> str:
+    return render_marked(TEAM_NAMES[key])
+
+
 def started_note(fired: list[str]) -> tuple[str, str | None]:
     """The build-status line, signed by the specialists doing the work, and the
     one owner's key when a single specialist does all of it."""
-    from apps.core.copilot.team import NAMES
-
     by_owner: dict[str, list[str]] = {}
     for k in fired:
         if k in STARTED:
@@ -337,7 +356,7 @@ def started_note(fired: list[str]) -> tuple[str, str | None]:
     if not by_owner:
         return "", None
     clauses = [
-        _("your %(role)s on %(things)s") % {"role": NAMES[o], "things": brief.list_phrase(str(t) for t in things)}
+        _("your %(role)s on %(things)s") % {"role": team_name(o), "things": brief.list_phrase(str(t) for t in things)}
         for o, things in by_owner.items()
     ]
     owner = next(iter(by_owner)) if len(by_owner) == 1 else None
@@ -353,7 +372,7 @@ def started_note(fired: list[str]) -> tuple[str, str | None]:
     if owner:
         return (
             _("Your %(role)s is starting on %(things)s now.")
-            % {"role": NAMES[owner], "things": brief.list_phrase(str(t) for t in by_owner[owner])},
+            % {"role": team_name(owner), "things": brief.list_phrase(str(t) for t in by_owner[owner])},
             owner,
         )
     return _("Your team is starting now: %(clauses)s.") % {"clauses": brief.list_phrase(clauses)}, None
@@ -510,7 +529,7 @@ def prefill_for(field_id, answers) -> dict:
     if field_id != "contact":
         return {}
     owner = User.objects.filter(role="owner").order_by("id").first()
-    return {"Email": owner.email} if owner and owner.email else {}
+    return {brief.tx("Email"): owner.email} if owner and owner.email else {}
 
 
 def membership_prices(field_id, answers) -> dict:
@@ -795,14 +814,17 @@ def _apply_prefills_to_guide(guide: dict, field: brief.Field | None, tenant, ans
         guide["prefill_options"] = picks
         return
 
-    # Check for option matches
+    # Check for option matches: the bio import names the tiles by their English identity, the screen shows them
+    # in the creator's language, so a tile matches by either and the displayed one is ticked.
     options = guide.get("options") or []
+    ids = guide.get("ids") or options
     val_lower = str(val).lower()
     matched = []
-    for opt in options:
-        opt_lower = opt.lower()
-        if opt_lower == val_lower or opt_lower in val_lower or (len(val_lower) > 3 and val_lower in opt_lower):
-            matched.append(opt)
+    for opt, ident in zip(options, ids, strict=False):
+        for opt_lower in {opt.lower(), ident.lower()}:
+            if opt_lower == val_lower or opt_lower in val_lower or (len(val_lower) > 3 and val_lower in opt_lower):
+                matched.append(opt)
+                break
 
     if matched:
         guide["prefill_options"] = matched
@@ -823,7 +845,9 @@ def _prefill_picks(field: brief.Field, guide: dict, items) -> list[str]:
     """The About text's separate points as ticked tiles: the tile she is shown
     when one says the same, else her own tile (a finished sentence on a
     starter question) where she can add her own. Else nothing."""
-    tiles = {str(o).lower(): o for o in guide.get("options") or []}
+    options = guide.get("options") or []
+    tiles = {str(i).lower(): o for o, i in zip(options, guide.get("ids") or options, strict=False)}
+    tiles |= {str(o).lower(): o for o in options}
     picks: list[str] = []
     for item in items or []:
         pick = tiles.get(str(item).lower()) or (str(item) if field.custom else None)
@@ -911,7 +935,7 @@ def _refresh_turn(turn: dict, answers: dict, brand: str) -> dict:
     fresh = guide_for(field, answers=answers, brand=brand)
     return {
         **turn,
-        **{k: fresh[k] for k in ("options", "icons", "hints", "details", "why", "alone", "prefill_options")},
+        **{k: fresh[k] for k in ("options", "ids", "icons", "hints", "details", "why", "alone", "prefill_options")},
         **membership_prices(field.id, answers),
     }
 
@@ -936,6 +960,7 @@ def interview_state(tenant, flow: dict) -> dict:
         guide = {k: last.get(k) for k in GUIDE_KEYS}
         # A transcript written before icons existed still renders.
         guide["icons"] = guide["icons"] or {}
+        guide["ids"] = guide["ids"] or list(guide["options"] or [])  # (older turns: the tiles are their own ids)
         guide["hints"] = guide["hints"] or {}
         # ...and one written before own options existed still gets its blank tile.
         guide["custom"] = bool(getattr(brief.FIELD_BY_ID.get(guide["field"] or ""), "custom", False))
