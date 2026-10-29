@@ -2166,6 +2166,11 @@ msgstr "Geçersiz veya süresi dolmuş bağlantı."
 msgid "You've been unsubscribed from these emails."
 msgstr "Bu e-postaların aboneliğinden çıkarıldın."
 
+#: apps/platform_email/serializers.py
+#, python-format, fuzzy
+msgid "Invalid language. Must be one of: %(codes)s."
+msgstr "Geçersiz dil. Şunlardan biri olmalıdır: %(codes)s."
+
 #: apps/tenant_config/defaults.py
 #, fuzzy
 msgid "Start a course"

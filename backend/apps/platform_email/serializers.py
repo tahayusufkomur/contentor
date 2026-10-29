@@ -1,3 +1,4 @@
+from django.utils.translation import gettext as _
 from rest_framework import serializers
 
 from apps.core import languages
@@ -14,7 +15,9 @@ def validate_recipient_filter(value, *, require_recipients=True):
     if filter_type not in FILTER_TYPES:
         raise serializers.ValidationError(f"Invalid filter type. Must be one of: {', '.join(FILTER_TYPES)}.")
     if value.get("language") and value["language"] not in languages.CODES:
-        raise serializers.ValidationError(f"Invalid language. Must be one of: {', '.join(languages.CODES)}.")
+        raise serializers.ValidationError(
+            _("Invalid language. Must be one of: %(codes)s.") % {"codes": ", ".join(languages.CODES)}
+        )
     list_fields = {"plan": "plan_ids", "tenant": "tenant_ids", "individual": "user_ids"}
     if filter_type in list_fields:
         ids = value.get(list_fields[filter_type])

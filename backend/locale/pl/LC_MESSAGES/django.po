@@ -2205,6 +2205,11 @@ msgstr "Nieprawidłowy lub wygasły link."
 msgid "You've been unsubscribed from these emails."
 msgstr "Wypisano Cię z tych wiadomości e-mail."
 
+#: apps/platform_email/serializers.py
+#, python-format, fuzzy
+msgid "Invalid language. Must be one of: %(codes)s."
+msgstr "Nieprawidłowy język. Musi być jednym z: %(codes)s."
+
 #: apps/tenant_config/defaults.py
 #, fuzzy
 msgid "Start a course"
