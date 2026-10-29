@@ -1,5 +1,6 @@
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
+from django.utils.translation import gettext as _
 from rest_framework import serializers
 
 from apps.billing.models import SubscriptionPlan
@@ -40,7 +41,7 @@ class PlanWriteSerializer(serializers.ModelSerializer):
 
     def validate_price(self, value):
         if value <= 0:
-            raise serializers.ValidationError("A membership needs a price above zero.")
+            raise serializers.ValidationError(_("A membership needs a price above zero."))
         return value
 
     def create(self, validated_data):

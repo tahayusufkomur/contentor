@@ -17,6 +17,7 @@ from __future__ import annotations
 import logging
 
 from django.db import connection, transaction
+from django.utils.translation import gettext as _
 from django_tenants.utils import schema_context
 from rest_framework import status
 from rest_framework.decorators import (
@@ -72,7 +73,7 @@ def start_checkout(request):
     plan_id = request.data.get("plan_id")
     if not plan_id:
         return Response(
-            {"error": "PLAN_REQUIRED", "detail": "plan_id is required."},
+            {"error": "PLAN_REQUIRED", "detail": _("plan_id is required.")},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -81,7 +82,7 @@ def start_checkout(request):
     return_path = request.data.get("return_path")
     if return_path is not None and not str(return_path).startswith("/setup"):
         return Response(
-            {"error": "INVALID_RETURN_PATH", "detail": "return_path must be a relative /setup path."},
+            {"error": "INVALID_RETURN_PATH", "detail": _("return_path must be a relative /setup path.")},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -89,7 +90,7 @@ def start_checkout(request):
         plan = PlatformPlan.objects.get(pk=plan_id)
     except PlatformPlan.DoesNotExist:
         return Response(
-            {"error": "PLAN_NOT_FOUND", "detail": "Plan does not exist."},
+            {"error": "PLAN_NOT_FOUND", "detail": _("Plan does not exist.")},
             status=status.HTTP_404_NOT_FOUND,
         )
 
@@ -108,7 +109,7 @@ def start_checkout(request):
     )
     if running.exists():
         return Response(
-            {"error": "PLAN_RUNNING", "detail": "A plan is already running; contact support to switch plans."},
+            {"error": "PLAN_RUNNING", "detail": _("A plan is already running; contact support to switch plans.")},
             status=status.HTTP_409_CONFLICT,
         )
 

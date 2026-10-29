@@ -10,6 +10,38 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+#: apps/accounts/admin_panels.py
+#, fuzzy
+msgid "User not found."
+msgstr "Benutzer nicht gefunden."
+
+#: apps/accounts/admin_panels.py
+#, fuzzy
+msgid "Only student accounts can be opened from here."
+msgstr "Von hier aus können nur Teilnehmer-Accounts geöffnet werden."
+
+#: apps/accounts/impersonation.py
+#, python-format, fuzzy
+msgid "%(name)s has no routable domain yet — cannot open a session."
+msgstr ""
+"%(name)s hat noch keine routingfähige Domain — Sitzung kann nicht geöffnet "
+"werden."
+
+#: apps/accounts/impersonation.py
+#, python-format, fuzzy
+msgid "Opening a session as %(email)s…"
+msgstr "Sitzung wird als %(email)s geöffnet…"
+
+#: apps/accounts/impersonation.py
+#, python-format, fuzzy
+msgid "%(name)s has no creator account to log in as."
+msgstr "%(name)s hat keinen Creator-Account zum Anmelden."
+
+#: apps/accounts/views.py
+#, fuzzy
+msgid "Demo mode"
+msgstr "Demomodus"
+
 #: apps/accounts/views.py
 #, fuzzy
 msgid "If an account exists, a magic link has been sent."
@@ -48,8 +80,24 @@ msgstr "Ungültiger oder abgelaufener Token"
 msgid "Token not valid for this tenant"
 msgstr "Token für diesen Mandanten nicht gültig"
 
-#: apps/accounts/views.py apps/core/onboarding/views.py apps/courses/views.py
-#: apps/downloads/views.py apps/live/views.py
+#: apps/accounts/views.py
+#, fuzzy
+msgid "Logged out"
+msgstr "Abgemeldet"
+
+#: apps/accounts/views.py
+#, fuzzy
+msgid "This impersonation link was already used."
+msgstr "Dieser Link zum Identitätswechsel wurde bereits verwendet."
+
+#: apps/accounts/views.py
+#, fuzzy
+msgid "Target account no longer exists."
+msgstr "Zielkonto existiert nicht mehr."
+
+#: apps/accounts/views.py apps/billing/views/bundles.py
+#: apps/billing/views/plans.py apps/core/onboarding/views.py
+#: apps/courses/views.py apps/downloads/views.py apps/live/views.py
 #, fuzzy
 msgid "Permission denied."
 msgstr "Zugriff verweigert."
@@ -58,6 +106,202 @@ msgstr "Zugriff verweigert."
 #, fuzzy
 msgid "Unsupported locale"
 msgstr "Nicht unterstütztes Gebietsschema"
+
+#: apps/accounts/views.py
+#, fuzzy
+msgid "Student not found."
+msgstr "Teilnehmer nicht gefunden."
+
+#: apps/accounts/views.py
+#, fuzzy
+msgid "Choose either a number of days or an end date, not both."
+msgstr "Wähle entweder eine Anzahl von Tagen oder ein Enddatum, nicht beides."
+
+#: apps/accounts/views.py
+#, fuzzy
+msgid "Give access for a whole number of days between 1 and 3650."
+msgstr "Gewähre Zugriff für eine ganze Anzahl von Tagen zwischen 1 und 3650."
+
+#: apps/accounts/views.py
+#, fuzzy
+msgid "Pick the end date as a calendar date."
+msgstr "Wähle das Enddatum als Kalenderdatum."
+
+#: apps/accounts/views.py
+#, fuzzy
+msgid "Pick an end date that is still to come."
+msgstr "Wähle ein Enddatum, das noch in der Zukunft liegt."
+
+#: apps/accounts/views.py
+#, fuzzy
+msgid "course_id is required."
+msgstr "course_id ist erforderlich."
+
+#: apps/accounts/views.py
+#, fuzzy
+msgid "Course not found."
+msgstr "Kurs nicht gefunden."
+
+#: apps/accounts/views.py
+#, fuzzy
+msgid "Access granted successfully."
+msgstr "Zugriff erfolgreich gewährt."
+
+#: apps/billing/models/core.py
+#, fuzzy
+msgid "Add what members get first"
+msgstr "Füge zuerst hinzu, was Mitglieder erhalten"
+
+#: apps/billing/models/core.py
+#, fuzzy
+msgid "Set its price first"
+msgstr "Lege zuerst den Preis fest"
+
+#: apps/billing/models/core.py
+#, fuzzy
+msgid "Add at least two items"
+msgstr "Füge mindestens zwei Artikel hinzu"
+
+#: apps/billing/serializers/payments.py
+#, python-format, fuzzy
+msgid "Invalid content type. Choose from: %(choices)s"
+msgstr "Ungültiger Inhaltstyp. Wähle aus: %(choices)s"
+
+#: apps/billing/serializers/payments.py
+#, fuzzy
+msgid "At least one item is required."
+msgstr "Mindestens ein Artikel ist erforderlich."
+
+#: apps/billing/serializers/plans.py
+#, fuzzy
+msgid "A membership needs a price above zero."
+msgstr "Eine Mitgliedschaft benötigt einen Preis über null."
+
+#: apps/billing/views/bundles.py apps/courses/views.py apps/downloads/views.py
+#: apps/media/design_views.py apps/media/views.py
+#, fuzzy
+msgid "Not found."
+msgstr "Nicht gefunden."
+
+#: apps/billing/views/connect.py
+#, fuzzy
+msgid ""
+"Connect onboarding requires an active paid plan. Upgrade to start selling."
+msgstr ""
+"Das Connect-Onboarding erfordert einen aktiven kostenpflichtigen Tarif. "
+"Führe ein Upgrade durch, um mit dem Verkaufen zu beginnen."
+
+#: apps/billing/views/connect.py
+#, fuzzy
+msgid "That country is not supported for payouts."
+msgstr "Dieses Land wird für Auszahlungen nicht unterstützt."
+
+#: apps/billing/views/connect.py apps/billing/views/platform.py
+#, fuzzy
+msgid "return_path must be a relative /setup path."
+msgstr "return_path muss ein relativer /setup-Pfad sein."
+
+#: apps/billing/views/connect.py
+#, fuzzy
+msgid "No connected account yet."
+msgstr "Noch kein verbundenes Konto."
+
+#: apps/billing/views/payments.py
+#, fuzzy
+msgid "Payment could not be processed. Please try again."
+msgstr "Zahlung konnte nicht verarbeitet werden. Bitte versuche es erneut."
+
+#: apps/billing/views/payments.py
+#, python-format, fuzzy
+msgid "'%(item)s' is not on sale."
+msgstr "'%(item)s' steht nicht zum Verkauf."
+
+#: apps/billing/views/payments.py
+#, python-format, fuzzy
+msgid "'%(item)s' is sold out."
+msgstr "'%(item)s' ist ausverkauft."
+
+#: apps/billing/views/payments.py
+#, python-format, fuzzy
+msgid ""
+"Item not found: content_type=%(content_type)s, object_id=%(object_id)s."
+msgstr ""
+"Artikel nicht gefunden: content_type=%(content_type)s, "
+"object_id=%(object_id)s."
+
+#: apps/billing/views/payments.py
+#, python-format, fuzzy
+msgid "Item '%(item)s' is not purchasable (pricing_type must be 'paid')."
+msgstr ""
+"Artikel '%(item)s' kann nicht gekauft werden (pricing_type muss 'paid' "
+"sein)."
+
+#: apps/billing/views/payments.py
+#, python-format, fuzzy
+msgid "Item '%(item)s' is already owned by this user."
+msgstr "Artikel '%(item)s' ist bereits im Besitz dieses Benutzers."
+
+#: apps/billing/views/payments.py
+#, fuzzy
+msgid "This creator isn't set up to accept payments yet."
+msgstr ""
+"Dieser Creator ist noch nicht dafür eingerichtet, Zahlungen zu akzeptieren."
+
+#: apps/billing/views/payments.py
+#, fuzzy
+msgid "Payment is not in a refundable state."
+msgstr "Die Zahlung befindet sich in keinem erstattungsfähigen Status."
+
+#: apps/billing/views/payments.py
+#, fuzzy
+msgid "This item has already been refunded."
+msgstr "Dieser Artikel wurde bereits erstattet."
+
+#: apps/billing/views/payments.py
+#, fuzzy
+msgid "No Stripe charge on file for this payment."
+msgstr "Keine Stripe-Abbuchung für diese Zahlung hinterlegt."
+
+#: apps/billing/views/payments.py
+#, fuzzy
+msgid "Item refunded."
+msgstr "Artikel erstattet."
+
+#: apps/billing/views/payments.py
+#, fuzzy
+msgid "(removed)"
+msgstr "(entfernt)"
+
+#: apps/billing/views/payments.py apps/billing/views/platform.py
+#, fuzzy
+msgid "plan_id is required."
+msgstr "plan_id ist erforderlich."
+
+#: apps/billing/views/payments.py
+#, fuzzy
+msgid "You already have an active subscription to this plan."
+msgstr "Du hast bereits ein aktives Abonnement für diesen Tarif."
+
+#: apps/billing/views/payments.py
+#, fuzzy
+msgid "Subscription is not active."
+msgstr "Abonnement ist nicht aktiv."
+
+#: apps/billing/views/payments.py
+#, fuzzy
+msgid "Already on this plan."
+msgstr "Bereits in diesem Tarif."
+
+#: apps/billing/views/platform.py
+#, fuzzy
+msgid "Plan does not exist."
+msgstr "Tarif existiert nicht."
+
+#: apps/billing/views/platform.py
+#, fuzzy
+msgid "A plan is already running; contact support to switch plans."
+msgstr ""
+"Ein Tarif läuft bereits; kontaktiere den Support, um den Tarif zu wechseln."
 
 #: apps/community/payloads.py
 #, fuzzy, python-format
@@ -74,6 +318,116 @@ msgstr "%(commenter)s hat deinen Beitrag kommentiert"
 msgid "Contentor · Courses, live sessions and payments under your own brand."
 msgstr ""
 "Contentor · Kurse, Live-Sessions und Zahlungen unter deiner eigenen Marke."
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "What you offer"
+msgstr "Was du anbietest"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "Homepage hero & course catalog"
+msgstr "Startseiten-Hero & Kurskatalog"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "Target students"
+msgstr "Zielteilnehmer"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "Student targeting & course descriptions"
+msgstr "Teilnehmeransprache & Kursbeschreibungen"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "Your story & background"
+msgstr "Deine Geschichte & dein Hintergrund"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "About page story section"
+msgstr "Story-Bereich der Über-mich-Seite"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "Training & certifications"
+msgstr "Ausbildung & Zertifizierungen"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "Creator bio & trust credentials"
+msgstr "Creator-Biografie & Vertrauensnachweise"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "How you work"
+msgstr "Wie du arbeitest"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "Which pages I build and what I ask next"
+msgstr "Welche Seiten ich erstelle und was ich als Nächstes frage"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "Location & format"
+msgstr "Ort & Format"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "Events & Contact page details"
+msgstr "Details der Event- & Kontaktseite"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "Course ideas"
+msgstr "Kursideen"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "First course outline and lessons"
+msgstr "Gliederung und Lektionen des ersten Kurses"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "Live session topic"
+msgstr "Thema der Live-Session"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "First live session schedule"
+msgstr "Zeitplan der ersten Live-Session"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "What students get"
+msgstr "Was Teilnehmer bekommen"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "Benefits across your home page"
+msgstr "Vorteile auf deiner Startseite"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "What sets you apart"
+msgstr "Was dich auszeichnet"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "Your About page and home page"
+msgstr "Deine Über-mich-Seite und Startseite"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "Tone & voice"
+msgstr "Tonalität & Stimme"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "AI copy style across all pages"
+msgstr "KI-Textstil auf allen Seiten"
 
 #: apps/core/onboarding/compose.py apps/core/onboarding/site_composer.py
 #: apps/core/tasks.py apps/tenant_config/interview_milestones.py
@@ -380,6 +734,11 @@ msgstr "Token erforderlich"
 #, fuzzy
 msgid "Tenant not found"
 msgstr "Mandant nicht gefunden"
+
+#: apps/core/onboarding/recovery.py apps/core/onboarding/views.py
+#, fuzzy
+msgid "Token does not match tenant owner."
+msgstr "Token passt nicht zum Inhaber der Site."
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
@@ -1403,6 +1762,16 @@ msgstr "Markenname ist erforderlich"
 
 #: apps/core/onboarding/views.py
 #, fuzzy
+msgid "goals must be a list of strings."
+msgstr "goals muss eine Liste von Zeichenketten sein."
+
+#: apps/core/onboarding/views.py
+#, python-format, fuzzy
+msgid "Unknown niche '%(niche)s'."
+msgstr "Unbekannte Nische '%(niche)s'."
+
+#: apps/core/onboarding/views.py
+#, fuzzy
 msgid "slug parameter required"
 msgstr "slug-Parameter erforderlich"
 
@@ -1548,12 +1917,12 @@ msgid_plural ""
 "edited, and %(empty)s of its %(total)s lessons have none yet"
 msgstr[0] ""
 "ein Kurs geht live, sobald jede Lektion ein Video oder Text hat, den du "
-"geschrieben oder bearbeitet hast, und %(empty)s seiner %(total)s "
-"Lektionen hat noch keines davon"
+"geschrieben oder bearbeitet hast, und %(empty)s seiner %(total)s Lektionen "
+"hat noch keines davon"
 msgstr[1] ""
 "ein Kurs geht live, sobald jede Lektion ein Video oder Text hat, den du "
-"geschrieben oder bearbeitet hast, und %(empty)s seiner %(total)s "
-"Lektionen haben noch keines davon"
+"geschrieben oder bearbeitet hast, und %(empty)s seiner %(total)s Lektionen "
+"haben noch keines davon"
 
 #: apps/courses/serializers.py
 #, fuzzy
@@ -1563,12 +1932,6 @@ msgid ""
 msgstr ""
 "Das Curriculum kann nur bei der Erstellung festgelegt werden. Verwende die "
 "Modul-/Lektions-Endpunkte zum Bearbeiten."
-
-#: apps/courses/views.py apps/downloads/views.py apps/media/design_views.py
-#: apps/media/views.py
-#, fuzzy
-msgid "Not found."
-msgstr "Nicht gefunden."
 
 #: apps/courses/views.py
 #, fuzzy
@@ -1594,6 +1957,41 @@ msgstr "Das Feld lesson ist erforderlich."
 #, fuzzy, python-format
 msgid "Custom domain: %(domain)s"
 msgstr "Eigene Domain: %(domain)s"
+
+#: apps/domains/views.py
+#, fuzzy
+msgid "Domain service is temporarily unavailable."
+msgstr "Domain-Dienst ist vorübergehend nicht verfügbar."
+
+#: apps/domains/views.py
+#, fuzzy
+msgid "q is required."
+msgstr "q ist erforderlich."
+
+#: apps/domains/views.py
+#, fuzzy
+msgid "Custom domains require a paid plan."
+msgstr "Eigene Domains erfordern einen kostenpflichtigen Tarif."
+
+#: apps/domains/views.py
+#, fuzzy
+msgid "domain is required."
+msgstr "domain ist erforderlich."
+
+#: apps/domains/views.py
+#, fuzzy
+msgid "return_path must be a relative path."
+msgstr "return_path muss ein relativer Pfad sein."
+
+#: apps/domains/views.py
+#, fuzzy
+msgid "Domain is not available."
+msgstr "Domain ist nicht verfügbar."
+
+#: apps/domains/views.py
+#, fuzzy
+msgid "Only failed domains can retry."
+msgstr "Nur fehlgeschlagene Domains können wiederholt werden."
 
 #: apps/downloads/views.py
 #, fuzzy

@@ -10,6 +10,38 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
+#: apps/accounts/admin_panels.py
+#, fuzzy
+msgid "User not found."
+msgstr "Kullanıcı bulunamadı."
+
+#: apps/accounts/admin_panels.py
+#, fuzzy
+msgid "Only student accounts can be opened from here."
+msgstr "Buradan yalnızca öğrenci hesapları açılabilir."
+
+#: apps/accounts/impersonation.py
+#, python-format, fuzzy
+msgid "%(name)s has no routable domain yet — cannot open a session."
+msgstr ""
+"%(name)s henüz yönlendirilebilir bir alan adına sahip değil — oturum "
+"açılamıyor."
+
+#: apps/accounts/impersonation.py
+#, python-format, fuzzy
+msgid "Opening a session as %(email)s…"
+msgstr "%(email)s olarak oturum açılıyor…"
+
+#: apps/accounts/impersonation.py
+#, python-format, fuzzy
+msgid "%(name)s has no creator account to log in as."
+msgstr "%(name)s giriş yapılacak bir içerik üreticisi hesabına sahip değil."
+
+#: apps/accounts/views.py
+#, fuzzy
+msgid "Demo mode"
+msgstr "Demo modu"
+
 #: apps/accounts/views.py
 #, fuzzy
 msgid "If an account exists, a magic link has been sent."
@@ -48,8 +80,24 @@ msgstr "Geçersiz veya süresi dolmuş belirteç"
 msgid "Token not valid for this tenant"
 msgstr "Belirteç bu kiracı için geçerli değil"
 
-#: apps/accounts/views.py apps/core/onboarding/views.py apps/courses/views.py
-#: apps/downloads/views.py apps/live/views.py
+#: apps/accounts/views.py
+#, fuzzy
+msgid "Logged out"
+msgstr "Çıkış yapıldı"
+
+#: apps/accounts/views.py
+#, fuzzy
+msgid "This impersonation link was already used."
+msgstr "Bu kimliğe bürünme bağlantısı zaten kullanılmış."
+
+#: apps/accounts/views.py
+#, fuzzy
+msgid "Target account no longer exists."
+msgstr "Hedef hesap artık mevcut değil."
+
+#: apps/accounts/views.py apps/billing/views/bundles.py
+#: apps/billing/views/plans.py apps/core/onboarding/views.py
+#: apps/courses/views.py apps/downloads/views.py apps/live/views.py
 #, fuzzy
 msgid "Permission denied."
 msgstr "İzin reddedildi."
@@ -58,6 +106,200 @@ msgstr "İzin reddedildi."
 #, fuzzy
 msgid "Unsupported locale"
 msgstr "Desteklenmeyen yerel ayar"
+
+#: apps/accounts/views.py
+#, fuzzy
+msgid "Student not found."
+msgstr "Öğrenci bulunamadı."
+
+#: apps/accounts/views.py
+#, fuzzy
+msgid "Choose either a number of days or an end date, not both."
+msgstr "Ya gün sayısını ya da bitiş tarihini seç, ikisini birden değil."
+
+#: apps/accounts/views.py
+#, fuzzy
+msgid "Give access for a whole number of days between 1 and 3650."
+msgstr "1 ile 3650 arasında tam sayıda gün için erişim ver."
+
+#: apps/accounts/views.py
+#, fuzzy
+msgid "Pick the end date as a calendar date."
+msgstr "Bitiş tarihini bir takvim tarihi olarak seç."
+
+#: apps/accounts/views.py
+#, fuzzy
+msgid "Pick an end date that is still to come."
+msgstr "Gelecekteki bir bitiş tarihi seç."
+
+#: apps/accounts/views.py
+#, fuzzy
+msgid "course_id is required."
+msgstr "course_id gereklidir."
+
+#: apps/accounts/views.py
+#, fuzzy
+msgid "Course not found."
+msgstr "Kurs bulunamadı."
+
+#: apps/accounts/views.py
+#, fuzzy
+msgid "Access granted successfully."
+msgstr "Erişim başarıyla verildi."
+
+#: apps/billing/models/core.py
+#, fuzzy
+msgid "Add what members get first"
+msgstr "Önce üyelerin ne alacağını ekle"
+
+#: apps/billing/models/core.py
+#, fuzzy
+msgid "Set its price first"
+msgstr "Önce fiyatını belirle"
+
+#: apps/billing/models/core.py
+#, fuzzy
+msgid "Add at least two items"
+msgstr "En az iki öge ekle"
+
+#: apps/billing/serializers/payments.py
+#, python-format, fuzzy
+msgid "Invalid content type. Choose from: %(choices)s"
+msgstr "Geçersiz içerik türü. Şunlar arasından seç: %(choices)s"
+
+#: apps/billing/serializers/payments.py
+#, fuzzy
+msgid "At least one item is required."
+msgstr "En az bir öge gereklidir."
+
+#: apps/billing/serializers/plans.py
+#, fuzzy
+msgid "A membership needs a price above zero."
+msgstr "Bir üyelik için sıfırın üzerinde bir fiyat gerekir."
+
+#: apps/billing/views/bundles.py apps/courses/views.py apps/downloads/views.py
+#: apps/media/design_views.py apps/media/views.py
+#, fuzzy
+msgid "Not found."
+msgstr "Bulunamadı."
+
+#: apps/billing/views/connect.py
+#, fuzzy
+msgid ""
+"Connect onboarding requires an active paid plan. Upgrade to start selling."
+msgstr ""
+"Connect ilk katılımı aktif bir ücretli plan gerektirir. Satış yapmaya "
+"başlamak için yükselt."
+
+#: apps/billing/views/connect.py
+#, fuzzy
+msgid "That country is not supported for payouts."
+msgstr "Bu ülke ödemeler için desteklenmiyor."
+
+#: apps/billing/views/connect.py apps/billing/views/platform.py
+#, fuzzy
+msgid "return_path must be a relative /setup path."
+msgstr "return_path göreli bir /setup yolu olmalıdır."
+
+#: apps/billing/views/connect.py
+#, fuzzy
+msgid "No connected account yet."
+msgstr "Henüz bağlı bir hesap yok."
+
+#: apps/billing/views/payments.py
+#, fuzzy
+msgid "Payment could not be processed. Please try again."
+msgstr "Ödeme işlenemedi. Lütfen tekrar dene."
+
+#: apps/billing/views/payments.py
+#, python-format, fuzzy
+msgid "'%(item)s' is not on sale."
+msgstr "'%(item)s' satışta değil."
+
+#: apps/billing/views/payments.py
+#, python-format, fuzzy
+msgid "'%(item)s' is sold out."
+msgstr "'%(item)s' tükendi."
+
+#: apps/billing/views/payments.py
+#, python-format, fuzzy
+msgid ""
+"Item not found: content_type=%(content_type)s, object_id=%(object_id)s."
+msgstr ""
+"Öge bulunamadı: content_type=%(content_type)s, object_id=%(object_id)s."
+
+#: apps/billing/views/payments.py
+#, python-format, fuzzy
+msgid "Item '%(item)s' is not purchasable (pricing_type must be 'paid')."
+msgstr ""
+"'%(item)s' ögesi satın alınabilir değil (pricing_type 'paid' olmalıdır)."
+
+#: apps/billing/views/payments.py
+#, python-format, fuzzy
+msgid "Item '%(item)s' is already owned by this user."
+msgstr "'%(item)s' ögesine bu kullanıcı zaten sahip."
+
+#: apps/billing/views/payments.py
+#, fuzzy
+msgid "This creator isn't set up to accept payments yet."
+msgstr "Bu içerik üreticisi henüz ödeme kabul edecek şekilde ayarlanmamış."
+
+#: apps/billing/views/payments.py
+#, fuzzy
+msgid "Payment is not in a refundable state."
+msgstr "Ödeme iade edilebilir bir durumda değil."
+
+#: apps/billing/views/payments.py
+#, fuzzy
+msgid "This item has already been refunded."
+msgstr "Bu öge zaten iade edildi."
+
+#: apps/billing/views/payments.py
+#, fuzzy
+msgid "No Stripe charge on file for this payment."
+msgstr "Bu ödeme için kayıtlı bir Stripe tahsilatı yok."
+
+#: apps/billing/views/payments.py
+#, fuzzy
+msgid "Item refunded."
+msgstr "Öge iade edildi."
+
+#: apps/billing/views/payments.py
+#, fuzzy
+msgid "(removed)"
+msgstr "(kaldırıldı)"
+
+#: apps/billing/views/payments.py apps/billing/views/platform.py
+#, fuzzy
+msgid "plan_id is required."
+msgstr "plan_id gereklidir."
+
+#: apps/billing/views/payments.py
+#, fuzzy
+msgid "You already have an active subscription to this plan."
+msgstr "Bu plana zaten aktif bir aboneliğin var."
+
+#: apps/billing/views/payments.py
+#, fuzzy
+msgid "Subscription is not active."
+msgstr "Abonelik aktif değil."
+
+#: apps/billing/views/payments.py
+#, fuzzy
+msgid "Already on this plan."
+msgstr "Zaten bu plandasın."
+
+#: apps/billing/views/platform.py
+#, fuzzy
+msgid "Plan does not exist."
+msgstr "Plan mevcut değil."
+
+#: apps/billing/views/platform.py
+#, fuzzy
+msgid "A plan is already running; contact support to switch plans."
+msgstr ""
+"Zaten aktif bir plan var; plan değiştirmek için destek ekibiyle iletişime "
+"geç."
 
 #: apps/community/payloads.py
 #, fuzzy, python-format
@@ -74,6 +316,116 @@ msgstr "%(commenter)s gönderine yorum yaptı"
 msgid "Contentor · Courses, live sessions and payments under your own brand."
 msgstr ""
 "Contentor · Kendi markan altında kurslar, canlı oturumlar ve ödemeler."
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "What you offer"
+msgstr "Neler sunduğun"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "Homepage hero & course catalog"
+msgstr "Ana sayfa karşılama alanı ve kurs kataloğu"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "Target students"
+msgstr "Hedef öğrenciler"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "Student targeting & course descriptions"
+msgstr "Öğrenci hedefleme ve kurs açıklamaları"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "Your story & background"
+msgstr "Hikayen ve geçmişin"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "About page story section"
+msgstr "Hakkında sayfası hikaye bölümü"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "Training & certifications"
+msgstr "Eğitimler ve sertifikalar"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "Creator bio & trust credentials"
+msgstr "İçerik üreticisi biyografisi ve güvenilirlik bilgileri"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "How you work"
+msgstr "Nasıl çalıştığın"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "Which pages I build and what I ask next"
+msgstr "Hangi sayfaları oluşturacağım ve bundan sonra ne soracağım"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "Location & format"
+msgstr "Konum ve format"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "Events & Contact page details"
+msgstr "Etkinlikler ve İletişim sayfası detayları"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "Course ideas"
+msgstr "Kurs fikirleri"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "First course outline and lessons"
+msgstr "İlk kurs taslağı ve dersler"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "Live session topic"
+msgstr "Canlı oturum konusu"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "First live session schedule"
+msgstr "İlk canlı oturum programı"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "What students get"
+msgstr "Öğrencilerin elde edecekleri"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "Benefits across your home page"
+msgstr "Ana sayfan genelindeki avantajlar"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "What sets you apart"
+msgstr "Seni farklı kılanlar"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "Your About page and home page"
+msgstr "Hakkında sayfan ve ana sayfan"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "Tone & voice"
+msgstr "Ton ve üslup"
+
+#: apps/core/onboarding/about_check.py
+#, fuzzy
+msgid "AI copy style across all pages"
+msgstr "Tüm sayfalardaki yapay zeka metin stili"
 
 #: apps/core/onboarding/compose.py apps/core/onboarding/site_composer.py
 #: apps/core/tasks.py apps/tenant_config/interview_milestones.py
@@ -374,6 +726,11 @@ msgstr "Belirteç gerekli"
 #, fuzzy
 msgid "Tenant not found"
 msgstr "Kiracı bulunamadı"
+
+#: apps/core/onboarding/recovery.py apps/core/onboarding/views.py
+#, fuzzy
+msgid "Token does not match tenant owner."
+msgstr "Belirteç sitenin sahibiyle eşleşmiyor."
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
@@ -1384,6 +1741,16 @@ msgstr "Marka adı zorunludur"
 
 #: apps/core/onboarding/views.py
 #, fuzzy
+msgid "goals must be a list of strings."
+msgstr "goals bir dize listesi olmalıdır."
+
+#: apps/core/onboarding/views.py
+#, python-format, fuzzy
+msgid "Unknown niche '%(niche)s'."
+msgstr "Bilinmeyen niş '%(niche)s'."
+
+#: apps/core/onboarding/views.py
+#, fuzzy
 msgid "slug parameter required"
 msgstr "slug parametresi gerekli"
 
@@ -1545,12 +1912,6 @@ msgstr ""
 "Müfredat yalnızca oluşturma sırasında belirlenebilir. Düzenlemek için "
 "modül/ders uç noktalarını kullan."
 
-#: apps/courses/views.py apps/downloads/views.py apps/media/design_views.py
-#: apps/media/views.py
-#, fuzzy
-msgid "Not found."
-msgstr "Bulunamadı."
-
 #: apps/courses/views.py
 #, fuzzy
 msgid "Already enrolled."
@@ -1575,6 +1936,41 @@ msgstr "lesson alanı zorunludur."
 #, fuzzy, python-format
 msgid "Custom domain: %(domain)s"
 msgstr "Özel alan adı: %(domain)s"
+
+#: apps/domains/views.py
+#, fuzzy
+msgid "Domain service is temporarily unavailable."
+msgstr "Alan adı hizmeti geçici olarak kullanılamıyor."
+
+#: apps/domains/views.py
+#, fuzzy
+msgid "q is required."
+msgstr "q zorunludur."
+
+#: apps/domains/views.py
+#, fuzzy
+msgid "Custom domains require a paid plan."
+msgstr "Özel alan adları ücretli bir plan gerektirir."
+
+#: apps/domains/views.py
+#, fuzzy
+msgid "domain is required."
+msgstr "domain zorunludur."
+
+#: apps/domains/views.py
+#, fuzzy
+msgid "return_path must be a relative path."
+msgstr "return_path göreli bir yol olmalıdır."
+
+#: apps/domains/views.py
+#, fuzzy
+msgid "Domain is not available."
+msgstr "Alan adı müsait değil."
+
+#: apps/domains/views.py
+#, fuzzy
+msgid "Only failed domains can retry."
+msgstr "Yalnızca başarısız olan alan adları yeniden denenebilir."
 
 #: apps/downloads/views.py
 #, fuzzy

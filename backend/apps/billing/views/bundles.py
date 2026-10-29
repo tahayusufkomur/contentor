@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext as _
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -16,7 +17,7 @@ def bundle_list_create(request):
         return _bundle_list(request)
     # POST requires owner
     if not request.user.is_authenticated or request.user.role != "owner":
-        return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": _("Permission denied.")}, status=status.HTTP_403_FORBIDDEN)
     return _bundle_create(request)
 
 
@@ -52,13 +53,13 @@ def bundle_detail(request, pk):
     if request.method == "GET":
         # A draft is the coach's alone: to a student or visitor it does not exist.
         if not bundle.is_published and not is_coach_or_owner(request.user):
-            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": _("Not found.")}, status=status.HTTP_404_NOT_FOUND)
         serializer = BundleDetailSerializer(bundle, context={"request": request})
         return Response(serializer.data)
 
     if request.method == "PATCH":
         if not request.user.is_authenticated or request.user.role != "owner":
-            return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"detail": _("Permission denied.")}, status=status.HTTP_403_FORBIDDEN)
         serializer = BundleCreateSerializer(bundle, data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
         bundle = serializer.save()
@@ -66,7 +67,7 @@ def bundle_detail(request, pk):
 
     if request.method == "DELETE":
         if not request.user.is_authenticated or request.user.role != "owner":
-            return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"detail": _("Permission denied.")}, status=status.HTTP_403_FORBIDDEN)
         bundle.is_active = False
         bundle.save()
         return Response(status=status.HTTP_204_NO_CONTENT)

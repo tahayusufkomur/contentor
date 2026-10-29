@@ -6,6 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import connection, transaction
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -37,7 +38,7 @@ def _provider_error_response(exc, http_status=status.HTTP_400_BAD_REQUEST) -> Re
     return Response(
         {
             "error": getattr(exc, "code", "PROVIDER_ERROR"),
-            "detail": "Payment could not be processed. Please try again.",
+            "detail": _("Payment could not be processed. Please try again."),
         },
         status=http_status,
     )
@@ -78,13 +79,13 @@ def _seat_unavailable(obj) -> str | None:
     """Why an item can't be bought right now: a download that is a draft or has no file, a class
     that is held (a draft she has not published), or an in-person class with no date, over, or full."""
     if isinstance(obj, DownloadFile) and not (obj.is_published and obj.file_url):
-        return "is not on sale"
+        return _("'%(item)s' is not on sale.")
     if isinstance(obj, LiveClass | LiveStream | OnsiteEvent) and obj.status == "draft":
-        return "is not on sale"
+        return _("'%(item)s' is not on sale.")
     if not isinstance(obj, OnsiteEvent):
         return None
     if obj.computed_status in ("draft", "ended"):
-        return "is not on sale"
+        return _("'%(item)s' is not on sale.")
     if obj.max_capacity is not None:
         # ponytail: counts seats bought on their own. A seat is not held while a
         # buyer is in Stripe checkout, and seats that come with a bundle are not
@@ -96,7 +97,7 @@ def _seat_unavailable(obj) -> str | None:
             is_refunded=False,
         ).count()
         if sold >= obj.max_capacity:
-            return "is sold out"
+            return _("'%(item)s' is sold out.")
     return None
 
 
@@ -127,9 +128,8 @@ def payment_initialize(request):
         except Exception:
             return Response(
                 {
-                    "detail": (
-                        f"Item not found: content_type={item_data['content_type']}, object_id={item_data['object_id']}."
-                    )
+                    "detail": _("Item not found: content_type=%(content_type)s, object_id=%(object_id)s.")
+                    % {"content_type": item_data["content_type"], "object_id": item_data["object_id"]}
                 },
                 status=status.HTTP_404_NOT_FOUND,
             )
@@ -140,7 +140,7 @@ def payment_initialize(request):
 
         if not is_bundle and pricing_type != "paid":
             return Response(
-                {"detail": f"Item '{obj}' is not purchasable (pricing_type must be 'paid')."},
+                {"detail": _("Item '%(item)s' is not purchasable (pricing_type must be 'paid').") % {"item": obj}},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -148,14 +148,14 @@ def payment_initialize(request):
         # once its window has closed the student may buy again.
         if access_service.holds_purchase(request.user, obj):
             return Response(
-                {"detail": f"Item '{obj}' is already owned by this user."},
+                {"detail": _("Item '%(item)s' is already owned by this user.") % {"item": obj}},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         seat_problem = _seat_unavailable(obj)
         if seat_problem:
             return Response(
-                {"detail": f"'{obj}' {seat_problem}."},
+                {"detail": seat_problem % {"item": obj}},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -217,7 +217,7 @@ def payment_initialize(request):
         return Response(
             {
                 "error": "COACH_CANNOT_ACCEPT_PAYMENTS",
-                "detail": "This creator isn't set up to accept payments yet.",
+                "detail": _("This creator isn't set up to accept payments yet."),
             },
             status=status.HTTP_409_CONFLICT,
         )
@@ -341,13 +341,13 @@ def payment_item_refund(request, payment_id, item_id):
         # Validate refundable state
         if payment.status not in ("completed", "partially_refunded"):
             return Response(
-                {"detail": "Payment is not in a refundable state."},
+                {"detail": _("Payment is not in a refundable state.")},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         if payment_item.is_refunded:
             return Response(
-                {"detail": "This item has already been refunded."},
+                {"detail": _("This item has already been refunded.")},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -363,7 +363,7 @@ def _do_refund(payment, payment_item):
     if payment.provider == "stripe":
         if not payment.provider_payment_id:
             return Response(
-                {"detail": "No Stripe charge on file for this payment."},
+                {"detail": _("No Stripe charge on file for this payment.")},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         try:
@@ -378,7 +378,7 @@ def _do_refund(payment, payment_item):
     refund_payment = record_refund(payment, [payment_item], refund_provider_id)
     return Response(
         {
-            "detail": "Item refunded.",
+            "detail": _("Item refunded."),
             "payment_status": payment.status,
             "refund_payment_id": refund_payment.pk,
         },
@@ -439,7 +439,7 @@ def _serialize_payment_item(item):
     obj = item.content_object
     return {
         "id": item.pk,
-        "title": str(obj) if obj is not None else "(removed)",
+        "title": str(obj) if obj is not None else _("(removed)"),
         "item_price": str(item.item_price),
         "is_refunded": item.is_refunded,
     }
@@ -627,7 +627,7 @@ def subscribe(request):
     """
     plan_id = request.data.get("plan_id")
     if not plan_id:
-        return Response({"detail": "plan_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": _("plan_id is required.")}, status=status.HTTP_400_BAD_REQUEST)
 
     plan = get_object_or_404(SubscriptionPlan, pk=plan_id, is_active=True)
 
@@ -641,7 +641,7 @@ def subscribe(request):
     ).first()
     if existing:
         return Response(
-            {"detail": "You already have an active subscription to this plan."},
+            {"detail": _("You already have an active subscription to this plan.")},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -689,7 +689,7 @@ def subscribe(request):
         return Response(
             {
                 "error": "COACH_CANNOT_ACCEPT_PAYMENTS",
-                "detail": "This creator isn't set up to accept payments yet.",
+                "detail": _("This creator isn't set up to accept payments yet."),
             },
             status=status.HTTP_409_CONFLICT,
         )
@@ -758,7 +758,7 @@ def subscription_cancel(request, subscription_id):
     """Cancel the student's subscription at period end."""
     sub = get_object_or_404(Subscription, pk=subscription_id, student=request.user)
     if sub.status not in ("active", "past_due"):
-        return Response({"detail": "Subscription is not active."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": _("Subscription is not active.")}, status=status.HTTP_400_BAD_REQUEST)
 
     if sub.provider == "stripe" and sub.provider_subscription_id:
         try:
@@ -790,10 +790,10 @@ def subscription_change_plan(request, subscription_id):
     sub = get_object_or_404(Subscription, pk=subscription_id, student=request.user)
     new_plan_id = request.data.get("plan_id")
     if not new_plan_id:
-        return Response({"detail": "plan_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": _("plan_id is required.")}, status=status.HTTP_400_BAD_REQUEST)
     new_plan = get_object_or_404(SubscriptionPlan, pk=new_plan_id, is_active=True)
     if new_plan.pk == sub.plan_id:
-        return Response({"detail": "Already on this plan."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": _("Already on this plan.")}, status=status.HTTP_400_BAD_REQUEST)
 
     if sub.provider == "stripe" and sub.provider_subscription_id:
         try:

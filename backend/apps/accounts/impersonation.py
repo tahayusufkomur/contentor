@@ -11,6 +11,7 @@ import logging
 import uuid
 
 from django.db import connection
+from django.utils.translation import gettext as _
 from django_tenants.utils import tenant_context
 
 from .models import User
@@ -38,7 +39,7 @@ def issue_impersonation(request, *, tenant, target_user, scope: str) -> dict:
     """
     domain = _primary_domain(tenant)
     if not domain:
-        return {"detail": f"{tenant.name} has no routable domain yet — cannot open a session."}
+        return {"detail": _("%(name)s has no routable domain yet — cannot open a session.") % {"name": tenant.name}}
 
     impersonator = getattr(request.user, "email", "") or "unknown"
     jti = uuid.uuid4().hex
@@ -61,7 +62,7 @@ def issue_impersonation(request, *, tenant, target_user, scope: str) -> dict:
         target_user.id,
         jti,
     )
-    return {"redirect": url, "detail": f"Opening a session as {target_user.email}…"}
+    return {"redirect": url, "detail": _("Opening a session as %(email)s…") % {"email": target_user.email}}
 
 
 def tenant_admin_user(tenant):
@@ -81,7 +82,7 @@ def tenant_admin_user(tenant):
 def impersonate_tenant_admin(request, tenant, *, scope: str = "platform") -> dict:
     owner = tenant_admin_user(tenant)
     if owner is None:
-        return {"detail": f"{tenant.name} has no creator account to log in as."}
+        return {"detail": _("%(name)s has no creator account to log in as.") % {"name": tenant.name}}
     return issue_impersonation(request, tenant=tenant, target_user=owner, scope=scope)
 
 

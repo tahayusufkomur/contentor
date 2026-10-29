@@ -218,7 +218,7 @@ def creator_signup_verify(request):
 
     if tenant is not None:
         if tenant.owner_email != email:
-            return Response({"detail": "Token does not match tenant owner."}, status=403)
+            return Response({"detail": _("Token does not match tenant owner.")}, status=403)
         wizard_token = create_wizard_token(email, payload.get("name", ""), tenant.schema_name, region=region)
         tenant_fqdn = f"{tenant.slug}.{base_domain}"
         # Never provisioned (signed up under the old wizard, or the enqueue
@@ -331,7 +331,7 @@ def signup_checkout(request):
     region = tenant.region or "global"
     locale = languages.resolve((tenant.wizard_state or {}).get("locale"))
     # The plan is on the owner's platform account; the build reuses this row.
-    account, _ = User.objects.get_or_create(
+    account, _created = User.objects.get_or_create(
         email=tenant.owner_email,
         region=region,
         defaults={
@@ -383,7 +383,7 @@ def _resolve_tenant_from_signup_token(request) -> tuple[dict | None, Tenant | No
     if tenant is None:
         return None, None, Response({"detail": _("Tenant not found")}, status=404)
     if tenant.owner_email != payload["email"]:
-        return None, None, Response({"detail": "Token does not match tenant owner."}, status=403)
+        return None, None, Response({"detail": _("Token does not match tenant owner.")}, status=403)
     return payload, tenant, None
 
 
@@ -405,9 +405,9 @@ def seed_from_template(request):
     niche = (request.data.get("niche") or "").strip()
     goals = request.data.get("goals") or []
     if not isinstance(goals, list) or not all(isinstance(g, str) for g in goals):
-        return Response({"detail": "goals must be a list of strings."}, status=400)
+        return Response({"detail": _("goals must be a list of strings.")}, status=400)
     if niche not in available_niches():
-        return Response({"detail": f"Unknown niche '{niche}'."}, status=400)
+        return Response({"detail": _("Unknown niche '%(niche)s'.") % {"niche": niche}}, status=400)
 
     # Idempotency: if seeding already kicked off, don't double-enqueue.
     if tenant.template_seed_status in ("seeding", "ready"):
@@ -522,7 +522,7 @@ def _resolve_tenant_from_wizard_token(request):
     if tenant is None:
         return None, None, Response({"detail": _("Tenant not found")}, status=404)
     if tenant.owner_email != payload["email"]:
-        return None, None, Response({"detail": "Token does not match tenant owner."}, status=403)
+        return None, None, Response({"detail": _("Token does not match tenant owner.")}, status=403)
     return payload, tenant, None
 
 

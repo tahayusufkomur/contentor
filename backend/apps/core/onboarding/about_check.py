@@ -8,6 +8,8 @@ import logging
 
 from django.conf import settings
 from django.core.cache import cache
+from django.utils import translation
+from django.utils.translation import gettext_lazy as _
 from pydantic import BaseModel
 
 from apps.tenant_config import interview_brief as brief
@@ -19,48 +21,48 @@ CACHE_SECONDS = 24 * 3600
 
 FIELD_METADATA = {
     "teaches": {
-        "label": "What you offer",
-        "answers": "Homepage hero & course catalog",
+        "label": _("What you offer"),
+        "answers": _("Homepage hero & course catalog"),
     },
     "audience": {
-        "label": "Target students",
-        "answers": "Student targeting & course descriptions",
+        "label": _("Target students"),
+        "answers": _("Student targeting & course descriptions"),
     },
     "story": {
-        "label": "Your story & background",
-        "answers": "About page story section",
+        "label": _("Your story & background"),
+        "answers": _("About page story section"),
     },
     "credentials": {
-        "label": "Training & certifications",
-        "answers": "Creator bio & trust credentials",
+        "label": _("Training & certifications"),
+        "answers": _("Creator bio & trust credentials"),
     },
     "offers": {
-        "label": "How you work",
-        "answers": "Which pages I build and what I ask next",
+        "label": _("How you work"),
+        "answers": _("Which pages I build and what I ask next"),
     },
     "location": {
-        "label": "Location & format",
-        "answers": "Events & Contact page details",
+        "label": _("Location & format"),
+        "answers": _("Events & Contact page details"),
     },
     "course_topic": {
-        "label": "Course ideas",
-        "answers": "First course outline and lessons",
+        "label": _("Course ideas"),
+        "answers": _("First course outline and lessons"),
     },
     "live_topic": {
-        "label": "Live session topic",
-        "answers": "First live session schedule",
+        "label": _("Live session topic"),
+        "answers": _("First live session schedule"),
     },
     "outcome": {
-        "label": "What students get",
-        "answers": "Benefits across your home page",
+        "label": _("What students get"),
+        "answers": _("Benefits across your home page"),
     },
     "difference": {
-        "label": "What sets you apart",
-        "answers": "Your About page and home page",
+        "label": _("What sets you apart"),
+        "answers": _("Your About page and home page"),
     },
     "tone": {
-        "label": "Tone & voice",
-        "answers": "AI copy style across all pages",
+        "label": _("Tone & voice"),
+        "answers": _("AI copy style across all pages"),
     },
 }
 # Questions answered by ticking tiles: the text's separate points become tiles
@@ -164,7 +166,7 @@ def analyze(text: str) -> dict:
 
     # The cache first: provisioning re-reads the About step's analysis, and a
     # hub health probe that blips in between must not throw it away.
-    key = "about-analyze:3:" + hashlib.sha256(clean.encode()).hexdigest()
+    key = f"about-analyze:3:{translation.get_language()}:" + hashlib.sha256(clean.encode()).hexdigest()
     if (hit := cache.get(key)) is not None:
         return hit
     if not ai_compose.compose_available():
@@ -200,10 +202,10 @@ def analyze(text: str) -> dict:
             facts.append(
                 {
                     "field": f,
-                    "label": meta["label"],
+                    "label": str(meta["label"]),
                     "value": v,
                     "items": _items(f, item.items),
-                    "answers": meta["answers"],
+                    "answers": str(meta["answers"]),
                 }
             )
 

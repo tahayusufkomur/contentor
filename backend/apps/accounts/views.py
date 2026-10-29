@@ -55,7 +55,7 @@ def magic_link_request(request):
     if settings.DEBUG and tenant.slug.startswith("demo-"):
         scheme = "https" if request.is_secure() else "http"
         callback_url = f"{scheme}://{request.get_host()}/callback?token={token}"
-        return Response({"detail": "Demo mode", "demo_redirect": callback_url})
+        return Response({"detail": _("Demo mode"), "demo_redirect": callback_url})
 
     if connection.schema_name == get_public_schema_name():
         # contentor.app has no site (no TenantConfig): the creator's own email, in the creator's language.
@@ -212,7 +212,7 @@ def _tenant_default_locale(tenant) -> str:
 @permission_classes([IsAuthenticated])
 def logout(request):
     logger.info("logout user=%s", getattr(request.user, "email", "anonymous"))
-    response = Response({"detail": "Logged out"})
+    response = Response({"detail": _("Logged out")})
     response.delete_cookie("contentor_access_token")
     response.delete_cookie("contentor_impersonator_return")
     return response
@@ -283,14 +283,16 @@ def impersonate_verify(request):
 
         redis = get_redis_connection("default")
         if not redis.set(f"imp:used:{jti}", "1", nx=True, ex=130):
-            return Response({"detail": "This impersonation link was already used."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": _("This impersonation link was already used.")}, status=status.HTTP_400_BAD_REQUEST
+            )
     except Exception:
         logger.warning("impersonation replay-protection unavailable (redis); proceeding for jti=%s", jti)
 
     try:
         target = User.objects.get(id=payload["target_user_id"])
     except User.DoesNotExist:
-        return Response({"detail": "Target account no longer exists."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Target account no longer exists.")}, status=status.HTTP_404_NOT_FOUND)
 
     imp_claim = {"by": payload.get("impersonator_email", ""), "scope": payload.get("scope", "")}
     session_jwt = create_jwt(target, tenant, extra_claims={"imp": imp_claim})
@@ -427,7 +429,7 @@ def student_list(request):
 
     perm = IsCoachOrOwner()
     if not perm.has_permission(request, None):
-        return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": _("Permission denied.")}, status=status.HTTP_403_FORBIDDEN)
 
     students = User.objects.filter(role="student")
     search = request.query_params.get("search")
@@ -458,12 +460,12 @@ def student_delete(request, pk):
 
     perm = IsCoachOrOwner()
     if not perm.has_permission(request, None):
-        return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": _("Permission denied.")}, status=status.HTTP_403_FORBIDDEN)
 
     try:
         student = User.objects.get(pk=pk, role="student")
     except User.DoesNotExist:
-        return Response({"detail": "Student not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Student not found.")}, status=status.HTTP_404_NOT_FOUND)
 
     student.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
@@ -477,18 +479,18 @@ def _grant_end(for_days, until, now):
     from apps.billing.ways import window_bounds
 
     if for_days is not None and until is not None:
-        raise ValueError("Choose either a number of days or an end date, not both.")
+        raise ValueError(_("Choose either a number of days or an end date, not both."))
     if for_days is not None:
         if isinstance(for_days, bool) or not isinstance(for_days, int) or not 1 <= for_days <= 3650:
-            raise ValueError("Give access for a whole number of days between 1 and 3650.")
+            raise ValueError(_("Give access for a whole number of days between 1 and 3650."))
         return window_bounds({"closes_after_days": for_days}, now)[1]
     if until is not None:
         try:
             end = window_bounds({"closes_on": date.fromisoformat(str(until)).isoformat()}, now)[1]
         except ValueError:
-            raise ValueError("Pick the end date as a calendar date.") from None
+            raise ValueError(_("Pick the end date as a calendar date.")) from None
         if end <= now:
-            raise ValueError("Pick an end date that is still to come.")
+            raise ValueError(_("Pick an end date that is still to come."))
         return end
     return None
 
@@ -502,21 +504,21 @@ def student_grant_access(request, pk):
 
     perm = IsCoachOrOwner()
     if not perm.has_permission(request, None):
-        return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"detail": _("Permission denied.")}, status=status.HTTP_403_FORBIDDEN)
 
     try:
         student = User.objects.get(pk=pk, role="student")
     except User.DoesNotExist:
-        return Response({"detail": "Student not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Student not found.")}, status=status.HTTP_404_NOT_FOUND)
 
     course_id = request.data.get("course_id")
     if not course_id:
-        return Response({"detail": "course_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": _("course_id is required.")}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
         course = Course.objects.get(pk=course_id)
     except Course.DoesNotExist:
-        return Response({"detail": "Course not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Course not found.")}, status=status.HTTP_404_NOT_FOUND)
 
     now = timezone.now()
     try:
@@ -524,7 +526,7 @@ def student_grant_access(request, pk):
     except ValueError as error:
         return Response({"detail": str(error)}, status=status.HTTP_400_BAD_REQUEST)
 
-    enrollment, _ = Enrollment.objects.get_or_create(user=student, course=course)
+    enrollment, _created = Enrollment.objects.get_or_create(user=student, course=course)
     enrollment.is_active = True
     enrollment.granted = True
     enrollment.access_starts_at = now
@@ -536,7 +538,7 @@ def student_grant_access(request, pk):
 
     return Response(
         {
-            "detail": "Access granted successfully.",
+            "detail": _("Access granted successfully."),
             "course_id": course.id,
             "course_title": course.title,
         },

@@ -1,5 +1,7 @@
 """Studio admin-kit registration for tenant users (coach SPA)."""
 
+from django.utils.translation import gettext as _
+
 from apps.adminkit.options import ModelAdmin, admin_action
 from apps.adminkit.sites import studio_site
 
@@ -33,7 +35,7 @@ class StudioUserAdmin(ModelAdmin):
     def login_as(self, request, queryset):
         user = queryset.first()
         if user is None:
-            return {"detail": "User not found."}
+            return {"detail": _("User not found.")}
         if user.role != "student":
-            return {"detail": "Only student accounts can be opened from here."}
+            return {"detail": _("Only student accounts can be opened from here.")}
         return impersonate_same_tenant_user(request, user, scope="studio")

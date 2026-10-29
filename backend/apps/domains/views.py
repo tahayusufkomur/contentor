@@ -4,6 +4,7 @@ import logging
 
 from django.conf import settings
 from django.db import connection, transaction
+from django.utils.translation import gettext as _
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -28,7 +29,7 @@ def _registrar_error_response(exc) -> Response:
     (raw Route53/registrar text must not reach the client)."""
     logger.warning("domain registrar error (%s): %s", getattr(exc, "code", "?"), exc)
     return Response(
-        {"error": getattr(exc, "code", "REGISTRAR_ERROR"), "detail": "Domain service is temporarily unavailable."},
+        {"error": getattr(exc, "code", "REGISTRAR_ERROR"), "detail": _("Domain service is temporarily unavailable.")},
         status=status.HTTP_502_BAD_GATEWAY,
     )
 
@@ -93,7 +94,7 @@ def _normalize_query(raw: str | None) -> str:
 def _search_response(tenant, q: str | None) -> Response:
     q = _normalize_query(q)
     if not q:
-        return Response({"error": "QUERY_REQUIRED", "detail": "q is required."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "QUERY_REQUIRED", "detail": _("q is required.")}, status=status.HTTP_400_BAD_REQUEST)
     reg = get_registrar()
     currency = _currency(tenant)
     try:
@@ -117,14 +118,14 @@ def _checkout_response(
     # funnel through here, so the gate holds no matter which surface asks.
     if not tenant.has_paid_platform_plan:
         return Response(
-            {"error": "PLAN_REQUIRED", "detail": "Custom domains require a paid plan."},
+            {"error": "PLAN_REQUIRED", "detail": _("Custom domains require a paid plan.")},
             status=status.HTTP_403_FORBIDDEN,
         )
 
     domain = (data.get("domain") or "").strip().lower()
     if not domain:
         return Response(
-            {"error": "DOMAIN_REQUIRED", "detail": "domain is required."}, status=status.HTTP_400_BAD_REQUEST
+            {"error": "DOMAIN_REQUIRED", "detail": _("domain is required.")}, status=status.HTTP_400_BAD_REQUEST
         )
 
     # Callers that must return somewhere other than the apex (the wizard runs
@@ -134,7 +135,7 @@ def _checkout_response(
         return_path = _safe_return_path(data.get("return_path"))
         if return_path is None:
             return Response(
-                {"error": "BAD_RETURN_PATH", "detail": "return_path must be a relative path."},
+                {"error": "BAD_RETURN_PATH", "detail": _("return_path must be a relative path.")},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         apex = _apex_origin()
@@ -145,7 +146,7 @@ def _checkout_response(
     try:
         if not reg.check_availability(domain).available:
             return Response(
-                {"error": "UNAVAILABLE", "detail": "Domain is not available."}, status=status.HTTP_409_CONFLICT
+                {"error": "UNAVAILABLE", "detail": _("Domain is not available.")}, status=status.HTTP_409_CONFLICT
             )
         cost = reg.get_price(domain)
     except RegistrarError as exc:
@@ -191,7 +192,7 @@ def _retry_response(tenant, pk: int) -> Response:
         return Response({"error": "NOT_FOUND"}, status=status.HTTP_404_NOT_FOUND)
     if cd.provisioning_status != "failed":
         return Response(
-            {"error": "NOT_FAILED", "detail": "Only failed domains can retry."}, status=status.HTTP_409_CONFLICT
+            {"error": "NOT_FAILED", "detail": _("Only failed domains can retry.")}, status=status.HTTP_409_CONFLICT
         )
     from .tasks import provision_domain
 

@@ -16,6 +16,7 @@ from __future__ import annotations
 import logging
 
 from django.db import connection
+from django.utils.translation import gettext as _
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -44,7 +45,7 @@ def connect_onboard(request):
         return Response(
             {
                 "error": "UPGRADE_REQUIRED",
-                "detail": "Connect onboarding requires an active paid plan. Upgrade to start selling.",
+                "detail": _("Connect onboarding requires an active paid plan. Upgrade to start selling."),
             },
             status=status.HTTP_402_PAYMENT_REQUIRED,
         )
@@ -52,7 +53,7 @@ def connect_onboard(request):
     requested = str(request.data.get("country") or "").strip().upper()
     if requested and requested not in connect.CONNECT_COUNTRIES:
         return Response(
-            {"error": "INVALID_COUNTRY", "detail": "That country is not supported for payouts."},
+            {"error": "INVALID_COUNTRY", "detail": _("That country is not supported for payouts.")},
             status=status.HTTP_400_BAD_REQUEST,
         )
     country = requested or connect.connect_country_for(request.META.get("HTTP_CF_IPCOUNTRY"))
@@ -64,7 +65,7 @@ def connect_onboard(request):
         return_path = str(return_path)
         if not return_path.startswith("/setup"):
             return Response(
-                {"error": "INVALID_RETURN_PATH", "detail": "return_path must be a relative /setup path."},
+                {"error": "INVALID_RETURN_PATH", "detail": _("return_path must be a relative /setup path.")},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -105,7 +106,7 @@ def connect_dashboard(request):
     tenant = connection.tenant
     if not tenant.stripe_account_id:
         return Response(
-            {"error": "NOT_CONNECTED", "detail": "No connected account yet."},
+            {"error": "NOT_CONNECTED", "detail": _("No connected account yet.")},
             status=status.HTTP_400_BAD_REQUEST,
         )
     try:

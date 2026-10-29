@@ -5,6 +5,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 from apps.core import monetization
 from apps.core.currency import tenant_charge_currency
@@ -41,14 +42,14 @@ class SubscriptionPlan(models.Model):
         return self.name
 
     # Why it cannot go on sale yet (focus mode's finish, the plan page's On sale switch and its PATCH).
-    NO_ITEMS, NO_PRICE = "Add what members get first", "Set its price first"
+    NO_ITEMS, NO_PRICE = _("Add what members get first"), _("Set its price first")
     NOT_SELLING = monetization.NOT_SELLING
 
     def not_ready(self) -> str:
         """Why it cannot go on sale yet ("" when it can): what members get, then a price."""
         if not self.access_items.exists():
-            return self.NO_ITEMS
-        return "" if self.price > 0 else self.NO_PRICE
+            return str(self.NO_ITEMS)
+        return "" if self.price > 0 else str(self.NO_PRICE)
 
     def cannot_sell(self) -> bool:
         """Always paid: off sale while selling is not open yet (her plan, then payouts; the Starter trial
@@ -285,7 +286,7 @@ class Bundle(models.Model):
         return self.name
 
     # Why a draft cannot be published yet (focus mode's finish, the page's Publish and its PATCH).
-    NO_ITEMS, NO_PRICE = "Add at least two items", "Set its price first"  # a bundle of one is just the item
+    NO_ITEMS, NO_PRICE = _("Add at least two items"), _("Set its price first")  # a bundle of one is just the item
     NOT_SELLING = monetization.NOT_SELLING
 
     def item_count(self, *, drafts: bool = False) -> int:
@@ -295,8 +296,8 @@ class Bundle(models.Model):
     def not_ready(self) -> str:
         """Why it cannot be published yet ("" when it can): two items, then a price."""
         if self.item_count() < 2:
-            return self.NO_ITEMS
-        return "" if self.price > 0 else self.NO_PRICE
+            return str(self.NO_ITEMS)
+        return "" if self.price > 0 else str(self.NO_PRICE)
 
     def cannot_sell(self) -> bool:
         """Priced while selling is not open yet (her plan, then payouts)."""

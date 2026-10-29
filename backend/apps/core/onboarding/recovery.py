@@ -270,7 +270,7 @@ def wizard_recover(request):
     if tenant is None:
         return Response({"detail": _("Tenant not found")}, status=404)
     if tenant.owner_email != payload.get("email"):
-        return Response({"detail": "Token does not match tenant owner."}, status=403)
+        return Response({"detail": _("Token does not match tenant owner.")}, status=403)
     in_interview = (tenant.wizard_state or {}).get("flow") == "interview" and not tenant.is_published
     if not in_interview and (tenant.provisioning_status != "pending" or tenant.template_seed_status != "pending"):
         return Response({"detail": "wizard_closed"}, status=409)

@@ -1,4 +1,5 @@
 from django.contrib.contenttypes.models import ContentType
+from django.utils.translation import gettext as _
 from rest_framework import serializers
 
 
@@ -20,7 +21,8 @@ class PaymentItemInputSerializer(serializers.Serializer):
     def validate_content_type(self, value):
         if value not in self.CONTENT_TYPE_MAP:
             raise serializers.ValidationError(
-                f"Invalid content type. Choose from: {', '.join(self.CONTENT_TYPE_MAP.keys())}"
+                _("Invalid content type. Choose from: %(choices)s")
+                % {"choices": ", ".join(self.CONTENT_TYPE_MAP.keys())}
             )
         return value
 
@@ -40,5 +42,5 @@ class PaymentInitializeSerializer(serializers.Serializer):
 
     def validate_items(self, value):
         if not value:
-            raise serializers.ValidationError("At least one item is required.")
+            raise serializers.ValidationError(_("At least one item is required."))
         return value
