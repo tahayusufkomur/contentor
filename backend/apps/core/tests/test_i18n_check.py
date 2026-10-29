@@ -36,6 +36,11 @@ def view(request):
     assert count_literals(source) == 9
 
 
+def test_ai_call_labels_are_not_counted():
+    assert count_literals('call(label="contentor:x.y")') == 0
+    assert count_literals('call(label="Save")') == 1
+
+
 def test_ratchet_counts_skip_tests_migrations_commands_and_admin(tmp_path):
     text = 'x = {"detail": "Some text"}\n'
     for rel in (

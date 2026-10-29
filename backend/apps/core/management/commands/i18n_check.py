@@ -134,7 +134,7 @@ def _argument_texts(node) -> list[str]:
 
 
 def _counts(text: str) -> bool:
-    if sum(c.isalpha() for c in text) < 2:
+    if sum(c.isalpha() for c in text) < 2 or text.startswith("contentor:"):  # `contentor:` = a Hub AI-call label
         return False
     # not text: UPPER_SNAKE codes, URLs, and lowercase identifiers (`not_found`, `post.not_ready`)
     return not re.fullmatch(r"[A-Z][A-Z0-9_]*|[a-z][a-z0-9_.-]*", text) and not re.match(r"https?://|/", text)
