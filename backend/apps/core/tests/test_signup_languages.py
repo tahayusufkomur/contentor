@@ -182,3 +182,45 @@ def test_the_signed_in_user_carries_the_creators_language():
 
     user = User(email=EMAIL, name="Lang", role="coach", preferred_locale="tr")
     assert UserSerializer(user).data["preferred_locale"] == "tr"
+
+
+def test_an_authenticated_signup_sets_the_public_row_to_the_pages_language(restore_public):
+    user = User.objects.create(email=EMAIL, name="Lang", region="global", role="coach", preferred_locale="en")
+    client = APIClient(HTTP_HOST=HOST)
+    client.force_authenticate(user=user)
+    resp = client.post("/api/v1/onboarding/signup/authenticated/", {"locale": "de"}, format="json")
+    assert verify_signup_token(resp.json()["token"])["locale"] == "de"
+    # The tenant's owner row gets the token's language at provisioning; the public row agrees already.
+    assert User.objects.get(email=EMAIL, region="global").preferred_locale == "de"
+
+
+@pytest.mark.parametrize(
+    ("state", "creator", "site"),
+    [
+        ({}, "en", "en"),
+        ({"locale": "tr"}, "tr", "en"),
+        ({"locale": "pl", "site_locale": "pl"}, "en", "en"),  # pl is not enabled in this test
+    ],
+)
+def test_provisioning_falls_back_to_english(settings, restore_public, state, creator, site):
+    settings.ENABLED_LOCALES = ["en", "tr"]
+    schema = "lang_site_fall"
+    connection.set_schema_to_public()
+    tenant = Tenant.objects.create(
+        schema_name=schema,
+        name="Lang Fall",
+        slug="lang-site-fall",
+        subdomain="lang-site-fall",
+        owner_email=EMAIL,
+        region="global",
+        wizard_state=state,
+    )
+    try:
+        with mock.patch("apps.core.tasks._enqueue_compose_site"):
+            provision_tenant.apply(args=(tenant.id, EMAIL, "Lang", "general"))
+        with tenant_context(tenant):
+            assert TenantConfig.objects.get().default_locale == site
+            assert User.objects.get(email=EMAIL).preferred_locale == creator
+        assert User.objects.get(email=EMAIL, region="global").preferred_locale == creator
+    finally:
+        _drop(schema)

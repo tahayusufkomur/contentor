@@ -148,7 +148,9 @@ def test_my_tenants_reports_why_a_platform_cannot_be_deleted(coach):
     _subscribe(paid, coach)
     client = APIClient(HTTP_HOST=HOST)
     client.force_authenticate(user=coach)
-    rows = {r["slug"]: r for r in client.get("/api/v1/me/tenants/").json()}
+    # These tenants have no schema (they are rows only), so there is no config to read the language from.
+    with mock.patch("apps.core.me.views.languages.site_language", return_value="en"):
+        rows = {r["slug"]: r for r in client.get("/api/v1/me/tenants/").json()}
     assert rows[free.slug]["delete_blocker"] is None
     assert rows[paid.slug]["delete_blocker"] == "paid_plan"
 

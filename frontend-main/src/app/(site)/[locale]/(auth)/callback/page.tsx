@@ -6,14 +6,12 @@ import { AlertCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Spinner } from "@/components/ui/spinner";
 import { AuthShell } from "@/components/auth/auth-shell";
-import { useLocaleNavigate } from "@/i18n/navigation";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 import { resolveLocale } from "@shared/i18n/locales";
 import { localizedHref } from "@/lib/locale-href";
 
 export default function CallbackPage() {
   const t = useTranslations("auth.callback");
-  const navigate = useLocaleNavigate();
   const goTo = useNavigate();
   const searchParams = useSearchParams();
   const [error, setError] = useState("");
@@ -25,6 +23,12 @@ export default function CallbackPage() {
       setError(t("noToken"));
       return;
     }
+
+    // Every sign-in lands a creator on their dashboard, in their own language.
+    const landOnDashboard = async (res: Response) => {
+      const { user } = await res.json();
+      goTo(localizedHref("/dashboard", resolveLocale(user?.preferred_locale)));
+    };
 
     if (source === "google") {
       fetch("/api/auth/google", {
@@ -38,7 +42,7 @@ export default function CallbackPage() {
             setError(t("authFailed"));
             return;
           }
-          navigate("/dashboard");
+          await landOnDashboard(res);
         })
         .catch(() => setError(t("networkError")));
       return;
@@ -56,14 +60,10 @@ export default function CallbackPage() {
           setError(data.detail || t("verificationFailed"));
           return;
         }
-        // A creator lands on their dashboard in their own language.
-        const { user } = await res.json();
-        goTo(
-          localizedHref("/dashboard", resolveLocale(user?.preferred_locale)),
-        );
+        await landOnDashboard(res);
       })
       .catch(() => setError(t("networkError")));
-  }, [searchParams, navigate, goTo, t]);
+  }, [searchParams, goTo, t]);
 
   if (error) {
     return (

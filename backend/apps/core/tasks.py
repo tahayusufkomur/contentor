@@ -79,7 +79,7 @@ def _create_default_config(tenant, site_locale):
         )
 
 
-def _apply_wizard_answers(tenant, answers, preferred_locale):
+def _apply_wizard_answers(tenant, answers, site_locale):
     """Overlay the coach's wizard choices on the freshly-seeded tenant.
 
     Runs after the niche seeder so the merged landing_sections (niche copy +
@@ -99,7 +99,7 @@ def _apply_wizard_answers(tenant, answers, preferred_locale):
             answers,
             brand_name=config.brand_name,
             landing_sections=config.landing_sections or {},
-            locale=preferred_locale,
+            locale=site_locale,
         )
 
         _set_provisioning_stage(tenant, "ai_copy")
@@ -116,7 +116,7 @@ def _apply_wizard_answers(tenant, answers, preferred_locale):
                 niche=answers.get("niche") or "general",
                 brand_name=config.brand_name,
                 description=answers.get("description") or "",
-                language=resolve(preferred_locale),
+                language=resolve(site_locale),
             )
             overrides["style"] = site_style
             overrides["setup_flow"] = site_composer.initial_setup_flow()

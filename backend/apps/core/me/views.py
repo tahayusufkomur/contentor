@@ -5,7 +5,6 @@ which is locked to superusers managing the whole platform.
 """
 
 from django.conf import settings
-from django.db import DatabaseError, transaction
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -21,11 +20,7 @@ def _site_language(tenant: Tenant) -> str:
     if tenant.provisioning_status not in ("provisioned", "ready"):
         return languages.resolve((tenant.wizard_state or {}).get("site_locale"))
     # ponytail: one schema switch per site; denormalize onto Tenant if a creator ever owns dozens
-    try:
-        with transaction.atomic():  # a broken site must not take the whole list down
-            return languages.site_language(tenant)
-    except DatabaseError:
-        return languages.DEFAULT
+    return languages.site_language(tenant)
 
 
 def _build_tenant_url(tenant: Tenant) -> str:

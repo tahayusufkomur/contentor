@@ -162,6 +162,11 @@ def creator_signup_authenticated(request):
 
     locale = languages.resolve(request.data.get("locale") or user.preferred_locale)
     site_locale = languages.resolve(request.data.get("site_locale") or locale)
+    if user.preferred_locale != locale:
+        # The new site's owner row gets `locale` at provisioning: the public row must say the same,
+        # or the creator gets the studio in one language and contentor.app and its emails in another.
+        user.preferred_locale = locale
+        user.save(update_fields=["preferred_locale"])
     token = create_signup_token(user.email, user.name, site, region=region, locale=locale, site_locale=site_locale)
     logger.info(
         "authenticated creator new-platform email=%s site=%s region=%s",
