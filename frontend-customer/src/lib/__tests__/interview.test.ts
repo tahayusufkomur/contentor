@@ -11,6 +11,7 @@ import {
   activityLine,
   ADDRESS_BOXES,
   addressOk,
+  CONTACT_DETAILS,
   contactOk,
   idOf,
   idsOfText,
@@ -99,6 +100,49 @@ describe("questionSteps", () => {
     const steps = questionSteps([{ role: "guide", ...g }], g);
     expect(steps[0].icons).toEqual({ A: "heart" });
     expect(steps[0].hints).toEqual({ A: "Come as you are." });
+  });
+
+  it("keeps the tiles' identities on an answered question (a Turkish transcript)", () => {
+    const access: GuideTurn = {
+      ...ask("course_access"),
+      options: ["Kursu satın alan herkes", "Herkese ücretsiz"],
+      ids: ["Anyone who buys the course", "Free for everyone"],
+    };
+    const steps = questionSteps(
+      [{ role: "guide", ...access }, said("Herkese ücretsiz")],
+      ask("next"),
+    );
+    expect(steps[0].ids).toEqual(access.ids);
+    expect(
+      accessBadge(
+        idsOfText(steps[0].answer ?? "", steps[0].options, steps[0].ids),
+      ),
+    ).toBe("Free");
+  });
+
+  it("reads a one-time schedule and a contact question gone back to from their ids", () => {
+    const schedule: GuideTurn = {
+      ...ask("live_when"),
+      options: ["Yinelenen", "Tek seferlik"],
+      ids: ["Recurring", "One-time"],
+    };
+    const contact: GuideTurn = {
+      ...ask("contact"),
+      options: ["E-posta", "Telefon"],
+      ids: ["Email", "Phone"],
+    };
+    const steps = questionSteps(
+      [
+        { role: "guide", ...schedule },
+        said("Tek seferlik"),
+        { role: "guide", ...contact },
+        said("E-posta"),
+      ],
+      ask("next"),
+    );
+    const [s1, s2] = steps;
+    expect(idOf("Tek seferlik", s1.options, s1.ids)).toBe("One-time");
+    expect(idOf("E-posta", s2.options, s2.ids) in CONTACT_DETAILS).toBe(true);
   });
 
   it("keeps icons and hints on an answered question too", () => {

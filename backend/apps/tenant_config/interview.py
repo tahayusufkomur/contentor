@@ -293,28 +293,28 @@ def default_question(field: brief.Field, answers, brand="") -> str:
     """The pre-written question, naming the niche where the screen shows its kinds."""
     if field.kind == "specialty":
         if base := (answers or {}).get("specialty_base"):
-            return _("What else do you offer besides %(kind)s?") % {"kind": brief.name_shown(base)}
+            return _("What else do you offer besides %(kind)s?") % {"kind": brief.name_shown(base, lower_own=True)}
         tiles = str((answers or {}).get("teaches") or "").split(",")
         return _("Which kinds of %(tiles)s do you offer?") % {
-            "tiles": brief.list_phrase(brief.name_shown(t.strip()) for t in tiles)
+            "tiles": brief.list_phrase(brief.name_shown(t.strip(), lower_own=True) for t in tiles)
         }
     if field.kind == "focus":
         return _("Are %(names)s equally important, or is one your main focus?") % {
-            "names": brief.list_phrase(brief.name_shown(n) for n in brief.disciplines_of(answers or {}))
+            "names": brief.list_phrase(brief.name_shown(n, lower_own=True) for n in brief.disciplines_of(answers or {}))
         }
     if field.id == "teaches" and (bio := (answers or {}).get("bio_teaches")):
         # Her bio settles what the name only hints at; a name that says
         # something else is asked about first, before anything builds on it.
         if named := brief.teaching_conflict(brand, bio):
             return _("Your bio is about %(said)s, but your studio name says %(named)s. What do you offer?") % {
-                "said": brief.list_phrase(brief.name_shown(b) for b in bio),
-                "named": brief.name_shown(named),
+                "said": brief.list_phrase(brief.name_shown(b, lower_own=True) for b in bio),
+                "named": brief.name_shown(named, lower_own=True),
             }
         return _("What do you offer? I ticked what your bio says.")
     if field.id == "teaches" and (named := brief.kind_of_brand(brand)):
-        return _("Do you only offer %(kind)s?") % {"kind": brief.name_shown(named[1])}
+        return _("Do you only offer %(kind)s?") % {"kind": brief.name_shown(named[1], lower_own=True)}
     if field.id == "teaches" and (tile := brief.tile_of_brand(brand)):
-        return _("Which kinds of %(tile)s do you offer?") % {"tile": brief.name_shown(tile)}
+        return _("Which kinds of %(tile)s do you offer?") % {"tile": brief.name_shown(tile, lower_own=True)}
     return str(field.question)
 
 
@@ -926,6 +926,10 @@ def _refresh_turn(turn: dict, answers: dict, brand: str) -> dict:
         return turn
     if turn.get("role") != "guide" or field is None:
         return turn
+    if not turn.get("ids") and turn.get("options"):
+        # A turn stored before the guide sent ids: what each tile stands for is read off the field's own tiles.
+        by_shown = {brief.lc(brief.tx(o)): o for o in brief.options_for(field, answers, brand)[0]}
+        turn = {**turn, "ids": [by_shown.get(brief.lc(str(o)), str(o)) for o in turn["options"]]}
     # Code-owned copy: a transcript older than it, or than an edit of it, still reads the current words.
     turn = {**turn, "help": brief.help_of(field, brand), **({"why": str(field.why)} if field.why else {})}
     if field.id == "location":

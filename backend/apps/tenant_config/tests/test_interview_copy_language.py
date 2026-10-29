@@ -215,3 +215,29 @@ def test_the_summary_keeps_each_sentence_whole(setup_running):
     """ "%(when)s, members only" is one sentence in the catalog, not a suffix glued on."""
     assert translated("%(when)s, members only")
     assert translated("%(when)s, %(price)s each")
+
+
+def test_a_turkish_label_with_a_dotted_capital_maps_back_in_a_multi_pick():
+    """ "İ" lowers to two characters in Python: the pick still maps, wherever the label stands."""
+    field = brief.FIELD_BY_ID["contact"]
+    with override("tr"):
+        form = brief.tx("Contact form")
+        assert form.startswith("İ")
+        assert brief.english_picks(f"{form}, WhatsApp", field, {}) == "Contact form, WhatsApp"
+        assert brief.english_picks(f"WhatsApp, {form}", field, {}) == "WhatsApp, Contact form"
+        assert brief.english_picks(f"{form}, my own way", field, {}) == "Contact form, my own way"
+
+
+def test_english_names_in_sentences_are_left_as_written():
+    """Only our own tile names are lower-cased mid-sentence; hers and proper names keep their case."""
+    assert brief.tx("Mostly Pottery") == "Mostly Pottery"
+    assert brief.name_shown("Pottery") == "Pottery"
+    assert brief.name_shown("Face yoga") == "face yoga"
+
+
+def test_a_turn_stored_without_ids_gets_them(setup_running):
+    """A transcript turn from before the guide sent ids: they are read off its tiles."""
+    turn = {"role": "guide", "field": "contact", "options": ["E-posta", "Telefon", "Foo"]}
+    with override("tr"):
+        fresh = interview._refresh_turn(turn, {}, "Glow")
+    assert fresh["ids"] == ["Email", "Phone", "Foo"]

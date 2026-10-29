@@ -805,10 +805,13 @@ def _known_names() -> dict[str, str]:
     return {n.lower(): n for n in names}
 
 
-def name_shown(name: str) -> str:
-    """A tile or kind name in the middle of a sentence ("yoga" for "Yoga"): ours is translated, hers stays hers."""
+def name_shown(name: str, *, lower_own: bool = False) -> str:
+    """A tile or kind name in the middle of a sentence ("yoga" for "Yoga"): ours is translated and lower-cased,
+    hers stays as she wrote it (``lower_own``: lower-cased too, for a question that always did)."""
     known = _known_names().get(name.lower())
-    return lc_shown(render_marked(known)) if known else lc_shown(name)
+    if known:
+        return lc_shown(render_marked(known))
+    return lc_shown(name) if lower_own else name
 
 
 def tx(option: str) -> str:
@@ -2130,19 +2133,21 @@ def options_for(
 def english_picks(text: str, field: Field, answers: dict, brand: str = "") -> str:
     """Tiles a creator tapped, as the English options they stand for: the screen shows ``tx(option)`` and sends it
     back as typed text, while code matches and stores the English identity. Text that is no tile stays as it is."""
-    by_shown = {tx(o).lower(): o for o in options_for(field, answers, brand)[0]}
+    by_shown = {lc(tx(o)): o for o in options_for(field, answers, brand)[0]}
     labels = sorted(by_shown, key=len, reverse=True)  # a label may hold a comma ("Jeder, der den Kurs kauft")
-    rest, picked = text.strip(), []
+    # One normalised string is compared and sliced (Turkish "İ" has two characters in a plain lower()); her own
+    # words come from the original when the two are as long as each other.
+    text = text.strip()
+    rest = lc(text)
+    original = text if len(rest) == len(text) else rest
+    picked = []
     while rest:
-        found = next((s for s in labels if rest.lower().startswith(s) and rest[len(s) :][:1] in ("", ",")), None)
-        if found:
-            picked.append(by_shown[found])
-            rest = rest[len(found) :]
-        else:
-            part, _comma, rest = rest.partition(",")
-            if part.strip():
-                picked.append(part.strip())
-        rest = rest.removeprefix(",").strip()
+        found = next((s for s in labels if rest.startswith(s) and rest[len(s) :][:1] in ("", ",")), None)
+        cut = len(found) if found else (rest.index(",") if "," in rest else len(rest))
+        part = by_shown[found] if found else original[:cut].strip()
+        if part:
+            picked.append(part)
+        original, rest = original[cut:].lstrip(", "), rest[cut:].lstrip(", ")
     return ", ".join(picked)
 
 
