@@ -75,16 +75,31 @@ const CRITERIA = {
     "Does the site read as one real person's? Photos of the coach show one consistent person (or her own photos), not a different model in every slot; any proof is specific and real.",
 };
 
-const LANGUAGE_NAMES: Record<string, string> = {
-  tr: "Turkish",
-  de: "German",
-  pl: "Polish",
-};
 const LANGUAGE_FLOOR = 9;
+// The site's languages and their English names: the shared locale list, not a list of codes here.
+const LOCALES: { code: string; name: string }[] = JSON.parse(
+  fs.readFileSync(
+    path.join(
+      __dirname,
+      "..",
+      "..",
+      "packages",
+      "shared",
+      "src",
+      "i18n",
+      "locales.json",
+    ),
+    "utf8",
+  ),
+).locales;
 // A site in another language is also scored on its language; English briefs are not.
 function criteriaOf(brief: Brief): Record<string, string> {
-  const name = LANGUAGE_NAMES[brief.language ?? ""];
-  if (!name) return CRITERIA;
+  if (!brief.language || brief.language === "en") return CRITERIA;
+  const name = LOCALES.find((l) => l.code === brief.language)?.name;
+  if (!name)
+    throw new Error(
+      `brief ${brief.id}: language "${brief.language}" is not in locales.json`,
+    );
   return {
     ...CRITERIA,
     language_purity: `Every visible word is in ${name}, except brand names and the coach's own words. One interface word in another language is a 6 or lower.`,
