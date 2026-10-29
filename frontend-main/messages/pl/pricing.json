@@ -80,7 +80,16 @@
   },
   "compare": {
     "included": "{plan}: {feature} w pakiecie",
-    "notIncluded": "{plan}: {feature} poza pakietem"
+    "notIncluded": "{plan}: {feature} poza pakietem",
+    "dynamic": {
+      "studentsUnlimited": "Nieograniczona liczba uczestników",
+      "students": "Do {count, number} uczestników",
+      "storageUnlimited": "Nieograniczone miejsce na dane",
+      "storage": "{count, number} GB miejsca na dane",
+      "fee": "{pct, number}% opłaty transakcyjnej",
+      "campaigns": "Kampanie e-mailowe",
+      "campaignsLimit": "Kampanie e-mailowe ({count, number}/mies.)"
+    }
   },
   "faq": {
     "title": "Najczęściej zadawane pytania",
@@ -117,7 +126,6 @@
     "description": "Wypróbuj Starter za darmo przez 14 dni. Brak ukrytych opłat i możesz zrezygnować w dowolnym momencie."
   },
   "labels": {
-    "pricing": "Cennik",
     "questions": "Pytania"
   },
   "checkout": {

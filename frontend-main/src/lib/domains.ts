@@ -42,13 +42,10 @@ export interface StatusResponse {
 const base = (slug: string) =>
   `/api/tenants/${encodeURIComponent(slug)}/domain`;
 
+// Failures carry the HTTP status only. The domain API's own `detail` is English,
+// so each caller shows its translated message instead of the backend's text.
 async function jsonOrThrow<T>(res: Response): Promise<T> {
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(
-      body?.detail || body?.error || `Request failed (${res.status})`,
-    );
-  }
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json() as Promise<T>;
 }
 
@@ -107,10 +104,7 @@ export async function removeDomain(
     method: "DELETE",
     headers: { "x-tenant-host": host },
   });
-  if (!res.ok && res.status !== 204) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body?.detail || "Failed to remove domain");
-  }
+  if (!res.ok && res.status !== 204) throw new Error(`HTTP ${res.status}`);
 }
 
 export function formatPrice(

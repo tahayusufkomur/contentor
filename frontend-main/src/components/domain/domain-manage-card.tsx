@@ -35,8 +35,7 @@ export function DomainManageCard({
       onRemoved();
     },
     {
-      onError: (err) =>
-        setError(err instanceof Error ? err.message : t("removeFailed")),
+      onError: () => setError(t("removeFailed")),
     },
   );
 

@@ -113,7 +113,9 @@
           "received": "Payment received",
           "now": "now",
           "ago": "{minutes} min ago",
-          "from": "from {name} · {item}"
+          "from": "from {name} · {item}",
+          "membership": "Studio membership",
+          "membershipYearly": "Studio membership, yearly"
         }
       }
     }

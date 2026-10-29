@@ -89,6 +89,7 @@ export default async function PricingPage() {
   const locale = await getLocale();
   const user = await getAuthUser();
   const t = await getTranslations("pricing");
+  const tNav = await getTranslations("common.nav");
   const plansData = await fetchPlans();
   const planByKey: Partial<Record<PlanKey, PlanSummary>> = {};
   for (const p of plansData?.plans ?? []) {
@@ -124,7 +125,7 @@ export default async function PricingPage() {
         <section className="px-6 pb-16 pt-24 md:pb-24 md:pt-32">
           <div className="mx-auto max-w-text text-center">
             <p className="text-eyebrow text-muted-foreground">
-              {t("labels.pricing")}
+              {tNav("pricing")}
             </p>
             <h1 className="mt-4 text-display text-balance text-foreground">
               {t("title")}
@@ -230,7 +231,7 @@ export default async function PricingPage() {
                           included[key],
                           planByKey[key] ?? null,
                           () => t(`plans.${key}.features.${feature}`),
-                          locale,
+                          (k, values) => t(`compare.dynamic.${k}`, values),
                         )}
                         plan={t(`plans.${key}.name`)}
                         included={t("compare.included", {

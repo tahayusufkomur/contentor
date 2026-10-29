@@ -80,7 +80,16 @@
   },
   "compare": {
     "included": "{plan}: {feature} dahil",
-    "notIncluded": "{plan}: {feature} dahil değil"
+    "notIncluded": "{plan}: {feature} dahil değil",
+    "dynamic": {
+      "studentsUnlimited": "Sınırsız öğrenci",
+      "students": "{count, number} öğrenciye kadar",
+      "storageUnlimited": "Sınırsız depolama",
+      "storage": "{count, number} GB depolama",
+      "fee": "%{pct, number} işlem ücreti",
+      "campaigns": "E-posta kampanyaları",
+      "campaignsLimit": "E-posta kampanyaları ({count, number}/ay)"
+    }
   },
   "faq": {
     "title": "Sıkça sorulan sorular",
@@ -117,7 +126,6 @@
     "description": "Starter'ı 14 gün ücretsiz dene. Gizli ücret yok, ve istediğin zaman iptal edebilirsin."
   },
   "labels": {
-    "pricing": "Fiyatlandırma",
     "questions": "Sorular"
   },
   "checkout": {

@@ -56,8 +56,12 @@ export default function CallbackPage() {
     })
       .then(async (res) => {
         if (!res.ok) {
-          const data = await res.json();
-          setError(data.detail || t("verificationFailed"));
+          // The backend's own text is English; a 400 is an expired or used link.
+          setError(
+            res.status === 400
+              ? t("errorDescription")
+              : t("verificationFailed"),
+          );
           return;
         }
         await landOnDashboard(res);

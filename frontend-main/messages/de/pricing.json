@@ -80,7 +80,16 @@
   },
   "compare": {
     "included": "{plan}: {feature} inklusive",
-    "notIncluded": "{plan}: {feature} nicht inklusive"
+    "notIncluded": "{plan}: {feature} nicht inklusive",
+    "dynamic": {
+      "studentsUnlimited": "Unbegrenzte Teilnehmer",
+      "students": "Bis zu {count, number} Teilnehmer",
+      "storageUnlimited": "Unbegrenzter Speicherplatz",
+      "storage": "{count, number} GB Speicherplatz",
+      "fee": "{pct, number}% Transaktionsgebühr",
+      "campaigns": "E-Mail-Kampagnen",
+      "campaignsLimit": "E-Mail-Kampagnen ({count, number}/Monat)"
+    }
   },
   "faq": {
     "title": "Häufig gestellte Fragen",
@@ -117,7 +126,6 @@
     "description": "Teste Starter 14 Tage lang kostenlos. Keine versteckten Gebühren und du kannst jederzeit kündigen."
   },
   "labels": {
-    "pricing": "Preise",
     "questions": "Fragen"
   },
   "checkout": {

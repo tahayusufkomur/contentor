@@ -21,6 +21,9 @@ const STEPS = [
   "live",
 ] as const;
 
+const isStep = (s: string): s is (typeof STEPS)[number] =>
+  (STEPS as readonly string[]).includes(s);
+
 function stepIndex(status: string): number {
   const i = STEPS.findIndex((s) => s === status);
   return i === -1 ? 0 : i;
@@ -114,7 +117,11 @@ export function ProvisioningStatus({
           <div className="flex-1">
             <p>
               {cd?.failed_step
-                ? t("failedAt", { step: cd.failed_step })
+                ? t("failedAt", {
+                    step: isStep(cd.failed_step)
+                      ? t(`steps.${cd.failed_step}`)
+                      : cd.failed_step,
+                  })
                 : t("failed")}
             </p>
             <Button

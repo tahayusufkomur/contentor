@@ -79,8 +79,7 @@ export function DomainWizard({
       window.location.href = checkout_url;
     },
     {
-      onError: (err) =>
-        setError(err instanceof Error ? err.message : t("checkoutFailed")),
+      onError: () => setError(t("checkoutFailed")),
     },
   );
 

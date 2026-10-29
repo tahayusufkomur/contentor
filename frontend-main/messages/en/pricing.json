@@ -80,7 +80,16 @@
   },
   "compare": {
     "included": "{plan}: {feature} included",
-    "notIncluded": "{plan}: {feature} not included"
+    "notIncluded": "{plan}: {feature} not included",
+    "dynamic": {
+      "studentsUnlimited": "Unlimited students",
+      "students": "Up to {count, number} students",
+      "storageUnlimited": "Unlimited storage",
+      "storage": "{count, number} GB storage",
+      "fee": "{pct, number}% transaction fee",
+      "campaigns": "Email campaigns",
+      "campaignsLimit": "Email campaigns ({count, number}/mo)"
+    }
   },
   "faq": {
     "title": "Frequently asked questions",
@@ -117,7 +126,6 @@
     "description": "Try Starter free for 14 days. No hidden fees, and you can cancel any time."
   },
   "labels": {
-    "pricing": "Pricing",
     "questions": "Questions"
   },
   "checkout": {

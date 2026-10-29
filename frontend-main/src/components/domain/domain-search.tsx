@@ -71,8 +71,7 @@ export function DomainSearch({
       setSearched(true);
     },
     {
-      onError: (err) =>
-        setError(err instanceof Error ? err.message : t("failed")),
+      onError: () => setError(t("failed")),
     },
   );
 

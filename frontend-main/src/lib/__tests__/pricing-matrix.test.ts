@@ -1,16 +1,32 @@
+import { createTranslator } from "next-intl";
 import { describe, expect, it } from "vitest";
+import enPricing from "../../../messages/en/pricing.json";
+import trPricing from "../../../messages/tr/pricing.json";
 import {
+  type CellTranslator,
   featureCell as featureCellIn,
   includedFeatures,
   planKeyFromName,
   type PlanSummary,
 } from "@/lib/pricing-matrix";
 
+// The page's translator: `pricing.compare.dynamic.*` in the active locale.
+const cellT = (locale: string, pricing: object): CellTranslator => {
+  const t = createTranslator({
+    locale,
+    messages: { pricing },
+    namespace: "pricing.compare.dynamic",
+  } as never) as unknown as CellTranslator;
+  return (key, values) => t(key, values);
+};
+const en = cellT("en", enPricing);
+const tr = cellT("tr", trPricing);
+
 const featureCell = (
-  ...a: Parameters<typeof featureCellIn> extends [...infer R, string]
+  ...a: Parameters<typeof featureCellIn> extends [...infer R, CellTranslator]
     ? R
     : never
-) => featureCellIn(...a, "en");
+) => featureCellIn(...a, en);
 
 const plan = (over: Partial<PlanSummary> = {}): PlanSummary => ({
   id: 1,
@@ -116,5 +132,26 @@ describe("featureCell", () => {
     expect(
       featureCell("storage", new Set(["storage"]), null, () => "1 GB storage"),
     ).toEqual({ kind: "text", label: "1 GB storage" });
+  });
+  it("labels the cells in the page's language", () => {
+    const cells = (fc: typeof featureCellIn) =>
+      (["students", "storage", "fee", "campaigns"] as const).map((f) =>
+        fc(f, new Set([f]), plan(), boom, tr),
+      );
+    expect(cells(featureCellIn)).toEqual([
+      { kind: "text", label: "100 öğrenciye kadar" },
+      { kind: "text", label: "100 GB depolama" },
+      { kind: "text", label: "%8 işlem ücreti" },
+      { kind: "text", label: "E-posta kampanyaları (1.000/ay)" },
+    ]);
+    expect(
+      featureCellIn(
+        "students",
+        new Set(["students"]),
+        plan({ max_students: 0 }),
+        boom,
+        tr,
+      ),
+    ).toEqual({ kind: "text", label: "Sınırsız öğrenci" });
   });
 });

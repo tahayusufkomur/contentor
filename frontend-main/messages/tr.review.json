@@ -379,20 +379,8 @@
     "src": "ada2e9e9",
     "reviewed": false
   },
-  "auth.callback.verifying": {
-    "src": "10d0636f",
-    "reviewed": false
-  },
-  "auth.callback.errorTitle": {
-    "src": "41d8fe44",
-    "reviewed": false
-  },
   "auth.callback.errorDescription": {
     "src": "cd8fcea5",
-    "reviewed": false
-  },
-  "auth.callback.retry": {
-    "src": "e3e4fbd5",
     "reviewed": false
   },
   "auth.callback.errorEyebrow": {
@@ -1379,6 +1367,14 @@
     "src": "efb1489b",
     "reviewed": false
   },
+  "marketing.team.roles.cashier.scene.membership": {
+    "src": "b002639d",
+    "reviewed": false
+  },
+  "marketing.team.roles.cashier.scene.membershipYearly": {
+    "src": "c82a573d",
+    "reviewed": false
+  },
   "marketing.earnings.eyebrow": {
     "src": "d4ce5943",
     "reviewed": false
@@ -1963,6 +1959,34 @@
     "src": "1c482b1a",
     "reviewed": false
   },
+  "pricing.compare.dynamic.studentsUnlimited": {
+    "src": "4eb3125a",
+    "reviewed": false
+  },
+  "pricing.compare.dynamic.students": {
+    "src": "273a8ebe",
+    "reviewed": false
+  },
+  "pricing.compare.dynamic.storageUnlimited": {
+    "src": "d15abfd3",
+    "reviewed": false
+  },
+  "pricing.compare.dynamic.storage": {
+    "src": "34ed326d",
+    "reviewed": false
+  },
+  "pricing.compare.dynamic.fee": {
+    "src": "3b941057",
+    "reviewed": false
+  },
+  "pricing.compare.dynamic.campaigns": {
+    "src": "60c1520e",
+    "reviewed": false
+  },
+  "pricing.compare.dynamic.campaignsLimit": {
+    "src": "4ed61fcd",
+    "reviewed": false
+  },
   "pricing.faq.title": {
     "src": "af90cef8",
     "reviewed": false
@@ -2033,10 +2057,6 @@
   },
   "pricing.meta.description": {
     "src": "240aade2",
-    "reviewed": false
-  },
-  "pricing.labels.pricing": {
-    "src": "a0d9bbad",
     "reviewed": false
   },
   "pricing.labels.questions": {

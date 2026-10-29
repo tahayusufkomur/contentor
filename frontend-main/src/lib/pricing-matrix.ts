@@ -77,37 +77,42 @@ export function includedFeatures(
   return set;
 }
 
-/** A limit of 0 means "unlimited" across the platform plan model. */
-function limitText(
-  value: number,
-  unit: string,
-  plural: string,
-  locale: string,
-): string {
-  if (value <= 0) return `Unlimited ${plural}`;
-  return `${value.toLocaleString(locale)} ${unit}`;
-}
+/** Translates one `pricing.compare.dynamic.*` message; the page binds it to the active locale. */
+export type CellTranslator = (
+  key:
+    | "studentsUnlimited"
+    | "students"
+    | "storageUnlimited"
+    | "storage"
+    | "fee"
+    | "campaigns"
+    | "campaignsLimit",
+  values?: Record<string, string | number>,
+) => string;
 
-/** Quantitative labels come from the live plan record; descriptive ones
- * (course builder, support) return null and fall back to the locale. */
+/** Quantitative labels come from the live plan record, and a limit of 0 means
+ * "unlimited" across the platform plan model. Descriptive ones (course
+ * builder, support) return null and fall back to the locale. */
 export function dynamicFeatureLabel(
   featureKey: string,
   plan: PlanSummary,
-  locale: string,
+  t: CellTranslator,
 ): string | null {
   switch (featureKey) {
     case "students":
       return plan.max_students <= 0
-        ? "Unlimited students"
-        : `Up to ${plan.max_students.toLocaleString(locale)} students`;
+        ? t("studentsUnlimited")
+        : t("students", { count: plan.max_students });
     case "storage":
-      return limitText(plan.max_storage_gb, "GB storage", "storage", locale);
+      return plan.max_storage_gb <= 0
+        ? t("storageUnlimited")
+        : t("storage", { count: plan.max_storage_gb });
     case "fee":
-      return `${Number(plan.transaction_fee_pct)}% transaction fee`;
+      return t("fee", { pct: Number(plan.transaction_fee_pct) });
     case "campaigns":
       return plan.max_campaign_emails <= 0
-        ? "Email campaigns"
-        : `Email campaigns (${plan.max_campaign_emails.toLocaleString(locale)}/mo)`;
+        ? t("campaigns")
+        : t("campaignsLimit", { count: plan.max_campaign_emails });
     default:
       return null;
   }
@@ -121,10 +126,10 @@ export function featureCell(
   included: Set<string>,
   plan: PlanSummary | null,
   localeLabel: () => string,
-  locale: string,
+  t: CellTranslator,
 ): Cell {
   if (!included.has(featureKey)) return { kind: "no" };
   if (!TEXT_FEATURES.has(featureKey)) return { kind: "yes" };
-  const dynamic = plan ? dynamicFeatureLabel(featureKey, plan, locale) : null;
+  const dynamic = plan ? dynamicFeatureLabel(featureKey, plan, t) : null;
   return { kind: "text", label: dynamic ?? localeLabel() };
 }

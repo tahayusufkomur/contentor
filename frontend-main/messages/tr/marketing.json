@@ -113,7 +113,9 @@
           "received": "Ödeme alındı",
           "now": "şimdi",
           "ago": "{minutes} dk önce",
-          "from": "{name} tarafından · {item}"
+          "from": "{name} tarafından · {item}",
+          "membership": "Stüdyo üyeliği",
+          "membershipYearly": "Stüdyo üyeliği, yıllık"
         }
       }
     }

@@ -113,7 +113,9 @@
           "received": "Otrzymano płatność",
           "now": "teraz",
           "ago": "{minutes} min temu",
-          "from": "od {name} · {item}"
+          "from": "od {name} · {item}",
+          "membership": "Członkostwo w studiu",
+          "membershipYearly": "Członkostwo w studiu, roczne"
         }
       }
     }

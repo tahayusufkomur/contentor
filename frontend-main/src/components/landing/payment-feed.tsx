@@ -5,14 +5,15 @@ import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 
 /** Mara's real catalogue (seed_footage_coach): her courses and membership at
- * their seeded prices, bought by made-up students. */
+ * their seeded prices, bought by made-up students. Course titles are her own
+ * product names and stay as they are; the two membership items are messages. */
 const SALES = [
   { name: "Anna K.", item: "Hips & Hamstrings in 4 Weeks", amount: 49 },
-  { name: "Jonas B.", item: "Studio membership", amount: 29 },
+  { name: "Jonas B.", item: "membership", amount: 29 },
   { name: "Priya S.", item: "A Kinder Back", amount: 59 },
-  { name: "Elif Y.", item: "Studio membership, yearly", amount: 290 },
+  { name: "Elif Y.", item: "membershipYearly", amount: 290 },
   { name: "Marco R.", item: "Slow Flow for Better Sleep", amount: 39 },
-  { name: "Hana T.", item: "Studio membership", amount: 29 },
+  { name: "Hana T.", item: "membership", amount: 29 },
   { name: "Sofia L.", item: "Shoulders & Neck for Screen Days", amount: 29 },
   { name: "Daniel O.", item: "A Kinder Back", amount: 59 },
 ];
@@ -22,6 +23,11 @@ const MINUTES_AGO = [0, 2, 6, 11, 19];
 /** What came in earlier today, before the first row on screen. */
 const EARLIER_TODAY = 1180;
 const EVERY_MS = 2800;
+
+const isMembership = (
+  item: string,
+): item is "membership" | "membershipYearly" =>
+  item === "membership" || item === "membershipYearly";
 
 const amountOf = (k: number) => SALES[k % SALES.length].amount;
 
@@ -105,7 +111,12 @@ export function PaymentFeed({
                       <span className="font-medium tabular-nums text-foreground">
                         {money(sale.amount)}
                       </span>{" "}
-                      {t("from", { name: sale.name, item: sale.item })}
+                      {t("from", {
+                        name: sale.name,
+                        item: isMembership(sale.item)
+                          ? t(sale.item)
+                          : sale.item,
+                      })}
                     </p>
                   </div>
                 </div>
