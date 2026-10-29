@@ -656,6 +656,30 @@ def _seed_starter_post(tenant):
 
 
 @shared_task
+def regenerate_starter_post(tenant_id):
+    """The first post, written again after the site's language changed. The old one goes only once the new one
+    is written, and only while the creator has still not touched it (and no other post exists)."""
+    from apps.core.languages import site_language
+    from apps.core.models import Tenant
+    from apps.core.onboarding import ai_compose, ai_curate, starter_post
+    from apps.tenant_config import site_language as site_language_change
+    from apps.tenant_config.models import SeededObject
+
+    tenant = Tenant.objects.filter(id=tenant_id).first()
+    if tenant is None or not ai_compose.compose_available():
+        return
+    brief = ai_curate.CoachBrief.from_tenant(tenant)
+    fields = starter_post.generate_starter_draft(brief, tenant.schema_name, language=site_language(tenant))
+    with tenant_context(tenant):
+        old = site_language_change.starter_post()
+        if old is None:  # touched, published or joined by another post while it was being written
+            return
+        SeededObject.objects.filter(content_type__model="blogpost", object_id=str(old.pk)).delete()
+        old.delete()
+        starter_post.create_starter_post(fields, tenant.template_niche or "general")
+
+
+@shared_task
 def rank_curated_logos(tenant_id):
     """AI-rank the curated logo catalog for this coach and stash the order in
     wizard_state (read by the /setup interview's logo cards). Every failure path is a

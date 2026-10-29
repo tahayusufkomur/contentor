@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import { enabledLocales, nativeName } from "@shared/i18n/locales";
 
 interface TenantDetail {
   id: number;
@@ -32,6 +33,7 @@ interface TenantDetail {
   stripe_payouts_enabled: boolean;
   billing_currency: string;
   created_at: string;
+  site_language: { code: string; locked: boolean } | null;
   platform_subscription: {
     plan: string;
     status: string;
@@ -106,6 +108,25 @@ export default function TenantDetailPage() {
       .then(setTenant)
       .catch((err) => setError(err.message));
   }, [slug]);
+
+  async function changeLanguage(code: string) {
+    if (!tenant) return;
+    setToggling(true);
+    try {
+      const res = await fetch(`/api/v1/platform/tenants/${slug}/`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ default_locale: code }),
+        credentials: "same-origin",
+      });
+      if (!res.ok) throw new Error("Failed to change the site language");
+      setTenant(await res.json());
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setToggling(false);
+    }
+  }
 
   async function toggleActive() {
     if (!tenant) return;
@@ -232,6 +253,41 @@ export default function TenantDetailPage() {
                 </Badge>
               </div>
             </div>
+
+            {/* Site language */}
+            {tenant.site_language && (
+              <div>
+                <label
+                  htmlFor="site-language"
+                  className="text-sm font-medium text-muted-foreground"
+                >
+                  Site language
+                </label>
+                <select
+                  id="site-language"
+                  value={tenant.site_language.code}
+                  onChange={(e) => changeLanguage(e.target.value)}
+                  disabled={toggling}
+                  className="mt-1 block h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+                >
+                  {[
+                    ...new Set([
+                      ...enabledLocales(),
+                      tenant.site_language.code,
+                    ]),
+                  ].map((code) => (
+                    <option key={code} value={code}>
+                      {nativeName(code)}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {tenant.site_language.locked
+                    ? "This site is live. Existing content stays as written."
+                    : "Setup content is written again in the new language."}
+                </p>
+              </div>
+            )}
 
             <Separator className="col-span-full" />
 

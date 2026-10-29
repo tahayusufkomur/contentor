@@ -836,7 +836,10 @@
     "saved": "Kaydedildi.",
     "saveFailed": "Kaydedilemedi. Lütfen tekrar dene.",
     "yourLanguage": "Dilin",
-    "yourLanguageHint": "Creator stüdyonun ve sana yazdıklarımızın dili. Öğrencilerinin dili ayrı olarak ayarlanır."
+    "yourLanguageHint": "Creator stüdyonun ve sana yazdıklarımızın dili. Öğrencilerinin dili ayrı olarak ayarlanır.",
+    "siteLanguage": "Site dili",
+    "siteLanguageHint": "Öğrencilerinin sitende gördüğü dil. Siten yayına geçene kadar bunu değiştirebilirsin.",
+    "siteLanguageLocked": "Siten yayında, bu yüzden dili olduğu gibi kalır."
   },
   "subscription": {
     "title": "Abonelik",

@@ -836,7 +836,10 @@
     "saved": "Gespeichert.",
     "saveFailed": "Speichern fehlgeschlagen. Bitte versuch es noch einmal.",
     "yourLanguage": "Deine Sprache",
-    "yourLanguageHint": "Die Sprache deines Creator-Studios und dessen, was wir dir schreiben. Die Sprache deiner Teilnehmer wird separat eingestellt."
+    "yourLanguageHint": "Die Sprache deines Creator-Studios und dessen, was wir dir schreiben. Die Sprache deiner Teilnehmer wird separat eingestellt.",
+    "siteLanguage": "Website-Sprache",
+    "siteLanguageHint": "Die Sprache, die deine Teilnehmer auf deiner Website sehen. Du kannst sie ändern, bis deine Website live geht.",
+    "siteLanguageLocked": "Deine Website ist live, daher bleibt ihre Sprache so, wie sie ist."
   },
   "subscription": {
     "title": "Abonnement",

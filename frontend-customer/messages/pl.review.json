@@ -2635,6 +2635,18 @@
     "src": "02c4a8de",
     "reviewed": false
   },
+  "admin.settings.siteLanguage": {
+    "src": "12f69cc8",
+    "reviewed": false
+  },
+  "admin.settings.siteLanguageHint": {
+    "src": "7dd6e9bb",
+    "reviewed": false
+  },
+  "admin.settings.siteLanguageLocked": {
+    "src": "8a485041",
+    "reviewed": false
+  },
   "admin.subscription.title": {
     "src": "8fde48f3",
     "reviewed": false

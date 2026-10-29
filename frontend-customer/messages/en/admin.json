@@ -836,7 +836,10 @@
     "saved": "Saved.",
     "saveFailed": "Could not save. Please try again.",
     "yourLanguage": "Your language",
-    "yourLanguageHint": "The language of your Creator studio and of what we write to you. Your students' language is set separately."
+    "yourLanguageHint": "The language of your Creator studio and of what we write to you. Your students' language is set separately.",
+    "siteLanguage": "Site language",
+    "siteLanguageHint": "The language your students see on your site. You can change it until your site goes live.",
+    "siteLanguageLocked": "Your site is live, so its language stays as it is."
   },
   "subscription": {
     "title": "Subscription",

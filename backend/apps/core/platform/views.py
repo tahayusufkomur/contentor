@@ -14,6 +14,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
 from apps.core import assistant
+from apps.tenant_config import site_language
 
 from ..currency import tenant_charge_currency
 from ..models import (
@@ -197,6 +198,10 @@ def _tenant_detail_payload(tenant):
         else None
     )
     data["marketplace"] = _marketplace_totals([tenant])
+    ready = tenant.provisioning_status == "ready"  # a site still being made has no schema to read
+    data["site_language"] = (
+        {"code": site_language.stored(tenant), "locked": site_language.is_locked(tenant)} if ready else None
+    )
     return data
 
 
@@ -207,6 +212,11 @@ def platform_tenant_detail(request, slug):
     if request.method == "PATCH" and "is_active" in request.data:
         tenant.is_active = request.data["is_active"]
         tenant.save(update_fields=["is_active"])
+    if request.method == "PATCH" and "default_locale" in request.data:
+        try:  # the superadmin can change a live site's language too: what is written stays as written
+            site_language.change(tenant, str(request.data["default_locale"]), force=True)
+        except ValueError:
+            return Response({"detail": "That language is not enabled."}, status=status.HTTP_400_BAD_REQUEST)
     return Response(_tenant_detail_payload(tenant))
 
 

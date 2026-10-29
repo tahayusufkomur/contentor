@@ -2201,7 +2201,7 @@ msgid "You've been unsubscribed from these emails."
 msgstr "Du wurdest von diesen E-Mails abgemeldet."
 
 #: apps/platform_email/serializers.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Invalid language. Must be one of: %(codes)s."
 msgstr "Ungültige Sprache. Muss eine der folgenden sein: %(codes)s."
 
@@ -2390,3 +2390,13 @@ msgstr "Die Formulierungen auf deiner Seite „%(page)s“ überarbeitet"
 #, fuzzy, python-format
 msgid "Replaced a photo on your %(page)s page"
 msgstr "Ein Foto auf deiner Seite „%(page)s“ ersetzt"
+
+#: apps/tenant_config/views.py
+#, fuzzy
+msgid "That language is not available."
+msgstr "Diese Sprache ist nicht verfügbar."
+
+#: apps/tenant_config/views.py
+#, fuzzy
+msgid "Your site is live, so its language stays as it is."
+msgstr "Deine Website ist live, daher bleibt ihre Sprache so, wie sie ist."

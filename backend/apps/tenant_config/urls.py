@@ -41,12 +41,14 @@ from .views import (
     logo_converse_finish,
     logo_refine,
     setup_status,
+    site_language_view,
     site_look,
 )
 
 urlpatterns = [
     path("config/", TenantConfigView.as_view(), name="tenant-config"),
     path("config/look/", site_look, name="tenant-config-look"),
+    path("config/site-language/", site_language_view, name="tenant-site-language"),
     path("stats/", admin_stats, name="admin-stats"),
     path("setup-status/", setup_status, name="setup-status"),
     path("setup-flow/", setup_flow_state, name="setup-flow"),

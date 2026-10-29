@@ -7,6 +7,7 @@ from django.core.cache import cache
 from django.db import connection
 from django.db.models import Sum
 from django.http import StreamingHttpResponse
+from django.utils.translation import gettext as _
 from rest_framework.decorators import api_view, permission_classes, renderer_classes, throttle_classes
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny
@@ -20,12 +21,12 @@ from apps.core import assistant, languages
 from apps.core.ai_sse import EventStreamRenderer, stream_response, wants_stream
 from apps.core.email import send_email
 from apps.core.models import AiConversation
-from apps.core.permissions import IsCoachOrOwner
+from apps.core.permissions import IsCoachOrOwner, IsOwner
 from apps.courses.models import Course, Video
 from apps.downloads.models import DownloadFile
 from apps.media.models import Photo
 
-from . import help_bot, logo_api, sections
+from . import help_bot, logo_api, sections, site_language
 from .models import TenantConfig
 from .serializers import TenantConfigSerializer
 
@@ -150,6 +151,23 @@ def site_look(request):
     config = TenantConfig.objects.first()
     current = {"style": config.style, "palette": config.palette} if config else {"style": "", "palette": ""}
     return Response({**style_cards(answers_of(tenant), tenant), "current": current})
+
+
+@api_view(["GET", "POST"])
+@permission_classes([IsOwner])
+def site_language_view(request):
+    """The site's language: GET it with whether it is still changeable; POST ``{"language": "pl"}`` to change it
+    (refused with 409 once the site has gone live; the superadmin's tenant page can still force one)."""
+    tenant = connection.tenant
+    if request.method == "POST":
+        data = request.data if isinstance(request.data, dict) else {}
+        try:
+            site_language.change(tenant, str(data.get("language") or ""))
+        except ValueError:
+            return Response({"detail": _("That language is not available.")}, status=400)
+        except site_language.SiteLanguageLocked:
+            return Response({"detail": _("Your site is live, so its language stays as it is.")}, status=409)
+    return Response({"language": languages.site_language(), "locked": site_language.is_locked(tenant)})
 
 
 def _format_storage_size(size_bytes: int) -> str:

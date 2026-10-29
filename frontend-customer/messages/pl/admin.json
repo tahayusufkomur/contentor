@@ -836,7 +836,10 @@
     "saved": "Zapisano.",
     "saveFailed": "Nie udało się zapisać. Spróbuj ponownie.",
     "yourLanguage": "Twój język",
-    "yourLanguageHint": "Język Twojego Studia twórcy i tego, co do Ciebie piszemy. Język Twoich uczestników ustawia się osobno."
+    "yourLanguageHint": "Język Twojego Studia twórcy i tego, co do Ciebie piszemy. Język Twoich uczestników ustawia się osobno.",
+    "siteLanguage": "Język strony",
+    "siteLanguageHint": "Język, który Twoi uczestnicy widzą na Twojej stronie. Możesz go zmienić, dopóki Twoja strona nie zostanie opublikowana.",
+    "siteLanguageLocked": "Twoja strona jest opublikowana, więc jej język pozostaje bez zmian."
   },
   "subscription": {
     "title": "Subskrypcja",

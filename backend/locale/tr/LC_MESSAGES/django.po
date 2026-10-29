@@ -2167,7 +2167,7 @@ msgid "You've been unsubscribed from these emails."
 msgstr "Bu e-postaların aboneliğinden çıkarıldın."
 
 #: apps/platform_email/serializers.py
-#, python-format, fuzzy
+#, fuzzy, python-format
 msgid "Invalid language. Must be one of: %(codes)s."
 msgstr "Geçersiz dil. Şunlardan biri olmalıdır: %(codes)s."
 
@@ -2355,3 +2355,13 @@ msgstr "%(page)s sayfandaki ifadeleri toparladık"
 #, fuzzy, python-format
 msgid "Replaced a photo on your %(page)s page"
 msgstr "%(page)s sayfandaki bir fotoğrafı değiştirdik"
+
+#: apps/tenant_config/views.py
+#, fuzzy
+msgid "That language is not available."
+msgstr "Bu dil mevcut değil."
+
+#: apps/tenant_config/views.py
+#, fuzzy
+msgid "Your site is live, so its language stays as it is."
+msgstr "Siten yayında, bu yüzden dili olduğu gibi kalır."
