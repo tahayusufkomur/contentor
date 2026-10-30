@@ -86,11 +86,15 @@ async function api(pathname: string, host = "demo-yoga.localhost") {
 /** A site's stored content (demo-yoga's by default): what the frontend renders from the creator's data. */
 async function storedContent(host = "demo-yoga.localhost") {
   const day = (offset: number) => new Date(Date.now() + offset * 864e5).toISOString().split("T")[0];
+  // The calendar's month grid shows past days, with their authored titles ("Open Mat Session"): start
+  // a week before the first of the month, which covers the grid's leading days.
+  const now = new Date();
+  const gridStart = new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1) - 7 * 864e5).toISOString().split("T")[0];
   const [config, courses, plans, events] = await Promise.all([
     api("/api/v1/admin/config/", host),
     api("/api/v1/courses/", host),
     api("/api/v1/billing/plans/", host),
-    api(`/api/v1/calendar/?from=${day(0)}&to=${day(90)}`, host),
+    api(`/api/v1/calendar/?from=${gridStart}&to=${day(90)}`, host),
   ]);
   const detail = courses.length ? await api(`/api/v1/courses/${courses[0].slug}/`, host) : {};
   return { authored: authoredLeaves([config, courses, detail, plans, events]), courseSlug: courses[0]?.slug ?? "" };
@@ -170,7 +174,8 @@ async function expectTurkish(
     await expect(page, `${pathname} redirected`).toHaveURL(`${base}${pathname}`, { timeout: 20_000 });
     if (rightPage.shown) await expect(rightPage.shown(page).first(), `${pathname} is not the page`).toBeVisible({ timeout: 30_000 });
   }
-  await page.waitForLoadState("networkidle").catch(() => undefined);
+  // Bounded: a page with a payment iframe never goes idle, and an unbounded wait ate the whole test timeout.
+  await page.waitForLoadState("networkidle", { timeout: 10_000 }).catch(() => undefined);
   await page.waitForTimeout(500); // client-rendered pages: skeleton to content
   const leaks = await englishLeaks(page, words, own);
   expect(leaks, `English on ${pathname}`).toEqual([]);

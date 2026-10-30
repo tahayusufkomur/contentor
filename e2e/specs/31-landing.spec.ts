@@ -19,9 +19,18 @@ test("the landing carries one header, the brand, every chapter and the share car
   const header = page.getByRole("banner");
   await expect(header).toHaveCount(1);
   await expect(header.getByRole("link", { name: "Contentor" })).toBeVisible();
-  for (const name of ["How it works", "Who it's for", "Pricing", "Blog"]) {
+  for (const name of ["How it works", "Who it's for", "Pricing"]) {
     await expect(header.getByRole("link", { name, exact: true })).toBeVisible();
   }
+  // The Blog link shows only when the page's language has a post (the header asks the same API),
+  // so the spec follows whatever the dev database holds instead of seeding a post.
+  const posts = await page.request.get(
+    `${MAIN}/api/v1/platform/blog/posts/?language=en&page_size=1`,
+  );
+  const hasPosts = ((await posts.json()).count ?? 0) > 0;
+  await expect(header.getByRole("link", { name: "Blog", exact: true })).toHaveCount(
+    hasPosts ? 1 : 0,
+  );
 
   // The chapters, in the order the page tells the coach's story.
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
