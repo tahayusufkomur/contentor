@@ -12943,6 +12943,306 @@
     "src": "77dfd213",
     "reviewed": false
   },
+  "admin.copilot.bubble": {
+    "src": "12787ee7",
+    "reviewed": false
+  },
+  "admin.copilot.title": {
+    "src": "12787ee7",
+    "reviewed": false
+  },
+  "admin.copilot.empty": {
+    "src": "c2677aa9",
+    "reviewed": false
+  },
+  "admin.copilot.placeholder": {
+    "src": "8ebf2eda",
+    "reviewed": false
+  },
+  "admin.copilot.select": {
+    "src": "85982229",
+    "reviewed": false
+  },
+  "admin.copilot.send": {
+    "src": "9bc2575c",
+    "reviewed": false
+  },
+  "admin.copilot.sending": {
+    "src": "cf765512",
+    "reviewed": false
+  },
+  "admin.copilot.thinking": {
+    "src": "a60d9c9c",
+    "reviewed": false
+  },
+  "admin.copilot.close": {
+    "src": "bbfa773e",
+    "reviewed": false
+  },
+  "admin.copilot.newChat": {
+    "src": "009bf6b9",
+    "reviewed": false
+  },
+  "admin.copilot.confirm": {
+    "src": "cfea419c",
+    "reviewed": false
+  },
+  "admin.copilot.applying": {
+    "src": "e578c274",
+    "reviewed": false
+  },
+  "admin.copilot.applyAll": {
+    "src": "fbcb3427",
+    "reviewed": false
+  },
+  "admin.copilot.appliedAll": {
+    "src": "bb6a1cc1",
+    "reviewed": false
+  },
+  "admin.copilot.appliedPartial": {
+    "src": "2a411393",
+    "reviewed": false
+  },
+  "admin.copilot.dismiss": {
+    "src": "70afe9ef",
+    "reviewed": false
+  },
+  "admin.copilot.applied": {
+    "src": "fcd15804",
+    "reviewed": false
+  },
+  "admin.copilot.appliedShort": {
+    "src": "a3e4a569",
+    "reviewed": false
+  },
+  "admin.copilot.created": {
+    "src": "7f697ed7",
+    "reviewed": false
+  },
+  "admin.copilot.createdShort": {
+    "src": "accf40c8",
+    "reviewed": false
+  },
+  "admin.copilot.view": {
+    "src": "cf9b7706",
+    "reviewed": false
+  },
+  "admin.copilot.updated": {
+    "src": "f2f8570d",
+    "reviewed": false
+  },
+  "admin.copilot.undo": {
+    "src": "39fc7212",
+    "reviewed": false
+  },
+  "admin.copilot.undoing": {
+    "src": "c0acebed",
+    "reviewed": false
+  },
+  "admin.copilot.undone": {
+    "src": "8550e349",
+    "reviewed": false
+  },
+  "admin.copilot.undoStale": {
+    "src": "d233e125",
+    "reviewed": false
+  },
+  "admin.copilot.undoChanged": {
+    "src": "b9ad2b1d",
+    "reviewed": false
+  },
+  "admin.copilot.removeSelection": {
+    "src": "128bce5e",
+    "reviewed": false
+  },
+  "admin.copilot.resting": {
+    "src": "57822ea0",
+    "reviewed": false
+  },
+  "admin.copilot.error": {
+    "src": "9a3ea059",
+    "reviewed": false
+  },
+  "admin.copilot.pageNames.home": {
+    "src": "70f8bb9a",
+    "reviewed": false
+  },
+  "admin.copilot.pageNames.about": {
+    "src": "6b21fb79",
+    "reviewed": false
+  },
+  "admin.copilot.pageNames.courses": {
+    "src": "a16536d7",
+    "reviewed": false
+  },
+  "admin.copilot.pageNames.pricing": {
+    "src": "a0d9bbad",
+    "reviewed": false
+  },
+  "admin.copilot.pageNames.faq": {
+    "src": "03688ba6",
+    "reviewed": false
+  },
+  "admin.copilot.pageNames.contact": {
+    "src": "b37456c4",
+    "reviewed": false
+  },
+  "admin.copilot.fieldNames.heading": {
+    "src": "a3089b7f",
+    "reviewed": false
+  },
+  "admin.copilot.fieldNames.subheading": {
+    "src": "6b8ad00f",
+    "reviewed": false
+  },
+  "admin.copilot.fieldNames.body": {
+    "src": "c3328c39",
+    "reviewed": false
+  },
+  "admin.copilot.fieldNames.ctaText": {
+    "src": "2c1bff44",
+    "reviewed": false
+  },
+  "admin.copilot.fieldNames.buttonText": {
+    "src": "2c1bff44",
+    "reviewed": false
+  },
+  "admin.copilot.fieldNames.intro": {
+    "src": "b4e6a310",
+    "reviewed": false
+  },
+  "admin.copilot.fieldNames.items": {
+    "src": "9a1fc173",
+    "reviewed": false
+  },
+  "admin.copilot.fieldNames.ctaHref": {
+    "src": "0058880a",
+    "reviewed": false
+  },
+  "admin.copilot.fieldNames.buttonHref": {
+    "src": "0058880a",
+    "reviewed": false
+  },
+  "admin.copilot.fieldNames.secondaryButtonText": {
+    "src": "945eed50",
+    "reviewed": false
+  },
+  "admin.copilot.fieldNames.secondaryButtonHref": {
+    "src": "7172d5c1",
+    "reviewed": false
+  },
+  "admin.copilot.fieldNames.layout": {
+    "src": "972ad8d8",
+    "reviewed": false
+  },
+  "admin.copilot.fieldNames.headingLevel": {
+    "src": "948a0701",
+    "reviewed": false
+  },
+  "admin.copilot.fieldNames.imagePosition": {
+    "src": "dc82f2b1",
+    "reviewed": false
+  },
+  "admin.copilot.fieldNames.overlay": {
+    "src": "8c38bb7f",
+    "reviewed": false
+  },
+  "admin.copilot.fieldNames.overlayStrength": {
+    "src": "cb013591",
+    "reviewed": false
+  },
+  "admin.copilot.fieldNames.text": {
+    "src": "c3328c39",
+    "reviewed": false
+  },
+  "admin.copilot.fieldNames.linkText": {
+    "src": "502f872d",
+    "reviewed": false
+  },
+  "admin.copilot.fieldNames.linkHref": {
+    "src": "d0517071",
+    "reviewed": false
+  },
+  "admin.copilot.fieldNames.submitLabel": {
+    "src": "a6e65913",
+    "reviewed": false
+  },
+  "admin.copilot.fieldNames.successMessage": {
+    "src": "1dd08f39",
+    "reviewed": false
+  },
+  "admin.copilot.chats": {
+    "src": "6c9e84c6",
+    "reviewed": false
+  },
+  "admin.copilot.noChats": {
+    "src": "70539fe0",
+    "reviewed": false
+  },
+  "admin.copilot.untitledChat": {
+    "src": "009bf6b9",
+    "reviewed": false
+  },
+  "admin.copilot.deleteChat": {
+    "src": "db9121e7",
+    "reviewed": false
+  },
+  "admin.copilot.attach": {
+    "src": "6d2521be",
+    "reviewed": false
+  },
+  "admin.copilot.removeAttachment": {
+    "src": "c8f5eda8",
+    "reviewed": false
+  },
+  "admin.copilot.attachTooLarge": {
+    "src": "f8b79126",
+    "reviewed": false
+  },
+  "admin.copilot.attachFailed": {
+    "src": "ecb3f5d0",
+    "reviewed": false
+  },
+  "admin.copilot.attachedOnly": {
+    "src": "57abf484",
+    "reviewed": false
+  },
+  "admin.copilot.creatingPhoto": {
+    "src": "dbefb47b",
+    "reviewed": false
+  },
+  "admin.copilot.dictate": {
+    "src": "320ac8c2",
+    "reviewed": false
+  },
+  "admin.copilot.stopDictation": {
+    "src": "e134211e",
+    "reviewed": false
+  },
+  "admin.copilot.micBlocked": {
+    "src": "ed07e5b7",
+    "reviewed": false
+  },
+  "admin.copilot.working": {
+    "src": "4e2dfed1",
+    "reviewed": false
+  },
+  "admin.copilot.stop": {
+    "src": "9e253470",
+    "reviewed": false
+  },
+  "admin.copilot.stopping": {
+    "src": "827c9721",
+    "reviewed": false
+  },
+  "admin.copilot.stopped": {
+    "src": "2eb0528d",
+    "reviewed": false
+  },
+  "admin.copilot.failed": {
+    "src": "9ae914fa",
+    "reviewed": false
+  },
   "blocks.default.hero.heading": {
     "src": "ca4f9dcf",
     "reviewed": false
@@ -15153,306 +15453,6 @@
   },
   "student.assistant.sessionLimit": {
     "src": "3c7c3998",
-    "reviewed": false
-  },
-  "student.copilot.bubble": {
-    "src": "12787ee7",
-    "reviewed": false
-  },
-  "student.copilot.title": {
-    "src": "12787ee7",
-    "reviewed": false
-  },
-  "student.copilot.empty": {
-    "src": "c2677aa9",
-    "reviewed": false
-  },
-  "student.copilot.placeholder": {
-    "src": "8ebf2eda",
-    "reviewed": false
-  },
-  "student.copilot.select": {
-    "src": "85982229",
-    "reviewed": false
-  },
-  "student.copilot.send": {
-    "src": "9bc2575c",
-    "reviewed": false
-  },
-  "student.copilot.sending": {
-    "src": "cf765512",
-    "reviewed": false
-  },
-  "student.copilot.thinking": {
-    "src": "a60d9c9c",
-    "reviewed": false
-  },
-  "student.copilot.close": {
-    "src": "bbfa773e",
-    "reviewed": false
-  },
-  "student.copilot.newChat": {
-    "src": "009bf6b9",
-    "reviewed": false
-  },
-  "student.copilot.confirm": {
-    "src": "cfea419c",
-    "reviewed": false
-  },
-  "student.copilot.applying": {
-    "src": "e578c274",
-    "reviewed": false
-  },
-  "student.copilot.applyAll": {
-    "src": "fbcb3427",
-    "reviewed": false
-  },
-  "student.copilot.appliedAll": {
-    "src": "f7319f8c",
-    "reviewed": false
-  },
-  "student.copilot.appliedPartial": {
-    "src": "2a411393",
-    "reviewed": false
-  },
-  "student.copilot.dismiss": {
-    "src": "70afe9ef",
-    "reviewed": false
-  },
-  "student.copilot.applied": {
-    "src": "fcd15804",
-    "reviewed": false
-  },
-  "student.copilot.appliedShort": {
-    "src": "a3e4a569",
-    "reviewed": false
-  },
-  "student.copilot.created": {
-    "src": "7f697ed7",
-    "reviewed": false
-  },
-  "student.copilot.createdShort": {
-    "src": "accf40c8",
-    "reviewed": false
-  },
-  "student.copilot.view": {
-    "src": "cf9b7706",
-    "reviewed": false
-  },
-  "student.copilot.updated": {
-    "src": "f2f8570d",
-    "reviewed": false
-  },
-  "student.copilot.undo": {
-    "src": "39fc7212",
-    "reviewed": false
-  },
-  "student.copilot.undoing": {
-    "src": "c0acebed",
-    "reviewed": false
-  },
-  "student.copilot.undone": {
-    "src": "8550e349",
-    "reviewed": false
-  },
-  "student.copilot.undoStale": {
-    "src": "d233e125",
-    "reviewed": false
-  },
-  "student.copilot.undoChanged": {
-    "src": "b9ad2b1d",
-    "reviewed": false
-  },
-  "student.copilot.removeSelection": {
-    "src": "128bce5e",
-    "reviewed": false
-  },
-  "student.copilot.resting": {
-    "src": "57822ea0",
-    "reviewed": false
-  },
-  "student.copilot.error": {
-    "src": "9a3ea059",
-    "reviewed": false
-  },
-  "student.copilot.pageNames.home": {
-    "src": "70f8bb9a",
-    "reviewed": false
-  },
-  "student.copilot.pageNames.about": {
-    "src": "6b21fb79",
-    "reviewed": false
-  },
-  "student.copilot.pageNames.courses": {
-    "src": "a16536d7",
-    "reviewed": false
-  },
-  "student.copilot.pageNames.pricing": {
-    "src": "a0d9bbad",
-    "reviewed": false
-  },
-  "student.copilot.pageNames.faq": {
-    "src": "03688ba6",
-    "reviewed": false
-  },
-  "student.copilot.pageNames.contact": {
-    "src": "b37456c4",
-    "reviewed": false
-  },
-  "student.copilot.fieldNames.heading": {
-    "src": "a3089b7f",
-    "reviewed": false
-  },
-  "student.copilot.fieldNames.subheading": {
-    "src": "6b8ad00f",
-    "reviewed": false
-  },
-  "student.copilot.fieldNames.body": {
-    "src": "c3328c39",
-    "reviewed": false
-  },
-  "student.copilot.fieldNames.ctaText": {
-    "src": "2c1bff44",
-    "reviewed": false
-  },
-  "student.copilot.fieldNames.buttonText": {
-    "src": "2c1bff44",
-    "reviewed": false
-  },
-  "student.copilot.fieldNames.intro": {
-    "src": "b4e6a310",
-    "reviewed": false
-  },
-  "student.copilot.fieldNames.items": {
-    "src": "9a1fc173",
-    "reviewed": false
-  },
-  "student.copilot.fieldNames.ctaHref": {
-    "src": "0058880a",
-    "reviewed": false
-  },
-  "student.copilot.fieldNames.buttonHref": {
-    "src": "0058880a",
-    "reviewed": false
-  },
-  "student.copilot.fieldNames.secondaryButtonText": {
-    "src": "945eed50",
-    "reviewed": false
-  },
-  "student.copilot.fieldNames.secondaryButtonHref": {
-    "src": "7172d5c1",
-    "reviewed": false
-  },
-  "student.copilot.fieldNames.layout": {
-    "src": "972ad8d8",
-    "reviewed": false
-  },
-  "student.copilot.fieldNames.headingLevel": {
-    "src": "948a0701",
-    "reviewed": false
-  },
-  "student.copilot.fieldNames.imagePosition": {
-    "src": "dc82f2b1",
-    "reviewed": false
-  },
-  "student.copilot.fieldNames.overlay": {
-    "src": "8c38bb7f",
-    "reviewed": false
-  },
-  "student.copilot.fieldNames.overlayStrength": {
-    "src": "cb013591",
-    "reviewed": false
-  },
-  "student.copilot.fieldNames.text": {
-    "src": "c3328c39",
-    "reviewed": false
-  },
-  "student.copilot.fieldNames.linkText": {
-    "src": "502f872d",
-    "reviewed": false
-  },
-  "student.copilot.fieldNames.linkHref": {
-    "src": "d0517071",
-    "reviewed": false
-  },
-  "student.copilot.fieldNames.submitLabel": {
-    "src": "a6e65913",
-    "reviewed": false
-  },
-  "student.copilot.fieldNames.successMessage": {
-    "src": "1dd08f39",
-    "reviewed": false
-  },
-  "student.copilot.chats": {
-    "src": "6c9e84c6",
-    "reviewed": false
-  },
-  "student.copilot.noChats": {
-    "src": "70539fe0",
-    "reviewed": false
-  },
-  "student.copilot.untitledChat": {
-    "src": "009bf6b9",
-    "reviewed": false
-  },
-  "student.copilot.deleteChat": {
-    "src": "db9121e7",
-    "reviewed": false
-  },
-  "student.copilot.attach": {
-    "src": "6d2521be",
-    "reviewed": false
-  },
-  "student.copilot.removeAttachment": {
-    "src": "c8f5eda8",
-    "reviewed": false
-  },
-  "student.copilot.attachTooLarge": {
-    "src": "f8b79126",
-    "reviewed": false
-  },
-  "student.copilot.attachFailed": {
-    "src": "ecb3f5d0",
-    "reviewed": false
-  },
-  "student.copilot.attachedOnly": {
-    "src": "57abf484",
-    "reviewed": false
-  },
-  "student.copilot.creatingPhoto": {
-    "src": "dbefb47b",
-    "reviewed": false
-  },
-  "student.copilot.dictate": {
-    "src": "320ac8c2",
-    "reviewed": false
-  },
-  "student.copilot.stopDictation": {
-    "src": "e134211e",
-    "reviewed": false
-  },
-  "student.copilot.micBlocked": {
-    "src": "ed07e5b7",
-    "reviewed": false
-  },
-  "student.copilot.working": {
-    "src": "4e2dfed1",
-    "reviewed": false
-  },
-  "student.copilot.stop": {
-    "src": "9e253470",
-    "reviewed": false
-  },
-  "student.copilot.stopping": {
-    "src": "827c9721",
-    "reviewed": false
-  },
-  "student.copilot.stopped": {
-    "src": "2eb0528d",
-    "reviewed": false
-  },
-  "student.copilot.failed": {
-    "src": "9ae914fa",
     "reviewed": false
   },
   "student.callback.noToken": {

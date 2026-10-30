@@ -189,7 +189,7 @@ function relativeTime(iso: string, locale: string): string {
  * the first chat on first open. */
 export function CopilotBubble({ docked = false }: { docked?: boolean }) {
   const locale = useLocale();
-  const t = useTranslations("student.copilot");
+  const t = useTranslations("admin.copilot");
   const tAdmin = useTranslations("admin");
   const dock = useAssistantDock();
   const pathname = usePathname();

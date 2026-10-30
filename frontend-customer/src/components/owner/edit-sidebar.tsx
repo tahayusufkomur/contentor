@@ -66,7 +66,8 @@ interface EditSidebarProps {
   /** Opened in the setup review's frame (?embed=edit): always editing, the
    * frame's host closes it, and it stays on the page's own editable routes. */
   embedded?: boolean;
-  children: React.ReactNode;
+  /** The page; OwnerFrame supplies it. */
+  children?: React.ReactNode;
 }
 
 export function EditSidebar({

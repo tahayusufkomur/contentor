@@ -1,8 +1,8 @@
 "use client";
 
-import { createContext, useContext } from "react";
+import { cloneElement, createContext, useContext } from "react";
 import { useLocale } from "next-intl";
-import { InLocale } from "@shared/i18n/site-preview";
+import { InLocale, SiteLocaleBoundary } from "@shared/i18n/site-preview";
 
 // A site+owner page (surface.ts) runs on ONE next-intl locale: the site's. The
 // creator's own words (admin.*, studio.*) are loaded in her language, but
@@ -53,3 +53,30 @@ export const AsCreator = ({ children }: { children: React.ReactNode }) => (
 export const AsSite = ({ children }: { children: React.ReactNode }) => (
   <In of="site">{children}</In>
 );
+
+/** The page with the owner's tools around it, as the public layout mounts it.
+ *  `tools` is the owner chrome (an element taking the page as its children):
+ *  it formats in the creator's language, the page inside it in the site's, and
+ *  every SitePreview in the tools shows the site's too (SiteLocaleBoundary, as
+ *  in the studio). */
+export function OwnerFrame({
+  creator,
+  site,
+  tools,
+  children,
+}: {
+  creator: string;
+  site: string;
+  tools: React.ReactElement<{ children?: React.ReactNode }>;
+  children: React.ReactNode;
+}) {
+  return (
+    <OwnerLocales creator={creator} site={site}>
+      <SiteLocaleBoundary locale={site}>
+        <AsCreator>
+          {cloneElement(tools, undefined, <AsSite>{children}</AsSite>)}
+        </AsCreator>
+      </SiteLocaleBoundary>
+    </OwnerLocales>
+  );
+}

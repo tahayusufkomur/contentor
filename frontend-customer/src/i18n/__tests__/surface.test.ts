@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { namespacesFor, surfaceOf } from "../surface";
+import {
+  CREATOR_LOCALE_COOKIE,
+  creatorLocale,
+  namespacesFor,
+  surfaceOf,
+} from "../surface";
 
 describe("surfaceOf", () => {
   it("studio paths follow the creator", () => {
@@ -35,4 +40,20 @@ describe("namespacesFor", () => {
   });
   it("the public site never loads the owner tools' content", () =>
     expect(namespacesFor("site").site).not.toContain("blocks"));
+});
+
+describe("creatorLocale", () => {
+  it("reads the creator's cookie by its name, whoever holds the cookies", () => {
+    const asked: string[] = [];
+    creatorLocale((n) => {
+      asked.push(n);
+      return undefined;
+    });
+    expect(asked).toEqual(["user-locale"]);
+    expect(CREATOR_LOCALE_COOKIE).toBe("user-locale");
+  });
+  it("falls back to English without it or with an unknown language", () => {
+    expect(creatorLocale(() => undefined)).toBe("en");
+    expect(creatorLocale(() => "xx")).toBe("en");
+  });
 });

@@ -8,7 +8,11 @@ import {
 
 import { getAuthUser } from "@/lib/auth";
 import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
-import { namespacesFor, surfaceOf } from "./surface";
+import {
+  creatorLocale as readCreatorLocale,
+  namespacesFor,
+  surfaceOf,
+} from "./surface";
 
 type Messages = Record<string, unknown>;
 
@@ -48,7 +52,7 @@ export default getRequestConfig(async () => {
   const surface = surfaceOf(h.get("x-pathname") || "", h.get("x-embed"), role);
   const config = await fetchTenantConfig(await getTenantSlug());
   const siteLocale = resolveLocale(config?.default_locale);
-  const creatorLocale = resolveLocale(cookieStore.get("user-locale")?.value);
+  const creatorLocale = readCreatorLocale((n) => cookieStore.get(n)?.value);
 
   const ns = namespacesFor(surface);
   const [creator, site] = await Promise.all([

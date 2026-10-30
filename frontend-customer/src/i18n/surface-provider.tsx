@@ -4,8 +4,9 @@ import { resolveLocale } from "@shared/i18n/locales";
 import { SiteLocaleBoundary } from "@shared/i18n/site-preview";
 
 import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
-import { OwnerLocales } from "./creator-scope";
+import { OwnerFrame } from "./creator-scope";
 import { IntlProvider } from "./provider";
+import { creatorLocale } from "./surface";
 
 /** One per surface layout (admin, setup, public, student, auth): crossing
  *  surfaces by a client-side navigation mounts a new one, so the language
@@ -35,16 +36,22 @@ export async function StudioSiteLocale({
 }
 
 /** The public site with the owner's tools on it (site+owner, see surface.ts):
- *  the page speaks the site's language and AsCreator/AsSite say where the
- *  creator's formats apply. Her language is read as request.ts reads it. */
-export async function OwnerIntl({ children }: { children: React.ReactNode }) {
+ *  the page speaks the site's language, the tools the creator's formats. */
+export async function OwnerIntl({
+  tools,
+  children,
+}: {
+  tools: React.ReactElement<{ children?: React.ReactNode }>;
+  children: React.ReactNode;
+}) {
   const [site, cookieStore] = await Promise.all([getLocale(), cookies()]);
   return (
-    <OwnerLocales
-      creator={resolveLocale(cookieStore.get("user-locale")?.value)}
+    <OwnerFrame
+      creator={creatorLocale((n) => cookieStore.get(n)?.value)}
       site={site}
+      tools={tools}
     >
       {children}
-    </OwnerLocales>
+    </OwnerFrame>
   );
 }

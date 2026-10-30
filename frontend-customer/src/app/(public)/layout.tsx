@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getAuthUser } from "@/lib/auth";
 import { OwnerIntl, SurfaceIntl } from "@/i18n/surface-provider";
-import { AsCreator, AsSite } from "@/i18n/creator-scope";
+import { AsCreator } from "@/i18n/creator-scope";
 import { setupFlowActive } from "@/app/setup/gate";
 import { PublicFooter } from "@/components/shared/public-footer";
 import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
@@ -91,13 +91,11 @@ export default async function PublicLayout({
   if (isAdmin && config) {
     return (
       <SurfaceIntl>
-        <OwnerIntl>
-          {/* The tools count and date in the creator's language, the page in the site's. */}
-          <AsCreator>
-            <EditSidebar initialConfig={config} embedded={editing}>
-              <AsSite>{content}</AsSite>
-            </EditSidebar>
-          </AsCreator>
+        {/* The tools count and date in the creator's language, the page in the site's. */}
+        <OwnerIntl
+          tools={<EditSidebar initialConfig={config} embedded={editing} />}
+        >
+          {content}
         </OwnerIntl>
       </SurfaceIntl>
     );

@@ -79,7 +79,7 @@ export function CardBundleProvider({ children }: { children: ReactNode }) {
  * is presentation. The coach's own attached photos never get this (their
  * photo appearing out of a "generating" state would read as nonsense). */
 function CardPhoto({ card }: { card: ActionCardData }) {
-  const t = useTranslations("student.copilot");
+  const t = useTranslations("admin.copilot");
   const [held, setHeld] = useState(Boolean(card.reveal));
   const [loaded, setLoaded] = useState(false);
   useEffect(() => {
@@ -166,7 +166,7 @@ export function ActionCard({
   /** Called once the action is applied, with what the server returned. */
   onApplied?: (result: ExecuteResult) => void;
 }) {
-  const t = useTranslations("student.copilot");
+  const t = useTranslations("admin.copilot");
   const tAdmin = useTranslations("admin");
   const router = useRouter();
   const navigate = useNavigate();
@@ -387,7 +387,7 @@ export function ActionCard({
  * retry it individually; this bar reports the aggregate outcome as a single
  * toast, since no per-card toast fires on the bundle path. */
 export function ApplyAllBar() {
-  const t = useTranslations("student.copilot");
+  const t = useTranslations("admin.copilot");
   const bundle = useContext(CardBundleContext);
   // Re-render whenever a card (un)registers, so the bar unmounts as soon as
   // fewer than 2 proposed cards remain instead of staying clickable after

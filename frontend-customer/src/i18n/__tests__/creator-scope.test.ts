@@ -8,9 +8,12 @@ import {
 } from "next-intl";
 import { describe, expect, it } from "vitest";
 import adminEn from "../../../messages/en/admin.json";
+import studentEn from "../../../messages/en/student.json";
 import adminPl from "../../../messages/pl/admin.json";
 import siteEn from "../../../../packages/shared/src/i18n/messages/en/site.json";
-import { AsCreator, AsSite, OwnerLocales } from "../creator-scope";
+import sitePl from "../../../../packages/shared/src/i18n/messages/pl/site.json";
+import { SitePreview } from "@shared/i18n/site-preview";
+import { AsCreator, AsSite, OwnerFrame, OwnerLocales } from "../creator-scope";
 
 const Provider = NextIntlClientProvider as FC<{
   locale: string;
@@ -128,5 +131,100 @@ describe("owner chrome left on the page's own provider", () => {
   ])("%s has only plain messages", (_name, messages) => {
     for (const text of Object.values(messages))
       expect(text).not.toMatch(FORMATTED);
+  });
+});
+
+// OwnerFrame is the composition the public layout mounts: the owner's tools
+// around the page. `Chrome` stands in for EditSidebar: it takes the page as its
+// children, like the real one.
+function SiteLine({ count }: { count: number }) {
+  return createElement(
+    "i",
+    null,
+    useTranslations("site.course")("lessons", { count }),
+  );
+}
+function Copilot({ count }: { count: number }) {
+  const t = useTranslations("admin.copilot");
+  return createElement(
+    "b",
+    null,
+    `${t("title")} | ${t("appliedAll", { count })}`,
+  );
+}
+function Chrome({ children }: { children?: ReactNode }) {
+  return createElement(
+    "div",
+    null,
+    createElement(Copilot, { count: 2 }),
+    createElement(
+      "section",
+      null,
+      createElement(SitePreview, null, createElement(SiteLine, { count: 2 })),
+    ),
+    createElement("main", null, children),
+  );
+}
+const Frame = OwnerFrame as FC<{
+  creator: string;
+  site: string;
+  tools: React.ReactElement;
+  children?: ReactNode;
+}>;
+const frame = (
+  creator: string,
+  site: string,
+  messages: Record<string, unknown>,
+) =>
+  renderToStaticMarkup(
+    createElement(
+      Provider,
+      { locale: site, timeZone: "UTC", messages },
+      createElement(
+        Frame,
+        { creator, site, tools: createElement(Chrome) },
+        createElement(SiteLine, { count: 2 }),
+      ),
+    ),
+  );
+
+describe("OwnerFrame, the page as the layout composes it", () => {
+  // A Polish site and an English creator: `lessons` has few (2 lekcje) and other (2 lekcji).
+  const html = () => frame("en", "pl", { admin: adminEn, site: sitePl });
+
+  it("a preview of what visitors see inside the tools follows the site's rules", () => {
+    expect(html()).toMatch(/<section><div[^>]*><i>2 lekcje<\/i>/);
+  });
+  it("the page inside the tools follows the site's rules", () => {
+    expect(html()).toMatch(/<main><div[^>]*><i>2 lekcje<\/i>/);
+  });
+});
+
+describe("the copilot speaks the creator's language", () => {
+  // A Polish creator on an English site: `admin` in Polish, `site` in English.
+  const html = () => frame("pl", "en", { admin: adminPl, site: siteEn });
+
+  it("wording and the plural of appliedAll (few, many) are Polish", () => {
+    const [few, many] = [2, 5].map((count) =>
+      renderToStaticMarkup(
+        createElement(
+          Provider,
+          { locale: "en", timeZone: "UTC", messages: { admin: adminPl } },
+          createElement(
+            Owner,
+            { creator: "pl", site: "en" },
+            createElement(Creator, null, createElement(Copilot, { count })),
+          ),
+        ),
+      ),
+    );
+    expect(few).toContain("Twój asystent AI");
+    expect(few).toMatch(/Zastosowano 2 zmiany/);
+    expect(many).toMatch(/Zastosowano 5 zmian/);
+    expect(html()).toContain("Twój asystent AI");
+  });
+  it("no copilot wording is left in the site-language namespace", () => {
+    expect(Object.keys(studentEn)).not.toContain("copilot");
+    expect(Object.keys(adminEn)).toContain("copilot");
   });
 });

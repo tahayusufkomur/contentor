@@ -1,6 +1,18 @@
 // Which language a request speaks. The creator studio follows the creator;
 // everything a visitor sees follows the site.
 
+import { resolveLocale } from "@shared/i18n/locales";
+
+/** The creator's own language, set by the language switcher. */
+export const CREATOR_LOCALE_COOKIE = "user-locale";
+
+/** The creator's language from whatever reads cookies (the server's cookie
+ *  store, or `document.cookie` in the browser): one place, so the words and
+ *  their formats cannot come from different reads. */
+export function creatorLocale(read: (name: string) => string | undefined) {
+  return resolveLocale(read(CREATOR_LOCALE_COOKIE));
+}
+
 export type Surface = "studio" | "site+owner" | "site";
 
 export function surfaceOf(

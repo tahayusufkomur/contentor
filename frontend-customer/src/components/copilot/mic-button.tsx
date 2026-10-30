@@ -5,7 +5,8 @@ import { useTranslations } from "next-intl";
 import { Mic } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { ogLocale, resolveLocale } from "@shared/i18n/locales";
+import { ogLocale } from "@shared/i18n/locales";
+import { creatorLocale } from "@/i18n/surface";
 
 // The bits of the Web Speech API we use; TS's DOM lib doesn't ship them.
 interface Recognition {
@@ -26,8 +27,9 @@ interface Recognition {
 /** The creator speaks their own language, whatever language the page is in
  *  (the copilot also sits on the public site). `user-locale` is readable. */
 function dictationLang(): string {
-  const cookie = document.cookie.match(/(?:^|; )user-locale=([^;]*)/)?.[1];
-  return ogLocale(resolveLocale(cookie)).replace("_", "-");
+  const read = (name: string) =>
+    document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`))?.[1];
+  return ogLocale(creatorLocale(read)).replace("_", "-");
 }
 
 function recognitionCtor(): (new () => Recognition) | undefined {
@@ -51,7 +53,7 @@ export function MicButton({
   disabled?: boolean;
   className?: string;
 }) {
-  const t = useTranslations("student.copilot");
+  const t = useTranslations("admin.copilot");
   const [supported, setSupported] = useState(false);
   const [listening, setListening] = useState(false);
   const recRef = useRef<Recognition | null>(null);

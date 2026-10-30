@@ -43,7 +43,7 @@ export function CopilotComposer({
   onAttach: (photo: AttachedPhoto) => void;
   onRemoveAttachment: (id: string) => void;
 }) {
-  const t = useTranslations("student.copilot");
+  const t = useTranslations("admin.copilot");
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [uploading, setUploading] = useState(false);
   // The placeholder follows whoever answers next (the team panel's pick), so
