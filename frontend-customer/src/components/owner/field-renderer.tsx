@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { dyn } from "@/i18n/dynamic";
 import { Input } from "@/components/ui/input";
 import { clientFetch } from "@/lib/api-client";
 import { Label } from "@/components/ui/label";
@@ -450,6 +451,11 @@ function RepeaterField({ field, value, onChange }: FieldRendererProps) {
   const items: Record<string, any>[] = Array.isArray(value) ? value : [];
   const itemFields = field.itemFields ?? [];
   const atMax = field.maxItems !== undefined && items.length >= field.maxItems;
+  // One whole message per kind of row ("Add testimonial"): the noun's case
+  // belongs to the sentence, so the row's label is never put inside one.
+  const addKey = dyn(tr, `addItem.${field.itemKind}`);
+  const addItemLabel =
+    field.itemKind && tr.has(addKey) ? tr(addKey) : tr("addItemGeneric");
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const update = (i: number, patch: Record<string, any>) =>
@@ -524,10 +530,7 @@ function RepeaterField({ field, value, onChange }: FieldRendererProps) {
         disabled={atMax}
         className="flex w-full items-center justify-center gap-1.5 rounded border border-dashed py-2 text-xs text-muted-foreground transition-colors hover:border-foreground hover:text-foreground disabled:opacity-40"
       >
-        <Plus className="h-3.5 w-3.5" />{" "}
-        {tr("addItem", {
-          name: field.itemLabel?.toLowerCase() ?? tr("addDefault"),
-        })}
+        <Plus className="h-3.5 w-3.5" /> {addItemLabel}
       </button>
     </div>
   );

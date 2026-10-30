@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { X, LayoutTemplate, Save, Trash2, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEditorStore } from "./canvas/editor-store";
-import { templatesForPage } from "@/lib/blocks/page-templates";
+import { useBlockLibrary } from "@/lib/blocks/use-block-library";
 import type { Block, PageKey, PageTemplate } from "@/types/tenant";
 
 interface TemplateGalleryProps {
@@ -28,7 +28,11 @@ export function TemplateGallery({
 }: TemplateGalleryProps) {
   const tr = useTranslations("admin.owner.templates");
   const store = useEditorStore();
-  const builtIns = templatesForPage(pageKey);
+  const library = useBlockLibrary();
+  const builtIns = useMemo(
+    () => library.templatesFor(pageKey),
+    [library, pageKey],
+  );
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [name, setName] = useState("");
 

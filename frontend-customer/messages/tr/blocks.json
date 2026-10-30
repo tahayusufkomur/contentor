@@ -1,0 +1,881 @@
+{
+  "default": {
+    "hero": {
+      "heading": "Hoş geldin",
+      "subheading": "Kısa ve etkileyici bir slogan.",
+      "ctaText": "Başla"
+    },
+    "richText": {
+      "heading": "Başlık"
+    },
+    "imageText": {
+      "heading": "Başlık"
+    },
+    "gallery": {
+      "heading": "Galeri"
+    },
+    "testimonials": {
+      "heading": "Öğrenciler ne diyor"
+    },
+    "faq": {
+      "heading": "Sıkça sorulan sorular"
+    },
+    "cta": {
+      "heading": "Başlamaya hazır mısın?",
+      "buttonText": "Şimdi katıl"
+    },
+    "logos": {
+      "heading": "Basında"
+    },
+    "banner": {
+      "text": "Duyuru"
+    },
+    "contact": {
+      "heading": "İletişime geç",
+      "intro": "Bir sorun mu var? Bize bir mesaj gönder.",
+      "submitLabel": "Mesaj gönder",
+      "successMessage": "Teşekkürler! Yakında sana geri döneceğiz."
+    },
+    "courseGrid": {
+      "heading": "Kurslar"
+    },
+    "pricingPlans": {
+      "heading": "Planlar & Fiyatlandırma"
+    },
+    "upcomingEvents": {
+      "heading": "Yaklaşan etkinlikler"
+    },
+    "storeProducts": {
+      "heading": "Mağaza"
+    }
+  },
+  "section": {
+    "hero": {
+      "headline": "Neler sunduğunu anlatan bir başlık",
+      "subhead": "Kimin için olduğunu ve onlar için nelerin değiştiğini anlatan tek bir cümle.",
+      "ctaLabel": "Kursları keşfet"
+    },
+    "story": {
+      "heading": "Merhaba, burada olmana sevindim",
+      "body": "Ziyaretçilere nasıl başladığını, kimlerle çalıştığını ve seninle bir oturumun nasıl hissettirdiğini anlat."
+    },
+    "benefits": {
+      "heading": "Neler kazanacaksın",
+      "items": [
+        {
+          "title": "İlk fayda",
+          "text": "Öğrencilerin için nelerin değiştiği."
+        },
+        {
+          "title": "İkinci fayda",
+          "text": "Öğrencilerin için nelerin değiştiği."
+        },
+        {
+          "title": "Üçüncü fayda",
+          "text": "Öğrencilerin için nelerin değiştiği."
+        }
+      ]
+    },
+    "courseShowcase": {
+      "heading": "Kurslar",
+      "ctaLabel": "Tüm kursları gör"
+    },
+    "howItWorks": {
+      "heading": "Nasıl çalışır",
+      "steps": [
+        {
+          "title": "Seç",
+          "text": "Sana uyan kursu veya oturumu seç."
+        },
+        {
+          "title": "Katıl",
+          "text": "Kendi hızında veya benimle canlı öğren."
+        },
+        {
+          "title": "Geliş",
+          "text": "Pratik yap, sorular sor ve ilerlemeyi gör."
+        }
+      ]
+    },
+    "philosophy": {
+      "statement": "Kendi sözlerinle, işin hakkında inandığın bir cümle."
+    },
+    "moments": {
+      "heading": "Anlar"
+    },
+    "pricing": {
+      "heading": "Üyelik"
+    },
+    "faq": {
+      "heading": "Sorular, yanıtlar",
+      "items": [
+        {
+          "q": "Bu kimin için?",
+          "a": "Kimlerle çalıştığını anlat."
+        },
+        {
+          "q": "Deneyime ihtiyacım var mı?",
+          "a": "Yeni başlayan birinin neye ihtiyacı olduğunu söyle."
+        },
+        {
+          "q": "Nasıl başlarım?",
+          "a": "İlk adımı açıkla."
+        }
+      ]
+    },
+    "cta": {
+      "heading": "Başlamaya hazır mısın?",
+      "ctaLabel": "Hemen başla"
+    },
+    "contact": {
+      "heading": "İletişime geç",
+      "text": "Bir kurs veya oturum hakkında soruların mı var? Mesaj gönder."
+    },
+    "events": {
+      "heading": "Yaklaşan oturumlar",
+      "ctaLabel": "Takvimi gör"
+    },
+    "proof": {
+      "heading": "Kendi sözleriyle"
+    },
+    "statement": {
+      "statement": "İnandığın bir cümle."
+    }
+  },
+  "example": {
+    "generic": {
+      "hero": {
+        "heading": "En iyilerden öğren",
+        "subheading": "Kendi hızında gelişmene yardımcı olacak pratik, adım adım dersler.",
+        "ctaText": "Programlara göz at"
+      },
+      "richText": {
+        "heading": "Neden benimle öğrenmelisin?",
+        "body": "Tahminlerle vakit kaybetmeden gerçek bir ilerleme kaydedebilmen için basit, kanıtlanmış bir yaklaşımı geliştirmeye yıllarımı verdim. Her ders bir öncekinin üzerine inşa edilir — net, pratik ve her seviyeye uygun."
+      },
+      "imageText": {
+        "heading": "Hakkımda",
+        "body": "Merhaba, ben eğitmenin. Yüzlerce öğrencide işe yarayanları paylaşmak — ve her adımda rehberlikle hedefine daha hızlı ulaşmana yardımcı olmak için bu kursları oluşturdum."
+      },
+      "testimonials": {
+        "heading": "Öğrenciler ne diyor",
+        "items": [
+          {
+            "name": "Alex R.",
+            "text": "Net, temposu iyi ayarlanmış ve gerçekten faydalı. Sonunda her hafta ilerleme kaydettiğimi hissediyorum."
+          },
+          {
+            "name": "Jordan M.",
+            "text": "Dersleri takip etmek kolay ve sonuçlar kendini gösteriyor. Kesinlikle tavsiye ederim."
+          },
+          {
+            "name": "Sam T.",
+            "text": "Özel bir oturum gibi hissettirdi. Her dersteki detay ve özen tüm farkı yaratıyor."
+          }
+        ]
+      },
+      "faq": {
+        "heading": "Sıkça sorulan sorular",
+        "items": [
+          {
+            "q": "Bu yeni başlayanlar için uygun mu?",
+            "a": "Kesinlikle. Her program temel bilgilerle başlar ve uyarlamalar içerir; böylece her seviyeden başlayabilir ve kendi hızında ilerleyebilirsin."
+          },
+          {
+            "q": "Özel bir ekipmana ihtiyacım var mı?",
+            "a": "Hayır — zaten sahip olduklarınla başlayabilirsin. İsteğe bağlı ekstralar ilgili derslerde belirtilmiştir."
+          },
+          {
+            "q": "Kurslara mobilden erişebilir miyim?",
+            "a": "Evet! Platform tamamen mobil uyumludur. Dersleri telefonunda, tabletinde veya bilgisayarında izle — her yerde öğrenmek için mükemmel."
+          }
+        ]
+      },
+      "cta": {
+        "heading": "Başlamaya hazır mısın?",
+        "buttonText": "Şimdi katıl"
+      },
+      "stats": {
+        "heading": "Öğrenenlerin güvendiği",
+        "items": [
+          {
+            "value": "500+",
+            "label": "Öğrenci"
+          },
+          {
+            "value": "30+",
+            "label": "Saatlik video"
+          },
+          {
+            "value": "4.9★",
+            "label": "Ortalama puan"
+          }
+        ]
+      },
+      "banner": {
+        "text": "Yeni kurslar eklendi — bugün öğrenmeye başla.",
+        "linkText": "Programlara göz at"
+      },
+      "contact": {
+        "heading": "İletişime geç",
+        "intro": "Bir sorun mu var veya birlikte çalışmak mı istiyorsun? Bir mesaj gönder, sana en kısa sürede geri döneyim."
+      },
+      "gallery": {
+        "heading": "İçeriden bir görünüm"
+      },
+      "logos": {
+        "heading": "Yer aldığımız mecralar"
+      },
+      "video": {
+        "heading": "Hızlı bir tanıtım izle"
+      },
+      "courseGrid": {
+        "heading": "Programları keşfet"
+      },
+      "pricingPlans": {
+        "heading": "Planlar & fiyatlandırma",
+        "subheading": "Şu an bulunduğun noktaya uyan planı seç — istediğin zaman yükselt."
+      },
+      "upcomingEvents": {
+        "heading": "Yaklaşan canlı oturumlar"
+      },
+      "storeProducts": {
+        "heading": "Mağazadan"
+      }
+    },
+    "yoga": {
+      "hero": {
+        "heading": "Yoga ile Dengeni Bul",
+        "subheading": "Rehberli yoga pratikleriyle bedenini ve zihnini dönüştür — ister tamamen yeni başlıyor ol ister deneyimli bir yogi.",
+        "ctaText": "Programlara Göz At"
+      },
+      "richText": {
+        "heading": "Neden Benimle Pratik Yapmalısın?",
+        "body": "Her ders, kendi hızında istikrarlı bir pratik geliştirebilmen için bilinçli nefes çalışmalarını güvenli ve net hizalanmalarla harmanlar. Matını ser ve birlikte daha güçlü, daha sakin olalım."
+      },
+      "imageText": {
+        "heading": "Hakkımda",
+        "body": "Hatha, Vinyasa ve Ashtanga geleneklerinde 12 yılı aşkın eğitmenlik deneyimine sahip sertifikalı yoga eğitmeni. Yoganın bir kendini keşfetme yolculuğu olduğuna inanıyorum — matın üzerinde kendinle şefkat, nefes ve niyetle buluşmak."
+      },
+      "testimonials": {
+        "heading": "Öğrenciler Ne Diyor",
+        "items": [
+          {
+            "name": "Priya R.",
+            "text": "Bu dersler hayatımı değiştirdi. Başlangıç kursu bana sağlam bir temel kazandırdı ve artık her sabah işten önce pratik yapıyorum. Esnekliğim ve odaklanmam çok gelişti."
+          },
+          {
+            "name": "Sarah L.",
+            "text": "Vinyasa Flow kursu harika bir şekilde yapılandırılmış. Her ders bir öncekinin üzerine inşa ediliyor ve yönlendirmeler o kadar net ki sınırlarımı zorlarken kendimi her zaman güvende hissediyorum."
+          },
+          {
+            "name": "Marcus T.",
+            "text": "Yogayı çevrim içi öğrenme konusunda şüpheciydim ama video kalitesi ve detaylı hizalanma talimatları sayesinde sanki özel bir oturumdaymış gibi hissettirdi. Kesinlikle tavsiye ederim!"
+          }
+        ]
+      },
+      "faq": {
+        "heading": "Sıkça Sorulan Sorular",
+        "items": [
+          {
+            "q": "Yogaya başlamak için esnek olmam gerekir mi?",
+            "a": "Kesinlikle hayır! Esneklik yoganın bir ön koşulu değil, sonucudur. Başlangıç seviyesi kursumuz, her seviyede güvenle pratik yapabilmen için nazik hareketler ve uyarlamalarla başlar."
+          },
+          {
+            "q": "Hangi ekipmanlara ihtiyacım var?",
+            "a": "Bir yoga matı önerilir ancak zorunlu değildir. Belirli pozlar için bloklar ve bir kemer de yardımcı olabilir. Rahat hareket etmeni sağlayan konforlu kıyafetler giy."
+          },
+          {
+            "q": "Kurslara mobilden erişebilir miyim?",
+            "a": "Evet! Platform tamamen duyarlıdır. Dersleri telefonundan, tabletinden veya bilgisayarından izleyebilirsin — her yerde pratik yapmak için mükemmel."
+          }
+        ]
+      },
+      "cta": {
+        "heading": "Yolculuğuna Başlamaya Hazır mısın?",
+        "buttonText": "Hemen Katıl"
+      },
+      "stats": {
+        "heading": "Pratiğe Katıl",
+        "items": [
+          {
+            "value": "500+",
+            "label": "Öğrenciler"
+          },
+          {
+            "value": "40+",
+            "label": "Rehberli dersler"
+          },
+          {
+            "value": "4.9★",
+            "label": "Ortalama değerlendirme"
+          }
+        ]
+      },
+      "banner": {
+        "text": "Yeni başlangıç serisi az önce eklendi — pratiğine bugün başla.",
+        "linkText": "Programlara göz at"
+      }
+    },
+    "pilates": {
+      "hero": {
+        "heading": "Pilates ile Bedenini Dönüştür",
+        "subheading": "Bilinçli ve kontrollü hareketlerle merkez bölgeni güçlendir, esnekliğini artır ve güvenle hareket et.",
+        "ctaText": "Programlara Göz At"
+      },
+      "richText": {
+        "heading": "Neden Benimle Antrenman Yapmalısın?",
+        "body": "Hassas ve kontrollü hareket her seansın merkezinde yer alır. İlk olarak forma odaklanırız, böylece güçlü ve dengeli bir vücudu güvenle inşa edersin — spor salonu yok, reformer yok, yalnızca bir mat ve biraz kararlılık."
+      },
+      "imageText": {
+        "heading": "Hakkımda",
+        "body": "Mat ve reformer pilates alanında 12 yılı aşkın deneyime sahip sertifikalı pilates eğitmeni. Hassas ve kontrollü hareketlerle her kondisyon seviyesinden insanın güçlü ve dengeli bir vücut inşa etmesine yardımcı olma konusunda uzmanım — spor salonu gerekmez, yalnızca bir mat ve kararlılık."
+      },
+      "testimonials": {
+        "heading": "Öğrenciler Ne Diyor",
+        "items": [
+          {
+            "name": "Clara D.",
+            "text": "Yalnızca dört haftanın ardından duruşum belirgin şekilde düzeldi. Dersler net, temposu iyi ayarlanmış ve her kasın düzgün bir şekilde çalıştığını hissedebiliyorum."
+          },
+          {
+            "name": "Marco T.",
+            "text": "Çevrim içi pilates konusunda şüpheciydim ama ayrıntılı yönlendirmeler ve kamera açıları sayesinde sanki özel bir seanstaymışım gibi hissettiriyor. Sırt ağrım sonunda geçti!"
+          },
+          {
+            "name": "Hana Y.",
+            "text": "Full Body Sculpt kursu beni en iyi şekilde zorladı. Kendimi daha güçlü, daha esnek hissediyorum ve her antrenmanı gerçekten iple çekiyorum."
+          }
+        ]
+      },
+      "faq": {
+        "heading": "Sıkça Sorulan Sorular",
+        "items": [
+          {
+            "q": "Herhangi bir ekipmana ihtiyacım var mı?",
+            "a": "Tüm kurslarımız mat temellidir. Yalnızca bir yoga veya pilates matına ve uzanıp kollarını açabileceğin kadar alana ihtiyacın var. Direnç bandı gibi isteğe bağlı ekipmanlar ilgili derslerde belirtilmiştir."
+          },
+          {
+            "q": "Pilates yeni başlayanlar için uygun mu?",
+            "a": "Kesinlikle! Pilates Fundamentals kursu nefes, hizalanma ve temel hareketlerle sıfırdan başlar. Önceden deneyim gerekmez."
+          },
+          {
+            "q": "Kurslara mobil cihazlardan erişebilir miyim?",
+            "a": "Evet! Platform tamamen duyarlıdır. Dersleri telefonunda, tabletinde veya bilgisayarında izleyebilirsin — her yerde pratik yapmak için mükemmel."
+          }
+        ]
+      },
+      "cta": {
+        "heading": "Daha Güçlü Hissetmeye Hazır mısın?",
+        "buttonText": "Hemen Katıl"
+      },
+      "stats": {
+        "heading": "Özgüvenle Hareket Et",
+        "items": [
+          {
+            "value": "500+",
+            "label": "Öğrenci"
+          },
+          {
+            "value": "30+",
+            "label": "Saat video"
+          },
+          {
+            "value": "4.9★",
+            "label": "Ortalama puan"
+          }
+        ]
+      },
+      "banner": {
+        "text": "Yeni mat temelli programlar eklendi — evde güç kazan.",
+        "linkText": "Programlara göz at"
+      }
+    },
+    "fitness": {
+      "hero": {
+        "heading": "Vücudunu Dönüştür, Yaşamını Yükselt",
+        "subheading": "Güç inşa etmek, yağ yakmak ve özgüvenini artırmak için bilime dayalı programlar — uzman liderliğindeki video antrenmanlarıyla dilediğin yerde antrenman yap.",
+        "ctaText": "Programlara Göz At"
+      },
+      "richText": {
+        "heading": "Daha Çok Değil, Daha Akıllıca Antrenman Yap",
+        "body": "Her program kanıtlanmış ilkelere dayanır — fonksiyonel antrenman, HIIT ve akıllı güç ilerlemesi. Net form açıklamalarını takip et ve profesyonel düzeyde sonuçları erişilebilir kıl; spor salonu gerekmez."
+      },
+      "imageText": {
+        "heading": "Hakkımda",
+        "body": "8 yılı aşkın koçluk deneyimine sahip sertifikalı kişisel antrenör ve spor bilimleri mezunu. Her kondisyon seviyesi için fonksiyonel antrenman, HIIT ve güç programlaması konularında uzmanım. Misyonum, profesyonel düzeyde antrenmanı herkes için erişilebilir kılmaktır — spor salonu gerekmez."
+      },
+      "testimonials": {
+        "heading": "Öğrenciler Ne Diyor",
+        "items": [
+          {
+            "name": "Marcus T.",
+            "text": "Total Body Transformation programı rutinimi tamamen değiştirdi. Üç ayda 12 kilo verdim ve kendimi hiç olmadığım kadar güçlü hissediyorum. Yapılandırılmış yaklaşım her gün disiplinli kalmamı sağladı."
+          },
+          {
+            "name": "Sarah L.",
+            "text": "Yoğun bir anne olarak evde yapabileceğim antrenmanlara ihtiyacım vardı. HIIT Power Programı programıma tam uyuyor — 30 dakika, maksimum sonuç. Artık çok daha fazla enerjim var!"
+          },
+          {
+            "name": "David K.",
+            "text": "Strength & Conditioning kursu bana eksikliğini hissettiğim temeli kazandırdı. Kaldırdığım ağırlıklar belirgin şekilde gelişti ve nihayet doğru formu ve programlamayı anlıyorum."
+          }
+        ]
+      },
+      "faq": {
+        "heading": "Sıkça Sorulan Sorular",
+        "items": [
+          {
+            "q": "Herhangi bir ekipmana ihtiyacım var mı?",
+            "a": "Total Body Transformation kursu hiçbir ekipman gerektirmez — yalnızca kendi vücut ağırlığın yeterli. HIIT ve Strength programları dambıl ve direnç bandı önerir, ancak her zaman vücut ağırlığı alternatiflerini de gösteriyoruz."
+          },
+          {
+            "q": "Tamamen yeni başlayan biriyim — bu bana uygun mu?",
+            "a": "Kesinlikle! Her program, tüm egzersizler için form analizlerini ve başlangıç seviyesine uygun modifikasyonları içerir. Ücretsiz Total Body Transformation kursuyla başla ve kendi hızında ilerle."
+          },
+          {
+            "q": "Antrenmanlara telefonumdan erişebilir miyim?",
+            "a": "Evet! Platform tamamen mobil uyumludur. Dersleri telefonundan, tabletinden veya bilgisayarından izle — evde, spor salonunda veya seyahat ederken antrenman yapmak için mükemmel."
+          }
+        ]
+      },
+      "cta": {
+        "heading": "Antrenmana Başlamaya Hazır mısın?",
+        "buttonText": "Hemen Katıl"
+      },
+      "stats": {
+        "heading": "Katlanarak Artan Sonuçlar",
+        "items": [
+          {
+            "value": "10k+",
+            "label": "Tamamlanan antrenmanlar"
+          },
+          {
+            "value": "50+",
+            "label": "Video oturumları"
+          },
+          {
+            "value": "4.9★",
+            "label": "Ortalama puan"
+          }
+        ]
+      },
+      "banner": {
+        "text": "Yeni HIIT programı az önce çıktı — her yerde, her zaman antrenman yap.",
+        "linkText": "Programlara göz at"
+      }
+    },
+    "faceYoga": {
+      "hero": {
+        "heading": "Yüz Yogası ile Doğal Güzellik",
+        "subheading": "Günlük basit egzersizlerle yüzünü sıkılaştır, toparla ve gençleştir — enjeksiyon yok, ürün yok, günde sadece birkaç dakika.",
+        "ctaText": "Programlara Göz At"
+      },
+      "richText": {
+        "heading": "Günde Birkaç Dakika",
+        "body": "Doğal yüz gençleştirmenin temeli istikrardır. Bu kısa ve hedefe yönelik rutinler yalnızca ellerini ve kendi kaslarını kullanır — sabahına sığdırabileceğin kadar basit, farkı görüp hissetmeni sağlayacak kadar etkilidir."
+      },
+      "imageText": {
+        "heading": "Hakkımda",
+        "body": "6 yılı aşkın deneyime sahip sertifikalı yüz yogası eğitmeni ve bütünsel yaşam koçu. Kendi cildimdeki çarpıcı sonuçları gördükten sonra kariyerimi, herkesin evde uygulayabileceği doğal yüz gençleştirme tekniklerini öğretmeye adadım."
+      },
+      "testimonials": {
+        "heading": "Öğrenciler Ne Diyor",
+        "items": [
+          {
+            "name": "Sarah W.",
+            "text": "Basics kursunun sadece üç haftasından sonra çene çizgim gözle görülür şekilde daha belirginleşti. Bu kadar basit bir şeyin gerçekten işe yaradığına inanamıyorum!"
+          },
+          {
+            "name": "Mei C.",
+            "text": "Anti-Aging Routines kursu artık benim günlük ritüelim. Alın çizgilerim yumuşadı ve cildim çok daha toparlanmış ve ışıltılı görünüyor."
+          },
+          {
+            "name": "Astrid N.",
+            "text": "Sculpt & Tone bana sahip olduğumu bile bilmediğim elmacık kemikleri kazandırdı! Hedefe yönelik egzersizler o kadar etkili ve günde sadece on dakika sürüyor."
+          }
+        ]
+      },
+      "faq": {
+        "heading": "Sıkça Sorulan Sorular",
+        "items": [
+          {
+            "q": "Sonuçları ne kadar sürede görürüm?",
+            "a": "Öğrencilerin çoğu, 2-3 haftalık günlük pratikten sonra hafif değişiklikler fark eder. Daha belirgin bir toparlanma ve sıkılaşma ise genellikle 6-8 haftalık düzenli çalışmanın ardından görülür."
+          },
+          {
+            "q": "Herhangi bir ekipmana ihtiyacım var mı?",
+            "a": "Hiçbir ekipmana gerek yok! Tüm egzersizlerde kendi ellerini ve yüz kaslarını kullanırsın. Formunu kontrol edebilmen için bir ayna faydalı olur, ancak ihtiyacın olan tek şey bu."
+          },
+          {
+            "q": "Kurslara mobilden erişebilir miyim?",
+            "a": "Evet! Platform tamamen duyarlıdır. Dersleri telefonunda, tabletinde veya bilgisayarında izleyebilirsin — sabah rutinin sırasında takip etmek için mükemmel."
+          }
+        ]
+      },
+      "cta": {
+        "heading": "Yüzünü Doğal Yollarla Dönüştürmeye Hazır mısın?",
+        "buttonText": "Şimdi Katıl"
+      },
+      "stats": {
+        "heading": "Doğal Olarak Işıltılı",
+        "items": [
+          {
+            "value": "2k+",
+            "label": "Öğrenciler"
+          },
+          {
+            "value": "5 dk",
+            "label": "Günlük rutin"
+          },
+          {
+            "value": "4.9★",
+            "label": "Ortalama puan"
+          }
+        ]
+      },
+      "banner": {
+        "text": "Yeni yaşlanma karşıtı rutinler eklendi — sonuçları haftalar içinde gör.",
+        "linkText": "Programlara göz at"
+      }
+    },
+    "bellyDance": {
+      "hero": {
+        "heading": "Oryantal Dans Sanatını Keşfet",
+        "subheading": "Kadim oryantal dans sanatıyla kendini ifade et — dansçı topluluğumuza katıl ve içindeki ritmi açığa çıkar.",
+        "ctaText": "Programlara Göz At"
+      },
+      "richText": {
+        "heading": "Dans Herkes İçindir",
+        "body": "Deneyim gerekmez — yalnızca açık bir kalp ve hareket sevgisi. Duruş ve basit kalça hareketleriyle başlıyor, ardından güvenle ve neşeyle dans edebilmen için etkileyici kombinasyonlara doğru ilerliyoruz."
+      },
+      "imageText": {
+        "heading": "Hakkımda",
+        "body": "Oryantal, Tribal Fusion ve Klasik Mısır stillerinde 10 yılı aşkın deneyime sahip, tutkulu bir oryantal dans eğitmeniyim. Dansın herkes için olduğuna inanıyorum — deneyim gerekmez, yalnızca açık bir kalp ve hareket sevgisi."
+      },
+      "testimonials": {
+        "heading": "Öğrenciler Ne Diyor",
+        "items": [
+          {
+            "name": "Ayşe K.",
+            "text": "Bu akademi hareket etme biçimimi dönüştürdü. Yapılandırılmış dersler, shimmy ve izolasyonlarımda özgüven kazanmamı çok kolaylaştırdı."
+          },
+          {
+            "name": "Leila M.",
+            "text": "Oryantal dansı internetten öğrenebileceğimi hiç düşünmezdim ama video kalitesi ve ayrıntılı anlatımlar inanılmaz. Her gün pratik yapıyorum!"
+          },
+          {
+            "name": "Nadia S.",
+            "text": "Koreografi kursu bir başyapıt. Sahnede kaybolmuş hissetmekten, gerçek bir ifade ve müzikaliteyle performans sergileme noktasına geldim."
+          }
+        ]
+      },
+      "faq": {
+        "heading": "Sıkça Sorulan Sorular",
+        "items": [
+          {
+            "q": "Önceden dans deneyimimin olması gerekir mi?",
+            "a": "Kesinlikle hayır! Belly Dance Basics kursumuz tamamen yeni başlayanlar için tasarlandı. Kombinasyonlara geçmeden önce duruş ve basit kalça hareketleriyle başlıyoruz."
+          },
+          {
+            "q": "Başlamak için neye ihtiyacım var?",
+            "a": "İhtiyacın olan tek şey; kalça hareketlerini görmeni sağlayan rahat kıyafetler, küçük bir açık alan ve eğlenmeye istekli olmak. Kalça şalı isteğe bağlıdır ancak deneyimi zenginleştirir!"
+          },
+          {
+            "q": "Kurslara mobilden erişebilir miyim?",
+            "a": "Evet! Platform tamamen duyarlıdır. Dersleri telefonunda, tabletinde veya bilgisayarında izleyebilirsin — her yerde pratik yapmak için mükemmel."
+          }
+        ]
+      },
+      "cta": {
+        "heading": "Dans Etmeye Başlamaya Hazır mısın?",
+        "buttonText": "Şimdi Katıl"
+      },
+      "stats": {
+        "heading": "Ritmini Bul",
+        "items": [
+          {
+            "value": "1k+",
+            "label": "Dansçılar"
+          },
+          {
+            "value": "35+",
+            "label": "Koreografi dersleri"
+          },
+          {
+            "value": "4.9★",
+            "label": "Ortalama puan"
+          }
+        ]
+      },
+      "banner": {
+        "text": "Yeni koreografi kursu az önce eklendi — ritmini bul.",
+        "linkText": "Programlara göz at"
+      }
+    },
+    "poleDance": {
+      "hero": {
+        "heading": "Direkte Gücünü Açığa Çıkar",
+        "subheading": "Direk dansıyla öz güven, güç ve sanatsallık geliştir — ister tamamen yeni başlayan biri ol, ister ileri düzey hareketlerde ustalaş.",
+        "ctaText": "Programlara Göz At"
+      },
+      "richText": {
+        "heading": "Her Dansçı Bir Yerden Başlar",
+        "body": "Jimnastik geçmişi gerekmez — yalnızca yeni bir şey deneme cesareti yeterli. Ayrıntılı aşamalar gücünü adım adım geliştirir, böylece korkutucu hareketler bile güvenli ve ulaşılabilir hissettirmeye başlar."
+      },
+      "imageText": {
+        "heading": "Hakkımda",
+        "body": "8 yılı aşkın eğitmenlik deneyimine sahip sertifikalı direk dansı eğitmeni ve yarışmacısı. Misyonum, direk dansını tüm vücut tipleri ve fitness seviyeleri için erişilebilir kılmak — jimnastik geçmişi gerekmez, yalnızca yeni bir şey deneme cesareti yeterli."
+      },
+      "testimonials": {
+        "heading": "Öğrenciler Ne Diyor",
+        "items": [
+          {
+            "name": "Jessica R.",
+            "text": "Direk dansı denemekten çok korkuyordum ama Basics kursu her şeyi o kadar net açıkladı ki. Artık fireman spin yapabiliyorum ve kendimi harika hissediyorum!"
+          },
+          {
+            "name": "Mia T.",
+            "text": "Dönüşler ve geçişler kursu akışımı tamamen değiştirdi. Yalnızca birkaç hafta içinde hantal hareketlerden akıcı ve bağlantılı serilere geçtim."
+          },
+          {
+            "name": "Priya D.",
+            "text": "Advanced Pole Tricks beni mümkün olduğunu düşündüğümün ötesine taşıdı. Her hareket için ayrıntılı aşamalar, korkutucu ters duruşları bile güvenli hissettirdi."
+          }
+        ]
+      },
+      "faq": {
+        "heading": "Sıkça Sorulan Sorular",
+        "items": [
+          {
+            "q": "Başlamak için güçlü olmam gerekir mi?",
+            "a": "Kesinlikle hayır! Pole Basics, tamamen yeni başlayanlar için tasarlandı. Derslerde ilerledikçe güç kazanacaksın. Herkes bir yerden başlar."
+          },
+          {
+            "q": "Hangi ekipmanlara ihtiyacım var?",
+            "a": "Evde güvenli bir şekilde kurulmuş bir direğe (statik veya döner) ya da yerel bir stüdyoya erişime ihtiyacın olacak. Teninin direği kavrayabilmesi için şort ve atlet giy."
+          },
+          {
+            "q": "Kurslara mobilden erişebilir miyim?",
+            "a": "Evet! Platform tüm cihazlarla tam uyumludur. Dersleri telefonunda, tabletinde veya bilgisayarında izleyebilirsin — pratik yaptığın alanda takip etmek için mükemmel."
+          }
+        ]
+      },
+      "cta": {
+        "heading": "Direğe Hükmetmeye Hazır mısın?",
+        "buttonText": "Şimdi Katıl"
+      },
+      "stats": {
+        "heading": "Gerçek Güç Kazan",
+        "items": [
+          {
+            "value": "800+",
+            "label": "Öğrenciler"
+          },
+          {
+            "value": "40+",
+            "label": "Hareket eğitimleri"
+          },
+          {
+            "value": "4.9★",
+            "label": "Ortalama puan"
+          }
+        ]
+      },
+      "banner": {
+        "text": "Yeni başlayanlar için dönüşler kursu az önce eklendi — olduğun yerden başla.",
+        "linkText": "Programlara göz at"
+      }
+    },
+    "makeup": {
+      "hero": {
+        "heading": "Makyaj Sanatında Ustalaş",
+        "subheading": "Günlük ışıltıdan editoryal başyapıtlara kadar, profesyonel makyaj tekniklerini evinin rahatlığında öğren.",
+        "ctaText": "Programlara Göz At"
+      },
+      "richText": {
+        "heading": "Everyday Glam'den Editoryale",
+        "body": "Profesyonellerin kullandığı teknikleri öğren — kusursuz bazlar, pürüzsüz dağıtma ve kalıcı görünümler. Net ve adım adım anlatımlar, makyaj setin ne olursa olsun ileri düzey editoryal stilleri bile ulaşılabilir kılar."
+      },
+      "imageText": {
+        "heading": "Hakkımda",
+        "body": "Gelin, editoryal ve moda makyajında 12 yılı aşkın deneyime sahip profesyonel makyaj sanatçısıyım. Moda haftalarında sahne arkasında ve ünlü müşterilerle çalıştım; şimdi ise tekniklerimi dünyanın dört bir yanındaki hevesli sanatçılarla paylaşma tutkusu taşıyorum."
+      },
+      "testimonials": {
+        "heading": "Öğrenciler Ne Diyor",
+        "items": [
+          {
+            "name": "Olivia H.",
+            "text": "Everyday Glam kursu sabah rutinimi tamamen değiştirdi. Sonunda fondöteni nasıl düzgün dağıtacağımı anladım ve cildim her gün kusursuz görünüyor!"
+          },
+          {
+            "name": "Zara B.",
+            "text": "Bridal Makeup Mastery bana bir gelin makyajı sanatçısı olarak serbest çalışmaya başlama özgüvenini verdi. Sadece iş ipuçları bile yapılan yatırıma değdi."
+          },
+          {
+            "name": "Hannah L.",
+            "text": "Editoryal kurs aklımı başımdan aldı. Avangart görünümler yaratabileceğimi hiç düşünmezdim ama adım adım anlatımlar bunu son derece ulaşılabilir kıldı."
+          }
+        ]
+      },
+      "faq": {
+        "heading": "Sıkça Sorulan Sorular",
+        "items": [
+          {
+            "q": "Başlamak için profesyonel makyaj ürünlerine ihtiyacım var mı?",
+            "a": "Kesinlikle hayır! Kurslarda kullanılan her ürün için uygun fiyatlı alternatifler öneriyoruz. İlerledikçe makyaj setini geliştirebilirsin."
+          },
+          {
+            "q": "Teknikler tüm cilt tipleri için uygun mu?",
+            "a": "Kesinlikle. Her ders kuru, yağlı, karma ve hassas ciltler için uyarlamaları kapsar. Ayrıca çok çeşitli cilt tonlarına yönelik tekniklere de yer veriyoruz."
+          },
+          {
+            "q": "Kurslara mobilden erişebilir miyim?",
+            "a": "Evet! Platform tamamen duyarlıdır. Dersleri telefonunda, tabletinde veya bilgisayarında izleyebilirsin — makyaj masanın başında takip etmek için mükemmel."
+          }
+        ]
+      },
+      "cta": {
+        "heading": "Işıldamaya Hazır mısın?",
+        "buttonText": "Hemen Katıl"
+      },
+      "stats": {
+        "heading": "Stüdyoya Katıl",
+        "items": [
+          {
+            "value": "5k+",
+            "label": "Öğrenciler"
+          },
+          {
+            "value": "60+",
+            "label": "Eğitimler"
+          },
+          {
+            "value": "4.9★",
+            "label": "Ortalama puan"
+          }
+        ]
+      },
+      "banner": {
+        "text": "Yeni gelin makyajı masterclass'ı eklendi — yerini ayırt.",
+        "linkText": "Programlara göz at"
+      }
+    }
+  },
+  "template": {
+    "homeClassic": {
+      "hero": {
+        "heading": "En iyilerden öğren",
+        "subheading": "Kendi hızında gelişmene yardımcı olacak pratik kurslar.",
+        "ctaText": "Kurslara göz at"
+      },
+      "courseGrid": {
+        "heading": "Öne çıkan kurslar"
+      },
+      "testimonials": {
+        "heading": "Öğrenciler ne diyor"
+      },
+      "cta": {
+        "heading": "Başlamaya hazır mısın?",
+        "buttonText": "Hemen katıl"
+      }
+    },
+    "homeStoryteller": {
+      "hero": {
+        "heading": "Yolculuğun burada başlıyor",
+        "subheading": "Yeni pratiğine sıcak bir karşılama."
+      },
+      "imageText": {
+        "heading": "Yaklaşımım",
+        "body": "İşini neyin farklı kıldığını paylaş."
+      },
+      "stats": {
+        "heading": "Rakamlarla",
+        "items": [
+          {
+            "value": "500+",
+            "label": "Öğrenciler"
+          },
+          {
+            "value": "4.9",
+            "label": "Ortalama puan"
+          },
+          {
+            "value": "20+",
+            "label": "Kurslar"
+          }
+        ]
+      },
+      "courseGrid": {
+        "heading": "Popüler kurslar"
+      },
+      "cta": {
+        "heading": "Topluluğa katıl",
+        "buttonText": "Başla"
+      }
+    },
+    "homeMinimal": {
+      "hero": {
+        "heading": "Hoş geldin",
+        "subheading": "İhtiyacın olan her şey, fazlası yok."
+      },
+      "cta": {
+        "heading": "İlk adımı at",
+        "buttonText": "Keşfet"
+      }
+    },
+    "aboutFounder": {
+      "richText": {
+        "heading": "Hakkında",
+        "body": "Kendini ve misyonunu birkaç cümleyle tanıt."
+      },
+      "imageText": {
+        "heading": "Hikayem",
+        "body": "Öğrencilere buraya nasıl geldiğini ve bunun neden önemli olduğunu anlat."
+      },
+      "stats": {
+        "items": [
+          {
+            "value": "10 yıl",
+            "label": "Deneyim"
+          },
+          {
+            "value": "1.000+",
+            "label": "Eğitilen öğrenciler"
+          }
+        ]
+      }
+    },
+    "pricingPlansFaq": {
+      "pricingPlans": {
+        "heading": "Planlar & Fiyatlandırma",
+        "subheading": "Hedeflerine uygun bir plan seç."
+      },
+      "faq": {
+        "heading": "Sıkça sorulan sorular",
+        "items": [
+          {
+            "q": "İstediğim zaman iptal edebilir miyim?",
+            "a": "Evet — planın dönem sonuna kadar aktif kalır."
+          },
+          {
+            "q": "Para iadesi yapıyor musunuz?",
+            "a": "14 gün içinde bize ulaş, hallederiz."
+          }
+        ]
+      }
+    },
+    "contactSimple": {
+      "contact": {
+        "heading": "İletişime geç",
+        "intro": "Bir sorun mu var? Bize mesaj gönder."
+      },
+      "faq": {
+        "heading": "Sık sorulan sorular"
+      }
+    }
+  },
+  "lookPreview": {
+    "creator": "içerik üreticisi"
+  }
+}

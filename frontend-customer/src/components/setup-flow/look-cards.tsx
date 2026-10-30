@@ -959,6 +959,8 @@ function LookPreview({
   onKeep: () => void;
 }) {
   const t = useTranslations("admin.setupFlow");
+  // The sample page is what visitors would read: its stand-in words are the site's.
+  const site = useTranslations("blocks.lookPreview");
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
@@ -972,7 +974,7 @@ function LookPreview({
   const subject = cards.preview?.subject;
   const words = {
     ...(brandName ? { "Maya Laurent": brandName } : {}),
-    Maya: "the coach",
+    Maya: site("creator"),
     ...(subject ? { yoga: subject } : {}),
   };
   return (

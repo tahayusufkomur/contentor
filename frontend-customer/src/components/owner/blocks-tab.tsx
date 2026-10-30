@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { CX_BLOCK_TYPE } from "@shared/cx/types";
 import { cxSpecOf } from "@/lib/blocks/cx-defs";
-import { BLOCKS_BY_GROUP, getBlockDef, newBlock } from "@/lib/blocks/registry";
+import { useBlockLibrary } from "@/lib/blocks/use-block-library";
 import { useEditorStore } from "./canvas/editor-store";
 import { PaletteDragSource } from "./canvas/palette-drag-source";
 import { TemplateGallery } from "./template-gallery";
@@ -36,6 +36,7 @@ export function BlocksTab({
   onDeleteTemplate,
 }: BlocksTabProps) {
   const tr = useTranslations("admin.owner.blocks");
+  const library = useBlockLibrary();
   const store = useEditorStore();
   const blocks = store.blocksFor(pageKey);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
@@ -59,7 +60,7 @@ export function BlocksTab({
     setConfirmingId(null);
   };
   const add = (type: string) => {
-    const block = newBlock(type, store.niche, store.siteStyle);
+    const block = library.newBlock(type, store.niche, store.siteStyle);
     store.insertBlock(pageKey, block);
     // insertBlock already selects the new block; ask for the reveal too so the
     // canvas scrolls to it (it lands at the end of a page that may be long).
@@ -92,7 +93,7 @@ export function BlocksTab({
       )}
 
       {blocks.map((block, i) => {
-        const def = getBlockDef(block.type);
+        const def = library.def(block.type);
         const Icon = def?.icon;
         const open = store.selectedBlockId === block.id;
         const enabled = block.enabled !== false;
@@ -246,7 +247,7 @@ export function BlocksTab({
                 {tr(`group.${group}`)}
               </p>
               <div className="grid grid-cols-2 gap-1.5">
-                {BLOCKS_BY_GROUP[group].map((def) => {
+                {library.byGroup(group).map((def) => {
                   const Icon = def.icon;
                   return (
                     <PaletteDragSource

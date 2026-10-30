@@ -42,6 +42,10 @@ export interface FieldSchema {
   itemFields?: FieldSchema[];
   /** `repeater` only: singular label for a row, e.g. "Testimonial". */
   itemLabel?: string;
+  /** `repeater` only: what a row is, as a key segment (`testimonial`): the
+   *  "Add …" button has one whole message per kind (case grammar), so the
+   *  label is never put inside a sentence. */
+  itemKind?: string;
   /** `repeater` only: cap the number of rows. */
   maxItems?: number;
 }

@@ -28,6 +28,7 @@ import { SectionBlock } from "@/components/sections/section-block";
 import type { Block } from "@/types/tenant";
 import type { BlockDefinition, DynamicDataKey } from "./types";
 import type { FieldSchema } from "./field-schema";
+import { ENGLISH_CONTENT, NO_WORDS, escapeHtml, slug, type Say } from "./say";
 
 const ICONS: Record<FamilyId, LucideIcon> = {
   hero: Sparkles,
@@ -64,50 +65,72 @@ function humanize(name: string) {
   return spaced.charAt(0).toUpperCase() + spaced.slice(1).toLowerCase();
 }
 
-export function toField(key: string, f: FamilyField): FieldSchema {
+/** `ui(key)` when the creator's language has a message there, else `english`
+ *  (the manifest's own text, which the family manifest keeps in English). */
+const words = (ui: Say, key: string, english: string) =>
+  ui.has(key) ? ui(key) : english;
+
+/** A manifest field as an editor field, named in the creator's language.
+ *  `family` is the section family the field belongs to (its help is keyed by it). */
+export function toField(
+  key: string,
+  f: FamilyField,
+  ui: Say,
+  family?: FamilyId,
+): FieldSchema {
+  const label = words(ui, `manifest.${slug(f.label)}`, f.label);
+  const help =
+    f.help && family
+      ? words(ui, `sectionHelp.${family}.${key}`, f.help)
+      : f.help;
   switch (f.type) {
     case "richtext":
-      return { key, label: f.label, type: "richtext", required: f.required };
+      return { key, label, type: "richtext", required: f.required };
     case "link":
-      return { key, label: f.label, type: "link" };
+      return { key, label, type: "link" };
     case "image":
-      return { key, label: f.label, type: "image", required: f.required };
+      return { key, label, type: "image", required: f.required };
     case "video":
       return {
         key,
-        label: f.label,
+        label,
         type: "video",
         required: f.required,
-        helpText: f.help,
+        helpText: help,
       };
     case "bool":
-      return { key, label: f.label, type: "toggle" };
+      return { key, label, type: "toggle" };
     case "select":
       return {
         key,
-        label: f.label,
+        label,
         type: "select",
-        options: (f.options ?? []).map((o) => ({ label: o, value: o })),
+        options: (f.options ?? []).map((o) => ({
+          label: words(ui, `option.${o}`, o),
+          value: o,
+        })),
       };
     case "items":
       return {
         key,
-        label: f.label,
+        label,
         type: "repeater",
-        helpText: f.help,
-        itemLabel: f.itemLabel,
+        helpText: help,
+        itemLabel:
+          f.itemLabel && words(ui, `item.${slug(f.itemLabel)}`, f.itemLabel),
+        itemKind: f.itemLabel && slug(f.itemLabel),
         maxItems: f.max,
         itemFields: Object.entries(f.fields ?? {}).map(([k, sub]) =>
-          toField(k, sub),
+          toField(k, sub, ui, family),
         ),
       };
     default:
       return {
         key,
-        label: f.label,
+        label,
         type: (f.max ?? 0) > 120 ? "textarea" : "text",
         required: f.required,
-        helpText: f.max ? `Up to ${f.max} characters.` : undefined,
+        helpText: f.max ? ui("upTo", { max: f.max }) : undefined,
       };
   }
 }
@@ -125,108 +148,80 @@ function variantOptions(family: FamilyId) {
   };
 }
 
-const PLACEHOLDER: Partial<Record<FamilyId, Partial<Block>>> = {
-  hero: {
-    headline: "A headline that says what you offer",
-    subhead: "One sentence on who it's for and what changes for them.",
-    ctaLabel: "Explore courses",
-    ctaHref: "/courses",
-  },
-  story: {
-    heading: "Hi, I'm glad you're here",
-    body: "<p>Tell visitors how you started, who you work with and what a session with you feels like.</p>",
-  },
-  benefits: {
-    heading: "What you'll gain",
-    items: [
-      { title: "First benefit", text: "What changes for your students." },
-      { title: "Second benefit", text: "What changes for your students." },
-      { title: "Third benefit", text: "What changes for your students." },
-    ],
-  },
-  courseShowcase: {
-    heading: "Courses",
-    ctaLabel: "See all courses",
-    limit: "3",
-  },
-  howItWorks: {
-    heading: "How it works",
-    steps: [
-      { title: "Choose", text: "Pick the course or session that fits you." },
-      { title: "Join", text: "Learn at your own pace or live with me." },
-      { title: "Grow", text: "Practise, ask questions and see progress." },
-    ],
-  },
-  philosophy: {
-    statement: "A sentence you believe about your craft, in your own words.",
-  },
-  moments: { heading: "Moments", photos: [{}, {}, {}] },
-  pricing: { heading: "Membership" },
-  faq: {
-    heading: "Questions, answered",
-    items: [
-      { q: "Who is this for?", a: "Describe who you work with." },
-      { q: "Do I need experience?", a: "Say what a beginner needs." },
-      { q: "How do I start?", a: "Explain the first step." },
-    ],
-  },
-  cta: {
-    heading: "Ready to begin?",
-    ctaLabel: "Get started",
-    ctaHref: "/courses",
-  },
-  contact: {
-    heading: "Get in touch",
-    text: "Questions about a course or a session? Send a message.",
-    showForm: true,
-  },
-  events: { heading: "Upcoming sessions", ctaLabel: "See the calendar" },
-  proof: { heading: "In their words" },
-  statement: { statement: "One line you believe." },
+/** What a new section holds besides its words: links, counts, empty slots. The
+ *  words themselves are `blocks.section.<family>`, in the site's language. */
+const SHAPE: Partial<Record<FamilyId, Partial<Block>>> = {
+  hero: { ctaHref: "/courses" },
+  courseShowcase: { limit: "3" },
+  moments: { photos: [{}, {}, {}] },
+  cta: { ctaHref: "/courses" },
+  contact: { showForm: true },
   video: { shape: "vertical" },
 };
 
-/** Fresh content for a new section block in `styleId` (first variant). */
+/** Fresh content for a new section block in `styleId` (first variant), written
+ *  in the language of `site` (the site's, once: after that it is hers). */
 export function sectionDefaultData(
   family: FamilyId,
   styleId?: string,
+  site: Say = ENGLISH_CONTENT,
 ): Partial<Block> {
   const style =
     (styleId && SITE_STYLES[styleId]) || Object.values(SITE_STYLES)[0];
   const first = style?.variants[family]?.[0];
+  const key = `section.${family}`;
+  const text = site.has(key)
+    ? (structuredClone(site.raw(key)) as Record<string, unknown>)
+    : {};
+  // The story's body is rich text: HTML around the plain message.
+  if (typeof text.body === "string")
+    text.body = `<p>${escapeHtml(text.body)}</p>`;
   return {
     ...(first ? { variant: `${style!.id}.${first}` } : {}),
-    ...structuredClone(PLACEHOLDER[family] ?? {}),
+    ...text,
+    ...structuredClone(SHAPE[family] ?? {}),
   };
 }
 
-export const SECTION_BLOCK_DEFS: Record<string, BlockDefinition> =
-  Object.fromEntries(
+/** One block definition per section family, named in the creator's language
+ *  (`ui`), seeded in the site's (`site`). */
+export function buildSectionDefs(
+  ui: Say,
+  site: Say,
+): Record<string, BlockDefinition> {
+  return Object.fromEntries(
     FAMILY_IDS.map((family) => {
       const fam = FAMILIES[family];
       const type = `${SECTION_PREFIX}${family}`;
       const fields: FieldSchema[] = [
         {
           key: "variant",
-          label: "Layout",
+          label: ui("layout.label"),
           type: "select",
           dynamicOptions: variantOptions(family),
         },
-        ...Object.entries(fam.fields).map(([k, f]) => toField(k, f)),
+        ...Object.entries(fam.fields).map(([k, f]) =>
+          toField(k, f, ui, family),
+        ),
       ];
       const def: BlockDefinition = {
         type,
-        label: fam.label,
+        label: words(ui, `family.${family}`, fam.label),
         icon: ICONS[family],
         group: "section",
         component: SectionBlock,
-        defaultData: sectionDefaultData(family),
+        defaultData: sectionDefaultData(family, undefined, site),
         fields,
         ...(fam.source ? { dynamicDataKey: SOURCE_KEY[fam.source] } : {}),
       };
       return [type, def];
     }),
   );
+}
+
+/** The families in the manifest's own (English) words: for code that needs the
+ *  structure of a section and never shows its name. */
+export const SECTION_BLOCK_DEFS = buildSectionDefs(NO_WORDS, ENGLISH_CONTENT);
 
 /** Wrapper class for a rendered page: styled-section and AI-section pages are designed
  *  full-bleed (globals.css lifts the layout's max-width for .page-fullbleed);

@@ -26,11 +26,13 @@ describe("namespacesFor", () => {
   it("studio and site+owner", () => {
     expect(namespacesFor("studio")).toEqual({
       creator: ["common", "admin", "studio"],
-      site: ["site", "student", "pwa"],
+      site: ["site", "student", "pwa", "blocks"],
     });
     expect(namespacesFor("site+owner")).toEqual({
       creator: ["admin", "studio"],
-      site: ["common", "site", "student", "pwa"],
+      site: ["common", "site", "student", "pwa", "blocks"],
     });
   });
+  it("the public site never loads the owner tools' content", () =>
+    expect(namespacesFor("site").site).not.toContain("blocks"));
 });

@@ -6,7 +6,8 @@ import { CxRefine } from "./cx-refine";
 import { StyleControls } from "./style-controls";
 import { CX_BLOCK_TYPE } from "@shared/cx/types";
 import { cxFields } from "@/lib/blocks/cx-defs";
-import { getBlockDef } from "@/lib/blocks/registry";
+import { useBlockLibrary } from "@/lib/blocks/use-block-library";
+import { say } from "@/lib/blocks/say";
 import type { Block } from "@/types/tenant";
 
 interface BlockFormProps {
@@ -16,11 +17,14 @@ interface BlockFormProps {
 
 export function BlockForm({ block, onChange }: BlockFormProps) {
   const tr = useTranslations("admin.owner.blockForm");
-  const def = getBlockDef(block.type);
+  const ui = useTranslations("admin.owner.blockLib");
+  const library = useBlockLibrary();
+  const def = library.def(block.type);
   if (!def) {
     return <p className="text-xs text-muted-foreground">{tr("notEditable")}</p>;
   }
-  const fields = block.type === CX_BLOCK_TYPE ? cxFields(block) : def.fields;
+  const fields =
+    block.type === CX_BLOCK_TYPE ? cxFields(block, say(ui)) : def.fields;
   return (
     <div className="space-y-3">
       {block.type === CX_BLOCK_TYPE && (

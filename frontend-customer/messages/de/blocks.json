@@ -1,0 +1,881 @@
+{
+  "default": {
+    "hero": {
+      "heading": "Willkommen",
+      "subheading": "Ein kurzer, überzeugender Slogan.",
+      "ctaText": "Jetzt starten"
+    },
+    "richText": {
+      "heading": "Überschrift"
+    },
+    "imageText": {
+      "heading": "Überschrift"
+    },
+    "gallery": {
+      "heading": "Galerie"
+    },
+    "testimonials": {
+      "heading": "Was Teilnehmer sagen"
+    },
+    "faq": {
+      "heading": "Häufig gestellte Fragen"
+    },
+    "cta": {
+      "heading": "Bereit loszulegen?",
+      "buttonText": "Jetzt beitreten"
+    },
+    "logos": {
+      "heading": "Bekannt aus"
+    },
+    "banner": {
+      "text": "Ankündigung"
+    },
+    "contact": {
+      "heading": "Kontakt aufnehmen",
+      "intro": "Hast du eine Frage? Sende uns eine Nachricht.",
+      "submitLabel": "Nachricht senden",
+      "successMessage": "Danke! Wir melden uns bald bei dir."
+    },
+    "courseGrid": {
+      "heading": "Kurse"
+    },
+    "pricingPlans": {
+      "heading": "Tarife & Preise"
+    },
+    "upcomingEvents": {
+      "heading": "Kommende Veranstaltungen"
+    },
+    "storeProducts": {
+      "heading": "Shop"
+    }
+  },
+  "section": {
+    "hero": {
+      "headline": "Eine Überschrift, die sagt, was du anbietest",
+      "subhead": "Ein Satz darüber, für wen es ist und was sich für sie ändert.",
+      "ctaLabel": "Kurse entdecken"
+    },
+    "story": {
+      "heading": "Hi, schön, dass du da bist",
+      "body": "Erzähle Besuchern, wie du angefangen hast, mit wem du arbeitest und wie sich eine Session mit dir anfühlt."
+    },
+    "benefits": {
+      "heading": "Was du mitnimmst",
+      "items": [
+        {
+          "title": "Erster Vorteil",
+          "text": "Was sich für deine Teilnehmer ändert."
+        },
+        {
+          "title": "Zweiter Vorteil",
+          "text": "Was sich für deine Teilnehmer ändert."
+        },
+        {
+          "title": "Dritter Vorteil",
+          "text": "Was sich für deine Teilnehmer ändert."
+        }
+      ]
+    },
+    "courseShowcase": {
+      "heading": "Kurse",
+      "ctaLabel": "Alle Kurse ansehen"
+    },
+    "howItWorks": {
+      "heading": "So funktioniert's",
+      "steps": [
+        {
+          "title": "Auswählen",
+          "text": "Wähle den Kurs oder die Session, die zu dir passt."
+        },
+        {
+          "title": "Mitmachen",
+          "text": "Lerne in deinem eigenen Tempo oder live mit mir."
+        },
+        {
+          "title": "Wachsen",
+          "text": "Übe, stelle Fragen und sieh Fortschritte."
+        }
+      ]
+    },
+    "philosophy": {
+      "statement": "Ein Satz über dein Handwerk, an den du glaubst, in deinen eigenen Worten."
+    },
+    "moments": {
+      "heading": "Momente"
+    },
+    "pricing": {
+      "heading": "Mitgliedschaft"
+    },
+    "faq": {
+      "heading": "Fragen, beantwortet",
+      "items": [
+        {
+          "q": "Für wen ist das?",
+          "a": "Beschreibe, mit wem du arbeitest."
+        },
+        {
+          "q": "Brauche ich Erfahrung?",
+          "a": "Sag, was ein Anfänger braucht."
+        },
+        {
+          "q": "Wie fange ich an?",
+          "a": "Erkläre den ersten Schritt."
+        }
+      ]
+    },
+    "cta": {
+      "heading": "Bereit anzufangen?",
+      "ctaLabel": "Loslegen"
+    },
+    "contact": {
+      "heading": "Kontakt aufnehmen",
+      "text": "Fragen zu einem Kurs oder einer Session? Sende eine Nachricht."
+    },
+    "events": {
+      "heading": "Anstehende Sessions",
+      "ctaLabel": "Kalender ansehen"
+    },
+    "proof": {
+      "heading": "In ihren Worten"
+    },
+    "statement": {
+      "statement": "Eine Zeile, an die du glaubst."
+    }
+  },
+  "example": {
+    "generic": {
+      "hero": {
+        "heading": "Lerne von den Besten",
+        "subheading": "Praktische Schritt-für-Schritt-Lektionen, die dir helfen, in deinem eigenen Tempo zu wachsen.",
+        "ctaText": "Programme durchstöbern"
+      },
+      "richText": {
+        "heading": "Warum mit mir lernen?",
+        "body": "Ich habe Jahre damit verbracht, einen einfachen, bewährten Ansatz zu verfeinern, damit du ohne Rätselraten echte Fortschritte machst. Jede Lektion baut auf der vorherigen auf — klar, praktisch und für jedes Niveau gemacht."
+      },
+      "imageText": {
+        "heading": "Über mich",
+        "body": "Hi, ich bin dein Kursleiter. Ich habe diese Kurse erstellt, um das weiterzugeben, was bei Hunderten von Teilnehmern funktioniert hat — und um dir dabei zu helfen, schneller ans Ziel zu kommen, mit Begleitung bei jedem Schritt."
+      },
+      "testimonials": {
+        "heading": "Was Teilnehmer sagen",
+        "items": [
+          {
+            "name": "Alex R.",
+            "text": "Klar, gut getaktet und wirklich nützlich. Ich habe endlich das Gefühl, jede Woche Fortschritte zu machen."
+          },
+          {
+            "name": "Jordan M.",
+            "text": "Die Lektionen sind einfach nachzuvollziehen und die Ergebnisse sprechen für sich. Sehr zu empfehlen."
+          },
+          {
+            "name": "Sam T.",
+            "text": "Fühlte sich wie eine private Session an. Die Details und die Sorgfalt in jeder Lektion machen den entscheidenden Unterschied."
+          }
+        ]
+      },
+      "faq": {
+        "heading": "Häufig gestellte Fragen",
+        "items": [
+          {
+            "q": "Ist das für Anfänger geeignet?",
+            "a": "Absolut. Jedes Programm beginnt mit den Grundlagen und beinhaltet Anpassungen, sodass du auf jedem Niveau starten und in deinem eigenen Tempo Fortschritte machen kannst."
+          },
+          {
+            "q": "Brauche ich eine spezielle Ausrüstung?",
+            "a": "Nein — du kannst mit dem anfangen, was du bereits hast. Alle optionalen Extras sind in den einzelnen Lektionen angegeben."
+          },
+          {
+            "q": "Kann ich mobil auf die Kurse zugreifen?",
+            "a": "Ja! Die Plattform ist vollständig responsiv. Streame Lektionen auf deinem Smartphone, Tablet oder Computer — perfekt, um überall zu lernen."
+          }
+        ]
+      },
+      "cta": {
+        "heading": "Bereit, loszulegen?",
+        "buttonText": "Jetzt beitreten"
+      },
+      "stats": {
+        "heading": "Von Lernenden geschätzt",
+        "items": [
+          {
+            "value": "500+",
+            "label": "Teilnehmer"
+          },
+          {
+            "value": "30+",
+            "label": "Stunden Videomaterial"
+          },
+          {
+            "value": "4.9★",
+            "label": "Durchschnittliche Bewertung"
+          }
+        ]
+      },
+      "banner": {
+        "text": "Neue Kurse hinzugefügt — starte noch heute mit dem Lernen.",
+        "linkText": "Programme durchstöbern"
+      },
+      "contact": {
+        "heading": "Kontakt aufnehmen",
+        "intro": "Hast du eine Frage oder möchtest zusammenarbeiten? Sende eine Nachricht und ich melde mich bald bei dir."
+      },
+      "gallery": {
+        "heading": "Ein Blick ins Innere"
+      },
+      "logos": {
+        "heading": "Bekannt aus"
+      },
+      "video": {
+        "heading": "Sieh dir eine kurze Einführung an"
+      },
+      "courseGrid": {
+        "heading": "Entdecke die Programme"
+      },
+      "pricingPlans": {
+        "heading": "Tarife & Preise",
+        "subheading": "Wähle den Tarif, der jetzt zu dir passt — Upgrade jederzeit möglich."
+      },
+      "upcomingEvents": {
+        "heading": "Bevorstehende Live-Sessions"
+      },
+      "storeProducts": {
+        "heading": "Aus dem Shop"
+      }
+    },
+    "yoga": {
+      "hero": {
+        "heading": "Finde deine Balance durch Yoga",
+        "subheading": "Transformiere deinen Körper und Geist mit angeleiteten Yoga-Praktiken — egal, ob du kompletter Anfänger oder erfahrener Yogi bist.",
+        "ctaText": "Programme durchstöbern"
+      },
+      "richText": {
+        "heading": "Warum mit mir praktizieren?",
+        "body": "Jede Stunde verbindet achtsame Atemarbeit mit sicherer, klarer Ausrichtung, damit du in deinem eigenen Tempo eine beständige Praxis aufbauen kannst. Rolle deine Matte aus und lass uns gemeinsam stärker und gelassener werden."
+      },
+      "imageText": {
+        "heading": "Über mich",
+        "body": "Zertifizierte Yogalehrkraft mit über 12 Jahren Unterrichtserfahrung in Hatha-, Vinyasa- und Ashtanga-Traditionen. Ich glaube, dass Yoga eine Reise der Selbstentdeckung ist — dir selbst auf der Matte mit Mitgefühl, Atem und Intention zu begegnen."
+      },
+      "testimonials": {
+        "heading": "Was Teilnehmer sagen",
+        "items": [
+          {
+            "name": "Priya R.",
+            "text": "Diese Stunden haben mein Leben verändert. Der Anfängerkurs hat mir eine solide Grundlage gegeben, und jetzt praktiziere ich jeden Morgen vor der Arbeit. Meine Beweglichkeit und mein Fokus haben sich so sehr verbessert."
+          },
+          {
+            "name": "Sarah L.",
+            "text": "Der Vinyasa-Flow-Kurs ist wunderbar strukturiert. Jede Lektion baut auf der vorherigen auf, und die Anweisungen sind so klar, dass ich mich immer sicher fühle, an meine Grenzen zu gehen."
+          },
+          {
+            "name": "Marcus T.",
+            "text": "Ich war skeptisch, Yoga online zu lernen, aber die Videoqualität und die detaillierten Ausrichtungsanweisungen gaben mir das Gefühl einer Privatstunde. Sehr zu empfehlen!"
+          }
+        ]
+      },
+      "faq": {
+        "heading": "Häufig gestellte Fragen",
+        "items": [
+          {
+            "q": "Muss ich beweglich sein, um mit Yoga anzufangen?",
+            "a": "Absolut nicht! Beweglichkeit ist ein Ergebnis von Yoga, keine Voraussetzung. Unser Anfängerkurs beginnt mit sanften Bewegungen und Anpassungen, damit du auf jedem Level sicher praktizieren kannst."
+          },
+          {
+            "q": "Welche Ausrüstung brauche ich?",
+            "a": "Eine Yogamatte wird empfohlen, ist aber nicht erforderlich. Für bestimmte Haltungen können auch Blöcke und ein Gurt hilfreich sein. Trage bequeme Kleidung, die freie Bewegung ermöglicht."
+          },
+          {
+            "q": "Kann ich mobil auf die Kurse zugreifen?",
+            "a": "Ja! Die Plattform ist voll responsiv. Du kannst Lektionen auf deinem Smartphone, Tablet oder Computer streamen — perfekt, um überall zu praktizieren."
+          }
+        ]
+      },
+      "cta": {
+        "heading": "Bereit, deine Reise zu beginnen?",
+        "buttonText": "Jetzt beitreten"
+      },
+      "stats": {
+        "heading": "Werde Teil der Praxis",
+        "items": [
+          {
+            "value": "500+",
+            "label": "Teilnehmer"
+          },
+          {
+            "value": "40+",
+            "label": "Angeleitete Stunden"
+          },
+          {
+            "value": "4.9★",
+            "label": "Durchschnittliche Bewertung"
+          }
+        ]
+      },
+      "banner": {
+        "text": "Neue Anfängerserie hinzugefügt — starte noch heute deine Praxis.",
+        "linkText": "Programme durchstöbern"
+      }
+    },
+    "pilates": {
+      "hero": {
+        "heading": "Transformiere deinen Körper mit Pilates",
+        "subheading": "Baue Rumpfkraft auf, verbessere deine Beweglichkeit und bewege dich voller Selbstvertrauen durch achtsame, kontrollierte Bewegungen.",
+        "ctaText": "Programme durchstöbern"
+      },
+      "richText": {
+        "heading": "Warum mit mir trainieren?",
+        "body": "Präzise, kontrollierte Bewegungen stehen im Mittelpunkt jeder Session. Wir konzentrieren uns zuerst auf die richtige Ausführung, damit du sicher einen starken, ausgeglichenen Körper aufbaust — kein Fitnessstudio, kein Reformer, nur eine Matte und ein bisschen Engagement."
+      },
+      "imageText": {
+        "heading": "Über mich",
+        "body": "Zertifizierter Pilates-Trainer mit über 12 Jahren Erfahrung im Matten- und Reformer-Pilates. Ich habe mich darauf spezialisiert, Menschen aller Fitnesslevel dabei zu helfen, durch präzise, kontrollierte Bewegungen einen starken, ausgeglichenen Körper aufzubauen — kein Fitnessstudio erforderlich, nur eine Matte und Engagement."
+      },
+      "testimonials": {
+        "heading": "Was Teilnehmer sagen",
+        "items": [
+          {
+            "name": "Clara D.",
+            "text": "Schon nach vier Wochen hat sich meine Haltung drastisch verbessert. Die Lektionen sind verständlich, haben ein angenehmes Tempo und ich spüre, wie jeder Muskel richtig aktiviert wird."
+          },
+          {
+            "name": "Marco T.",
+            "text": "Ich war skeptisch gegenüber Online-Pilates, aber die detaillierten Anweisungen und Kameraperspektiven sorgen dafür, dass es sich wie eine Einzelstunde anfühlt. Meine Rückenschmerzen sind endlich weg!"
+          },
+          {
+            "name": "Hana Y.",
+            "text": "Der Kurs Full Body Sculpt hat mich im besten Sinne gefordert. Ich fühle mich stärker, beweglicher und freue mich wirklich auf jedes Workout."
+          }
+        ]
+      },
+      "faq": {
+        "heading": "Häufig gestellte Fragen",
+        "items": [
+          {
+            "q": "Brauche ich irgendeine Ausrüstung?",
+            "a": "Alle unsere Kurse sind mattenbasiert. Du brauchst nur eine Yoga- oder Pilatesmatte und genug Platz, um dich hinzulegen und deine Arme auszustrecken. Optionale Hilfsmittel wie ein Widerstandsband sind in den einzelnen Lektionen angegeben."
+          },
+          {
+            "q": "Ist Pilates für Anfänger geeignet?",
+            "a": "Absolut! Der Kurs Pilates Fundamentals beginnt ganz von vorn mit Atmung, Ausrichtung und grundlegenden Bewegungen. Es sind keine Vorkenntnisse erforderlich."
+          },
+          {
+            "q": "Kann ich mobil auf die Kurse zugreifen?",
+            "a": "Ja! Die Plattform ist voll responsiv. Du kannst Lektionen auf deinem Smartphone, Tablet oder Computer streamen — perfekt, um überall zu trainieren."
+          }
+        ]
+      },
+      "cta": {
+        "heading": "Bereit, dich stärker zu fühlen?",
+        "buttonText": "Jetzt mitmachen"
+      },
+      "stats": {
+        "heading": "Bewege dich mit Selbstvertrauen",
+        "items": [
+          {
+            "value": "500+",
+            "label": "Teilnehmer"
+          },
+          {
+            "value": "30+",
+            "label": "Videostunden"
+          },
+          {
+            "value": "4.9★",
+            "label": "Durchschnittliche Bewertung"
+          }
+        ]
+      },
+      "banner": {
+        "text": "Neue mattenbasierte Programme wurden gerade hinzugefügt — baue zu Hause Kraft auf.",
+        "linkText": "Programme durchstöbern"
+      }
+    },
+    "fitness": {
+      "hero": {
+        "heading": "Transformiere deinen Körper, hebe dein Leben auf ein neues Level",
+        "subheading": "Wissenschaftlich fundierte Programme, um Kraft aufzubauen, Fett zu verbrennen und dein Selbstvertrauen zu stärken — trainiere überall mit von Experten geleiteten Video-Workouts.",
+        "ctaText": "Programme durchstöbern"
+      },
+      "richText": {
+        "heading": "Trainiere klüger, nicht härter",
+        "body": "Jedes Programm basiert auf bewährten Prinzipien — funktionelles Training, HIIT und eine intelligente Kraftprogression. Folge klaren Erklärungen zur richtigen Ausführung und mache Ergebnisse auf Profi-Niveau zugänglich, kein Fitnessstudio erforderlich."
+      },
+      "imageText": {
+        "heading": "Über mich",
+        "body": "Zertifizierter Personal Trainer und Sportwissenschaftler mit über 8 Jahren Coaching-Erfahrung. Ich habe mich auf funktionelles Training, HIIT und Krafttrainingsplanung für alle Fitnesslevel spezialisiert. Meine Mission ist es, Training auf Profi-Niveau für jeden zugänglich zu machen — kein Fitnessstudio erforderlich."
+      },
+      "testimonials": {
+        "heading": "Was Teilnehmer sagen",
+        "items": [
+          {
+            "name": "Marcus T.",
+            "text": "Das Programm Total Body Transformation hat meine Routine komplett verändert. Ich habe in drei Monaten 12 kg abgenommen und fühle mich stärker als je zuvor. Der strukturierte Ansatz hat dafür gesorgt, dass ich jeden einzelnen Tag am Ball geblieben bin."
+          },
+          {
+            "name": "Sarah L.",
+            "text": "Als vielbeschäftigte Mutter brauchte ich Workouts, die ich zu Hause machen konnte. Das HIIT Power Program passt perfekt in meinen Zeitplan — 30 Minuten, maximale Ergebnisse. Ich habe jetzt so viel mehr Energie!"
+          },
+          {
+            "name": "David K.",
+            "text": "Der Strength & Conditioning-Kurs hat mir die Grundlage gegeben, die mir gefehlt hat. Meine Lifts haben sich dramatisch verbessert und ich verstehe endlich die richtige Form und Programmierung."
+          }
+        ]
+      },
+      "faq": {
+        "heading": "Häufig gestellte Fragen",
+        "items": [
+          {
+            "q": "Brauche ich Ausrüstung?",
+            "a": "Der Total Body Transformation-Kurs erfordert keinerlei Ausrüstung — nur dein eigenes Körpergewicht. Für die HIIT- und Kraftprogramme werden Kurzhanteln und ein Widerstandsband empfohlen, aber wir zeigen immer Alternativen mit dem eigenen Körpergewicht."
+          },
+          {
+            "q": "Ich bin absoluter Anfänger — ist das etwas für mich?",
+            "a": "Absolut! Jedes Programm enthält Erklärungen zur Ausführung und Anfänger-Modifikationen für jede Übung. Starte mit dem kostenlosen Total Body Transformation-Kurs und mache Fortschritte in deinem eigenen Tempo."
+          },
+          {
+            "q": "Kann ich auf meinem Smartphone auf die Workouts zugreifen?",
+            "a": "Ja! Die Plattform ist vollständig responsiv. Streame Lektionen auf deinem Smartphone, Tablet oder Computer — perfekt für das Training zu Hause, im Fitnessstudio oder auf Reisen."
+          }
+        ]
+      },
+      "cta": {
+        "heading": "Bereit, mit dem Training zu beginnen?",
+        "buttonText": "Jetzt mitmachen"
+      },
+      "stats": {
+        "heading": "Ergebnisse, die sich sehen lassen können",
+        "items": [
+          {
+            "value": "10k+",
+            "label": "Absolvierte Workouts"
+          },
+          {
+            "value": "50+",
+            "label": "Video-Sessions"
+          },
+          {
+            "value": "4.9★",
+            "label": "Durchschnittliche Bewertung"
+          }
+        ]
+      },
+      "banner": {
+        "text": "Neues HIIT-Programm gerade erschienen — trainiere überall und jederzeit.",
+        "linkText": "Programme durchsuchen"
+      }
+    },
+    "faceYoga": {
+      "hero": {
+        "heading": "Natürliche Schönheit durch Gesichtsyoga",
+        "subheading": "Straffe, lifte und verjünge dein Gesicht mit einfachen täglichen Übungen — keine Injektionen, keine Produkte, nur wenige Minuten am Tag.",
+        "ctaText": "Programme durchsuchen"
+      },
+      "richText": {
+        "heading": "Wenige Minuten am Tag",
+        "body": "Bei der natürlichen Gesichtsverjüngung kommt es ganz auf Beständigkeit an. Diese kurzen, gezielten Routinen nutzen nur deine Hände und deine eigenen Muskeln — einfach genug, um in deinen Morgen zu passen, effektiv genug, um den Unterschied zu sehen und zu spüren."
+      },
+      "imageText": {
+        "heading": "Über mich",
+        "body": "Zertifizierte Gesichtsyoga-Trainerin und ganzheitlicher Wellness-Coach mit über 6 Jahren Erfahrung. Nachdem ich dramatische Ergebnisse an meiner eigenen Haut gesehen hatte, widmete ich meine Karriere dem Unterrichten natürlicher Gesichtsverjüngungstechniken, die jeder zu Hause anwenden kann."
+      },
+      "testimonials": {
+        "heading": "Was Teilnehmer sagen",
+        "items": [
+          {
+            "name": "Sarah W.",
+            "text": "Nach nur drei Wochen des Basics-Kurses ist meine Kinnlinie spürbar definierter. Ich kann gar nicht glauben, dass etwas so Einfaches tatsächlich funktioniert!"
+          },
+          {
+            "name": "Mei C.",
+            "text": "Der Anti-Aging Routines-Kurs ist jetzt mein tägliches Ritual. Meine Stirnfalten haben sich geglättet und meine Haut sieht so viel straffer und strahlender aus."
+          },
+          {
+            "name": "Astrid N.",
+            "text": "Sculpt & Tone hat mir Wangenknochen geschenkt, von denen ich gar nicht wusste, dass ich sie habe! Die gezielten Übungen sind so effektiv und dauern nur zehn Minuten am Tag."
+          }
+        ]
+      },
+      "faq": {
+        "heading": "Häufig gestellte Fragen",
+        "items": [
+          {
+            "q": "Wie schnell werde ich Ergebnisse sehen?",
+            "a": "Die meisten Teilnehmer bemerken subtile Veränderungen innerhalb von 2-3 Wochen täglicher Praxis. Deutlichere Lifting- und Straffungseffekte zeigen sich typischerweise nach 6-8 Wochen konsequenter Anwendung."
+          },
+          {
+            "q": "Brauche ich Ausrüstung?",
+            "a": "Überhaupt keine Ausrüstung! Alle Übungen nutzen deine eigenen Hände und Gesichtsmuskeln. Ein Spiegel ist hilfreich, damit du deine Haltung überprüfen kannst, aber das ist alles, was du brauchst."
+          },
+          {
+            "q": "Kann ich mobil auf die Kurse zugreifen?",
+            "a": "Ja! Die Plattform ist vollständig responsiv. Du kannst Lektionen auf deinem Smartphone, Tablet oder Computer streamen — perfekt, um bei deiner Morgenroutine mitzumachen."
+          }
+        ]
+      },
+      "cta": {
+        "heading": "Bereit, dein Gesicht natürlich zu verwandeln?",
+        "buttonText": "Jetzt beitreten"
+      },
+      "stats": {
+        "heading": "Natürlich strahlend",
+        "items": [
+          {
+            "value": "2k+",
+            "label": "Teilnehmer"
+          },
+          {
+            "value": "5 min",
+            "label": "Tägliche Routine"
+          },
+          {
+            "value": "4.9★",
+            "label": "Durchschnittliche Bewertung"
+          }
+        ]
+      },
+      "banner": {
+        "text": "Neue Anti-Aging-Routinen hinzugefügt — sieh Ergebnisse in wenigen Wochen.",
+        "linkText": "Programme durchstöbern"
+      }
+    },
+    "bellyDance": {
+      "hero": {
+        "heading": "Entdecke die Kunst des Bauchtanzes",
+        "subheading": "Drücke dich durch die uralte Kunst des Bauchtanzes aus — werde Teil unserer Community von Tänzern und entfessle deinen inneren Rhythmus.",
+        "ctaText": "Programme durchstöbern"
+      },
+      "richText": {
+        "heading": "Tanzen ist für alle da",
+        "body": "Keine Vorerfahrung nötig — nur ein offenes Herz und die Liebe zur Bewegung. Wir beginnen mit Körperhaltung und einfacher Hüftarbeit und bauen darauf ausdrucksstarke Kombinationen auf, damit du mit Selbstvertrauen und Freude tanzen kannst."
+      },
+      "imageText": {
+        "heading": "Über mich",
+        "body": "Leidenschaftliche Bauchtanz-Lehrerin mit über 10 Jahren Erfahrung in Oriental, Tribal Fusion und Classical Egyptian. Ich glaube, Tanzen ist für alle da — keine Vorerfahrung nötig, nur ein offenes Herz und die Liebe zur Bewegung."
+      },
+      "testimonials": {
+        "heading": "Was Teilnehmer sagen",
+        "items": [
+          {
+            "name": "Ayşe K.",
+            "text": "Diese Akademie hat die Art und Weise verändert, wie ich mich bewege. Die strukturierten Lektionen machten es so einfach, Selbstvertrauen in meine Shimmies und Isolationen aufzubauen."
+          },
+          {
+            "name": "Leila M.",
+            "text": "Ich hätte nie gedacht, dass ich online Bauchtanz lernen könnte, aber die Videoqualität und die detaillierten Erklärungen sind unglaublich. Ich übe wirklich jeden Tag!"
+          },
+          {
+            "name": "Nadia S.",
+            "text": "Der Choreografie-Kurs ist ein Meisterwerk. Ich fühlte mich auf der Bühne anfangs verloren und trete nun mit echtem Ausdruck und Musikalität auf."
+          }
+        ]
+      },
+      "faq": {
+        "heading": "Häufig gestellte Fragen",
+        "items": [
+          {
+            "q": "Brauche ich vorherige Tanzerfahrung?",
+            "a": "Überhaupt nicht! Unser Kurs Belly Dance Basics ist für absolute Anfänger konzipiert. Wir beginnen mit Körperhaltung und einfachen Hüftbewegungen, bevor wir zu Kombinationen übergehen."
+          },
+          {
+            "q": "Was brauche ich, um loszulegen?",
+            "a": "Alles, was du brauchst, ist bequeme Kleidung, bei der du deine Hüftbewegungen gut sehen kannst, etwas freier Platz und die Bereitschaft, Spaß zu haben. Ein Hüfttuch ist optional, bereichert aber das Erlebnis!"
+          },
+          {
+            "q": "Kann ich mobil auf die Kurse zugreifen?",
+            "a": "Ja! Die Plattform ist vollständig responsiv. Du kannst Lektionen auf deinem Smartphone, Tablet oder Computer streamen — perfekt, um überall zu üben."
+          }
+        ]
+      },
+      "cta": {
+        "heading": "Bereit, mit dem Tanzen anzufangen?",
+        "buttonText": "Jetzt beitreten"
+      },
+      "stats": {
+        "heading": "Finde deinen Rhythmus",
+        "items": [
+          {
+            "value": "1k+",
+            "label": "Tänzer"
+          },
+          {
+            "value": "35+",
+            "label": "Choreografie-Lektionen"
+          },
+          {
+            "value": "4.9★",
+            "label": "Durchschnittliche Bewertung"
+          }
+        ]
+      },
+      "banner": {
+        "text": "Neuer Choreografie-Kurs gerade hinzugefügt — finde deinen Rhythmus.",
+        "linkText": "Programme durchsuchen"
+      }
+    },
+    "poleDance": {
+      "hero": {
+        "heading": "Entfessle deine Kraft an der Pole",
+        "subheading": "Baue durch Pole Dance Selbstvertrauen, Kraft und Ausdruck auf — egal, ob du absoluter Anfänger bist oder fortgeschrittene Tricks meisterst.",
+        "ctaText": "Programme durchsuchen"
+      },
+      "richText": {
+        "heading": "Jeder Tänzer fängt irgendwo an",
+        "body": "Keine turnerischen Vorkenntnisse erforderlich — nur der Mut, etwas Neues auszuprobieren. Detaillierte Progressionen bauen deine Kraft Schritt für Schritt auf, sodass sich selbst die beängstigenden Moves sicher und erreichbar anfühlen."
+      },
+      "imageText": {
+        "heading": "Über mich",
+        "body": "Zertifizierte Pole-Dance-Trainerin und Wettkämpferin mit über 8 Jahren Unterrichtserfahrung. Meine Mission ist es, Pole Dance für alle Körpertypen und Fitnesslevel zugänglich zu machen — keine turnerischen Vorkenntnisse erforderlich, nur der Mut, etwas Neues auszuprobieren."
+      },
+      "testimonials": {
+        "heading": "Was Teilnehmer sagen",
+        "items": [
+          {
+            "name": "Jessica R.",
+            "text": "Ich hatte große Angst davor, Pole Dance auszuprobieren, aber der Basics-Kurs hat alles so verständlich erklärt. Ich kann jetzt einen Fireman Spin und fühle mich einfach großartig!"
+          },
+          {
+            "name": "Mia T.",
+            "text": "Der Kurs für Spins und Transitions hat meinen Flow komplett verändert. Innerhalb von nur wenigen Wochen wurden aus holprigen Bewegungen flüssige, verbundene Sequenzen."
+          },
+          {
+            "name": "Priya D.",
+            "text": "Advanced Pole Tricks hat mich über das hinausgebracht, was ich für möglich gehalten habe. Durch die detaillierten Progressionen für jeden Trick fühlten sich selbst die beängstigenden Inversionen sicher an."
+          }
+        ]
+      },
+      "faq": {
+        "heading": "Häufig gestellte Fragen",
+        "items": [
+          {
+            "q": "Muss ich stark sein, um anzufangen?",
+            "a": "Überhaupt nicht! Pole Basics ist für absolute Anfänger gedacht. Du baust Kraft auf, während du die Lektionen durchläufst. Jeder fängt irgendwo an."
+          },
+          {
+            "q": "Welche Ausrüstung brauche ich?",
+            "a": "Du benötigst eine sicher zu Hause installierte Pole (statisch oder drehend) oder Zugang zu einem Studio vor Ort. Trage Shorts und ein Tanktop, damit deine Haut Halt an der Pole findet."
+          },
+          {
+            "q": "Kann ich mobil auf die Kurse zugreifen?",
+            "a": "Ja! Die Plattform ist vollständig responsiv. Du kannst Lektionen auf deinem Smartphone, Tablet oder Computer streamen — perfekt, um in deinem Trainingsbereich mitzumachen."
+          }
+        ]
+      },
+      "cta": {
+        "heading": "Bereit, die Pole zu erobern?",
+        "buttonText": "Jetzt beitreten"
+      },
+      "stats": {
+        "heading": "Baue echte Kraft auf",
+        "items": [
+          {
+            "value": "800+",
+            "label": "Teilnehmer"
+          },
+          {
+            "value": "40+",
+            "label": "Trick-Tutorials"
+          },
+          {
+            "value": "4.9★",
+            "label": "Durchschnittliche Bewertung"
+          }
+        ]
+      },
+      "banner": {
+        "text": "Neuer Kurs für Anfänger-Spins gerade hinzugefügt — starte dort, wo du bist.",
+        "linkText": "Programme durchsuchen"
+      }
+    },
+    "makeup": {
+      "hero": {
+        "heading": "Meistere die Kunst des Make-ups",
+        "subheading": "Von Alltags-Glam bis zu redaktionellen Meisterwerken, lerne professionelle Make-up-Techniken bequem von zu Hause aus.",
+        "ctaText": "Programme durchstöbern"
+      },
+      "richText": {
+        "heading": "Vom Everyday Glam bis Editorial",
+        "body": "Lerne die Techniken, die Profis anwenden — makellose Grundierungen, nahtloses Verblenden und Looks, die halten. Klare Schritt-für-Schritt-Anleitungen machen selbst anspruchsvolle Editorial-Styles erreichbar, ganz egal, welches Kit du hast."
+      },
+      "imageText": {
+        "heading": "Über mich",
+        "body": "Professioneller Make-up-Artist mit über 12 Jahren Erfahrung in Braut-, Editorial- und Fashion-Make-up. Ich habe backstage bei Fashion Weeks und mit prominenten Kunden gearbeitet und teile meine Techniken nun mit Leidenschaft mit aufstrebenden Artists auf der ganzen Welt."
+      },
+      "testimonials": {
+        "heading": "Was Teilnehmer sagen",
+        "items": [
+          {
+            "name": "Olivia H.",
+            "text": "Der Everyday-Glam-Kurs hat meine Morgenroutine verändert. Endlich verstehe ich, wie man Foundation richtig verblendet, und meine Haut sieht jeden Tag makellos aus!"
+          },
+          {
+            "name": "Zara B.",
+            "text": "Bridal Makeup Mastery hat mir das Selbstvertrauen gegeben, freiberuflich als Bridal-Artist zu starten. Allein die Business-Tipps waren die Investition wert."
+          },
+          {
+            "name": "Hannah L.",
+            "text": "Der Editorial-Kurs hat mich absolut umgehauen. Ich hätte nie gedacht, dass ich avantgardistische Looks kreieren könnte, aber die Schritt-für-Schritt-Anleitungen haben es so zugänglich gemacht."
+          }
+        ]
+      },
+      "faq": {
+        "heading": "Häufig gestellte Fragen",
+        "items": [
+          {
+            "q": "Brauche ich professionelle Make-up-Produkte, um anzufangen?",
+            "a": "Überhaupt nicht! Wir empfehlen erschwingliche Drogerie-Alternativen für jedes Produkt, das in den Kursen verwendet wird. Du kannst dein Kit nach und nach erweitern."
+          },
+          {
+            "q": "Sind die Techniken für alle Hauttypen geeignet?",
+            "a": "Absolut. Jede Lektion behandelt Anpassungen für trockene, ölige, Misch- und empfindliche Haut. Wir gehen auch auf Techniken für verschiedenste Hauttöne ein."
+          },
+          {
+            "q": "Kann ich mobil auf die Kurse zugreifen?",
+            "a": "Ja! Die Plattform ist vollständig responsive. Du kannst Lektionen auf deinem Smartphone, Tablet oder Computer streamen — perfekt, um direkt an deinem Schminktisch mitzumachen."
+          }
+        ]
+      },
+      "cta": {
+        "heading": "Bereit für deinen Glow-up?",
+        "buttonText": "Jetzt beitreten"
+      },
+      "stats": {
+        "heading": "Tritt dem Studio bei",
+        "items": [
+          {
+            "value": "5k+",
+            "label": "Teilnehmer"
+          },
+          {
+            "value": "60+",
+            "label": "Tutorials"
+          },
+          {
+            "value": "4.9★",
+            "label": "Durchschnittliche Bewertung"
+          }
+        ]
+      },
+      "banner": {
+        "text": "Neue Braut-Make-up-Masterclass hinzugefügt — sichere dir deinen Platz.",
+        "linkText": "Programme durchstöbern"
+      }
+    }
+  },
+  "template": {
+    "homeClassic": {
+      "hero": {
+        "heading": "Lerne von den Besten",
+        "subheading": "Praxisnahe Kurse, die dir helfen zu wachsen, in deinem eigenen Tempo.",
+        "ctaText": "Kurse durchstöbern"
+      },
+      "courseGrid": {
+        "heading": "Ausgewählte Kurse"
+      },
+      "testimonials": {
+        "heading": "Was Teilnehmer sagen"
+      },
+      "cta": {
+        "heading": "Bereit zu starten?",
+        "buttonText": "Jetzt beitreten"
+      }
+    },
+    "homeStoryteller": {
+      "hero": {
+        "heading": "Deine Reise beginnt hier",
+        "subheading": "Ein herzliches Willkommen zu deiner neuen Praxis."
+      },
+      "imageText": {
+        "heading": "Mein Ansatz",
+        "body": "Teile, was deine Arbeit besonders macht."
+      },
+      "stats": {
+        "heading": "In Zahlen",
+        "items": [
+          {
+            "value": "500+",
+            "label": "Teilnehmer"
+          },
+          {
+            "value": "4.9",
+            "label": "Durchschnittliche Bewertung"
+          },
+          {
+            "value": "20+",
+            "label": "Kurse"
+          }
+        ]
+      },
+      "courseGrid": {
+        "heading": "Beliebte Kurse"
+      },
+      "cta": {
+        "heading": "Tritt der Community bei",
+        "buttonText": "Loslegen"
+      }
+    },
+    "homeMinimal": {
+      "hero": {
+        "heading": "Willkommen",
+        "subheading": "Alles, was du brauchst, nichts, was du nicht brauchst."
+      },
+      "cta": {
+        "heading": "Mach den ersten Schritt",
+        "buttonText": "Entdecken"
+      }
+    },
+    "aboutFounder": {
+      "richText": {
+        "heading": "Über mich",
+        "body": "Stelle dich und deine Mission in wenigen Sätzen vor."
+      },
+      "imageText": {
+        "heading": "Meine Geschichte",
+        "body": "Erzähle Teilnehmern, wie du hierhergekommen bist und warum es wichtig ist."
+      },
+      "stats": {
+        "items": [
+          {
+            "value": "10 Jahre",
+            "label": "Erfahrung"
+          },
+          {
+            "value": "1,000+",
+            "label": "Unterrichtete Teilnehmer"
+          }
+        ]
+      }
+    },
+    "pricingPlansFaq": {
+      "pricingPlans": {
+        "heading": "Tarife & Preise",
+        "subheading": "Wähle einen Tarif, der zu deinen Zielen passt."
+      },
+      "faq": {
+        "heading": "Häufig gestellte Fragen",
+        "items": [
+          {
+            "q": "Kann ich jederzeit kündigen?",
+            "a": "Ja — dein Tarif bleibt bis zum Ende des Zeitraums aktiv."
+          },
+          {
+            "q": "Bietest du Rückerstattungen an?",
+            "a": "Melde dich innerhalb von 14 Tagen und wir finden eine Lösung."
+          }
+        ]
+      }
+    },
+    "contactSimple": {
+      "contact": {
+        "heading": "Kontakt aufnehmen",
+        "intro": "Hast du eine Frage? Sende uns eine Nachricht."
+      },
+      "faq": {
+        "heading": "Häufige Fragen"
+      }
+    }
+  },
+  "lookPreview": {
+    "creator": "der Creator"
+  }
+}

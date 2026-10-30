@@ -24,10 +24,12 @@ import {
 import { cxFields } from "@/lib/blocks/cx-defs";
 import { dynamicKeyOf, getBlockDef } from "@/lib/blocks/registry";
 import { pageWrapperClass } from "@/lib/blocks/section-defs";
+import { blockWords } from "./block-words";
+
+const { ui } = blockWords("en", "en");
 
 describe("cx block wiring", () => {
   it("is a registered block type that the palette never offers", () => {
-    expect(getBlockDef("cx")?.label).toBe("Custom section");
     expect(getBlockDef("cx")?.group).toBe("custom");
   });
 
@@ -41,7 +43,7 @@ describe("cx block wiring", () => {
   });
 
   it("builds its form from the block's own spec", () => {
-    const fields = cxFields(itineraryBlock());
+    const fields = cxFields(itineraryBlock(), ui);
     expect(fields.map((f) => f.key)).toEqual([
       "kicker",
       "heading",
@@ -55,7 +57,7 @@ describe("cx block wiring", () => {
       "text",
       "image",
     ]);
-    expect(cxFields({ id: "b", type: "cx" })).toEqual([]);
+    expect(cxFields({ id: "b", type: "cx" }, ui)).toEqual([]);
   });
 
   it("makes a page full-bleed like styled sections", () => {

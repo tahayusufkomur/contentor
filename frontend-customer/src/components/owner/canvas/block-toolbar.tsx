@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { GripVertical, Trash2, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEditorStore } from "./editor-store";
-import { getBlockDef } from "@/lib/blocks/registry";
+import { useBlockLibrary } from "@/lib/blocks/use-block-library";
 import type { Block, PageKey } from "@/types/tenant";
 
 interface BlockToolbarProps {
@@ -29,8 +29,9 @@ export function BlockToolbar({
 }: BlockToolbarProps) {
   const tr = useTranslations("admin.owner.toolbar");
   const store = useEditorStore();
+  const library = useBlockLibrary();
   const [confirming, setConfirming] = useState(false);
-  const label = getBlockDef(block.type)?.label ?? block.type;
+  const label = library.def(block.type)?.label ?? block.type;
 
   const btn =
     "flex h-7 w-7 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground";

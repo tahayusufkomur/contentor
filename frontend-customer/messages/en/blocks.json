@@ -1,0 +1,881 @@
+{
+  "default": {
+    "hero": {
+      "heading": "Welcome",
+      "subheading": "A short, compelling tagline.",
+      "ctaText": "Get started"
+    },
+    "richText": {
+      "heading": "Heading"
+    },
+    "imageText": {
+      "heading": "Heading"
+    },
+    "gallery": {
+      "heading": "Gallery"
+    },
+    "testimonials": {
+      "heading": "What students say"
+    },
+    "faq": {
+      "heading": "Frequently asked questions"
+    },
+    "cta": {
+      "heading": "Ready to start?",
+      "buttonText": "Join now"
+    },
+    "logos": {
+      "heading": "As featured in"
+    },
+    "banner": {
+      "text": "Announcement"
+    },
+    "contact": {
+      "heading": "Get in touch",
+      "intro": "Have a question? Send us a message.",
+      "submitLabel": "Send message",
+      "successMessage": "Thanks! We'll get back to you soon."
+    },
+    "courseGrid": {
+      "heading": "Courses"
+    },
+    "pricingPlans": {
+      "heading": "Plans & Pricing"
+    },
+    "upcomingEvents": {
+      "heading": "Upcoming events"
+    },
+    "storeProducts": {
+      "heading": "Shop"
+    }
+  },
+  "section": {
+    "hero": {
+      "headline": "A headline that says what you offer",
+      "subhead": "One sentence on who it's for and what changes for them.",
+      "ctaLabel": "Explore courses"
+    },
+    "story": {
+      "heading": "Hi, I'm glad you're here",
+      "body": "Tell visitors how you started, who you work with and what a session with you feels like."
+    },
+    "benefits": {
+      "heading": "What you'll gain",
+      "items": [
+        {
+          "title": "First benefit",
+          "text": "What changes for your students."
+        },
+        {
+          "title": "Second benefit",
+          "text": "What changes for your students."
+        },
+        {
+          "title": "Third benefit",
+          "text": "What changes for your students."
+        }
+      ]
+    },
+    "courseShowcase": {
+      "heading": "Courses",
+      "ctaLabel": "See all courses"
+    },
+    "howItWorks": {
+      "heading": "How it works",
+      "steps": [
+        {
+          "title": "Choose",
+          "text": "Pick the course or session that fits you."
+        },
+        {
+          "title": "Join",
+          "text": "Learn at your own pace or live with me."
+        },
+        {
+          "title": "Grow",
+          "text": "Practise, ask questions and see progress."
+        }
+      ]
+    },
+    "philosophy": {
+      "statement": "A sentence you believe about your craft, in your own words."
+    },
+    "moments": {
+      "heading": "Moments"
+    },
+    "pricing": {
+      "heading": "Membership"
+    },
+    "faq": {
+      "heading": "Questions, answered",
+      "items": [
+        {
+          "q": "Who is this for?",
+          "a": "Describe who you work with."
+        },
+        {
+          "q": "Do I need experience?",
+          "a": "Say what a beginner needs."
+        },
+        {
+          "q": "How do I start?",
+          "a": "Explain the first step."
+        }
+      ]
+    },
+    "cta": {
+      "heading": "Ready to begin?",
+      "ctaLabel": "Get started"
+    },
+    "contact": {
+      "heading": "Get in touch",
+      "text": "Questions about a course or a session? Send a message."
+    },
+    "events": {
+      "heading": "Upcoming sessions",
+      "ctaLabel": "See the calendar"
+    },
+    "proof": {
+      "heading": "In their words"
+    },
+    "statement": {
+      "statement": "One line you believe."
+    }
+  },
+  "example": {
+    "generic": {
+      "hero": {
+        "heading": "Learn from the best",
+        "subheading": "Practical, step-by-step lessons to help you grow at your own pace.",
+        "ctaText": "Browse programs"
+      },
+      "richText": {
+        "heading": "Why learn with me?",
+        "body": "I've spent years refining a simple, proven approach so you can make real progress without the guesswork. Each lesson builds on the last — clear, practical, and made for every level."
+      },
+      "imageText": {
+        "heading": "About me",
+        "body": "Hi, I'm your instructor. I created these courses to share what's worked for hundreds of students — and to help you get there faster, with guidance every step of the way."
+      },
+      "testimonials": {
+        "heading": "What students say",
+        "items": [
+          {
+            "name": "Alex R.",
+            "text": "Clear, well-paced, and genuinely useful. I finally feel like I'm making progress every week."
+          },
+          {
+            "name": "Jordan M.",
+            "text": "The lessons are easy to follow and the results speak for themselves. Highly recommend."
+          },
+          {
+            "name": "Sam T.",
+            "text": "Felt like a private session. The detail and care in every lesson make all the difference."
+          }
+        ]
+      },
+      "faq": {
+        "heading": "Frequently asked questions",
+        "items": [
+          {
+            "q": "Is this suitable for beginners?",
+            "a": "Absolutely. Each program starts with the fundamentals and includes modifications, so you can begin at any level and progress at your own pace."
+          },
+          {
+            "q": "Do I need any special equipment?",
+            "a": "No — you can get started with what you already have. Any optional extras are noted in the individual lessons."
+          },
+          {
+            "q": "Can I access the courses on mobile?",
+            "a": "Yes! The platform is fully responsive. Stream lessons on your phone, tablet, or computer — perfect for learning anywhere."
+          }
+        ]
+      },
+      "cta": {
+        "heading": "Ready to get started?",
+        "buttonText": "Join now"
+      },
+      "stats": {
+        "heading": "Trusted by learners",
+        "items": [
+          {
+            "value": "500+",
+            "label": "Students"
+          },
+          {
+            "value": "30+",
+            "label": "Hours of video"
+          },
+          {
+            "value": "4.9★",
+            "label": "Average rating"
+          }
+        ]
+      },
+      "banner": {
+        "text": "New courses just added — start learning today.",
+        "linkText": "Browse programs"
+      },
+      "contact": {
+        "heading": "Get in touch",
+        "intro": "Have a question or want to work together? Send a message and I'll get back to you soon."
+      },
+      "gallery": {
+        "heading": "A look inside"
+      },
+      "logos": {
+        "heading": "As featured in"
+      },
+      "video": {
+        "heading": "Watch a quick introduction"
+      },
+      "courseGrid": {
+        "heading": "Explore the programs"
+      },
+      "pricingPlans": {
+        "heading": "Plans & pricing",
+        "subheading": "Pick the plan that fits where you are right now — upgrade anytime."
+      },
+      "upcomingEvents": {
+        "heading": "Upcoming live sessions"
+      },
+      "storeProducts": {
+        "heading": "From the shop"
+      }
+    },
+    "yoga": {
+      "hero": {
+        "heading": "Find Your Balance Through Yoga",
+        "subheading": "Transform your body and mind with guided yoga practices — whether you're a complete beginner or an experienced yogi.",
+        "ctaText": "Browse Programs"
+      },
+      "richText": {
+        "heading": "Why Practice With Me?",
+        "body": "Every class blends mindful breathwork with safe, clear alignment so you can build a steady practice at your own pace. Roll out your mat, and let's grow stronger and calmer together."
+      },
+      "imageText": {
+        "heading": "About Me",
+        "body": "Certified yoga instructor with over 12 years of teaching experience in Hatha, Vinyasa, and Ashtanga traditions. I believe yoga is a journey of self-discovery — meeting yourself on the mat with compassion, breath, and intention."
+      },
+      "testimonials": {
+        "heading": "What Students Say",
+        "items": [
+          {
+            "name": "Priya R.",
+            "text": "These classes changed my life. The beginner course gave me a solid foundation, and now I practice every morning before work. My flexibility and focus have improved so much."
+          },
+          {
+            "name": "Sarah L.",
+            "text": "The Vinyasa Flow course is beautifully structured. Each lesson builds on the last, and the cues are so clear that I always feel safe pushing my edge."
+          },
+          {
+            "name": "Marcus T.",
+            "text": "I was skeptical about learning yoga online, but the video quality and detailed alignment instructions made it feel like a private session. Highly recommend!"
+          }
+        ]
+      },
+      "faq": {
+        "heading": "Frequently Asked Questions",
+        "items": [
+          {
+            "q": "Do I need to be flexible to start yoga?",
+            "a": "Absolutely not! Flexibility is a result of yoga, not a prerequisite. Our beginner course starts with gentle movements and modifications so you can practice safely at any level."
+          },
+          {
+            "q": "What equipment do I need?",
+            "a": "A yoga mat is recommended but not required. You may also find blocks and a strap helpful for certain poses. Wear comfortable clothing that allows free movement."
+          },
+          {
+            "q": "Can I access the courses on mobile?",
+            "a": "Yes! The platform is fully responsive. You can stream lessons on your phone, tablet, or computer — perfect for practicing anywhere."
+          }
+        ]
+      },
+      "cta": {
+        "heading": "Ready to Begin Your Journey?",
+        "buttonText": "Join Now"
+      },
+      "stats": {
+        "heading": "Join the Practice",
+        "items": [
+          {
+            "value": "500+",
+            "label": "Students"
+          },
+          {
+            "value": "40+",
+            "label": "Guided classes"
+          },
+          {
+            "value": "4.9★",
+            "label": "Average rating"
+          }
+        ]
+      },
+      "banner": {
+        "text": "New beginner series just added — start your practice today.",
+        "linkText": "Browse programs"
+      }
+    },
+    "pilates": {
+      "hero": {
+        "heading": "Transform Your Body with Pilates",
+        "subheading": "Build core strength, improve flexibility, and move with confidence through mindful, controlled movement.",
+        "ctaText": "Browse Programs"
+      },
+      "richText": {
+        "heading": "Why Train With Me?",
+        "body": "Precise, controlled movement is at the heart of every session. We focus on form first, so you build a strong, balanced body safely — no gym, no reformer, just a mat and a little commitment."
+      },
+      "imageText": {
+        "heading": "About Me",
+        "body": "Certified Pilates instructor with over 12 years of experience in mat and reformer Pilates. I specialise in helping people of all fitness levels build a strong, balanced body through precise, controlled movement — no gym required, just a mat and commitment."
+      },
+      "testimonials": {
+        "heading": "What Students Say",
+        "items": [
+          {
+            "name": "Clara D.",
+            "text": "After just four weeks my posture improved dramatically. The lessons are clear, well-paced, and I can feel every muscle engaging properly."
+          },
+          {
+            "name": "Marco T.",
+            "text": "I was sceptical about online Pilates, but the detailed cues and camera angles make it feel like a private session. My back pain is finally gone!"
+          },
+          {
+            "name": "Hana Y.",
+            "text": "The Full Body Sculpt course pushed me in the best way. I feel stronger, more flexible, and genuinely look forward to every workout."
+          }
+        ]
+      },
+      "faq": {
+        "heading": "Frequently Asked Questions",
+        "items": [
+          {
+            "q": "Do I need any equipment?",
+            "a": "All our courses are mat-based. You only need a yoga or Pilates mat and enough space to lie down and stretch your arms out. Optional props like a resistance band are noted in individual lessons."
+          },
+          {
+            "q": "Is Pilates suitable for beginners?",
+            "a": "Absolutely! The Pilates Fundamentals course starts from scratch with breathing, alignment, and basic movements. No prior experience is needed."
+          },
+          {
+            "q": "Can I access the courses on mobile?",
+            "a": "Yes! The platform is fully responsive. You can stream lessons on your phone, tablet, or computer — perfect for practising anywhere."
+          }
+        ]
+      },
+      "cta": {
+        "heading": "Ready to Feel Stronger?",
+        "buttonText": "Join Now"
+      },
+      "stats": {
+        "heading": "Move With Confidence",
+        "items": [
+          {
+            "value": "500+",
+            "label": "Students"
+          },
+          {
+            "value": "30+",
+            "label": "Hours of video"
+          },
+          {
+            "value": "4.9★",
+            "label": "Average rating"
+          }
+        ]
+      },
+      "banner": {
+        "text": "New mat-based programs just added — build strength at home.",
+        "linkText": "Browse programs"
+      }
+    },
+    "fitness": {
+      "hero": {
+        "heading": "Transform Your Body, Elevate Your Life",
+        "subheading": "Science-backed programs to build strength, burn fat, and boost your confidence — train anywhere with expert-led video workouts.",
+        "ctaText": "Browse Programs"
+      },
+      "richText": {
+        "heading": "Train Smarter, Not Harder",
+        "body": "Every program is built on proven principles — functional training, HIIT, and smart strength progression. Follow along with clear form breakdowns and make professional-grade results accessible, no gym required."
+      },
+      "imageText": {
+        "heading": "About Me",
+        "body": "Certified personal trainer and sports science graduate with over 8 years of coaching experience. I specialize in functional training, HIIT, and strength programming for all fitness levels. My mission is to make professional-grade training accessible to everyone — no gym required."
+      },
+      "testimonials": {
+        "heading": "What Students Say",
+        "items": [
+          {
+            "name": "Marcus T.",
+            "text": "The Total Body Transformation program completely changed my routine. I lost 12 kg in three months and feel stronger than ever. The structured approach kept me accountable every single day."
+          },
+          {
+            "name": "Sarah L.",
+            "text": "As a busy mom, I needed workouts I could do at home. The HIIT Power Program fits perfectly into my schedule — 30 minutes, maximum results. I have so much more energy now!"
+          },
+          {
+            "name": "David K.",
+            "text": "The Strength & Conditioning course gave me the foundation I was missing. My lifts have improved dramatically and I finally understand proper form and programming."
+          }
+        ]
+      },
+      "faq": {
+        "heading": "Frequently Asked Questions",
+        "items": [
+          {
+            "q": "Do I need any equipment?",
+            "a": "The Total Body Transformation course requires no equipment at all — just your bodyweight. The HIIT and Strength programs recommend dumbbells and a resistance band, but we always show bodyweight alternatives."
+          },
+          {
+            "q": "I'm a complete beginner — is this for me?",
+            "a": "Absolutely! Each program includes form breakdowns and beginner modifications for every exercise. Start with the free Total Body Transformation course and progress at your own pace."
+          },
+          {
+            "q": "Can I access the workouts on my phone?",
+            "a": "Yes! The platform is fully responsive. Stream lessons on your phone, tablet, or computer — perfect for training at home, in the gym, or while traveling."
+          }
+        ]
+      },
+      "cta": {
+        "heading": "Ready to Start Training?",
+        "buttonText": "Join Now"
+      },
+      "stats": {
+        "heading": "Results That Add Up",
+        "items": [
+          {
+            "value": "10k+",
+            "label": "Workouts completed"
+          },
+          {
+            "value": "50+",
+            "label": "Video sessions"
+          },
+          {
+            "value": "4.9★",
+            "label": "Average rating"
+          }
+        ]
+      },
+      "banner": {
+        "text": "New HIIT program just dropped — train anywhere, anytime.",
+        "linkText": "Browse programs"
+      }
+    },
+    "faceYoga": {
+      "hero": {
+        "heading": "Natural Beauty Through Face Yoga",
+        "subheading": "Tone, lift, and rejuvenate your face with simple daily exercises — no injections, no products, just a few minutes a day.",
+        "ctaText": "Browse Programs"
+      },
+      "richText": {
+        "heading": "A Few Minutes a Day",
+        "body": "Natural facial rejuvenation is all about consistency. These short, targeted routines use only your hands and your own muscles — simple enough to fit into your morning, effective enough to see and feel the difference."
+      },
+      "imageText": {
+        "heading": "About Me",
+        "body": "Certified face yoga instructor and holistic wellness coach with over 6 years of experience. After seeing dramatic results in my own skin, I dedicated my career to teaching natural facial rejuvenation techniques that anyone can do at home."
+      },
+      "testimonials": {
+        "heading": "What Students Say",
+        "items": [
+          {
+            "name": "Sarah W.",
+            "text": "After just three weeks of the Basics course, my jawline is noticeably more defined. I cannot believe something so simple actually works!"
+          },
+          {
+            "name": "Mei C.",
+            "text": "The Anti-Aging Routines course is my daily ritual now. My forehead lines have softened and my skin looks so much more lifted and radiant."
+          },
+          {
+            "name": "Astrid N.",
+            "text": "Sculpt & Tone gave me cheekbones I did not know I had! The targeted exercises are so effective and only take ten minutes a day."
+          }
+        ]
+      },
+      "faq": {
+        "heading": "Frequently Asked Questions",
+        "items": [
+          {
+            "q": "How soon will I see results?",
+            "a": "Most students notice subtle changes within 2-3 weeks of daily practice. More significant lifting and toning typically appear after 6-8 weeks of consistent work."
+          },
+          {
+            "q": "Do I need any equipment?",
+            "a": "No equipment at all! All exercises use your own hands and facial muscles. A mirror is helpful so you can check your form, but that is all you need."
+          },
+          {
+            "q": "Can I access the courses on mobile?",
+            "a": "Yes! The platform is fully responsive. You can stream lessons on your phone, tablet, or computer — perfect for following along during your morning routine."
+          }
+        ]
+      },
+      "cta": {
+        "heading": "Ready to Transform Your Face Naturally?",
+        "buttonText": "Join Now"
+      },
+      "stats": {
+        "heading": "Naturally Radiant",
+        "items": [
+          {
+            "value": "2k+",
+            "label": "Students"
+          },
+          {
+            "value": "5 min",
+            "label": "Daily routine"
+          },
+          {
+            "value": "4.9★",
+            "label": "Average rating"
+          }
+        ]
+      },
+      "banner": {
+        "text": "New anti-aging routines just added — see results in weeks.",
+        "linkText": "Browse programs"
+      }
+    },
+    "bellyDance": {
+      "hero": {
+        "heading": "Discover the Art of Belly Dance",
+        "subheading": "Express yourself through the ancient art of belly dance — join our community of dancers and unlock your inner rhythm.",
+        "ctaText": "Browse Programs"
+      },
+      "richText": {
+        "heading": "Dance Is for Everyone",
+        "body": "No experience needed — just an open heart and a love for movement. We start with posture and simple hip work, then build toward expressive combinations so you can dance with confidence and joy."
+      },
+      "imageText": {
+        "heading": "About Me",
+        "body": "Passionate belly dance instructor with over 10 years of experience in Oriental, Tribal Fusion, and Classical Egyptian styles. I believe dance is for everyone — no experience needed, just an open heart and a love for movement."
+      },
+      "testimonials": {
+        "heading": "What Students Say",
+        "items": [
+          {
+            "name": "Ayşe K.",
+            "text": "This academy transformed the way I move. The structured lessons made it so easy to build confidence in my shimmies and isolations."
+          },
+          {
+            "name": "Leila M.",
+            "text": "I never imagined I could learn belly dance online, but the video quality and detailed breakdowns are incredible. I practice every single day!"
+          },
+          {
+            "name": "Nadia S.",
+            "text": "The choreography course is a masterpiece. I went from feeling lost on stage to performing with real expression and musicality."
+          }
+        ]
+      },
+      "faq": {
+        "heading": "Frequently Asked Questions",
+        "items": [
+          {
+            "q": "Do I need prior dance experience?",
+            "a": "Not at all! Our Belly Dance Basics course is designed for absolute beginners. We start with posture and simple hip movements before building up to combinations."
+          },
+          {
+            "q": "What do I need to get started?",
+            "a": "All you need is comfortable clothing that lets you see your hip movements, a small open space, and a willingness to have fun. A hip scarf is optional but adds to the experience!"
+          },
+          {
+            "q": "Can I access the courses on mobile?",
+            "a": "Yes! The platform is fully responsive. You can stream lessons on your phone, tablet, or computer — perfect for practicing anywhere."
+          }
+        ]
+      },
+      "cta": {
+        "heading": "Ready to Start Dancing?",
+        "buttonText": "Join Now"
+      },
+      "stats": {
+        "heading": "Find Your Rhythm",
+        "items": [
+          {
+            "value": "1k+",
+            "label": "Dancers"
+          },
+          {
+            "value": "35+",
+            "label": "Choreography lessons"
+          },
+          {
+            "value": "4.9★",
+            "label": "Average rating"
+          }
+        ]
+      },
+      "banner": {
+        "text": "New choreography course just added — find your rhythm.",
+        "linkText": "Browse programs"
+      }
+    },
+    "poleDance": {
+      "hero": {
+        "heading": "Unleash Your Strength on the Pole",
+        "subheading": "Build confidence, strength, and artistry through pole dance — whether you're a total beginner or mastering advanced tricks.",
+        "ctaText": "Browse Programs"
+      },
+      "richText": {
+        "heading": "Every Dancer Starts Somewhere",
+        "body": "No gymnastics background required — just the courage to try something new. Detailed progressions build your strength step by step, so even the scary moves start to feel safe and within reach."
+      },
+      "imageText": {
+        "heading": "About Me",
+        "body": "Certified pole dance instructor and competitor with over 8 years of teaching experience. My mission is to make pole dance accessible to all body types and fitness levels — no gymnastics background required, just the courage to try something new."
+      },
+      "testimonials": {
+        "heading": "What Students Say",
+        "items": [
+          {
+            "name": "Jessica R.",
+            "text": "I was terrified of trying pole dance, but the Basics course broke everything down so clearly. I can now do a fireman spin and I feel incredible!"
+          },
+          {
+            "name": "Mia T.",
+            "text": "The spins and transitions course completely changed my flow. I went from clunky moves to smooth, connected sequences in just a few weeks."
+          },
+          {
+            "name": "Priya D.",
+            "text": "Advanced Pole Tricks pushed me beyond what I thought was possible. The detailed progressions for each trick made even the scary inversions feel safe."
+          }
+        ]
+      },
+      "faq": {
+        "heading": "Frequently Asked Questions",
+        "items": [
+          {
+            "q": "Do I need to be strong to start?",
+            "a": "Not at all! Pole Basics is designed for complete beginners. You will build strength as you progress through the lessons. Everyone starts somewhere."
+          },
+          {
+            "q": "What equipment do I need?",
+            "a": "You will need a pole (static or spinning) installed securely at home or access to a local studio. Wear shorts and a tank top so your skin can grip the pole."
+          },
+          {
+            "q": "Can I access the courses on mobile?",
+            "a": "Yes! The platform is fully responsive. You can stream lessons on your phone, tablet, or computer — perfect for following along in your practice space."
+          }
+        ]
+      },
+      "cta": {
+        "heading": "Ready to Own the Pole?",
+        "buttonText": "Join Now"
+      },
+      "stats": {
+        "heading": "Build Real Strength",
+        "items": [
+          {
+            "value": "800+",
+            "label": "Students"
+          },
+          {
+            "value": "40+",
+            "label": "Trick tutorials"
+          },
+          {
+            "value": "4.9★",
+            "label": "Average rating"
+          }
+        ]
+      },
+      "banner": {
+        "text": "New beginner spins course just added — start where you are.",
+        "linkText": "Browse programs"
+      }
+    },
+    "makeup": {
+      "hero": {
+        "heading": "Master the Art of Makeup",
+        "subheading": "From everyday glam to editorial masterpieces, learn professional makeup techniques from the comfort of your home.",
+        "ctaText": "Browse Programs"
+      },
+      "richText": {
+        "heading": "From Everyday Glam to Editorial",
+        "body": "Learn the techniques the pros use — flawless bases, seamless blending, and looks that last. Clear, step-by-step breakdowns make even advanced editorial styles feel achievable, whatever your kit."
+      },
+      "imageText": {
+        "heading": "About Me",
+        "body": "Professional makeup artist with over 12 years of experience in bridal, editorial, and fashion makeup. I have worked backstage at fashion weeks and with celebrity clients, and now I am passionate about sharing my techniques with aspiring artists around the world."
+      },
+      "testimonials": {
+        "heading": "What Students Say",
+        "items": [
+          {
+            "name": "Olivia H.",
+            "text": "The Everyday Glam course transformed my morning routine. I finally understand how to blend foundation properly and my skin looks flawless every day!"
+          },
+          {
+            "name": "Zara B.",
+            "text": "Bridal Makeup Mastery gave me the confidence to start freelancing as a bridal artist. The business tips alone were worth the investment."
+          },
+          {
+            "name": "Hannah L.",
+            "text": "The editorial course blew my mind. I never thought I could create avant-garde looks, but the step-by-step breakdowns made it so accessible."
+          }
+        ]
+      },
+      "faq": {
+        "heading": "Frequently Asked Questions",
+        "items": [
+          {
+            "q": "Do I need professional makeup products to start?",
+            "a": "Not at all! We recommend affordable drugstore alternatives for every product used in the courses. You can upgrade your kit as you progress."
+          },
+          {
+            "q": "Are the techniques suitable for all skin types?",
+            "a": "Absolutely. Each lesson covers adaptations for dry, oily, combination, and sensitive skin. We also address techniques for a wide range of skin tones."
+          },
+          {
+            "q": "Can I access the courses on mobile?",
+            "a": "Yes! The platform is fully responsive. You can stream lessons on your phone, tablet, or computer — perfect for following along at your vanity."
+          }
+        ]
+      },
+      "cta": {
+        "heading": "Ready to Glow Up?",
+        "buttonText": "Join Now"
+      },
+      "stats": {
+        "heading": "Join the Studio",
+        "items": [
+          {
+            "value": "5k+",
+            "label": "Students"
+          },
+          {
+            "value": "60+",
+            "label": "Tutorials"
+          },
+          {
+            "value": "4.9★",
+            "label": "Average rating"
+          }
+        ]
+      },
+      "banner": {
+        "text": "New bridal makeup masterclass just added — book your seat.",
+        "linkText": "Browse programs"
+      }
+    }
+  },
+  "template": {
+    "homeClassic": {
+      "hero": {
+        "heading": "Learn from the best",
+        "subheading": "Practical courses to help you grow, at your own pace.",
+        "ctaText": "Browse courses"
+      },
+      "courseGrid": {
+        "heading": "Featured courses"
+      },
+      "testimonials": {
+        "heading": "What students say"
+      },
+      "cta": {
+        "heading": "Ready to start?",
+        "buttonText": "Join now"
+      }
+    },
+    "homeStoryteller": {
+      "hero": {
+        "heading": "Your journey starts here",
+        "subheading": "A warm welcome to your new practice."
+      },
+      "imageText": {
+        "heading": "My approach",
+        "body": "Share what makes your work different."
+      },
+      "stats": {
+        "heading": "By the numbers",
+        "items": [
+          {
+            "value": "500+",
+            "label": "Students"
+          },
+          {
+            "value": "4.9",
+            "label": "Average rating"
+          },
+          {
+            "value": "20+",
+            "label": "Courses"
+          }
+        ]
+      },
+      "courseGrid": {
+        "heading": "Popular courses"
+      },
+      "cta": {
+        "heading": "Join the community",
+        "buttonText": "Get started"
+      }
+    },
+    "homeMinimal": {
+      "hero": {
+        "heading": "Welcome",
+        "subheading": "Everything you need, nothing you don't."
+      },
+      "cta": {
+        "heading": "Take the first step",
+        "buttonText": "Explore"
+      }
+    },
+    "aboutFounder": {
+      "richText": {
+        "heading": "About",
+        "body": "Introduce yourself and your mission in a few sentences."
+      },
+      "imageText": {
+        "heading": "My story",
+        "body": "Tell students how you got here and why it matters."
+      },
+      "stats": {
+        "items": [
+          {
+            "value": "10 yrs",
+            "label": "Experience"
+          },
+          {
+            "value": "1,000+",
+            "label": "Students taught"
+          }
+        ]
+      }
+    },
+    "pricingPlansFaq": {
+      "pricingPlans": {
+        "heading": "Plans & Pricing",
+        "subheading": "Choose a plan that fits your goals."
+      },
+      "faq": {
+        "heading": "Frequently asked questions",
+        "items": [
+          {
+            "q": "Can I cancel anytime?",
+            "a": "Yes — your plan stays active until the end of the period."
+          },
+          {
+            "q": "Do you offer refunds?",
+            "a": "Reach out within 14 days and we'll sort it out."
+          }
+        ]
+      }
+    },
+    "contactSimple": {
+      "contact": {
+        "heading": "Get in touch",
+        "intro": "Have a question? Send us a message."
+      },
+      "faq": {
+        "heading": "Common questions"
+      }
+    }
+  },
+  "lookPreview": {
+    "creator": "the creator"
+  }
+}

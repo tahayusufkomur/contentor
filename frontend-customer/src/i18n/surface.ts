@@ -21,9 +21,17 @@ export function namespacesFor(surface: Surface): {
   site: string[];
 } {
   const site = ["site", "student", "pwa"];
+  // `blocks` is what the owner tools write onto the site (new blocks, templates):
+  // the site's language, and only where the owner tools are, not on every page.
   if (surface === "studio")
-    return { creator: ["common", "admin", "studio"], site };
+    return {
+      creator: ["common", "admin", "studio"],
+      site: [...site, "blocks"],
+    };
   if (surface === "site+owner")
-    return { creator: ["admin", "studio"], site: ["common", ...site] };
+    return {
+      creator: ["admin", "studio"],
+      site: ["common", ...site, "blocks"],
+    };
   return { creator: [], site: ["common", ...site] };
 }

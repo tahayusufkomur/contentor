@@ -8708,7 +8708,7 @@
     "reviewed": false
   },
   "admin.owner.toolbar.reorder": {
-    "src": "ff6763fe",
+    "src": "484902a8",
     "reviewed": false
   },
   "admin.owner.toolbar.confirmDelete": {
@@ -9447,12 +9447,900 @@
     "src": "492eb006",
     "reviewed": false
   },
-  "admin.owner.field.addItem": {
-    "src": "3796d1b1",
+  "admin.owner.field.addItem.image": {
+    "src": "5375634e",
     "reviewed": false
   },
-  "admin.owner.field.addDefault": {
-    "src": "3a7d9767",
+  "admin.owner.field.addItem.testimonial": {
+    "src": "220a25c1",
+    "reviewed": false
+  },
+  "admin.owner.field.addItem.question": {
+    "src": "377e08d4",
+    "reviewed": false
+  },
+  "admin.owner.field.addItem.stat": {
+    "src": "0609359f",
+    "reviewed": false
+  },
+  "admin.owner.field.addItem.logo": {
+    "src": "bf6defdd",
+    "reviewed": false
+  },
+  "admin.owner.field.addItem.benefit": {
+    "src": "be3f0606",
+    "reviewed": false
+  },
+  "admin.owner.field.addItem.step": {
+    "src": "2a4b9445",
+    "reviewed": false
+  },
+  "admin.owner.field.addItem.photo": {
+    "src": "d1434930",
+    "reviewed": false
+  },
+  "admin.owner.field.addItem.quote": {
+    "src": "344e8e17",
+    "reviewed": false
+  },
+  "admin.owner.field.addItem.number": {
+    "src": "f6033cec",
+    "reviewed": false
+  },
+  "admin.owner.field.addItem.name": {
+    "src": "ea054e1a",
+    "reviewed": false
+  },
+  "admin.owner.field.addItemGeneric": {
+    "src": "5bcf4db4",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.block.hero": {
+    "src": "17f5d4f0",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.block.richText": {
+    "src": "c3328c39",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.block.imageText": {
+    "src": "072384a1",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.block.gallery": {
+    "src": "9c30a348",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.block.testimonials": {
+    "src": "2c2cd2ae",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.block.faq": {
+    "src": "03688ba6",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.block.cta": {
+    "src": "95c9c0e0",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.block.stats": {
+    "src": "be763e9a",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.block.logos": {
+    "src": "71e1dfa6",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.block.video": {
+    "src": "bc17c1f0",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.block.banner": {
+    "src": "c8af83fb",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.block.contact": {
+    "src": "d927866c",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.block.courseGrid": {
+    "src": "a16536d7",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.block.pricingPlans": {
+    "src": "8216876d",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.block.upcomingEvents": {
+    "src": "1abcabd8",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.block.storeProducts": {
+    "src": "b57f921d",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.block.cx": {
+    "src": "8a73cd04",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.centeredFullBleed": {
+    "src": "96bfbac4",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.splitTextImage": {
+    "src": "445e9e72",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.minimal": {
+    "src": "7368bd31",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.standard": {
+    "src": "2dfa6607",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.centered": {
+    "src": "6d00bb19",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.wide": {
+    "src": "9ec4d86f",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.sideBySide": {
+    "src": "5f65cb44",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.stacked": {
+    "src": "9eafca46",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.card": {
+    "src": "4d4ce73b",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.grid": {
+    "src": "701c483f",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.masonry": {
+    "src": "a4105bb8",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.carousel": {
+    "src": "f1f842e1",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.cards": {
+    "src": "0f830bc2",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.largeQuote": {
+    "src": "60339034",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.list": {
+    "src": "a1fffaaa",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.accordion": {
+    "src": "21191a04",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.openList": {
+    "src": "7275350b",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.twoColumns": {
+    "src": "8d8f0f25",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.banner": {
+    "src": "c8af83fb",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.split": {
+    "src": "fc8230b4",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.plain": {
+    "src": "34118050",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.band": {
+    "src": "895f49cf",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.row": {
+    "src": "9bf7a8e8",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.fullWidth": {
+    "src": "8087e6de",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.bar": {
+    "src": "e496fd20",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.soft": {
+    "src": "968c009e",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.leftHeading": {
+    "src": "717decd8",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.centeredHeading": {
+    "src": "82900e8a",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.compact": {
+    "src": "1df39aa5",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.layout.label": {
+    "src": "972ad8d8",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.option.none": {
+    "src": "6eef6648",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.option.dark": {
+    "src": "ae1ef014",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.option.light": {
+    "src": "a36ef8ab",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.option.medium": {
+    "src": "d404968e",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.option.strong": {
+    "src": "cf846870",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.option.largest": {
+    "src": "7cf7e8e5",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.option.large": {
+    "src": "738fd1d2",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.option.small": {
+    "src": "c74fd971",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.option.right": {
+    "src": "954daa8b",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.option.left": {
+    "src": "8ae1c34b",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.option.elevated": {
+    "src": "b6b4f3f9",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.option.bordered": {
+    "src": "09580fdd",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.option.minimal": {
+    "src": "a711cca9",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.option.overlay": {
+    "src": "249450cb",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.option.all": {
+    "src": "d87c4480",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.option.vertical": {
+    "src": "1b018061",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.option.wide": {
+    "src": "414768af",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.help.imageBackground": {
+    "src": "718dec18",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.help.shade": {
+    "src": "1e19fe0a",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.help.secondaryButton": {
+    "src": "dbd0f27f",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.help.video": {
+    "src": "9221fb69",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.help.dismissible": {
+    "src": "1edb02ed",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.help.filterFacets": {
+    "src": "e905efe2",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.item.image": {
+    "src": "50e19fda",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.item.testimonial": {
+    "src": "28900606",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.item.question": {
+    "src": "002ff598",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.item.stat": {
+    "src": "49df26a3",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.item.logo": {
+    "src": "83fce832",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.item.benefit": {
+    "src": "0e7fd98b",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.item.step": {
+    "src": "dc416e10",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.item.photo": {
+    "src": "d01d9003",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.item.quote": {
+    "src": "309028a9",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.item.number": {
+    "src": "b7baa1d4",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.item.name": {
+    "src": "709a2322",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.headline": {
+    "src": "442250df",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.subheadline": {
+    "src": "a3109be1",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.buttonText": {
+    "src": "2c1bff44",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.buttonLink": {
+    "src": "0058880a",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.image": {
+    "src": "50e19fda",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.imageShade": {
+    "src": "8c38bb7f",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.shadeStrength": {
+    "src": "cb013591",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.heading": {
+    "src": "a3089b7f",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.headingSize": {
+    "src": "948a0701",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.body": {
+    "src": "718a7e8a",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.imagePosition": {
+    "src": "8e48c6ea",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.images": {
+    "src": "09e871c9",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.caption": {
+    "src": "3428d97e",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.testimonials": {
+    "src": "2c2cd2ae",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.name": {
+    "src": "709a2322",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.role": {
+    "src": "c6a1a8de",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.quote": {
+    "src": "309028a9",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.rating": {
+    "src": "6437b7bf",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.avatar": {
+    "src": "7631b26e",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.questions": {
+    "src": "9a1fc173",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.question": {
+    "src": "002ff598",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.answer": {
+    "src": "a16a4eda",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.secondaryButtonText": {
+    "src": "9fa7a1ed",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.secondaryButtonLink": {
+    "src": "cfe96ea1",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.stats": {
+    "src": "be763e9a",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.value": {
+    "src": "8dce170d",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.label": {
+    "src": "74341e3c",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.logos": {
+    "src": "3089591a",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.logo": {
+    "src": "83fce832",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.altText": {
+    "src": "f978200b",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.video": {
+    "src": "bc17c1f0",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.text": {
+    "src": "c3328c39",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.linkText": {
+    "src": "502f872d",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.link": {
+    "src": "d0517071",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.dismissible": {
+    "src": "cb4fd2d1",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.intro": {
+    "src": "00ebb0f9",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.submitLabel": {
+    "src": "5f9ff484",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.successMessage": {
+    "src": "1dd08f39",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.maxCourses": {
+    "src": "1270e269",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.columns": {
+    "src": "cf723c59",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.cardStyle": {
+    "src": "f910328f",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.showFilters": {
+    "src": "b4bfb55c",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.showPrice": {
+    "src": "16b19f85",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.showMeta": {
+    "src": "7fb2c0d8",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.filterFacets": {
+    "src": "55600216",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.subheading": {
+    "src": "6b8ad00f",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.maxEvents": {
+    "src": "256374c7",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.showCovers": {
+    "src": "9796e521",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.field.maxProducts": {
+    "src": "914cafb6",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.family.hero": {
+    "src": "17f5d4f0",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.family.story": {
+    "src": "1835749d",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.family.benefits": {
+    "src": "927f4067",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.family.courseShowcase": {
+    "src": "a16536d7",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.family.howItWorks": {
+    "src": "1dd6a17c",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.family.philosophy": {
+    "src": "496e9438",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.family.moments": {
+    "src": "ed0cbe45",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.family.pricing": {
+    "src": "a0d9bbad",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.family.faq": {
+    "src": "03688ba6",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.family.cta": {
+    "src": "95c9c0e0",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.family.contact": {
+    "src": "b37456c4",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.family.events": {
+    "src": "1abcabd8",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.family.proof": {
+    "src": "5f174de1",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.family.statement": {
+    "src": "a72ca256",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.family.video": {
+    "src": "bc17c1f0",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.kicker": {
+    "src": "4a31bf61",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.headline": {
+    "src": "442250df",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.subheadline": {
+    "src": "a3109be1",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.buttonText": {
+    "src": "2c1bff44",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.buttonLink": {
+    "src": "0058880a",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.secondButtonText": {
+    "src": "945eed50",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.secondButtonLink": {
+    "src": "7172d5c1",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.smallLineEGLocationOrFormat": {
+    "src": "73d85d95",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.mainPhoto": {
+    "src": "96ca509f",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.detailPhoto": {
+    "src": "9b052f82",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.thirdPhotoSomeLayouts": {
+    "src": "9031383c",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.fourthPhotoSomeLayouts": {
+    "src": "c7ee1303",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.heading": {
+    "src": "a3089b7f",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.story": {
+    "src": "86b4ba2f",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.signatureCreatorName": {
+    "src": "b05087d3",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.linkText": {
+    "src": "502f872d",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.link": {
+    "src": "d0517071",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.portrait": {
+    "src": "92b6b1bf",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.settingPhoto": {
+    "src": "dfdb5aab",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.intro": {
+    "src": "b4e6a310",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.benefits": {
+    "src": "927f4067",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.title": {
+    "src": "768e0c1c",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.text": {
+    "src": "c3328c39",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.photo": {
+    "src": "d01d9003",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.howMany": {
+    "src": "503ce866",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.steps": {
+    "src": "cdde4f20",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.statement": {
+    "src": "a72ca256",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.attributionCreatorName": {
+    "src": "f4c573e0",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.atmospherePhoto": {
+    "src": "9ad39ef8",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.caption": {
+    "src": "3428d97e",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.photos": {
+    "src": "c8b2e864",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.questions": {
+    "src": "9a1fc173",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.question": {
+    "src": "002ff598",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.answer": {
+    "src": "a16a4eda",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.backgroundPhoto": {
+    "src": "a5b6600b",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.email": {
+    "src": "84add5b2",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.location": {
+    "src": "d219c681",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.hoursResponseTime": {
+    "src": "87b4914e",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.showContactForm": {
+    "src": "b22de9b5",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.clientWords": {
+    "src": "3a3516f9",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.whatTheySaid": {
+    "src": "abd78df1",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.theirFirstName": {
+    "src": "c702f8f2",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.numbers": {
+    "src": "7e53821f",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.number": {
+    "src": "b7baa1d4",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.whatItCounts": {
+    "src": "78096ac8",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.press": {
+    "src": "ea683ad6",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.name": {
+    "src": "709a2322",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.oneLineYouBelieve": {
+    "src": "961e5e44",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.clip": {
+    "src": "1bd3bd67",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.manifest.shape": {
+    "src": "ea5c1a20",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.sectionHelp.proof.quotes": {
+    "src": "09bb8be7",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.sectionHelp.proof.numbers": {
+    "src": "3e10ea63",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.sectionHelp.proof.press": {
+    "src": "f089482d",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.sectionHelp.video.video": {
+    "src": "dc41a325",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.upTo": {
+    "src": "d07bf76d",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.template.homeClassic.name": {
+    "src": "130cd7fe",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.template.homeClassic.description": {
+    "src": "e9d00897",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.template.homeStoryteller.name": {
+    "src": "9fe01ef3",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.template.homeStoryteller.description": {
+    "src": "6048907d",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.template.homeMinimal.name": {
+    "src": "a711cca9",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.template.homeMinimal.description": {
+    "src": "cfa3ca62",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.template.aboutFounder.name": {
+    "src": "35d96423",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.template.aboutFounder.description": {
+    "src": "9e0be9c2",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.template.pricingPlansFaq.name": {
+    "src": "12981d1c",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.template.pricingPlansFaq.description": {
+    "src": "86d9d17e",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.template.contactSimple.name": {
+    "src": "c49bb4c2",
+    "reviewed": false
+  },
+  "admin.owner.blockLib.template.contactSimple.description": {
+    "src": "9bd452d7",
     "reviewed": false
   },
   "admin.setupFlow.answerBox.label": {
@@ -12053,6 +12941,1482 @@
   },
   "admin.aiProgress.cancel": {
     "src": "77dfd213",
+    "reviewed": false
+  },
+  "blocks.default.hero.heading": {
+    "src": "ca4f9dcf",
+    "reviewed": false
+  },
+  "blocks.default.hero.subheading": {
+    "src": "b8cd8d19",
+    "reviewed": false
+  },
+  "blocks.default.hero.ctaText": {
+    "src": "90e40d50",
+    "reviewed": false
+  },
+  "blocks.default.richText.heading": {
+    "src": "a3089b7f",
+    "reviewed": false
+  },
+  "blocks.default.imageText.heading": {
+    "src": "a3089b7f",
+    "reviewed": false
+  },
+  "blocks.default.gallery.heading": {
+    "src": "9c30a348",
+    "reviewed": false
+  },
+  "blocks.default.testimonials.heading": {
+    "src": "029c68ba",
+    "reviewed": false
+  },
+  "blocks.default.faq.heading": {
+    "src": "af90cef8",
+    "reviewed": false
+  },
+  "blocks.default.cta.heading": {
+    "src": "931a0c97",
+    "reviewed": false
+  },
+  "blocks.default.cta.buttonText": {
+    "src": "e1312e12",
+    "reviewed": false
+  },
+  "blocks.default.logos.heading": {
+    "src": "1a143919",
+    "reviewed": false
+  },
+  "blocks.default.banner.text": {
+    "src": "cf84a98d",
+    "reviewed": false
+  },
+  "blocks.default.contact.heading": {
+    "src": "c49bb4c2",
+    "reviewed": false
+  },
+  "blocks.default.contact.intro": {
+    "src": "d4481998",
+    "reviewed": false
+  },
+  "blocks.default.contact.submitLabel": {
+    "src": "c70a890d",
+    "reviewed": false
+  },
+  "blocks.default.contact.successMessage": {
+    "src": "0a2a7fcb",
+    "reviewed": false
+  },
+  "blocks.default.courseGrid.heading": {
+    "src": "a16536d7",
+    "reviewed": false
+  },
+  "blocks.default.pricingPlans.heading": {
+    "src": "ceace454",
+    "reviewed": false
+  },
+  "blocks.default.upcomingEvents.heading": {
+    "src": "1abcabd8",
+    "reviewed": false
+  },
+  "blocks.default.storeProducts.heading": {
+    "src": "55de8870",
+    "reviewed": false
+  },
+  "blocks.section.hero.headline": {
+    "src": "6b9f993e",
+    "reviewed": false
+  },
+  "blocks.section.hero.subhead": {
+    "src": "c0347aeb",
+    "reviewed": false
+  },
+  "blocks.section.hero.ctaLabel": {
+    "src": "add567f7",
+    "reviewed": false
+  },
+  "blocks.section.story.heading": {
+    "src": "178021ec",
+    "reviewed": false
+  },
+  "blocks.section.story.body": {
+    "src": "7f0aa951",
+    "reviewed": false
+  },
+  "blocks.section.benefits.heading": {
+    "src": "e63313c4",
+    "reviewed": false
+  },
+  "blocks.section.benefits.items.0.title": {
+    "src": "6a697d84",
+    "reviewed": false
+  },
+  "blocks.section.benefits.items.0.text": {
+    "src": "5666523f",
+    "reviewed": false
+  },
+  "blocks.section.benefits.items.1.title": {
+    "src": "2bbfac93",
+    "reviewed": false
+  },
+  "blocks.section.benefits.items.1.text": {
+    "src": "5666523f",
+    "reviewed": false
+  },
+  "blocks.section.benefits.items.2.title": {
+    "src": "89d5f8c6",
+    "reviewed": false
+  },
+  "blocks.section.benefits.items.2.text": {
+    "src": "5666523f",
+    "reviewed": false
+  },
+  "blocks.section.courseShowcase.heading": {
+    "src": "a16536d7",
+    "reviewed": false
+  },
+  "blocks.section.courseShowcase.ctaLabel": {
+    "src": "eef0b9c1",
+    "reviewed": false
+  },
+  "blocks.section.howItWorks.heading": {
+    "src": "1dd6a17c",
+    "reviewed": false
+  },
+  "blocks.section.howItWorks.steps.0.title": {
+    "src": "78b7c9f6",
+    "reviewed": false
+  },
+  "blocks.section.howItWorks.steps.0.text": {
+    "src": "0692a657",
+    "reviewed": false
+  },
+  "blocks.section.howItWorks.steps.1.title": {
+    "src": "e0d73143",
+    "reviewed": false
+  },
+  "blocks.section.howItWorks.steps.1.text": {
+    "src": "4aeae15c",
+    "reviewed": false
+  },
+  "blocks.section.howItWorks.steps.2.title": {
+    "src": "7e2299a8",
+    "reviewed": false
+  },
+  "blocks.section.howItWorks.steps.2.text": {
+    "src": "0f4a96d5",
+    "reviewed": false
+  },
+  "blocks.section.philosophy.statement": {
+    "src": "10c108b3",
+    "reviewed": false
+  },
+  "blocks.section.moments.heading": {
+    "src": "ed0cbe45",
+    "reviewed": false
+  },
+  "blocks.section.pricing.heading": {
+    "src": "53bc9670",
+    "reviewed": false
+  },
+  "blocks.section.faq.heading": {
+    "src": "40567a5d",
+    "reviewed": false
+  },
+  "blocks.section.faq.items.0.q": {
+    "src": "39e1f888",
+    "reviewed": false
+  },
+  "blocks.section.faq.items.0.a": {
+    "src": "b54a1fea",
+    "reviewed": false
+  },
+  "blocks.section.faq.items.1.q": {
+    "src": "04c5b86b",
+    "reviewed": false
+  },
+  "blocks.section.faq.items.1.a": {
+    "src": "128da144",
+    "reviewed": false
+  },
+  "blocks.section.faq.items.2.q": {
+    "src": "628f7dab",
+    "reviewed": false
+  },
+  "blocks.section.faq.items.2.a": {
+    "src": "98a54e0d",
+    "reviewed": false
+  },
+  "blocks.section.cta.heading": {
+    "src": "b51c794b",
+    "reviewed": false
+  },
+  "blocks.section.cta.ctaLabel": {
+    "src": "90e40d50",
+    "reviewed": false
+  },
+  "blocks.section.contact.heading": {
+    "src": "c49bb4c2",
+    "reviewed": false
+  },
+  "blocks.section.contact.text": {
+    "src": "356f00fc",
+    "reviewed": false
+  },
+  "blocks.section.events.heading": {
+    "src": "c75ce140",
+    "reviewed": false
+  },
+  "blocks.section.events.ctaLabel": {
+    "src": "da589664",
+    "reviewed": false
+  },
+  "blocks.section.proof.heading": {
+    "src": "68d9d280",
+    "reviewed": false
+  },
+  "blocks.section.statement.statement": {
+    "src": "58a9fc49",
+    "reviewed": false
+  },
+  "blocks.example.generic.hero.heading": {
+    "src": "ca695ee1",
+    "reviewed": false
+  },
+  "blocks.example.generic.hero.subheading": {
+    "src": "f8da3a3b",
+    "reviewed": false
+  },
+  "blocks.example.generic.hero.ctaText": {
+    "src": "e976569b",
+    "reviewed": false
+  },
+  "blocks.example.generic.richText.heading": {
+    "src": "5f558b6a",
+    "reviewed": false
+  },
+  "blocks.example.generic.richText.body": {
+    "src": "aeb65b88",
+    "reviewed": false
+  },
+  "blocks.example.generic.imageText.heading": {
+    "src": "e3ba4ef3",
+    "reviewed": false
+  },
+  "blocks.example.generic.imageText.body": {
+    "src": "905f7a1b",
+    "reviewed": false
+  },
+  "blocks.example.generic.testimonials.heading": {
+    "src": "029c68ba",
+    "reviewed": false
+  },
+  "blocks.example.generic.testimonials.items.0.name": {
+    "src": "d967b238",
+    "reviewed": false
+  },
+  "blocks.example.generic.testimonials.items.0.text": {
+    "src": "53f1e213",
+    "reviewed": false
+  },
+  "blocks.example.generic.testimonials.items.1.name": {
+    "src": "56324b07",
+    "reviewed": false
+  },
+  "blocks.example.generic.testimonials.items.1.text": {
+    "src": "f9d3cef3",
+    "reviewed": false
+  },
+  "blocks.example.generic.testimonials.items.2.name": {
+    "src": "3472056f",
+    "reviewed": false
+  },
+  "blocks.example.generic.testimonials.items.2.text": {
+    "src": "1c1df391",
+    "reviewed": false
+  },
+  "blocks.example.generic.faq.heading": {
+    "src": "af90cef8",
+    "reviewed": false
+  },
+  "blocks.example.generic.faq.items.0.q": {
+    "src": "605c809d",
+    "reviewed": false
+  },
+  "blocks.example.generic.faq.items.0.a": {
+    "src": "2c2177f7",
+    "reviewed": false
+  },
+  "blocks.example.generic.faq.items.1.q": {
+    "src": "9fcac735",
+    "reviewed": false
+  },
+  "blocks.example.generic.faq.items.1.a": {
+    "src": "ad6c4107",
+    "reviewed": false
+  },
+  "blocks.example.generic.faq.items.2.q": {
+    "src": "0864030e",
+    "reviewed": false
+  },
+  "blocks.example.generic.faq.items.2.a": {
+    "src": "dee2aecc",
+    "reviewed": false
+  },
+  "blocks.example.generic.cta.heading": {
+    "src": "ef37e179",
+    "reviewed": false
+  },
+  "blocks.example.generic.cta.buttonText": {
+    "src": "e1312e12",
+    "reviewed": false
+  },
+  "blocks.example.generic.stats.heading": {
+    "src": "8f68171f",
+    "reviewed": false
+  },
+  "blocks.example.generic.stats.items.0.value": {
+    "src": "daf51216",
+    "reviewed": false
+  },
+  "blocks.example.generic.stats.items.0.label": {
+    "src": "fcfac3ef",
+    "reviewed": false
+  },
+  "blocks.example.generic.stats.items.1.value": {
+    "src": "d0b75e46",
+    "reviewed": false
+  },
+  "blocks.example.generic.stats.items.1.label": {
+    "src": "14eeb236",
+    "reviewed": false
+  },
+  "blocks.example.generic.stats.items.2.value": {
+    "src": "b6e30222",
+    "reviewed": false
+  },
+  "blocks.example.generic.stats.items.2.label": {
+    "src": "566c299d",
+    "reviewed": false
+  },
+  "blocks.example.generic.banner.text": {
+    "src": "dfcd381e",
+    "reviewed": false
+  },
+  "blocks.example.generic.banner.linkText": {
+    "src": "e976569b",
+    "reviewed": false
+  },
+  "blocks.example.generic.contact.heading": {
+    "src": "c49bb4c2",
+    "reviewed": false
+  },
+  "blocks.example.generic.contact.intro": {
+    "src": "9c9dce91",
+    "reviewed": false
+  },
+  "blocks.example.generic.gallery.heading": {
+    "src": "fe5aef57",
+    "reviewed": false
+  },
+  "blocks.example.generic.logos.heading": {
+    "src": "1a143919",
+    "reviewed": false
+  },
+  "blocks.example.generic.video.heading": {
+    "src": "fad58456",
+    "reviewed": false
+  },
+  "blocks.example.generic.courseGrid.heading": {
+    "src": "c588ebcc",
+    "reviewed": false
+  },
+  "blocks.example.generic.pricingPlans.heading": {
+    "src": "81e912e0",
+    "reviewed": false
+  },
+  "blocks.example.generic.pricingPlans.subheading": {
+    "src": "03435868",
+    "reviewed": false
+  },
+  "blocks.example.generic.upcomingEvents.heading": {
+    "src": "1e7c9902",
+    "reviewed": false
+  },
+  "blocks.example.generic.storeProducts.heading": {
+    "src": "b2b90680",
+    "reviewed": false
+  },
+  "blocks.example.yoga.hero.heading": {
+    "src": "585c316f",
+    "reviewed": false
+  },
+  "blocks.example.yoga.hero.subheading": {
+    "src": "a122c749",
+    "reviewed": false
+  },
+  "blocks.example.yoga.hero.ctaText": {
+    "src": "a0df4261",
+    "reviewed": false
+  },
+  "blocks.example.yoga.richText.heading": {
+    "src": "350f75b7",
+    "reviewed": false
+  },
+  "blocks.example.yoga.richText.body": {
+    "src": "7eb7337d",
+    "reviewed": false
+  },
+  "blocks.example.yoga.imageText.heading": {
+    "src": "cb078ec7",
+    "reviewed": false
+  },
+  "blocks.example.yoga.imageText.body": {
+    "src": "5a499463",
+    "reviewed": false
+  },
+  "blocks.example.yoga.testimonials.heading": {
+    "src": "dc9c0ba6",
+    "reviewed": false
+  },
+  "blocks.example.yoga.testimonials.items.0.name": {
+    "src": "d972bc47",
+    "reviewed": false
+  },
+  "blocks.example.yoga.testimonials.items.0.text": {
+    "src": "9ad0ff9a",
+    "reviewed": false
+  },
+  "blocks.example.yoga.testimonials.items.1.name": {
+    "src": "ddd11469",
+    "reviewed": false
+  },
+  "blocks.example.yoga.testimonials.items.1.text": {
+    "src": "95f8d311",
+    "reviewed": false
+  },
+  "blocks.example.yoga.testimonials.items.2.name": {
+    "src": "d440bde8",
+    "reviewed": false
+  },
+  "blocks.example.yoga.testimonials.items.2.text": {
+    "src": "76eb7774",
+    "reviewed": false
+  },
+  "blocks.example.yoga.faq.heading": {
+    "src": "d790b402",
+    "reviewed": false
+  },
+  "blocks.example.yoga.faq.items.0.q": {
+    "src": "0046c25d",
+    "reviewed": false
+  },
+  "blocks.example.yoga.faq.items.0.a": {
+    "src": "a372a96e",
+    "reviewed": false
+  },
+  "blocks.example.yoga.faq.items.1.q": {
+    "src": "0c174e4d",
+    "reviewed": false
+  },
+  "blocks.example.yoga.faq.items.1.a": {
+    "src": "5a6806d8",
+    "reviewed": false
+  },
+  "blocks.example.yoga.faq.items.2.q": {
+    "src": "0864030e",
+    "reviewed": false
+  },
+  "blocks.example.yoga.faq.items.2.a": {
+    "src": "04545543",
+    "reviewed": false
+  },
+  "blocks.example.yoga.cta.heading": {
+    "src": "15c7a2d6",
+    "reviewed": false
+  },
+  "blocks.example.yoga.cta.buttonText": {
+    "src": "aa3a4dd9",
+    "reviewed": false
+  },
+  "blocks.example.yoga.stats.heading": {
+    "src": "17f716fd",
+    "reviewed": false
+  },
+  "blocks.example.yoga.stats.items.0.value": {
+    "src": "daf51216",
+    "reviewed": false
+  },
+  "blocks.example.yoga.stats.items.0.label": {
+    "src": "fcfac3ef",
+    "reviewed": false
+  },
+  "blocks.example.yoga.stats.items.1.value": {
+    "src": "968d0ba3",
+    "reviewed": false
+  },
+  "blocks.example.yoga.stats.items.1.label": {
+    "src": "c3ca361f",
+    "reviewed": false
+  },
+  "blocks.example.yoga.stats.items.2.value": {
+    "src": "b6e30222",
+    "reviewed": false
+  },
+  "blocks.example.yoga.stats.items.2.label": {
+    "src": "566c299d",
+    "reviewed": false
+  },
+  "blocks.example.yoga.banner.text": {
+    "src": "aa568dd4",
+    "reviewed": false
+  },
+  "blocks.example.yoga.banner.linkText": {
+    "src": "e976569b",
+    "reviewed": false
+  },
+  "blocks.example.pilates.hero.heading": {
+    "src": "86bf8bc7",
+    "reviewed": false
+  },
+  "blocks.example.pilates.hero.subheading": {
+    "src": "08bad3ef",
+    "reviewed": false
+  },
+  "blocks.example.pilates.hero.ctaText": {
+    "src": "a0df4261",
+    "reviewed": false
+  },
+  "blocks.example.pilates.richText.heading": {
+    "src": "b8764241",
+    "reviewed": false
+  },
+  "blocks.example.pilates.richText.body": {
+    "src": "26b39e9a",
+    "reviewed": false
+  },
+  "blocks.example.pilates.imageText.heading": {
+    "src": "cb078ec7",
+    "reviewed": false
+  },
+  "blocks.example.pilates.imageText.body": {
+    "src": "b1f25c0e",
+    "reviewed": false
+  },
+  "blocks.example.pilates.testimonials.heading": {
+    "src": "dc9c0ba6",
+    "reviewed": false
+  },
+  "blocks.example.pilates.testimonials.items.0.name": {
+    "src": "f11b5583",
+    "reviewed": false
+  },
+  "blocks.example.pilates.testimonials.items.0.text": {
+    "src": "1bfe8bac",
+    "reviewed": false
+  },
+  "blocks.example.pilates.testimonials.items.1.name": {
+    "src": "fbb6eabb",
+    "reviewed": false
+  },
+  "blocks.example.pilates.testimonials.items.1.text": {
+    "src": "245bfdd7",
+    "reviewed": false
+  },
+  "blocks.example.pilates.testimonials.items.2.name": {
+    "src": "ea97b982",
+    "reviewed": false
+  },
+  "blocks.example.pilates.testimonials.items.2.text": {
+    "src": "87840686",
+    "reviewed": false
+  },
+  "blocks.example.pilates.faq.heading": {
+    "src": "d790b402",
+    "reviewed": false
+  },
+  "blocks.example.pilates.faq.items.0.q": {
+    "src": "1e268905",
+    "reviewed": false
+  },
+  "blocks.example.pilates.faq.items.0.a": {
+    "src": "e6ff3b9f",
+    "reviewed": false
+  },
+  "blocks.example.pilates.faq.items.1.q": {
+    "src": "0758ecee",
+    "reviewed": false
+  },
+  "blocks.example.pilates.faq.items.1.a": {
+    "src": "2d597107",
+    "reviewed": false
+  },
+  "blocks.example.pilates.faq.items.2.q": {
+    "src": "0864030e",
+    "reviewed": false
+  },
+  "blocks.example.pilates.faq.items.2.a": {
+    "src": "bac6e29f",
+    "reviewed": false
+  },
+  "blocks.example.pilates.cta.heading": {
+    "src": "bed587a9",
+    "reviewed": false
+  },
+  "blocks.example.pilates.cta.buttonText": {
+    "src": "aa3a4dd9",
+    "reviewed": false
+  },
+  "blocks.example.pilates.stats.heading": {
+    "src": "e9bd699e",
+    "reviewed": false
+  },
+  "blocks.example.pilates.stats.items.0.value": {
+    "src": "daf51216",
+    "reviewed": false
+  },
+  "blocks.example.pilates.stats.items.0.label": {
+    "src": "fcfac3ef",
+    "reviewed": false
+  },
+  "blocks.example.pilates.stats.items.1.value": {
+    "src": "d0b75e46",
+    "reviewed": false
+  },
+  "blocks.example.pilates.stats.items.1.label": {
+    "src": "14eeb236",
+    "reviewed": false
+  },
+  "blocks.example.pilates.stats.items.2.value": {
+    "src": "b6e30222",
+    "reviewed": false
+  },
+  "blocks.example.pilates.stats.items.2.label": {
+    "src": "566c299d",
+    "reviewed": false
+  },
+  "blocks.example.pilates.banner.text": {
+    "src": "4415d161",
+    "reviewed": false
+  },
+  "blocks.example.pilates.banner.linkText": {
+    "src": "e976569b",
+    "reviewed": false
+  },
+  "blocks.example.fitness.hero.heading": {
+    "src": "a91674a7",
+    "reviewed": false
+  },
+  "blocks.example.fitness.hero.subheading": {
+    "src": "4b746cd9",
+    "reviewed": false
+  },
+  "blocks.example.fitness.hero.ctaText": {
+    "src": "a0df4261",
+    "reviewed": false
+  },
+  "blocks.example.fitness.richText.heading": {
+    "src": "3c1bcc26",
+    "reviewed": false
+  },
+  "blocks.example.fitness.richText.body": {
+    "src": "487bbc25",
+    "reviewed": false
+  },
+  "blocks.example.fitness.imageText.heading": {
+    "src": "cb078ec7",
+    "reviewed": false
+  },
+  "blocks.example.fitness.imageText.body": {
+    "src": "e3e324aa",
+    "reviewed": false
+  },
+  "blocks.example.fitness.testimonials.heading": {
+    "src": "dc9c0ba6",
+    "reviewed": false
+  },
+  "blocks.example.fitness.testimonials.items.0.name": {
+    "src": "d440bde8",
+    "reviewed": false
+  },
+  "blocks.example.fitness.testimonials.items.0.text": {
+    "src": "ec07fd23",
+    "reviewed": false
+  },
+  "blocks.example.fitness.testimonials.items.1.name": {
+    "src": "ddd11469",
+    "reviewed": false
+  },
+  "blocks.example.fitness.testimonials.items.1.text": {
+    "src": "eb48c28e",
+    "reviewed": false
+  },
+  "blocks.example.fitness.testimonials.items.2.name": {
+    "src": "f46caaa5",
+    "reviewed": false
+  },
+  "blocks.example.fitness.testimonials.items.2.text": {
+    "src": "b594b6a5",
+    "reviewed": false
+  },
+  "blocks.example.fitness.faq.heading": {
+    "src": "d790b402",
+    "reviewed": false
+  },
+  "blocks.example.fitness.faq.items.0.q": {
+    "src": "1e268905",
+    "reviewed": false
+  },
+  "blocks.example.fitness.faq.items.0.a": {
+    "src": "71f5a99e",
+    "reviewed": false
+  },
+  "blocks.example.fitness.faq.items.1.q": {
+    "src": "f74ba857",
+    "reviewed": false
+  },
+  "blocks.example.fitness.faq.items.1.a": {
+    "src": "0de03deb",
+    "reviewed": false
+  },
+  "blocks.example.fitness.faq.items.2.q": {
+    "src": "7cc747a7",
+    "reviewed": false
+  },
+  "blocks.example.fitness.faq.items.2.a": {
+    "src": "bafee0d6",
+    "reviewed": false
+  },
+  "blocks.example.fitness.cta.heading": {
+    "src": "5726928c",
+    "reviewed": false
+  },
+  "blocks.example.fitness.cta.buttonText": {
+    "src": "aa3a4dd9",
+    "reviewed": false
+  },
+  "blocks.example.fitness.stats.heading": {
+    "src": "08d95573",
+    "reviewed": false
+  },
+  "blocks.example.fitness.stats.items.0.value": {
+    "src": "5de726d3",
+    "reviewed": false
+  },
+  "blocks.example.fitness.stats.items.0.label": {
+    "src": "654c8009",
+    "reviewed": false
+  },
+  "blocks.example.fitness.stats.items.1.value": {
+    "src": "a53653ec",
+    "reviewed": false
+  },
+  "blocks.example.fitness.stats.items.1.label": {
+    "src": "39183d82",
+    "reviewed": false
+  },
+  "blocks.example.fitness.stats.items.2.value": {
+    "src": "b6e30222",
+    "reviewed": false
+  },
+  "blocks.example.fitness.stats.items.2.label": {
+    "src": "566c299d",
+    "reviewed": false
+  },
+  "blocks.example.fitness.banner.text": {
+    "src": "26457627",
+    "reviewed": false
+  },
+  "blocks.example.fitness.banner.linkText": {
+    "src": "e976569b",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.hero.heading": {
+    "src": "d202bd4a",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.hero.subheading": {
+    "src": "9931f004",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.hero.ctaText": {
+    "src": "a0df4261",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.richText.heading": {
+    "src": "8d096b36",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.richText.body": {
+    "src": "6a4b05bc",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.imageText.heading": {
+    "src": "cb078ec7",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.imageText.body": {
+    "src": "75574128",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.testimonials.heading": {
+    "src": "dc9c0ba6",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.testimonials.items.0.name": {
+    "src": "e6114ba5",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.testimonials.items.0.text": {
+    "src": "f31847b5",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.testimonials.items.1.name": {
+    "src": "dc7614ae",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.testimonials.items.1.text": {
+    "src": "8db90d3a",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.testimonials.items.2.name": {
+    "src": "315a4be7",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.testimonials.items.2.text": {
+    "src": "21723f5f",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.faq.heading": {
+    "src": "d790b402",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.faq.items.0.q": {
+    "src": "2faede7c",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.faq.items.0.a": {
+    "src": "df617b0d",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.faq.items.1.q": {
+    "src": "1e268905",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.faq.items.1.a": {
+    "src": "ab9b203b",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.faq.items.2.q": {
+    "src": "0864030e",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.faq.items.2.a": {
+    "src": "6a6f832b",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.cta.heading": {
+    "src": "dafc63b8",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.cta.buttonText": {
+    "src": "aa3a4dd9",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.stats.heading": {
+    "src": "a148e3e3",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.stats.items.0.value": {
+    "src": "7e8408b1",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.stats.items.0.label": {
+    "src": "fcfac3ef",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.stats.items.1.value": {
+    "src": "b45ebd80",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.stats.items.1.label": {
+    "src": "ca9f6e6f",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.stats.items.2.value": {
+    "src": "b6e30222",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.stats.items.2.label": {
+    "src": "566c299d",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.banner.text": {
+    "src": "37296df0",
+    "reviewed": false
+  },
+  "blocks.example.faceYoga.banner.linkText": {
+    "src": "e976569b",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.hero.heading": {
+    "src": "e3ec559e",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.hero.subheading": {
+    "src": "ca2fc425",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.hero.ctaText": {
+    "src": "a0df4261",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.richText.heading": {
+    "src": "649b79b8",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.richText.body": {
+    "src": "21537062",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.imageText.heading": {
+    "src": "cb078ec7",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.imageText.body": {
+    "src": "781cfc5c",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.testimonials.heading": {
+    "src": "dc9c0ba6",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.testimonials.items.0.name": {
+    "src": "cb6c5821",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.testimonials.items.0.text": {
+    "src": "dbbb4098",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.testimonials.items.1.name": {
+    "src": "45539925",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.testimonials.items.1.text": {
+    "src": "07e417f1",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.testimonials.items.2.name": {
+    "src": "986d99d5",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.testimonials.items.2.text": {
+    "src": "f703f9fd",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.faq.heading": {
+    "src": "d790b402",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.faq.items.0.q": {
+    "src": "80f34a8f",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.faq.items.0.a": {
+    "src": "5c41111d",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.faq.items.1.q": {
+    "src": "82c04a95",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.faq.items.1.a": {
+    "src": "89a28f9e",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.faq.items.2.q": {
+    "src": "0864030e",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.faq.items.2.a": {
+    "src": "04545543",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.cta.heading": {
+    "src": "f5b387ab",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.cta.buttonText": {
+    "src": "aa3a4dd9",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.stats.heading": {
+    "src": "73f1a117",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.stats.items.0.value": {
+    "src": "44bf89a3",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.stats.items.0.label": {
+    "src": "89733606",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.stats.items.1.value": {
+    "src": "283c843a",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.stats.items.1.label": {
+    "src": "b81dd395",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.stats.items.2.value": {
+    "src": "b6e30222",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.stats.items.2.label": {
+    "src": "566c299d",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.banner.text": {
+    "src": "70c9c6f7",
+    "reviewed": false
+  },
+  "blocks.example.bellyDance.banner.linkText": {
+    "src": "e976569b",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.hero.heading": {
+    "src": "4746dd7d",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.hero.subheading": {
+    "src": "258d404a",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.hero.ctaText": {
+    "src": "a0df4261",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.richText.heading": {
+    "src": "d842c1db",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.richText.body": {
+    "src": "c4b1eafe",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.imageText.heading": {
+    "src": "cb078ec7",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.imageText.body": {
+    "src": "ac399f29",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.testimonials.heading": {
+    "src": "dc9c0ba6",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.testimonials.items.0.name": {
+    "src": "b30d3f83",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.testimonials.items.0.text": {
+    "src": "a7c63dce",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.testimonials.items.1.name": {
+    "src": "33c2a681",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.testimonials.items.1.text": {
+    "src": "1a4ab9bf",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.testimonials.items.2.name": {
+    "src": "7b1bc844",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.testimonials.items.2.text": {
+    "src": "cd52e186",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.faq.heading": {
+    "src": "d790b402",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.faq.items.0.q": {
+    "src": "b1cd7abc",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.faq.items.0.a": {
+    "src": "cddfb996",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.faq.items.1.q": {
+    "src": "0c174e4d",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.faq.items.1.a": {
+    "src": "fd45f240",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.faq.items.2.q": {
+    "src": "0864030e",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.faq.items.2.a": {
+    "src": "4bd1a2fa",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.cta.heading": {
+    "src": "2317d109",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.cta.buttonText": {
+    "src": "aa3a4dd9",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.stats.heading": {
+    "src": "2f59b0df",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.stats.items.0.value": {
+    "src": "f7bab238",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.stats.items.0.label": {
+    "src": "fcfac3ef",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.stats.items.1.value": {
+    "src": "968d0ba3",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.stats.items.1.label": {
+    "src": "70462e0a",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.stats.items.2.value": {
+    "src": "b6e30222",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.stats.items.2.label": {
+    "src": "566c299d",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.banner.text": {
+    "src": "50cb81b3",
+    "reviewed": false
+  },
+  "blocks.example.poleDance.banner.linkText": {
+    "src": "e976569b",
+    "reviewed": false
+  },
+  "blocks.example.makeup.hero.heading": {
+    "src": "09dfa477",
+    "reviewed": false
+  },
+  "blocks.example.makeup.hero.subheading": {
+    "src": "2bde4128",
+    "reviewed": false
+  },
+  "blocks.example.makeup.hero.ctaText": {
+    "src": "a0df4261",
+    "reviewed": false
+  },
+  "blocks.example.makeup.richText.heading": {
+    "src": "06569e0b",
+    "reviewed": false
+  },
+  "blocks.example.makeup.richText.body": {
+    "src": "fd03b477",
+    "reviewed": false
+  },
+  "blocks.example.makeup.imageText.heading": {
+    "src": "cb078ec7",
+    "reviewed": false
+  },
+  "blocks.example.makeup.imageText.body": {
+    "src": "b46aee92",
+    "reviewed": false
+  },
+  "blocks.example.makeup.testimonials.heading": {
+    "src": "dc9c0ba6",
+    "reviewed": false
+  },
+  "blocks.example.makeup.testimonials.items.0.name": {
+    "src": "781031d6",
+    "reviewed": false
+  },
+  "blocks.example.makeup.testimonials.items.0.text": {
+    "src": "e3f6163d",
+    "reviewed": false
+  },
+  "blocks.example.makeup.testimonials.items.1.name": {
+    "src": "858ffd96",
+    "reviewed": false
+  },
+  "blocks.example.makeup.testimonials.items.1.text": {
+    "src": "5a7bec7b",
+    "reviewed": false
+  },
+  "blocks.example.makeup.testimonials.items.2.name": {
+    "src": "d6a18bfc",
+    "reviewed": false
+  },
+  "blocks.example.makeup.testimonials.items.2.text": {
+    "src": "9304f2f8",
+    "reviewed": false
+  },
+  "blocks.example.makeup.faq.heading": {
+    "src": "d790b402",
+    "reviewed": false
+  },
+  "blocks.example.makeup.faq.items.0.q": {
+    "src": "d7cc4870",
+    "reviewed": false
+  },
+  "blocks.example.makeup.faq.items.0.a": {
+    "src": "0078a3b5",
+    "reviewed": false
+  },
+  "blocks.example.makeup.faq.items.1.q": {
+    "src": "72c5b616",
+    "reviewed": false
+  },
+  "blocks.example.makeup.faq.items.1.a": {
+    "src": "e35f82c3",
+    "reviewed": false
+  },
+  "blocks.example.makeup.faq.items.2.q": {
+    "src": "0864030e",
+    "reviewed": false
+  },
+  "blocks.example.makeup.faq.items.2.a": {
+    "src": "215ada03",
+    "reviewed": false
+  },
+  "blocks.example.makeup.cta.heading": {
+    "src": "d8207f78",
+    "reviewed": false
+  },
+  "blocks.example.makeup.cta.buttonText": {
+    "src": "aa3a4dd9",
+    "reviewed": false
+  },
+  "blocks.example.makeup.stats.heading": {
+    "src": "ed2dd0d5",
+    "reviewed": false
+  },
+  "blocks.example.makeup.stats.items.0.value": {
+    "src": "b2c050f3",
+    "reviewed": false
+  },
+  "blocks.example.makeup.stats.items.0.label": {
+    "src": "fcfac3ef",
+    "reviewed": false
+  },
+  "blocks.example.makeup.stats.items.1.value": {
+    "src": "de648b54",
+    "reviewed": false
+  },
+  "blocks.example.makeup.stats.items.1.label": {
+    "src": "65417164",
+    "reviewed": false
+  },
+  "blocks.example.makeup.stats.items.2.value": {
+    "src": "b6e30222",
+    "reviewed": false
+  },
+  "blocks.example.makeup.stats.items.2.label": {
+    "src": "566c299d",
+    "reviewed": false
+  },
+  "blocks.example.makeup.banner.text": {
+    "src": "968d495c",
+    "reviewed": false
+  },
+  "blocks.example.makeup.banner.linkText": {
+    "src": "e976569b",
+    "reviewed": false
+  },
+  "blocks.template.homeClassic.hero.heading": {
+    "src": "ca695ee1",
+    "reviewed": false
+  },
+  "blocks.template.homeClassic.hero.subheading": {
+    "src": "6896b8e6",
+    "reviewed": false
+  },
+  "blocks.template.homeClassic.hero.ctaText": {
+    "src": "4e5f78bf",
+    "reviewed": false
+  },
+  "blocks.template.homeClassic.courseGrid.heading": {
+    "src": "ab433860",
+    "reviewed": false
+  },
+  "blocks.template.homeClassic.testimonials.heading": {
+    "src": "029c68ba",
+    "reviewed": false
+  },
+  "blocks.template.homeClassic.cta.heading": {
+    "src": "931a0c97",
+    "reviewed": false
+  },
+  "blocks.template.homeClassic.cta.buttonText": {
+    "src": "e1312e12",
+    "reviewed": false
+  },
+  "blocks.template.homeStoryteller.hero.heading": {
+    "src": "4027ab4d",
+    "reviewed": false
+  },
+  "blocks.template.homeStoryteller.hero.subheading": {
+    "src": "8cc7c5e5",
+    "reviewed": false
+  },
+  "blocks.template.homeStoryteller.imageText.heading": {
+    "src": "d57c0827",
+    "reviewed": false
+  },
+  "blocks.template.homeStoryteller.imageText.body": {
+    "src": "e20be1c6",
+    "reviewed": false
+  },
+  "blocks.template.homeStoryteller.stats.heading": {
+    "src": "58c76110",
+    "reviewed": false
+  },
+  "blocks.template.homeStoryteller.stats.items.0.value": {
+    "src": "daf51216",
+    "reviewed": false
+  },
+  "blocks.template.homeStoryteller.stats.items.0.label": {
+    "src": "fcfac3ef",
+    "reviewed": false
+  },
+  "blocks.template.homeStoryteller.stats.items.1.value": {
+    "src": "e49e8975",
+    "reviewed": false
+  },
+  "blocks.template.homeStoryteller.stats.items.1.label": {
+    "src": "566c299d",
+    "reviewed": false
+  },
+  "blocks.template.homeStoryteller.stats.items.2.value": {
+    "src": "f06015fb",
+    "reviewed": false
+  },
+  "blocks.template.homeStoryteller.stats.items.2.label": {
+    "src": "a16536d7",
+    "reviewed": false
+  },
+  "blocks.template.homeStoryteller.courseGrid.heading": {
+    "src": "e10753f7",
+    "reviewed": false
+  },
+  "blocks.template.homeStoryteller.cta.heading": {
+    "src": "4e22c112",
+    "reviewed": false
+  },
+  "blocks.template.homeStoryteller.cta.buttonText": {
+    "src": "90e40d50",
+    "reviewed": false
+  },
+  "blocks.template.homeMinimal.hero.heading": {
+    "src": "ca4f9dcf",
+    "reviewed": false
+  },
+  "blocks.template.homeMinimal.hero.subheading": {
+    "src": "82ffcaf6",
+    "reviewed": false
+  },
+  "blocks.template.homeMinimal.cta.heading": {
+    "src": "bf6a965b",
+    "reviewed": false
+  },
+  "blocks.template.homeMinimal.cta.buttonText": {
+    "src": "b965ae66",
+    "reviewed": false
+  },
+  "blocks.template.aboutFounder.richText.heading": {
+    "src": "6b21fb79",
+    "reviewed": false
+  },
+  "blocks.template.aboutFounder.richText.body": {
+    "src": "7c8512d1",
+    "reviewed": false
+  },
+  "blocks.template.aboutFounder.imageText.heading": {
+    "src": "fda78037",
+    "reviewed": false
+  },
+  "blocks.template.aboutFounder.imageText.body": {
+    "src": "651a76a1",
+    "reviewed": false
+  },
+  "blocks.template.aboutFounder.stats.items.0.value": {
+    "src": "2ac40da1",
+    "reviewed": false
+  },
+  "blocks.template.aboutFounder.stats.items.0.label": {
+    "src": "5b5aafe6",
+    "reviewed": false
+  },
+  "blocks.template.aboutFounder.stats.items.1.value": {
+    "src": "6615e502",
+    "reviewed": false
+  },
+  "blocks.template.aboutFounder.stats.items.1.label": {
+    "src": "ffd61f09",
+    "reviewed": false
+  },
+  "blocks.template.pricingPlansFaq.pricingPlans.heading": {
+    "src": "ceace454",
+    "reviewed": false
+  },
+  "blocks.template.pricingPlansFaq.pricingPlans.subheading": {
+    "src": "2845bb15",
+    "reviewed": false
+  },
+  "blocks.template.pricingPlansFaq.faq.heading": {
+    "src": "af90cef8",
+    "reviewed": false
+  },
+  "blocks.template.pricingPlansFaq.faq.items.0.q": {
+    "src": "0efef538",
+    "reviewed": false
+  },
+  "blocks.template.pricingPlansFaq.faq.items.0.a": {
+    "src": "10c186d4",
+    "reviewed": false
+  },
+  "blocks.template.pricingPlansFaq.faq.items.1.q": {
+    "src": "845533ed",
+    "reviewed": false
+  },
+  "blocks.template.pricingPlansFaq.faq.items.1.a": {
+    "src": "e47c6a74",
+    "reviewed": false
+  },
+  "blocks.template.contactSimple.contact.heading": {
+    "src": "c49bb4c2",
+    "reviewed": false
+  },
+  "blocks.template.contactSimple.contact.intro": {
+    "src": "d4481998",
+    "reviewed": false
+  },
+  "blocks.template.contactSimple.faq.heading": {
+    "src": "f07ac22a",
+    "reviewed": false
+  },
+  "blocks.lookPreview.creator": {
+    "src": "2f455bf8",
     "reviewed": false
   },
   "common.actions.save": {

@@ -12,7 +12,7 @@ import {
   type DragEndEvent,
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
-import { getBlockDef, newBlock } from "@/lib/blocks/registry";
+import { useBlockLibrary } from "@/lib/blocks/use-block-library";
 import { useEditorStore } from "./editor-store";
 import { canvasCollisionDetection } from "./dnd-collision";
 import {
@@ -37,6 +37,7 @@ export function CanvasDndProvider({
   children,
 }: CanvasDndProviderProps) {
   const store = useEditorStore();
+  const library = useBlockLibrary();
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const sensors = useSensors(
@@ -61,7 +62,11 @@ export function CanvasDndProvider({
       if (!isDropZoneId(String(over.id))) return;
       store.insertBlock(
         activePageKey,
-        newBlock(paletteTypeFromId(activeIdStr), store.niche, store.siteStyle),
+        library.newBlock(
+          paletteTypeFromId(activeIdStr),
+          store.niche,
+          store.siteStyle,
+        ),
         dropZoneIndexFromId(String(over.id)),
       );
       return;
@@ -79,12 +84,12 @@ export function CanvasDndProvider({
   if (activeId && activePageKey) {
     if (isPaletteId(activeId)) {
       const type = paletteTypeFromId(activeId);
-      overlayLabel = getBlockDef(type)?.label ?? type;
+      overlayLabel = library.def(type)?.label ?? type;
     } else {
       const block = store
         .blocksFor(activePageKey)
         .find((b) => b.id === activeId);
-      if (block) overlayLabel = getBlockDef(block.type)?.label ?? block.type;
+      if (block) overlayLabel = library.def(block.type)?.label ?? block.type;
     }
   }
 
