@@ -8,9 +8,18 @@ export const CREATOR_LOCALE_COOKIE = "user-locale";
 
 /** The creator's language from whatever reads cookies (the server's cookie
  *  store, or `document.cookie` in the browser): one place, so the words and
- *  their formats cannot come from different reads. */
-export function creatorLocale(read: (name: string) => string | undefined) {
-  return resolveLocale(read(CREATOR_LOCALE_COOKIE));
+ *  their formats cannot come from different reads. A creator signed in without
+ *  the cookie (cleared, or a sign-in path that never set it) speaks the
+ *  language on their row, as the backend answers them; `user` is who the
+ *  session belongs to, where the caller has them. */
+export function creatorLocale(
+  read: (name: string) => string | undefined,
+  user?: { role?: string; preferred_locale?: string } | null,
+) {
+  const isCreator = user?.role === "owner" || user?.role === "coach";
+  return resolveLocale(
+    read(CREATOR_LOCALE_COOKIE) || (isCreator ? user?.preferred_locale : ""),
+  );
 }
 
 export type Surface = "studio" | "site+owner" | "site";

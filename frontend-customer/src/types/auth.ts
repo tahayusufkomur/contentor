@@ -5,4 +5,5 @@ export interface User {
   avatar_url: string;
   role: "owner" | "coach" | "student";
   date_joined: string;
+  preferred_locale?: string;
 }

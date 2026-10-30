@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   CREATOR_LOCALE_COOKIE,
   creatorLocale,
@@ -43,6 +43,8 @@ describe("namespacesFor", () => {
 });
 
 describe("creatorLocale", () => {
+  beforeEach(() => vi.stubEnv("NEXT_PUBLIC_ENABLED_LOCALES", "en,tr,de,pl"));
+  afterEach(() => vi.unstubAllEnvs());
   it("reads the creator's cookie by its name, whoever holds the cookies", () => {
     const asked: string[] = [];
     creatorLocale((n) => {
@@ -55,5 +57,27 @@ describe("creatorLocale", () => {
   it("falls back to English without it or with an unknown language", () => {
     expect(creatorLocale(() => undefined)).toBe("en");
     expect(creatorLocale(() => "xx")).toBe("en");
+  });
+  it("a creator signed in without the cookie speaks the language on their row", () => {
+    const row = { role: "owner", preferred_locale: "tr" };
+    expect(creatorLocale(() => undefined, row)).toBe("tr");
+    expect(creatorLocale(() => undefined, { ...row, role: "coach" })).toBe(
+      "tr",
+    );
+    expect(
+      creatorLocale(() => undefined, { ...row, preferred_locale: "" }),
+    ).toBe("en");
+  });
+  it("the cookie wins over the row, and a student's row is never the creator's", () => {
+    expect(
+      creatorLocale(() => "de", { role: "owner", preferred_locale: "tr" }),
+    ).toBe("de");
+    expect(
+      creatorLocale(() => undefined, {
+        role: "student",
+        preferred_locale: "tr",
+      }),
+    ).toBe("en");
+    expect(creatorLocale(() => undefined, null)).toBe("en");
   });
 });

@@ -48,11 +48,15 @@ async function loadNamespaces(locale: string, names: string[]) {
 
 export default getRequestConfig(async () => {
   const [h, cookieStore] = await Promise.all([headers(), cookies()]);
-  const role = (await getAuthUser())?.role;
+  const user = await getAuthUser();
+  const role = user?.role;
   const surface = surfaceOf(h.get("x-pathname") || "", h.get("x-embed"), role);
   const config = await fetchTenantConfig(await getTenantSlug());
   const siteLocale = resolveLocale(config?.default_locale);
-  const creatorLocale = readCreatorLocale((n) => cookieStore.get(n)?.value);
+  const creatorLocale = readCreatorLocale(
+    (n) => cookieStore.get(n)?.value,
+    user,
+  );
 
   const ns = namespacesFor(surface);
   const [creator, site] = await Promise.all([

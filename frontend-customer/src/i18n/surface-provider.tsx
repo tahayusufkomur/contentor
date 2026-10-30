@@ -3,6 +3,7 @@ import { getLocale, getMessages } from "next-intl/server";
 import { resolveLocale } from "@shared/i18n/locales";
 import { SiteLocaleBoundary } from "@shared/i18n/site-preview";
 
+import { getAuthUser } from "@/lib/auth";
 import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
 import { OwnerFrame } from "./creator-scope";
 import { IntlProvider } from "./provider";
@@ -44,10 +45,14 @@ export async function OwnerIntl({
   tools: React.ReactElement<{ children?: React.ReactNode }>;
   children: React.ReactNode;
 }) {
-  const [site, cookieStore] = await Promise.all([getLocale(), cookies()]);
+  const [site, cookieStore, user] = await Promise.all([
+    getLocale(),
+    cookies(),
+    getAuthUser(),
+  ]);
   return (
     <OwnerFrame
-      creator={creatorLocale((n) => cookieStore.get(n)?.value)}
+      creator={creatorLocale((n) => cookieStore.get(n)?.value, user)}
       site={site}
       tools={tools}
     >
