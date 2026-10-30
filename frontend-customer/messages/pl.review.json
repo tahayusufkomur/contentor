@@ -11371,10 +11371,6 @@
     "src": "25e75b7d",
     "reviewed": false
   },
-  "admin.logo.studio.refineQuota": {
-    "src": "a99e6f41",
-    "reviewed": false
-  },
   "admin.logo.studio.refineFailed": {
     "src": "308a17f5",
     "reviewed": false
@@ -11725,10 +11721,6 @@
   },
   "admin.logo.chat.skip": {
     "src": "449a0415",
-    "reviewed": false
-  },
-  "admin.logo.chat.upsell": {
-    "src": "e86a8c08",
     "reviewed": false
   },
   "admin.logo.chat.upgrade": {

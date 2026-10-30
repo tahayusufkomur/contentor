@@ -3548,7 +3548,6 @@
       "useLogo": "Dieses Logo verwenden",
       "close": "Logo-Studio schließen",
       "startOverConfirm": "Neu beginnen? Dadurch werden dein Briefing und dein gespeicherter Fortschritt gelöscht.",
-      "refineQuota": "Du hast deine KI-Verfeinerungen für diesen Monat aufgebraucht. Nächsten Monat gibt es neue.",
       "refineFailed": "Das Design konnte nicht verfeinert werden – versuch es noch einmal.",
       "unreachable": "Das Design-Studio ist gerade nicht erreichbar.",
       "uploadFailed": "Hochladen fehlgeschlagen",
@@ -3659,7 +3658,6 @@
       "designing": "Wird gestaltet…",
       "generate": "Konzepte erstellen",
       "skip": "Überspringen, zeig mir einfach Ideen",
-      "upsell": "KI-Design ist in kostenpflichtigen Tarifen enthalten.",
       "upgrade": "Upgraden"
     },
     "refine": {

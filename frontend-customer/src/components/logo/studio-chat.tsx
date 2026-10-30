@@ -663,7 +663,9 @@ function GateBanner({
   if (kind === "upsell") {
     return (
       <div className="mx-auto flex max-w-md items-center justify-between gap-3 rounded-lg border border-dashed p-4">
-        <p className="text-sm text-muted-foreground">{t("upsell")}</p>
+        <p className="text-sm text-muted-foreground">
+          {t("notice.upgrade_required")}
+        </p>
         <Button asChild size="sm" variant="outline">
           <NavLink href="/admin/billing">{t("upgrade")}</NavLink>
         </Button>

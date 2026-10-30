@@ -3548,7 +3548,6 @@
       "useLogo": "Use this logo",
       "close": "Close Logo Studio",
       "startOverConfirm": "Start over? This clears your brief and saved progress.",
-      "refineQuota": "You've used this month's AI refinements. More next month.",
       "refineFailed": "Couldn't refine the design — try again.",
       "unreachable": "Couldn't reach the design studio just now.",
       "uploadFailed": "Upload failed",
@@ -3659,7 +3658,6 @@
       "designing": "Designing…",
       "generate": "Generate concepts",
       "skip": "Skip, just show me ideas",
-      "upsell": "AI design is included with paid plans.",
       "upgrade": "Upgrade"
     },
     "refine": {

@@ -55,6 +55,7 @@ import { StudioBrief } from "./studio-brief";
 import { StudioChat } from "./studio-chat";
 import { StudioEditor } from "./studio-editor";
 import { StudioEntrance } from "./studio-entrance";
+import { studioFailure } from "./studio-failure";
 
 type StudioStep = "brief" | "ideas" | "editor";
 
@@ -78,6 +79,7 @@ export function LogoStudio({
   onSaved,
 }: LogoStudioProps) {
   const t = useTranslations("admin.logo.studio");
+  const tRefine = useTranslations("admin.logo.refine");
   const primaryHex = lookPrimaryHex(config.style, config.palette);
   // Stable seed recipe for gallery previews — recomputed only when the coach's
   // saved config/look changes, so the preview memo in CuratedGallery holds.
@@ -334,7 +336,7 @@ export function LogoStudio({
       if (resp.source !== "ai" || !resp.design) {
         setRefineNotice(
           resp.source === "quota_exhausted"
-            ? t("refineQuota")
+            ? tRefine("quota")
             : t("refineFailed"),
         );
         return;
@@ -380,9 +382,10 @@ export function LogoStudio({
       patch({
         mark: { type: "image", photo_id: uploaded.photo_id, url: dataUrl },
       });
-    } catch {
-      // The thrown message is an English diagnostic ("Upload failed: 403").
-      setError(t("uploadFailed"));
+    } catch (err) {
+      // The thrown message is an English diagnostic ("Upload failed: 403"):
+      // it goes to the console, the creator reads the localized one.
+      setError(studioFailure("mark upload", err, t("uploadFailed")));
     } finally {
       URL.revokeObjectURL(objectUrl);
     }
@@ -479,8 +482,8 @@ export function LogoStudio({
                 url: await imageToDataUrl(taken.imageUrl),
               },
         });
-      } catch {
-        setError(t("useFailed"));
+      } catch (err) {
+        setError(studioFailure("use library logo", err, t("useFailed")));
       } finally {
         setTakingLogo(null);
       }
@@ -510,8 +513,8 @@ export function LogoStudio({
       } finally {
         URL.revokeObjectURL(objectUrl);
       }
-    } catch {
-      setError(t("useFailed"));
+    } catch (err) {
+      setError(studioFailure("use curated logo", err, t("useFailed")));
     }
   }
 

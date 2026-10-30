@@ -3548,7 +3548,6 @@
       "useLogo": "Użyj tego logo",
       "close": "Zamknij Studio logo",
       "startOverConfirm": "Zacząć od nowa? To wyczyści Twój brief i zapisane postępy.",
-      "refineQuota": "Wykorzystałeś ulepszenia AI na ten miesiąc. Więcej w przyszłym miesiącu.",
       "refineFailed": "Nie udało się ulepszyć projektu — spróbuj ponownie.",
       "unreachable": "Nie udało się teraz połączyć ze studiem projektowym.",
       "uploadFailed": "Przesyłanie nie powiodło się",
@@ -3561,7 +3560,7 @@
       "similar": {
         "disabled": "Projektowanie z AI jest teraz niedostępne.",
         "upgrade_required": "Przejdź na wyższy plan, aby projektować z AI.",
-        "quota_exhausted": "Wykorzystałeś próby projektowania AI na ten miesiąc.",
+        "quota_exhausted": "Limit prób projektowania AI na ten miesiąc został wykorzystany.",
         "unreachable": "Nie udało się teraz połączyć ze studiem projektowym.",
         "empty": "AI nie mogło tego narysować — spróbuj innego logo."
       }
@@ -3659,12 +3658,11 @@
       "designing": "Projektowanie…",
       "generate": "Generuj koncepcje",
       "skip": "Pomiń, po prostu pokaż mi pomysły",
-      "upsell": "Projektowanie z AI jest zawarte w płatnych planach.",
       "upgrade": "Zmień plan"
     },
     "refine": {
       "title": "Zapytaj projektanta AI",
-      "quota": "Wykorzystano twoje poprawki AI na ten miesiąc. Więcej w przyszłym miesiącu.",
+      "quota": "Limit ulepszeń AI na ten miesiąc został wykorzystany. Więcej w przyszłym miesiącu.",
       "unavailable": "Dopracowywanie z AI jest tymczasowo niedostępne.",
       "placeholder": "np. cieplejsze kolory, bardziej okrągły znak, bardziej prestiżowy",
       "redraw": "Narysuj ikonę na nowo (zacznij znak od zera)",

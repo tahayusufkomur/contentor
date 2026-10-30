@@ -3548,7 +3548,6 @@
       "useLogo": "Bu logoyu kullan",
       "close": "Logo Stüdyosunu kapat",
       "startOverConfirm": "Baştan başlamak istiyor musun? Bu işlem özetini ve kaydedilen ilerlemeni siler.",
-      "refineQuota": "Bu ayki yapay zekâ iyileştirme hakkını kullandın. Gelecek ay yeni hakların tanımlanacak.",
       "refineFailed": "Tasarım iyileştirilemedi — tekrar dene.",
       "unreachable": "Tasarım stüdyosuna şu anda ulaşılamadı.",
       "uploadFailed": "Yükleme başarısız oldu",
@@ -3659,7 +3658,6 @@
       "designing": "Tasarlanıyor…",
       "generate": "Konsept oluştur",
       "skip": "Atla, bana sadece fikirleri göster",
-      "upsell": "Yapay zekâ ile tasarım ücretli planlara dahildir.",
       "upgrade": "Yükselt"
     },
     "refine": {
