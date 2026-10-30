@@ -135,11 +135,23 @@ You receive a JSON list of descriptions. Return texts: the same descriptions in 
 translation each, plain and brief like the originals. An empty description stays empty."""
 
 
+def _fit(text: str, limit: int) -> str:
+    """`text` cut at a word so it fits `limit` characters (a translation can run longer than its English)."""
+    if len(text) <= limit:
+        return text
+    if text[limit].isspace():
+        return text[:limit].rstrip()
+    head, _sep, _tail = text[:limit].rpartition(" ")
+    return (head or text[:limit]).rstrip(" ,;:-")
+
+
 def translate_descriptions(texts: list[str], language: str) -> list[str]:
     """The catalog describes its photos in English; the alt text a site shows follows the site's
     `language`. One call for the whole batch, same order and length; English (or nothing to translate)
-    comes back as it is, and so does a batch the model could not translate: alt text is never worth a failure."""
+    comes back as it is, and so does a batch the model could not translate: alt text is never worth a failure.
+    A translation longer than the Photo.alt_text field is cut at a word."""
     from apps.core import ai
+    from apps.media.models import Photo
 
     if language == "en" or not any(texts):
         return list(texts)
@@ -160,7 +172,8 @@ def translate_descriptions(texts: list[str], language: str) -> list[str]:
     if len(parsed.texts) != len(texts):
         logger.warning("alt text not translated to %s: %d back for %d", language, len(parsed.texts), len(texts))
         return list(texts)
-    return [new or old for old, new in zip(texts, parsed.texts, strict=True)]
+    limit = Photo._meta.get_field("alt_text").max_length
+    return [_fit(new, limit) if new else old for old, new in zip(texts, parsed.texts, strict=True)]
 
 
 def cache_remote_image(image: RemoteImage, *, logo: bool = False, translate: bool = True):

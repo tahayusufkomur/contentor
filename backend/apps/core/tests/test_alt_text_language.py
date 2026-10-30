@@ -96,3 +96,23 @@ def test_the_composer_translates_a_pages_alt_texts_in_one_call(tenant_ctx, stora
     assert Photo.objects.get(pk=photos[0].pk).alt_text == "tr:photo 3"
     site_composer._alt_in_site_language([(slots[0], photos[0], "photo 3")], "en")
     assert len(model) == 1
+
+
+LONG_TURKISH = " ".join(["Yoga minderinde esneyen kadın"] * 12)  # 359 characters, over Photo.alt_text
+
+
+@pytest.fixture()
+def long_answer(monkeypatch):
+    monkeypatch.setattr(core_ai, "structured", lambda **k: (SimpleNamespace(texts=[LONG_TURKISH]), 0, "fake"))
+
+
+def test_a_long_translation_is_cut_at_a_word_to_fit_the_field(long_answer):
+    (text,) = cache.translate_descriptions(["A woman stretching"], "tr")
+    assert len(LONG_TURKISH) > 300 and len(text) <= 300
+    assert LONG_TURKISH.startswith(text) and LONG_TURKISH[len(text)] == " "
+
+
+def test_a_long_translation_does_not_break_the_photo_row(tenant_ctx, storage, long_answer):
+    site_in("tr")
+    photo = cache.cache_remote_image(image(5))
+    assert 0 < len(Photo.objects.get(pk=photo.pk).alt_text) <= 300
