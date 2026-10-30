@@ -1205,8 +1205,9 @@ msgstr "Topluluk Yorumları"
 msgid "Every community comment, including removed ones."
 msgstr "Kaldırılanlar dahil her topluluk yorumu."
 
-#: apps/community/admin_panels.py apps/core/focus/kinds/post.py
+#: apps/community/admin_panels.py
 #, fuzzy
+msgctxt "column of a comment: the post it is on"
 msgid "Post"
 msgstr "Gönderi"
 
@@ -3864,6 +3865,11 @@ msgstr "Yaklaşık 1.000 kelime"
 #, fuzzy
 msgid "About 1,400 words"
 msgstr "Yaklaşık 1.400 kelime"
+
+#: apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "Post"
+msgstr "Gönderi"
 
 #: apps/core/focus/kinds/post.py
 #, fuzzy

@@ -1212,10 +1212,11 @@ msgstr "Community-Kommentare"
 msgid "Every community comment, including removed ones."
 msgstr "Alle Community-Kommentare, auch entfernte."
 
-#: apps/community/admin_panels.py apps/core/focus/kinds/post.py
+#: apps/community/admin_panels.py
 #, fuzzy
+msgctxt "column of a comment: the post it is on"
 msgid "Post"
-msgstr "Veröffentlichen"
+msgstr "Beitrag"
 
 #: apps/community/admin_panels.py
 #, fuzzy
@@ -3908,6 +3909,11 @@ msgstr "Etwa 1.000 Wörter"
 #, fuzzy
 msgid "About 1,400 words"
 msgstr "Etwa 1.400 Wörter"
+
+#: apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "Post"
+msgstr "Veröffentlichen"
 
 #: apps/core/focus/kinds/post.py
 #, fuzzy

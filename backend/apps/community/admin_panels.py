@@ -4,7 +4,7 @@ The coach's day-to-day moderation lives at /admin/community; these panels are
 the raw-data fallback (and what platform staff use via impersonation).
 """
 
-from django.utils.translation import gettext_lazy, ngettext
+from django.utils.translation import gettext_lazy, ngettext, pgettext_lazy
 
 from apps.adminkit.options import ModelAdmin, admin_action
 from apps.adminkit.sites import studio_site
@@ -58,7 +58,7 @@ class CommunityCommentAdmin(ModelAdmin):
         "author": gettext_lazy("Author"),
         "body": gettext_lazy("Text"),
         "status": gettext_lazy("Status"),
-        "post": gettext_lazy("Post"),
+        "post": pgettext_lazy("column of a comment: the post it is on", "Post"),
         "created_at": gettext_lazy("Created"),
     }
     permission_classes = (IsCoachOrOwner,)

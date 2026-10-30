@@ -1143,8 +1143,8 @@ msgid ""
 "You've used all your AI blog posts for this month — autopilot will resume "
 "next month."
 msgstr ""
-"Wykorzystałeś wszystkie swoje posty na blogu AI w tym miesiącu — autopilot "
-"wznowi działanie w przyszłym miesiącu."
+"Wykorzystano wszystkie posty na blogu AI w tym miesiącu — autopilot wznowi "
+"działanie w przyszłym miesiącu."
 
 #: apps/blog/tasks.py
 #, fuzzy
@@ -1254,8 +1254,9 @@ msgstr "Komentarze społeczności"
 msgid "Every community comment, including removed ones."
 msgstr "Każdy komentarz społeczności, w tym usunięte."
 
-#: apps/community/admin_panels.py apps/core/focus/kinds/post.py
+#: apps/community/admin_panels.py
 #, fuzzy
+msgctxt "column of a comment: the post it is on"
 msgid "Post"
 msgstr "Wpis"
 
@@ -1275,12 +1276,12 @@ msgstr[2] "Usunięto %(count)d komentarzy."
 #: apps/community/admin_panels.py
 #, fuzzy
 msgid "Community Report"
-msgstr "Zgłoszenie społeczności"
+msgstr "Raport społeczności"
 
 #: apps/community/admin_panels.py
 #, fuzzy
 msgid "Community Reports"
-msgstr "Zgłoszenia społeczności"
+msgstr "Raporty społeczności"
 
 #: apps/community/admin_panels.py
 #, fuzzy
@@ -1488,7 +1489,7 @@ msgstr "Często zadawane pytania"
 #: apps/core/copilot/blocks.py
 #, fuzzy
 msgid "Ready to begin?"
-msgstr "Gotowy, aby zacząć?"
+msgstr "Czas zacząć?"
 
 #: apps/core/copilot/blocks.py apps/core/onboarding/compose.py
 #: apps/core/onboarding/site_composer.py apps/tenant_config/defaults.py
@@ -2476,58 +2477,64 @@ msgid "Scheduled an event"
 msgstr "Zaplanowano wydarzenie"
 
 #: apps/core/copilot/views.py
-#, python-format
+#, python-format, fuzzy
 msgid "Created draft course '%(title)s'"
-msgstr ""
+msgstr "Utworzono wersję roboczą kursu '%(title)s'"
 
 #: apps/core/copilot/views.py
+#, fuzzy
 msgid "Created a draft course"
-msgstr ""
+msgstr "Utworzono wersję roboczą kursu"
 
 #: apps/core/copilot/views.py
-#, python-format
+#, python-format, fuzzy
 msgid "Created draft blog post '%(title)s'"
-msgstr ""
+msgstr "Utworzono wersję roboczą wpisu na blogu '%(title)s'"
 
 #: apps/core/copilot/views.py
+#, fuzzy
 msgid "Created a draft blog post"
-msgstr ""
+msgstr "Utworzono wersję roboczą wpisu na blogu"
 
 #: apps/core/copilot/views.py
-#, python-format
+#, python-format, fuzzy
 msgid "Drafted announcement '%(title)s'"
-msgstr ""
+msgstr "Przygotowano wersję roboczą ogłoszenia '%(title)s'"
 
 #: apps/core/copilot/views.py
+#, fuzzy
 msgid "Drafted an announcement"
-msgstr ""
+msgstr "Przygotowano wersję roboczą ogłoszenia"
 
 #: apps/core/copilot/views.py
-#, python-format
+#, python-format, fuzzy
 msgid "Drafted email '%(title)s'"
-msgstr ""
+msgstr "Przygotowano wersję roboczą e-maila '%(title)s'"
 
 #: apps/core/copilot/views.py
+#, fuzzy
 msgid "Drafted an email"
-msgstr ""
+msgstr "Przygotowano wersję roboczą e-maila"
 
 #: apps/core/copilot/views.py
-#, python-format
+#, python-format, fuzzy
 msgid "Changed email '%(title)s'"
-msgstr ""
+msgstr "Zmieniono e-mail '%(title)s'"
 
 #: apps/core/copilot/views.py
+#, fuzzy
 msgid "Changed an email"
-msgstr ""
+msgstr "Zmieniono e-mail"
 
 #: apps/core/copilot/views.py
-#, python-format
+#, python-format, fuzzy
 msgid "Started reels from '%(title)s'"
-msgstr ""
+msgstr "Rozpoczęto tworzenie rolek z '%(title)s'"
 
 #: apps/core/copilot/views.py
+#, fuzzy
 msgid "Started reels from a video"
-msgstr ""
+msgstr "Rozpoczęto tworzenie rolek z wideo"
 
 #: apps/core/copilot/views.py apps/media/designs.py
 #, fuzzy
@@ -2587,7 +2594,7 @@ msgstr "Opisz obraz, którego potrzebujesz."
 #: apps/core/curated_images/views.py apps/media/views.py
 #, fuzzy
 msgid "You have used this month's image generations."
-msgstr "Wykorzystałeś generacje obrazów na ten miesiąc."
+msgstr "Limit generowania obrazów na ten miesiąc został wykorzystany."
 
 #: apps/core/curated_images/views.py
 #, fuzzy
@@ -3940,6 +3947,11 @@ msgstr "Około 1400 słów"
 
 #: apps/core/focus/kinds/post.py
 #, fuzzy
+msgid "Post"
+msgstr "Wpis"
+
+#: apps/core/focus/kinds/post.py
+#, fuzzy
 msgid "Here's your post. Does it fit?"
 msgstr "Oto twój wpis. Pasuje?"
 
@@ -4281,7 +4293,7 @@ msgstr "Pliki do pobrania & materiały"
 #: apps/tenant_config/defaults.py
 #, fuzzy
 msgid "Ready to start learning?"
-msgstr "Gotowy, aby zacząć naukę?"
+msgstr "Czas zacząć naukę?"
 
 #: apps/core/onboarding/compose.py apps/core/tasks.py
 #: apps/tenant_config/defaults.py
@@ -4412,20 +4424,20 @@ msgid_plural ""
 "unfinished signup in %(grace)d days to free it up. Click below to pick up "
 "exactly where you left off — nothing is lost yet."
 msgstr[0] ""
-"Zacząłeś konfigurować swoją stronę, ale nie dokończyłeś. Usuniemy tę "
-"niedokończoną rejestrację za %(grace)d dzień, aby ją zwolnić. Kliknij "
-"poniżej, aby kontynuować dokładnie tam, gdzie przerwałeś — nic jeszcze nie "
-"przepadło."
+"Konfiguracja twojej strony została rozpoczęta, ale nie dokończona. Usuniemy "
+"tę niedokończoną rejestrację za %(grace)d dzień, aby ją zwolnić. Kliknij "
+"poniżej, aby wrócić dokładnie do miejsca, w którym konfiguracja została "
+"przerwana — nic jeszcze nie przepadło."
 msgstr[1] ""
-"Zacząłeś konfigurować swoją stronę, ale nie dokończyłeś. Usuniemy tę "
-"niedokończoną rejestrację za %(grace)d dni, aby ją zwolnić. Kliknij poniżej,"
-" aby kontynuować dokładnie tam, gdzie przerwałeś — nic jeszcze nie "
-"przepadło."
+"Konfiguracja twojej strony została rozpoczęta, ale nie dokończona. Usuniemy "
+"tę niedokończoną rejestrację za %(grace)d dni, aby ją zwolnić. Kliknij "
+"poniżej, aby wrócić dokładnie do miejsca, w którym konfiguracja została "
+"przerwana — nic jeszcze nie przepadło."
 msgstr[2] ""
-"Zacząłeś konfigurować swoją stronę, ale nie dokończyłeś. Usuniemy tę "
-"niedokończoną rejestrację za %(grace)d dni, aby ją zwolnić. Kliknij poniżej,"
-" aby kontynuować dokładnie tam, gdzie przerwałeś — nic jeszcze nie "
-"przepadło."
+"Konfiguracja twojej strony została rozpoczęta, ale nie dokończona. Usuniemy "
+"tę niedokończoną rejestrację za %(grace)d dni, aby ją zwolnić. Kliknij "
+"poniżej, aby wrócić dokładnie do miejsca, w którym konfiguracja została "
+"przerwana — nic jeszcze nie przepadło."
 
 #: apps/core/onboarding/recovery.py
 #, fuzzy
@@ -4448,20 +4460,20 @@ msgid_plural ""
 "unfinished signup in %(grace)d days to free it up. Click below to pick up "
 "exactly where you left off — nothing is lost yet."
 msgstr[0] ""
-"Rozpocząłeś konfigurację %(brand)s, ale jej nie dokończyłeś. Usuniemy tę "
+"Konfiguracja %(brand)s została rozpoczęta, ale nie dokończona. Usuniemy tę "
 "niedokończoną rejestrację za %(grace)d dzień, aby ją zwolnić. Kliknij "
-"poniżej, aby kontynuować dokładnie tam, gdzie przerwałeś — nic jeszcze nie "
-"przepadło."
+"poniżej, aby wrócić dokładnie do miejsca, w którym konfiguracja została "
+"przerwana — nic jeszcze nie przepadło."
 msgstr[1] ""
-"Rozpocząłeś konfigurację %(brand)s, ale jej nie dokończyłeś. Usuniemy tę "
+"Konfiguracja %(brand)s została rozpoczęta, ale nie dokończona. Usuniemy tę "
 "niedokończoną rejestrację za %(grace)d dni, aby ją zwolnić. Kliknij poniżej,"
-" aby kontynuować dokładnie tam, gdzie przerwałeś — nic jeszcze nie "
-"przepadło."
+" aby wrócić dokładnie do miejsca, w którym konfiguracja została przerwana — "
+"nic jeszcze nie przepadło."
 msgstr[2] ""
-"Rozpocząłeś konfigurację %(brand)s, ale jej nie dokończyłeś. Usuniemy tę "
+"Konfiguracja %(brand)s została rozpoczęta, ale nie dokończona. Usuniemy tę "
 "niedokończoną rejestrację za %(grace)d dni, aby ją zwolnić. Kliknij poniżej,"
-" aby kontynuować dokładnie tam, gdzie przerwałeś — nic jeszcze nie "
-"przepadło."
+" aby wrócić dokładnie do miejsca, w którym konfiguracja została przerwana — "
+"nic jeszcze nie przepadło."
 
 #: apps/core/onboarding/recovery.py
 #, fuzzy, python-format
@@ -4479,14 +4491,14 @@ msgid ""
 "You started setting up your site — every answer you gave is saved. Click "
 "below to continue right where you left off."
 msgstr ""
-"Zacząłeś konfigurować swoją stronę — każda odpowiedź, której udzieliłeś, "
-"została zapisana. Kliknij poniżej, aby kontynuować dokładnie tam, gdzie "
-"przerwałeś."
+"Konfiguracja twojej strony została rozpoczęta — każda udzielona odpowiedź "
+"została zapisana. Kliknij poniżej, aby kontynuować dokładnie od miejsca, w "
+"którym konfiguracja została przerwana."
 
 #: apps/core/onboarding/recovery.py
 #, fuzzy
 msgid "Pick up where you left off — your site"
-msgstr "Kontynuuj tam, gdzie przerwałeś — twoja strona"
+msgstr "Wróć do konfiguracji — twoja strona"
 
 #: apps/core/onboarding/recovery.py
 #, fuzzy, python-format
@@ -4494,14 +4506,14 @@ msgid ""
 "You started setting up %(brand)s — every answer you gave is saved. Click "
 "below to continue right where you left off."
 msgstr ""
-"Rozpocząłeś konfigurację %(brand)s — każda udzielona przez ciebie odpowiedź "
-"została zapisana. Kliknij poniżej, aby kontynuować dokładnie tam, gdzie "
-"przerwałeś."
+"Konfiguracja %(brand)s została rozpoczęta — każda udzielona odpowiedź "
+"została zapisana. Kliknij poniżej, aby kontynuować dokładnie od miejsca, w "
+"którym konfiguracja została przerwana."
 
 #: apps/core/onboarding/recovery.py
 #, fuzzy, python-format
 msgid "Pick up where you left off — %(brand)s"
-msgstr "Kontynuuj tam, gdzie przerwałeś — %(brand)s"
+msgstr "Wróć do konfiguracji — %(brand)s"
 
 #: apps/core/onboarding/recovery.py
 #, fuzzy
@@ -5697,65 +5709,82 @@ msgid "'%(slug)s' is a reserved subdomain and cannot be used."
 msgstr "'%(slug)s' to zarezerwowana subdomena i nie można jej użyć."
 
 #: apps/courses/admin_panels.py
+#, fuzzy
 msgid "Quick edits and publishing. Build course content in Content → Courses."
 msgstr ""
+"Szybkie edycje i publikowanie. Treść kursów tworzysz w sekcji Treści → "
+"Kursy."
 
 #: apps/courses/admin_panels.py
+#, fuzzy
 msgid "Title"
-msgstr ""
+msgstr "Tytuł"
 
 #: apps/courses/admin_panels.py
+#, fuzzy
 msgid "Published"
-msgstr ""
+msgstr "Opublikowany"
 
 #: apps/courses/admin_panels.py
+#, fuzzy
 msgid "Slug"
-msgstr ""
+msgstr "Slug"
 
 #: apps/courses/admin_panels.py
+#, fuzzy
 msgid "Filters"
-msgstr ""
+msgstr "Filtry"
 
 #: apps/courses/admin_panels.py
+#, fuzzy
 msgid "Tags"
-msgstr ""
+msgstr "Tagi"
 
 #: apps/courses/admin_panels.py
+#, fuzzy
 msgid "Publish"
-msgstr ""
+msgstr "Opublikuj"
 
 #: apps/courses/admin_panels.py
-#, python-format
+#, python-format, fuzzy
 msgid "Published %(count)d course."
 msgid_plural "Published %(count)d courses."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Opublikowano %(count)d kurs."
+msgstr[1] "Opublikowano %(count)d kursy."
+msgstr[2] "Opublikowano %(count)d kursów."
 
 #: apps/courses/admin_panels.py
-#, python-format
+#, python-format, fuzzy
 msgid "%(count)d kept as a draft: every lesson needs a video or text first."
 msgid_plural ""
 "%(count)d kept as drafts: every lesson needs a video or text first."
 msgstr[0] ""
+"%(count)d kurs został w wersji roboczej: każda lekcja potrzebuje najpierw "
+"wideo lub tekstu."
 msgstr[1] ""
+"%(count)d kursy zostały w wersji roboczej: każda lekcja potrzebuje najpierw "
+"wideo lub tekstu."
 msgstr[2] ""
+"%(count)d kursów zostało w wersji roboczej: każda lekcja potrzebuje najpierw"
+" wideo lub tekstu."
 
 #: apps/courses/admin_panels.py
+#, fuzzy
 msgid "Unpublish"
-msgstr ""
+msgstr "Cofnij publikację"
 
 #: apps/courses/admin_panels.py
+#, fuzzy
 msgid "Unpublish selected courses? Students lose access to them."
-msgstr ""
+msgstr "Cofnąć publikację wybranych kursów? Uczestnicy stracą do nich dostęp."
 
 #: apps/courses/admin_panels.py
-#, python-format
+#, python-format, fuzzy
 msgid "Unpublished %(count)d course."
 msgid_plural "Unpublished %(count)d courses."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Cofnięto publikację %(count)d kursu."
+msgstr[1] "Cofnięto publikację %(count)d kursów."
+msgstr[2] "Cofnięto publikację %(count)d kursów."
 
 #: apps/courses/models.py
 #, fuzzy
@@ -5763,8 +5792,8 @@ msgid ""
 "a course goes live once every lesson has a video, or text you wrote or "
 "edited, and it has no lessons yet"
 msgstr ""
-"kurs zostaje opublikowany, gdy każda lekcja ma wideo lub tekst, który "
-"napisałeś lub edytowałeś, a nie ma jeszcze żadnych lekcji"
+"kurs zostaje opublikowany, gdy każda lekcja ma wideo lub tekst napisany lub "
+"edytowany przez ciebie, a nie ma jeszcze żadnych lekcji"
 
 #: apps/courses/models.py
 #, fuzzy, python-format
@@ -5775,17 +5804,17 @@ msgid_plural ""
 "a course goes live once every lesson has a video, or text you wrote or "
 "edited, and %(empty)s of its %(total)s lessons have none yet"
 msgstr[0] ""
-"kurs zostaje opublikowany, gdy każda lekcja ma wideo lub tekst, który "
-"napisałeś lub edytowałeś, a %(empty)s z jego %(total)s lekcji nie ma jeszcze"
-" ani wideo, ani tekstu"
+"kurs zostaje opublikowany, gdy każda lekcja ma wideo lub tekst napisany lub "
+"edytowany przez ciebie, a %(empty)s z jego %(total)s lekcji nie ma jeszcze "
+"ani wideo, ani tekstu"
 msgstr[1] ""
-"kurs zostaje opublikowany, gdy każda lekcja ma wideo lub tekst, który "
-"napisałeś lub edytowałeś, a %(empty)s z jego %(total)s lekcji nie mają "
-"jeszcze ani wideo, ani tekstu"
-msgstr[2] ""
-"kurs zostaje opublikowany, gdy każda lekcja ma wideo lub tekst, który "
-"napisałeś lub edytowałeś, a %(empty)s z jego %(total)s lekcji nie ma jeszcze"
+"kurs zostaje opublikowany, gdy każda lekcja ma wideo lub tekst napisany lub "
+"edytowany przez ciebie, a %(empty)s z jego %(total)s lekcji nie mają jeszcze"
 " ani wideo, ani tekstu"
+msgstr[2] ""
+"kurs zostaje opublikowany, gdy każda lekcja ma wideo lub tekst napisany lub "
+"edytowany przez ciebie, a %(empty)s z jego %(total)s lekcji nie ma jeszcze "
+"ani wideo, ani tekstu"
 
 #: apps/courses/serializers.py
 #, fuzzy
@@ -6333,28 +6362,30 @@ msgid "Something I wanted to share with you."
 msgstr "Coś, czym chciałem się z Tobą podzielić."
 
 #: apps/email_campaigns/tasks.py
+#, fuzzy
 msgid "All students"
-msgstr ""
+msgstr "Wszyscy uczestnicy"
 
 #: apps/email_campaigns/tasks.py
+#, fuzzy
 msgid "No courses selected"
-msgstr ""
+msgstr "Nie wybrano kursów"
 
 #: apps/email_campaigns/tasks.py
-#, python-format
+#, python-format, fuzzy
 msgid "%(count)d course"
 msgid_plural "%(count)d courses"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "%(count)d kurs"
+msgstr[1] "%(count)d kursy"
+msgstr[2] "%(count)d kursów"
 
 #: apps/email_campaigns/tasks.py
-#, python-format
+#, python-format, fuzzy
 msgid "%(count)d selected student"
 msgid_plural "%(count)d selected students"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "%(count)d wybrany uczestnik"
+msgstr[1] "%(count)d wybrani uczestnicy"
+msgstr[2] "%(count)d wybranych uczestników"
 
 #: apps/email_campaigns/tasks.py
 #, fuzzy
@@ -10290,62 +10321,70 @@ msgid "A detail: hands, tools, a close-up."
 msgstr "Detal: dłonie, narzędzia, zbliżenie."
 
 #: apps/tenant_config/interview_schedule.py
+#, fuzzy
 msgid "Sundays"
-msgstr ""
+msgstr "Niedziele"
 
 #: apps/tenant_config/interview_schedule.py
+#, fuzzy
 msgid "Mondays"
-msgstr ""
+msgstr "Poniedziałki"
 
 #: apps/tenant_config/interview_schedule.py
+#, fuzzy
 msgid "Tuesdays"
-msgstr ""
+msgstr "Wtorki"
 
 #: apps/tenant_config/interview_schedule.py
+#, fuzzy
 msgid "Wednesdays"
-msgstr ""
+msgstr "Środy"
 
 #: apps/tenant_config/interview_schedule.py
+#, fuzzy
 msgid "Thursdays"
-msgstr ""
+msgstr "Czwartki"
 
 #: apps/tenant_config/interview_schedule.py
+#, fuzzy
 msgid "Fridays"
-msgstr ""
+msgstr "Piątki"
 
 #: apps/tenant_config/interview_schedule.py
+#, fuzzy
 msgid "Saturdays"
-msgstr ""
+msgstr "Soboty"
 
 #: apps/tenant_config/interview_schedule.py
+#, fuzzy
 msgctxt "time of day, as a Django date format"
 msgid "g:i A"
-msgstr ""
+msgstr "H:i"
 
 #: apps/tenant_config/interview_schedule.py
-#, python-format
+#, python-format, fuzzy
 msgid "%(day)s %(date)s at %(time)s"
-msgstr ""
+msgstr "%(day)s %(date)s o %(time)s"
 
 #: apps/tenant_config/interview_schedule.py
-#, python-format
+#, python-format, fuzzy
 msgid "%(days)s at %(times)s"
-msgstr ""
+msgstr "%(days)s o %(times)s"
 
 #: apps/tenant_config/interview_schedule.py
-#, python-format
+#, python-format, fuzzy
 msgid "from %(start)s to %(end)s"
-msgstr ""
+msgstr "od %(start)s do %(end)s"
 
 #: apps/tenant_config/interview_schedule.py
-#, python-format
+#, python-format, fuzzy
 msgid "from %(start)s"
-msgstr ""
+msgstr "od %(start)s"
 
 #: apps/tenant_config/interview_schedule.py
-#, python-format
+#, python-format, fuzzy
 msgid "%(when)s, %(span)s"
-msgstr ""
+msgstr "%(when)s, %(span)s"
 
 #: apps/tenant_config/interview_team.py
 #, fuzzy

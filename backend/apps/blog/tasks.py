@@ -67,31 +67,40 @@ def generate_autopilot_post(schema_name):
             logger.exception("blog autopilot generation failed for %s", schema_name)
 
 
-def _notify_coach(title, body_html):
-    """Web-push to the coach/owner's own devices (never students)."""
+def _notify_coach(build):
+    """Web-push to the coach/owner's own devices (never students), each in the language of the person it
+    goes to. `build()` returns (title, body_html) and is called under that person's language."""
     from apps.notifications.models import PushSubscription
     from apps.notifications.payloads import announcement_payload
     from apps.notifications.services import send_to_subscriptions
 
-    subs = PushSubscription.objects.filter(user__role__in=("coach", "owner"))
-    send_to_subscriptions(subs, announcement_payload(title, body_html, url="/admin/blog"))
+    by_language = {}
+    for sub in PushSubscription.objects.filter(user__role__in=("coach", "owner")).select_related("user"):
+        by_language.setdefault(creator_language(sub.user), []).append(sub)
+    for language, subs in by_language.items():
+        with translation.override(language):
+            title, body_html = build()
+        send_to_subscriptions(subs, announcement_payload(title, body_html, url="/admin/blog"))
 
 
 def notify_autopilot_paused():
-    with translation.override(creator_language()):  # the creator's push, in her language
-        _notify_coach(
+    _notify_coach(
+        lambda: (
             _("Blog autopilot paused"),
             "<p>" + _("You've used all your AI blog posts for this month — autopilot will resume next month.") + "</p>",
         )
+    )
 
 
 def notify_autopilot_result(post, *, published):
-    with translation.override(creator_language()):
+    def build():
         if published:
             title, body = _("New blog post published"), _("Autopilot published “%(title)s” on your site.")
         else:
             title, body = _("Your new blog post is ready"), _("“%(title)s” is waiting for your review.")
-        _notify_coach(title, "<p>" + body % {"title": post.title} + "</p>")
+        return title, "<p>" + body % {"title": post.title} + "</p>"
+
+    _notify_coach(build)
 
 
 def _generate_for_current_tenant(tenant):

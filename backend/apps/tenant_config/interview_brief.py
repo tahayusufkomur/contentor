@@ -20,6 +20,8 @@ from django.utils import timezone
 from django.utils.translation import get_language, gettext, gettext_lazy, gettext_noop
 from django.utils.translation import gettext as render_marked
 
+from . import interview_schedule
+
 DELEGATE = "__delegate__"
 SKIP = "__skip__"
 # The interview's first two screens, asked of a site that signed up unnamed
@@ -2211,6 +2213,8 @@ def composer_facts(answers: dict) -> list[dict]:
             value = TEACHERS.get(value, (value,))[0]
         elif field.kind == "focus" and not (value := focus_sentence(answers)):
             continue
+        elif field.kind == "schedule":  # the model reads English, from the structure, not the text stored for her
+            value = interview_schedule.when_text(answers, field.id.removesuffix("_when"), "en")
         out.append({"q": field.label, "a": str(value)[:TEXT_MAX]})
     return out
 
