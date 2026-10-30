@@ -2962,20 +2962,11 @@
       },
       "changingCover": "Titelbild wird geändert…",
       "pickTime": "Wähle eine Uhrzeit",
-      "inPerson": "Vor Ort",
-      "onlineLive": "Online, live",
       "descriptionDrafted": "Aus deinen Antworten wird eine kurze Beschreibung entworfen.",
       "pickTopic": "Wähle ein Thema, und hier nimmt es Gestalt an.",
-      "badge": {
-        "free": "Kostenlos",
-        "members": "Nur für Mitglieder"
-      },
       "tiersIntro": "Teilnehmer wählen die, die zu ihnen passt. Du kannst Mitgliedschaften jederzeit hinzufügen oder ändern.",
-      "tierKicker": "{brand}-Mitgliedschaft",
-      "tierKickerPlain": "Mitgliedschaft",
       "tiersEmpty": "Deine Mitgliedschaften",
-      "tiersHint": "Wähle eine oder mehrere Mitgliedschaften aus, dann erscheinen sie hier.",
-      "billing": "Monatliche Abrechnung · Jederzeit kündbar"
+      "tiersHint": "Wähle eine oder mehrere Mitgliedschaften aus, dann erscheinen sie hier."
     },
     "sketch": {
       "preview": "Live-Vorschau des Kopfbereichs deiner Website",
@@ -3267,10 +3258,6 @@
       "drafting": "{kind, select, course {Dein erster Kurs wird entworfen…} event {Deine erste Live-Session wird entworfen…} onsite {Deine erste Präsenzveranstaltung wird entworfen…} other {Dein erster Kurs wird entworfen…}}",
       "usually": "Meist in weniger als einer Minute fertig.",
       "coverError": "Dieses Titelbild konnte nicht verwendet werden. Probier ein anderes.",
-      "price": {
-        "members": "Nur für Mitglieder",
-        "free": "Kostenlos"
-      },
       "changingCover": "Titelbild wird geändert…",
       "pickCover": "Titelbild auswählen",
       "coverCurrent": "Aktuelles Titelbild",
@@ -3278,8 +3265,6 @@
       "kicker": "{kind, select, course {Dein erster Kurs} event {Deine erste Live-Session} onsite {Deine erste Präsenzveranstaltung} other {Dein erster Kurs}}",
       "repeats": "Wiederholung: {repeats}",
       "trialChip": "Erste Session ist ein kostenloses Probetraining",
-      "inPerson": "Vor Ort",
-      "onlineLive": "Online, live",
       "includedIn": "Enthalten in {name}",
       "rewriting": "{kind, select, course {Dein Kurs wird mit deinen Änderungen neu geschrieben…} event {Deine Live-Session wird mit deinen Änderungen neu geschrieben…} onsite {Deine Präsenzveranstaltung wird mit deinen Änderungen neu geschrieben…} other {Dein Kurs wird mit deinen Änderungen neu geschrieben…}}",
       "rewritingShort": "{kind, select, course {Dein Kurs wird neu geschrieben…} event {Deine Live-Session wird neu geschrieben…} onsite {Deine Präsenzveranstaltung wird neu geschrieben…} other {Dein Kurs wird neu geschrieben…}}",
@@ -3339,6 +3324,7 @@
       "continue": "Weiter",
       "skip": "Vorerst überspringen",
       "leave": "So lassen, wie es ist",
+      "skipAnswer": "Ich überspringe das vorerst",
       "readingShared": "Ich lese, was du geteilt hast…",
       "readingHint": "Ich hake in den folgenden Fragen ab, was sich daraus beantworten lässt, sodass du sie nur noch prüfen musst. Das kann einen Moment dauern.",
       "nameLabel": "Name deiner Website",
@@ -3469,6 +3455,8 @@
     "question": {
       "noted": "Notiert: {items}",
       "delegateSaid": "Entscheide du für mich.",
+      "approvedAnswer": "Sieht gut aus",
+      "redraftSaid": "Entwirf es noch einmal von Grund auf",
       "picked": "{count} ausgewählt",
       "applying": "{label} wird übernommen…",
       "applyingPick": "Deine Auswahl wird übernommen…",

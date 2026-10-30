@@ -184,6 +184,8 @@ function Drafted({
 }) {
   const locale = useLocale();
   const t = useTranslations("admin.setupFlow");
+  // The price badge and the where-chip are what students read on the item: the site's words.
+  const ts = useTranslations("site");
   const working = redrafting || changing;
   // A change on its way: bring the card into view so the cover over it is
   // seen, even when she sent it from the box far below.
@@ -215,8 +217,8 @@ function Drafted({
         locale,
       ).replace(/[.,]00$/, "")
     : item.members?.length
-      ? t("draft.price.members")
-      : t("draft.price.free");
+      ? ts("price.membersOnly")
+      : ts("price.free");
   // The signed URL can change between polls; the cover's own id does not.
   const coverKey = item.covers.find((c) => c.current)?.value || item.cover_url;
   return (
@@ -344,8 +346,8 @@ function Drafted({
               )}
               {item.event_kind === "onsite"
                 ? [item.location, item.address].filter(Boolean).join(" · ") ||
-                  t("draft.inPerson")
-                : t("draft.onlineLive")}
+                  ts("event.inPerson")
+                : ts("event.onlineLive")}
             </Chip>
           </div>
         )}

@@ -48,7 +48,7 @@ describe("LookCardsView style grouping", () => {
   it("opens the group when the look picked before is one of the twins", () => {
     const html = render({ selected: "pop · Original" });
     expect(html).toContain(">pop<");
-    expect(html).toContain("More looks: headline beside a photo");
+    expect(html).toContain("More looks: Headline beside a photo");
   });
 });
 

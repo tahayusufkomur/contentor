@@ -9507,14 +9507,6 @@
     "src": "e4db8c2a",
     "reviewed": false
   },
-  "admin.setupFlow.builder.inPerson": {
-    "src": "fb95e850",
-    "reviewed": false
-  },
-  "admin.setupFlow.builder.onlineLive": {
-    "src": "1ef6804c",
-    "reviewed": false
-  },
   "admin.setupFlow.builder.descriptionDrafted": {
     "src": "8149453e",
     "reviewed": false
@@ -9523,24 +9515,8 @@
     "src": "1cfc7827",
     "reviewed": false
   },
-  "admin.setupFlow.builder.badge.free": {
-    "src": "75f52718",
-    "reviewed": false
-  },
-  "admin.setupFlow.builder.badge.members": {
-    "src": "625ddbab",
-    "reviewed": false
-  },
   "admin.setupFlow.builder.tiersIntro": {
     "src": "83356644",
-    "reviewed": false
-  },
-  "admin.setupFlow.builder.tierKicker": {
-    "src": "3fbc4e68",
-    "reviewed": false
-  },
-  "admin.setupFlow.builder.tierKickerPlain": {
-    "src": "53bc9670",
     "reviewed": false
   },
   "admin.setupFlow.builder.tiersEmpty": {
@@ -9549,10 +9525,6 @@
   },
   "admin.setupFlow.builder.tiersHint": {
     "src": "feccccf7",
-    "reviewed": false
-  },
-  "admin.setupFlow.builder.billing": {
-    "src": "c33f21b9",
     "reviewed": false
   },
   "admin.setupFlow.sketch.preview": {
@@ -10423,14 +10395,6 @@
     "src": "7e464285",
     "reviewed": false
   },
-  "admin.setupFlow.draft.price.members": {
-    "src": "625ddbab",
-    "reviewed": false
-  },
-  "admin.setupFlow.draft.price.free": {
-    "src": "75f52718",
-    "reviewed": false
-  },
   "admin.setupFlow.draft.changingCover": {
     "src": "50d9740a",
     "reviewed": false
@@ -10457,14 +10421,6 @@
   },
   "admin.setupFlow.draft.trialChip": {
     "src": "90ead04f",
-    "reviewed": false
-  },
-  "admin.setupFlow.draft.inPerson": {
-    "src": "fb95e850",
-    "reviewed": false
-  },
-  "admin.setupFlow.draft.onlineLive": {
-    "src": "1ef6804c",
     "reviewed": false
   },
   "admin.setupFlow.draft.includedIn": {
@@ -10629,6 +10585,10 @@
   },
   "admin.setupFlow.opening.leave": {
     "src": "28c2d2e0",
+    "reviewed": false
+  },
+  "admin.setupFlow.opening.skipAnswer": {
+    "src": "5eb1742b",
     "reviewed": false
   },
   "admin.setupFlow.opening.readingShared": {
@@ -11077,6 +11037,14 @@
   },
   "admin.setupFlow.question.delegateSaid": {
     "src": "386a48a6",
+    "reviewed": false
+  },
+  "admin.setupFlow.question.approvedAnswer": {
+    "src": "ac558255",
+    "reviewed": false
+  },
+  "admin.setupFlow.question.redraftSaid": {
+    "src": "dca9ac22",
     "reviewed": false
   },
   "admin.setupFlow.question.picked": {

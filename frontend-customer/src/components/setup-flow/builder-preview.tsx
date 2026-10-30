@@ -92,6 +92,8 @@ function ItemCard({
 }) {
   const locale = useLocale();
   const t = useTranslations("admin.setupFlow");
+  // The badge and the chips are what students read on the item: the site's words.
+  const ts = useTranslations("site");
   const item = data.review?.status === "ready" ? data.review.item : null;
   const a = data.answers;
   const topic =
@@ -114,10 +116,12 @@ function ItemCard({
   const ways = waysIn(a[`${kind}_access`]);
   const badge = accessBadge(data.wayIds?.[`${kind}_access`] ?? ways);
   const price =
-    (badge ? t(`builder.badge.${badge}`) : null) ??
+    (badge
+      ? ts(badge === "free" ? "price.free" : "price.membersOnly")
+      : null) ??
     (priceText
       ? /free/i.test(priceText)
-        ? t("builder.badge.free")
+        ? ts("price.free")
         : priceText
       : item?.price
         ? formatPrice(
@@ -234,8 +238,8 @@ function ItemCard({
             )}
             {kind === "onsite"
               ? [item?.location, item?.address].filter(Boolean).join(" · ") ||
-                t("builder.inPerson")
-              : t("builder.onlineLive")}
+                ts("event.inPerson")
+              : ts("event.onlineLive")}
           </Chip>
         </div>
       )}
@@ -292,6 +296,8 @@ function MembershipCards({
   brandName: string;
 }) {
   const t = useTranslations("admin.setupFlow");
+  // The tier card is what students will see: the site's words.
+  const ts = useTranslations("site.setupSketch");
   const tiers = data.tiers ?? [];
   return (
     <div className="space-y-3">
@@ -304,8 +310,8 @@ function MembershipCards({
             key={tier.label}
             kicker={
               brandName
-                ? t("builder.tierKicker", { brand: brandName })
-                : t("builder.tierKickerPlain")
+                ? ts("membership", { brand: brandName })
+                : ts("membershipPlain")
             }
           >
             <div className="mt-2 flex items-baseline justify-between gap-3">
@@ -334,7 +340,7 @@ function MembershipCards({
         </Card>
       )}
       <p className="px-1 text-[12.5px] text-[var(--sf-faint)]">
-        {t("builder.billing")}
+        {ts("billing")}
       </p>
     </div>
   );

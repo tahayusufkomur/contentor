@@ -740,7 +740,10 @@
     "welcome": "{brand} sitesine hoş geldin",
     "welcomeFallback": "Yeni sitene hoş geldin",
     "yourSite": "Siten",
-    "explore": "Keşfet"
+    "explore": "Keşfet",
+    "membership": "{brand} üyeliği",
+    "membershipPlain": "Üyelik",
+    "billing": "Aylık faturalandırılır · İstediğin zaman iptal et"
   },
   "meta": {
     "fallbackName": "Hoş geldin"

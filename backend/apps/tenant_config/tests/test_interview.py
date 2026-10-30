@@ -627,6 +627,34 @@ def test_a_schedule_pick_is_applied_by_code_and_the_model_never_overrides_it(cli
     assert bad.status_code == 400
 
 
+def test_a_localized_message_travels_with_the_choice_and_the_stored_answer_stays_english(client, tenant_ctx, quiet):
+    """The creator's turn text is in her language (display only: the transcript); what is stored comes
+    from the structured choice.value."""
+    _set_answers(tenant_ctx, {**BEFORE_COURSE, "offers": ["course", "live"], "live_topic": "Pads"})
+    quiet.reply = interview.InterviewTurn(ack="Ok.", next_field="event_price", question="Price?", options=["10"])
+    german = "Dienstag, 8. Januar 2030 um 18:30 Uhr"
+    client.post(
+        URL,
+        {"message": german, "choice": {"field": "live_when", "value": '{"mode": "once", "at": "2030-01-08T18:30"}'}},
+        format="json",
+    )
+    answers = _answers(tenant_ctx)
+    assert answers["live_when"] == "Tuesday 8 Jan 2030 at 6:30 PM"
+    assert answers["live_schedule"] == {"mode": "once", "at": "2030-01-08T18:30"}
+    turns = TenantConfig.objects.first().setup_flow["interview"]["turns"]
+    assert [t["text"] for t in turns if t["role"] == "coach"] == [german]
+
+
+def test_the_bio_skip_in_german_stores_the_same_identity(client, tenant_ctx, quiet):
+    _set_answers(tenant_ctx, dict(UNNAMED))
+    client.post(
+        URL,
+        {"message": "Das überspringe ich erstmal", "choice": {"field": "bio", "value": "none"}},
+        format="json",
+    )
+    assert _answers(tenant_ctx)["bio"] == "none"
+
+
 def test_the_model_cannot_start_a_section_before_its_turn(client, tenant_ctx, quiet):
     """The course draft needs the home facts and the payments answer; a
     review screen reached before them would wait for a draft that never

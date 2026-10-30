@@ -9624,11 +9624,6 @@ msgstr "Gölgeye doğru solan dikey bir portre"
 
 #: apps/tenant_config/sections.py
 #, fuzzy
-msgid "Atelier"
-msgstr "Atölye"
-
-#: apps/tenant_config/sections.py
-#, fuzzy
 msgid ""
 "A beauty atelier — blush paper, a light italic serif, arched photo crops and"
 " a champagne hairline."
@@ -9650,11 +9645,6 @@ msgstr "İncir"
 #, fuzzy
 msgid "Apricot"
 msgstr "Kayısı"
-
-#: apps/tenant_config/sections.py
-#, fuzzy
-msgid "Darkroom"
-msgstr "Karanlık Oda"
 
 #: apps/tenant_config/sections.py
 #, fuzzy
@@ -9682,11 +9672,6 @@ msgstr "Keten"
 
 #: apps/tenant_config/sections.py
 #, fuzzy
-msgid "Dojo"
-msgstr "Dojo"
-
-#: apps/tenant_config/sections.py
-#, fuzzy
 msgid ""
 "The dojo — rice paper, black sumi ink, one red seal, vertical rules and "
 "belts as progress."
@@ -9708,11 +9693,6 @@ msgstr "Sumi"
 #, fuzzy
 msgid "Aizome"
 msgstr "Aizome"
-
-#: apps/tenant_config/sections.py
-#, fuzzy
-msgid "Encore"
-msgstr "Bis"
 
 #: apps/tenant_config/sections.py
 #, fuzzy
@@ -9740,11 +9720,6 @@ msgstr "İsyan"
 
 #: apps/tenant_config/sections.py
 #, fuzzy
-msgid "Swiss Grid"
-msgstr "İsviçre Izgarası"
-
-#: apps/tenant_config/sections.py
-#, fuzzy
 msgid ""
 "Clear, intelligent, modern — a text-led grid with cobalt accents and mono "
 "labels."
@@ -9766,11 +9741,6 @@ msgstr "Mono"
 #, fuzzy
 msgid "Terracotta"
 msgstr "Terakota"
-
-#: apps/tenant_config/sections.py
-#, fuzzy
-msgid "Quiet Journal"
-msgstr "Sakin Günlük"
 
 #: apps/tenant_config/sections.py
 #, fuzzy
@@ -9798,11 +9768,6 @@ msgstr "Alacakaranlık"
 
 #: apps/tenant_config/sections.py
 #, fuzzy
-msgid "Kinetic Club"
-msgstr "Kinetik Kulüp"
-
-#: apps/tenant_config/sections.py
-#, fuzzy
 msgid ""
 "Loud, fast and bold — condensed caps, signal red and volt, a premium "
 "boutique gym."
@@ -9824,11 +9789,6 @@ msgstr "Okyanus"
 #, fuzzy
 msgid "Ember"
 msgstr "Kor"
-
-#: apps/tenant_config/sections.py
-#, fuzzy
-msgid "Ledger"
-msgstr "Büyük Defter"
 
 #: apps/tenant_config/sections.py
 #, fuzzy
@@ -9856,11 +9816,6 @@ msgstr "Orman"
 
 #: apps/tenant_config/sections.py
 #, fuzzy
-msgid "Maison"
-msgstr "Moda Evi"
-
-#: apps/tenant_config/sections.py
-#, fuzzy
 msgid ""
 "A fashion house lookbook — ivory, black, a huge high-contrast Bodoni, "
 "hairline frames and a great deal of air."
@@ -9882,11 +9837,6 @@ msgstr "Siyah"
 #, fuzzy
 msgid "Bordeaux"
 msgstr "Bordo"
-
-#: apps/tenant_config/sections.py
-#, fuzzy
-msgid "Manuscript"
-msgstr "El Yazması"
 
 #: apps/tenant_config/sections.py
 #, fuzzy
@@ -9914,11 +9864,6 @@ msgstr "Gazete Kağıdı"
 
 #: apps/tenant_config/sections.py
 #, fuzzy
-msgid "Nocturne"
-msgstr "Noktürn"
-
-#: apps/tenant_config/sections.py
-#, fuzzy
 msgid ""
 "Night blue with one warm lamp — a soft dark style, rounded serif, a glow on "
 "the one button."
@@ -9940,11 +9885,6 @@ msgstr "Yosun gecesi"
 #, fuzzy
 msgid "Plum"
 msgstr "Mürdüm"
-
-#: apps/tenant_config/sections.py
-#, fuzzy
-msgid "Pop Studio"
-msgstr "Pop Stüdyo"
 
 #: apps/tenant_config/sections.py
 #, fuzzy
@@ -9972,11 +9912,6 @@ msgstr "Nane"
 
 #: apps/tenant_config/sections.py
 #, fuzzy
-msgid "Primer"
-msgstr "Alfabe"
-
-#: apps/tenant_config/sections.py
-#, fuzzy
 msgid ""
 "The exercise book you loved — ruled lines, a red margin, index tabs, "
 "outcomes as checkboxes."
@@ -9998,11 +9933,6 @@ msgstr "Kara tahta"
 #, fuzzy
 msgid "Manila"
 msgstr "Manila"
-
-#: apps/tenant_config/sections.py
-#, fuzzy
-msgid "Sanctum"
-msgstr "Mabet"
 
 #: apps/tenant_config/sections.py
 #, fuzzy
@@ -10030,11 +9960,6 @@ msgstr "Aytaşı"
 
 #: apps/tenant_config/sections.py
 #, fuzzy
-msgid "Sprout"
-msgstr "Filiz"
-
-#: apps/tenant_config/sections.py
-#, fuzzy
 msgid ""
 "The family room — cream paper, a round friendly face, chunky colour shapes "
 "and hand-drawn sprouts."
@@ -10056,11 +9981,6 @@ msgstr "Böğürtlen"
 #, fuzzy
 msgid "Sky"
 msgstr "Gökyüzü"
-
-#: apps/tenant_config/sections.py
-#, fuzzy
-msgid "Studio Floor"
-msgstr "Stüdyo Zemini"
 
 #: apps/tenant_config/sections.py
 #, fuzzy
@@ -10088,11 +10008,6 @@ msgstr "Buz pisti"
 
 #: apps/tenant_config/sections.py
 #, fuzzy
-msgid "Tavola"
-msgstr "Tavola"
-
-#: apps/tenant_config/sections.py
-#, fuzzy
 msgid ""
 "The trattoria — butter-yellow awning, olive and tomato, a chunky warm serif "
 "and a menu card with dotted leaders."
@@ -10114,11 +10029,6 @@ msgstr "Liman"
 #, fuzzy
 msgid "Bakery"
 msgstr "Fırın"
-
-#: apps/tenant_config/sections.py
-#, fuzzy
-msgid "Terminal"
-msgstr "Terminal"
 
 #: apps/tenant_config/sections.py
 #, fuzzy
@@ -10146,11 +10056,6 @@ msgstr "Gece kuşu"
 
 #: apps/tenant_config/sections.py
 #, fuzzy
-msgid "Trail"
-msgstr "Patika"
-
-#: apps/tenant_config/sections.py
-#, fuzzy
 msgid ""
 "A national park field guide — stone paper with contour lines, pine and blaze"
 " orange, a route card and stamps."
@@ -10175,11 +10080,6 @@ msgstr "Çöl"
 
 #: apps/tenant_config/sections.py
 #, fuzzy
-msgid "Velvet Room"
-msgstr "Kadife Oda"
-
-#: apps/tenant_config/sections.py
-#, fuzzy
 msgid ""
 "After-hours and unhurried — oxblood and near-black, a blush light, champagne"
 " hairlines, slanted Playfair italics and one tall portrait sinking into "
@@ -10198,11 +10098,6 @@ msgstr "Vişneçürüğü"
 #, fuzzy
 msgid "Satin"
 msgstr "Saten"
-
-#: apps/tenant_config/sections.py
-#, fuzzy
-msgid "Workshop"
-msgstr "Atölye"
 
 #: apps/tenant_config/sections.py
 #, fuzzy

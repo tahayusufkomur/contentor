@@ -383,12 +383,16 @@ def test_config_patch_cannot_change_the_look(tenant_ctx, real_styles):
 
 
 def test_every_text_the_look_picker_shows_is_in_the_catalog(real_styles):
-    """A style brings its name, mood and colourway names in the manifest; the catalog lists them
-    (sections.LOOK_TEXTS) so they get translated. A new style fails here until it is listed."""
+    """A style brings its mood and colourway names in the manifest; the catalog lists them
+    (sections.LOOK_TEXTS) so they get translated. A new style fails here until it is listed.
+    Style names are proper names: they stay as written and are not in the catalog."""
     shown = set()
+    names = set()
     for s in sections.enabled_styles().values():
-        shown |= {s.get("label"), s.get("mood"), s.get("paletteLabel"), *(p.get("label") for p in s["palettes"])}
+        names.add(s.get("label"))
+        shown |= {s.get("mood"), s.get("paletteLabel"), *(p.get("label") for p in s["palettes"])}
     assert shown - {None, ""} <= set(sections.LOOK_TEXTS)
+    assert not (names - shown) & set(sections.LOOK_TEXTS)
 
 
 def test_the_look_picker_speaks_the_creator_language_and_keeps_identities(real_styles):
@@ -411,3 +415,21 @@ def test_the_look_picker_speaks_the_creator_language_and_keeps_identities(real_s
     # What code matches on never changes: the look's value, style, palette ids.
     assert (turkish["value"], turkish["style"], turkish["palette"]) == ("journal", "journal", "")
     assert [p["id"] for p in turkish["palettes"]] == [p["id"] for p in english["palettes"]] == ["", "sage", "dusk"]
+
+
+@pytest.mark.parametrize("lang", ["tr", "de", "pl"])
+def test_style_names_stay_as_written_and_the_rest_reads_in_the_creator_language(real_styles, lang):
+    from django.utils.translation import override
+
+    from apps.core.tests.i18n_utils import translated
+
+    with override(lang):
+        picker = {o["value"]: o for o in sections.looks()}
+    for sid, style in sections.enabled_styles().items():
+        # A name is a proper name: the same on this screen and wherever the manifest label is read.
+        assert picker[sid]["label"] == style["label"]
+        assert picker[sid]["detail"] == translated(style["mood"], lang)
+    journal = sections.style("journal")
+    assert picker["journal"]["group"] == translated(sections.HERO_LAYOUTS[journal["heroLayout"]], lang)
+    assert picker["journal"]["palettes"][0]["label"] == translated(journal["paletteLabel"], lang)
+    assert [p["id"] for p in picker["journal"]["palettes"]] == ["", "sage", "dusk"]

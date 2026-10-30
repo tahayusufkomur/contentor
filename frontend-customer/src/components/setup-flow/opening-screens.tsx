@@ -9,8 +9,10 @@ import { Button } from "@/components/ui/button";
 import { ModalPortal } from "@/components/ui/modal-portal";
 import type { QuestionStep } from "@/lib/interview";
 import {
+  answerShown,
   checkSiteName,
   siteNameIdeas,
+  skipBioTurn,
   type TurnRequest,
 } from "@/lib/setup-flow";
 import {
@@ -25,7 +27,6 @@ import { BusyOverlay } from "./busy-overlay";
 import { QuestionHelp } from "./question-help";
 
 const BIO_MAX = 8000;
-const SKIP_BIO = "I'll skip this for now";
 // The name is reviewed once typing pauses, so Continue rarely waits. Capped
 // per screen: the check endpoint allows 30 a minute per IP.
 const REVIEW_DEBOUNCE_MS = 1000;
@@ -60,7 +61,7 @@ function Heading({ step, live }: { step: QuestionStep; live: boolean }) {
       {!live && step.answer && (
         <p className="max-w-[72ch] text-[15px] text-[var(--sf-graphite)]">
           {t.rich("answer.youSaid", {
-            answer: step.answer,
+            answer: answerShown(step.answer, t),
             b: (chunks) => (
               <span className="text-[var(--sf-ink)]">{chunks}</span>
             ),
@@ -250,12 +251,7 @@ export function BioScreen({
             size="lg"
             disabled={busy}
             onClick={() =>
-              live || !step.answer
-                ? onSend({
-                    message: SKIP_BIO,
-                    choice: { field: "bio", value: "none" },
-                  })
-                : onNext()
+              live || !step.answer ? onSend(skipBioTurn(t)) : onNext()
             }
             className="rounded-full text-[var(--sf-graphite)]"
           >

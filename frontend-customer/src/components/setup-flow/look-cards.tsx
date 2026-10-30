@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Check, Plus, Type, Upload } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { ModalPortal } from "@/components/ui/modal-portal";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
@@ -137,7 +137,6 @@ export function LookCardsView({
   /** "Keep this look" in the preview: the picked look is the answer. */
   onKeep: () => void;
 }) {
-  const locale = useLocale();
   const t = useTranslations("admin.setupFlow");
   const site = useTranslations("site");
   const original = t("look.original");
@@ -363,10 +362,7 @@ export function LookCardsView({
             groups.map(([group, list]) => (
               <section key={group} className="mt-8">
                 <h3 className="mb-3 text-[14px] font-semibold">
-                  {t("look.moreLooks", {
-                    group:
-                      locale === "de" ? group : group.toLocaleLowerCase(locale),
-                  })}
+                  {t("look.moreLooks", { group })}
                 </h3>
                 <div className={GRID}>
                   {list.map((o, i) => card(o, leads.length + i))}

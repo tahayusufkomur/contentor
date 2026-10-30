@@ -740,7 +740,10 @@
     "welcome": "Welcome to {brand}",
     "welcomeFallback": "Welcome to your new site",
     "yourSite": "Your site",
-    "explore": "Explore"
+    "explore": "Explore",
+    "membership": "{brand} membership",
+    "membershipPlain": "Membership",
+    "billing": "Billed monthly · Cancel any time"
   },
   "meta": {
     "fallbackName": "Welcome"

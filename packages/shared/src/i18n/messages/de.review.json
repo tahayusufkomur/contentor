@@ -2315,6 +2315,18 @@
     "src": "b965ae66",
     "reviewed": false
   },
+  "site.setupSketch.membership": {
+    "src": "3fbc4e68",
+    "reviewed": false
+  },
+  "site.setupSketch.membershipPlain": {
+    "src": "53bc9670",
+    "reviewed": false
+  },
+  "site.setupSketch.billing": {
+    "src": "c33f21b9",
+    "reviewed": false
+  },
   "site.meta.fallbackName": {
     "src": "ca4f9dcf",
     "reviewed": false

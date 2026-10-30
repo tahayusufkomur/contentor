@@ -2962,20 +2962,11 @@
       },
       "changingCover": "Kapak değiştiriliyor…",
       "pickTime": "Bir zaman seç",
-      "inPerson": "Yüz yüze",
-      "onlineLive": "Çevrim içi, canlı",
       "descriptionDrafted": "Yanıtlarından kısa bir açıklama taslağı oluşturulur.",
       "pickTopic": "Bir konu seç, burada şekillenmeye başlasın.",
-      "badge": {
-        "free": "Ücretsiz",
-        "members": "Yalnızca üyeler"
-      },
       "tiersIntro": "Öğrenciler kendilerine uygun olanı seçer. İstediğin zaman üyelik ekleyebilir veya değiştirebilirsin.",
-      "tierKicker": "{brand} üyeliği",
-      "tierKickerPlain": "Üyelik",
       "tiersEmpty": "Üyeliklerin",
-      "tiersHint": "Bir veya daha fazla üyelik seç, burada görünsünler.",
-      "billing": "Aylık faturalandırılır · İstediğin zaman iptal et"
+      "tiersHint": "Bir veya daha fazla üyelik seç, burada görünsünler."
     },
     "sketch": {
       "preview": "Sitende canlı üst bilgi önizlemesi",
@@ -3267,10 +3258,6 @@
       "drafting": "{kind, select, course {İlk kursunun taslağı oluşturuluyor…} event {İlk canlı oturumunun taslağı oluşturuluyor…} onsite {İlk yüz yüze etkinliğinin taslağı oluşturuluyor…} other {İlk kursunun taslağı oluşturuluyor…}}",
       "usually": "Genellikle bir dakikadan kısa sürede hazır.",
       "coverError": "Bu kapak kullanılamadı. Başka bir tane dene.",
-      "price": {
-        "members": "Yalnızca üyelere özel",
-        "free": "Ücretsiz"
-      },
       "changingCover": "Kapak değiştiriliyor…",
       "pickCover": "Bir kapak seç",
       "coverCurrent": "Mevcut kapak",
@@ -3278,8 +3265,6 @@
       "kicker": "{kind, select, course {İlk kursun} event {İlk canlı oturumun} onsite {İlk yüz yüze etkinliğin} other {İlk kursun}}",
       "repeats": "Tekrarlar: {repeats}",
       "trialChip": "İlk oturum ücretsiz denemedir",
-      "inPerson": "Yüz yüze",
-      "onlineLive": "Çevrim içi, canlı",
       "includedIn": "{name} kapsamına dahil",
       "rewriting": "{kind, select, course {Kursun yaptığın değişikliklerle yeniden yazılıyor…} event {Canlı oturumun yaptığın değişikliklerle yeniden yazılıyor…} onsite {Yüz yüze etkinliğin yaptığın değişikliklerle yeniden yazılıyor…} other {Kursun yaptığın değişikliklerle yeniden yazılıyor…}}",
       "rewritingShort": "{kind, select, course {Kursun yeniden yazılıyor…} event {Canlı oturumun yeniden yazılıyor…} onsite {Yüz yüze etkinliğin yeniden yazılıyor…} other {Kursun yeniden yazılıyor…}}",
@@ -3339,6 +3324,7 @@
       "continue": "Devam et",
       "skip": "Şimdilik atla",
       "leave": "Olduğu gibi bırak",
+      "skipAnswer": "Şimdilik bunu atlayacağım",
       "readingShared": "Paylaştıkların okunuyor…",
       "readingHint": "İlerideki sorularda yanıtladığı kısımları işaretliyorum, böylece sen yalnızca kontrol edersin. Bu biraz zaman alabilir.",
       "nameLabel": "Sitenin adı",
@@ -3469,6 +3455,8 @@
     "question": {
       "noted": "Not edildi: {items}",
       "delegateSaid": "Benim yerime sen karar ver.",
+      "approvedAnswer": "İyi görünüyor",
+      "redraftSaid": "Sıfırdan yeniden taslak oluştur",
       "picked": "{count} seçildi",
       "applying": "{label} uygulanıyor…",
       "applyingPick": "Seçimin uygulanıyor…",

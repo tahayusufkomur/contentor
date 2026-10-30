@@ -227,6 +227,31 @@ export const DELEGATE = "__delegate__";
 export const SKIP = "__skip__";
 /** What the coach "says" when they leave a question to the guide. */
 export const DELEGATE_TEXT = "You decide for me.";
+/** "Draft it again" on a review screen. Sent in English on purpose: the server reads
+ * a review screen's words for what they ask (its "from scratch" means the whole draft, cover
+ * included); the transcript line shows it as `question.redraftSaid`. */
+export const REDRAFT_TEXT = "Draft it again from scratch";
+
+/** The coach approves a review screen. The words are hers to read back ("You said: ..."): the
+ * server takes the `ok` choice, never the text. */
+export const approveTurn = (field: string, t: T): TurnRequest => ({
+  message: t("question.approvedAnswer"),
+  choice: { field, value: "ok" },
+});
+
+/** The coach skips the bio. Same as above: the `none` choice is what counts. */
+export const skipBioTurn = (t: T): TurnRequest => ({
+  message: t("opening.skipAnswer"),
+  choice: { field: "bio", value: "none" },
+});
+
+/** What the transcript shows back as her answer: the texts sent in English for the server read in her language. */
+export const answerShown = (answer: string, t: T): string =>
+  answer === DELEGATE_TEXT
+    ? t("question.delegateSaid")
+    : answer === REDRAFT_TEXT
+      ? t("question.redraftSaid")
+      : answer;
 
 /** The sample words written for this coach (backend look_copy.py), shown by
  * every look in its own layout. Each family's keys are that family's text

@@ -2962,20 +2962,11 @@
       },
       "changingCover": "Zmieniam okładkę…",
       "pickTime": "Wybierz termin",
-      "inPerson": "Stacjonarnie",
-      "onlineLive": "Online, na żywo",
       "descriptionDrafted": "Na podstawie twoich odpowiedzi powstaje krótki opis.",
       "pickTopic": "Wybierz temat, a tutaj zacznie nabierać kształtu.",
-      "badge": {
-        "free": "Bezpłatne",
-        "members": "Tylko dla członków"
-      },
       "tiersIntro": "Uczestnicy wybierają to, które im odpowiada. Członkostwa możesz dodawać i zmieniać w dowolnym momencie.",
-      "tierKicker": "Członkostwo {brand}",
-      "tierKickerPlain": "Członkostwo",
       "tiersEmpty": "Twoje członkostwa",
-      "tiersHint": "Wybierz jedno lub więcej członkostw, a pojawią się tutaj.",
-      "billing": "Płatność miesięczna · Anuluj w dowolnym momencie"
+      "tiersHint": "Wybierz jedno lub więcej członkostw, a pojawią się tutaj."
     },
     "sketch": {
       "preview": "Podgląd nagłówka na żywo na twojej stronie",
@@ -3267,10 +3258,6 @@
       "drafting": "{kind, select, course {Przygotowuję szkic twojego pierwszego kursu…} event {Przygotowuję szkic twojej pierwszej sesji na żywo…} onsite {Przygotowuję szkic twojego pierwszego wydarzenia stacjonarnego…} other {Przygotowuję szkic twojego pierwszego kursu…}}",
       "usually": "Zwykle gotowe w niecałą minutę.",
       "coverError": "Nie udało się użyć tej okładki. Wypróbuj inną.",
-      "price": {
-        "members": "Tylko dla członków",
-        "free": "Bezpłatnie"
-      },
       "changingCover": "Zmieniam okładkę…",
       "pickCover": "Wybierz okładkę",
       "coverCurrent": "Obecna okładka",
@@ -3278,8 +3265,6 @@
       "kicker": "{kind, select, course {Twój pierwszy kurs} event {Twoja pierwsza sesja na żywo} onsite {Twoje pierwsze wydarzenie stacjonarne} other {Twój pierwszy kurs}}",
       "repeats": "Powtarzanie: {repeats}",
       "trialChip": "Pierwsza sesja to bezpłatne zajęcia próbne",
-      "inPerson": "Stacjonarnie",
-      "onlineLive": "Online, na żywo",
       "includedIn": "Dostępne w ramach {name}",
       "rewriting": "{kind, select, course {Przepisuję twój kurs, uwzględniając twoje zmiany…} event {Przepisuję twoją sesję na żywo, uwzględniając twoje zmiany…} onsite {Przepisuję twoje wydarzenie stacjonarne, uwzględniając twoje zmiany…} other {Przepisuję twój kurs, uwzględniając twoje zmiany…}}",
       "rewritingShort": "{kind, select, course {Przepisuję twój kurs…} event {Przepisuję twoją sesję na żywo…} onsite {Przepisuję twoje wydarzenie stacjonarne…} other {Przepisuję twój kurs…}}",
@@ -3316,7 +3301,7 @@
       },
       "placeholder": "Prowadzę zajęcia z … dla … Mam przygotowanie jako … i uczę od … lat. Moje zajęcia są … a wyróżnia je …",
       "exampleLink": "Zobacz przykład",
-      "example": "Uczę jogi vinyasa i pracy z oddechem osoby początkujące i zapracowanych pracowników biurowych, online i stacjonarnie na Brooklynie. Ukończyłam 500-godzinny program szkoleniowy i uczę od 10 lat, odkąd wypalenie w pracy w korporacji przywiodło mnie do jogi. Moje zajęcia są spokojne, ciepłe i praktyczne: małe grupy, zero popisywania się i zawsze łatwiejsza wersja każdej pozycji. Uczestnicy mówią, że wyróżnia mnie to, że uczę ich samodzielnej praktyki.",
+      "example": "Uczę jogi vinyasa i pracy z oddechem początkujących oraz zapracowanych pracowników biurowych, online i stacjonarnie na Brooklynie. Mam za sobą 500-godzinny program szkoleniowy i uczę od 10 lat, odkąd wypalenie zawodowe w korporacji przywiodło mnie do jogi. Moje zajęcia są spokojne, ciepłe i praktyczne: małe grupy, zero popisywania się i zawsze łatwiejszy wariant każdej pozycji. Uczestnicy mówią, że wyróżnia mnie to, że uczę ich samodzielnej praktyki.",
       "nudge": "To dobry początek. Kilka zdań więcej o twoim doświadczeniu i o tym, co cię wyróżnia, sprawi, że twoja strona będzie lepsza."
     },
     "answer": {
@@ -3339,6 +3324,7 @@
       "continue": "Dalej",
       "skip": "Na razie pomiń",
       "leave": "Zostaw bez zmian",
+      "skipAnswer": "Na razie to pominę",
       "readingShared": "Czytam udostępnione materiały…",
       "readingHint": "W kolejnych pytaniach zaznaczę odpowiedzi, które znajdę w tych materiałach, więc wystarczy, że je sprawdzisz. To może chwilę potrwać.",
       "nameLabel": "Nazwa twojej witryny",
@@ -3411,7 +3397,7 @@
         "setup_finished": "Konfiguracja jest już zakończona. Usuń witrynę z poziomu panelu."
       },
       "cancelError": "Nie udało się anulować konfiguracji. Spróbuj ponownie.",
-      "savedLogout": "Wszystko jest zapisane. Wysłaliśmy ci e-mailem link, dzięki któremu wrócisz do miejsca, w którym skończyłeś.",
+      "savedLogout": "Wszystko jest zapisane. Wysłaliśmy ci e-mailem link, dzięki któremu wrócisz tam, gdzie teraz jesteś.",
       "linkError": "Nie udało się wysłać linku. Spróbuj ponownie.",
       "savedLogin": "Wszystko jest zapisane. Zaloguj się w dowolnym momencie, aby kontynuować.",
       "label": "Menu konfiguracji",
@@ -3469,6 +3455,8 @@
     "question": {
       "noted": "Zanotowano: {items}",
       "delegateSaid": "Zdecyduj za mnie.",
+      "approvedAnswer": "Wygląda dobrze",
+      "redraftSaid": "Przygotuj to jeszcze raz od zera",
       "picked": "Wybrano: {count}",
       "applying": "Wprowadzam: {label}…",
       "applyingPick": "Wprowadzam twój wybór…",

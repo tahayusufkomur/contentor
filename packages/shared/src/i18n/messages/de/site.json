@@ -740,7 +740,10 @@
     "welcome": "Willkommen bei {brand}",
     "welcomeFallback": "Willkommen auf deiner neuen Website",
     "yourSite": "Deine Website",
-    "explore": "Entdecken"
+    "explore": "Entdecken",
+    "membership": "{brand}-Mitgliedschaft",
+    "membershipPlain": "Mitgliedschaft",
+    "billing": "Monatlich abgerechnet · Jederzeit kündbar"
   },
   "meta": {
     "fallbackName": "Willkommen"

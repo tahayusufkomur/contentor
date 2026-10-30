@@ -88,99 +88,83 @@ HERO_LAYOUTS = {
     "portrait": gettext_noop("A tall portrait fading into shadow"),
 }
 
-# What the look picker shows the creator from the manifest (each style's name,
-# mood and colourway names). The manifest stays English and shared with the
+# What the look picker shows the creator from the manifest (each style's mood
+# and colourway names). The manifest stays English and shared with the
 # frontends, so the catalog lists the same texts here, where `makemessages`
 # finds them; `looks()` translates them for display and a test fails when a
-# style brings a text this list lacks.
+# style brings a text this list lacks. A style's own name is a proper name: it
+# stays as written here and wherever else the manifest label is read.
 LOOK_TEXTS = (
-    gettext_noop("Atelier"),
     gettext_noop("A beauty atelier — blush paper, a light italic serif, arched photo crops and a champagne hairline."),
     gettext_noop("Blush"),
     gettext_noop("Fig"),
     gettext_noop("Apricot"),
-    gettext_noop("Darkroom"),
     gettext_noop("A gallery wall — the work enormous, the words a museum label beside it, one red dot."),
     gettext_noop("White cube"),
     gettext_noop("Black box"),
     gettext_noop("Linen"),
-    gettext_noop("Dojo"),
     gettext_noop("The dojo — rice paper, black sumi ink, one red seal, vertical rules and belts as progress."),
     gettext_noop("Ink on rice"),
     gettext_noop("Sumi"),
     gettext_noop("Aizome"),
-    gettext_noop("Encore"),
     gettext_noop("A gig poster and the record it sells — cream stock, black ink, a teal second colour, a tracklist."),
     gettext_noop("Cream stock"),
     gettext_noop("Jazz club"),
     gettext_noop("Riot"),
-    gettext_noop("Swiss Grid"),
     gettext_noop("Clear, intelligent, modern — a text-led grid with cobalt accents and mono labels."),
     gettext_noop("Cobalt"),
     gettext_noop("Mono"),
     gettext_noop("Terracotta"),
-    gettext_noop("Quiet Journal"),
     gettext_noop("A calm editorial magazine — light serif headlines, paper tones, quiet confidence."),
     gettext_noop("Paper"),
     gettext_noop("Sage"),
     gettext_noop("Dusk"),
-    gettext_noop("Kinetic Club"),
     gettext_noop("Loud, fast and bold — condensed caps, signal red and volt, a premium boutique gym."),
     gettext_noop("Signal"),
     gettext_noop("Ocean"),
     gettext_noop("Ember"),
-    gettext_noop("Ledger"),
     gettext_noop("The trusted advisor's annual report — bone paper, navy ink, one oxblood rule, numbered clauses."),
     gettext_noop("Bone"),
     gettext_noop("Slate"),
     gettext_noop("Forest"),
-    gettext_noop("Maison"),
     gettext_noop(
         "A fashion house lookbook — ivory, black, a huge high-contrast Bodoni, hairline frames and a great deal of air."
     ),
     gettext_noop("Ivory"),
     gettext_noop("Noir"),
     gettext_noop("Bordeaux"),
-    gettext_noop("Manuscript"),
     gettext_noop(
         "The book — cream pages, a light literary serif, drop caps, chapter numbers and long-form reading rhythm."
     ),
     gettext_noop("Cream"),
     gettext_noop("Lamplight"),
     gettext_noop("Newsprint"),
-    gettext_noop("Nocturne"),
     gettext_noop("Night blue with one warm lamp — a soft dark style, rounded serif, a glow on the one button."),
     gettext_noop("Lamp"),
     gettext_noop("Moss night"),
     gettext_noop("Plum"),
-    gettext_noop("Pop Studio"),
     gettext_noop("Joyful and colour-blocked — heavy grotesk type, stickers and hard shadows, an indie zine."),
     gettext_noop("Candy"),
     gettext_noop("Sorbet"),
     gettext_noop("Mint"),
-    gettext_noop("Primer"),
     gettext_noop("The exercise book you loved — ruled lines, a red margin, index tabs, outcomes as checkboxes."),
     gettext_noop("Exercise book"),
     gettext_noop("Chalkboard"),
     gettext_noop("Manila"),
-    gettext_noop("Sanctum"),
     gettext_noop("The temple of the stars — midnight indigo, thin gold line-art, zodiac rings and moon phases."),
     gettext_noop("Midnight gold"),
     gettext_noop("Rose gold"),
     gettext_noop("Moonstone"),
-    gettext_noop("Sprout"),
     gettext_noop("The family room — cream paper, a round friendly face, chunky colour shapes and hand-drawn sprouts."),
     gettext_noop("Meadow"),
     gettext_noop("Berry"),
     gettext_noop("Sky"),
-    gettext_noop("Studio Floor"),
     gettext_noop(
         "The dance studio after dark — stage black, neon edges, stretched italic type and a mirror wall of photos."
     ),
     gettext_noop("Neon night"),
     gettext_noop("Ember floor"),
     gettext_noop("Ice rink"),
-    gettext_noop("Tavola"),
     gettext_noop(
         "The trattoria — butter-yellow awning, olive and tomato, a chunky "
         "warm serif and a menu card with dotted leaders."
@@ -188,28 +172,24 @@ LOOK_TEXTS = (
     gettext_noop("Awning"),
     gettext_noop("Harbour"),
     gettext_noop("Bakery"),
-    gettext_noop("Terminal"),
     gettext_noop(
         "The command line — phosphor on near-black, a monospace headline, prompts, code blocks and a blinking cursor."
     ),
     gettext_noop("Phosphor"),
     gettext_noop("IDE light"),
     gettext_noop("Night owl"),
-    gettext_noop("Trail"),
     gettext_noop(
         "A national park field guide — stone paper with contour lines, pine and blaze orange, a route card and stamps."
     ),
     gettext_noop("Pine"),
     gettext_noop("Alpine"),
     gettext_noop("Desert"),
-    gettext_noop("Velvet Room"),
     gettext_noop(
         "After-hours and unhurried — oxblood and near-black, a blush light, champagne "
         "hairlines, slanted Playfair italics and one tall portrait sinking into shadow."
     ),
     gettext_noop("Oxblood"),
     gettext_noop("Satin"),
-    gettext_noop("Workshop"),
     gettext_noop(
         "The maker's bench — kraft paper, indigo thread, a handwritten "
         "margin note and projects shown as materials lists."
@@ -241,7 +221,7 @@ def looks() -> list[dict]:
             "value": sid,
             "style": sid,
             "palette": "",
-            "label": shown(s.get("label") or sid),
+            "label": s.get("label") or sid,
             "detail": shown(s.get("mood", "")),
             "group": shown(HERO_LAYOUTS.get(s.get("heroLayout") or "", "")),
             "tags": list(s.get("tags") or []),

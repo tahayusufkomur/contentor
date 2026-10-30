@@ -2962,20 +2962,11 @@
       },
       "changingCover": "Changing the cover…",
       "pickTime": "Pick a time",
-      "inPerson": "In person",
-      "onlineLive": "Online, live",
       "descriptionDrafted": "A short description is drafted from your answers.",
       "pickTopic": "Pick a topic and it starts taking shape here.",
-      "badge": {
-        "free": "Free",
-        "members": "Members only"
-      },
       "tiersIntro": "Students pick the one that fits them. You can add or change memberships any time.",
-      "tierKicker": "{brand} membership",
-      "tierKickerPlain": "Membership",
       "tiersEmpty": "Your memberships",
-      "tiersHint": "Pick one or more memberships and they appear here.",
-      "billing": "Billed monthly · Cancel any time"
+      "tiersHint": "Pick one or more memberships and they appear here."
     },
     "sketch": {
       "preview": "Live header preview on your site",
@@ -3267,10 +3258,6 @@
       "drafting": "{kind, select, course {Drafting your first course…} event {Drafting your first live session…} onsite {Drafting your first in-person event…} other {Drafting your first course…}}",
       "usually": "Usually ready in under a minute.",
       "coverError": "Couldn’t use that cover. Try another.",
-      "price": {
-        "members": "Members only",
-        "free": "Free"
-      },
       "changingCover": "Changing the cover…",
       "pickCover": "Pick a cover",
       "coverCurrent": "Current cover",
@@ -3278,8 +3265,6 @@
       "kicker": "{kind, select, course {Your first course} event {Your first live session} onsite {Your first in-person event} other {Your first course}}",
       "repeats": "Repeats: {repeats}",
       "trialChip": "First session is a free trial",
-      "inPerson": "In person",
-      "onlineLive": "Online, live",
       "includedIn": "Included in {name}",
       "rewriting": "{kind, select, course {Rewriting your course with your changes…} event {Rewriting your live session with your changes…} onsite {Rewriting your in-person event with your changes…} other {Rewriting your course with your changes…}}",
       "rewritingShort": "{kind, select, course {Rewriting your course…} event {Rewriting your live session…} onsite {Rewriting your in-person event…} other {Rewriting your course…}}",
@@ -3339,6 +3324,7 @@
       "continue": "Continue",
       "skip": "Skip for now",
       "leave": "Leave it as it is",
+      "skipAnswer": "I'll skip this for now",
       "readingShared": "Reading what you shared…",
       "readingHint": "I tick what it answers in the questions ahead, so you only check them. This can take a little while.",
       "nameLabel": "Your site’s name",
@@ -3469,6 +3455,8 @@
     "question": {
       "noted": "Noted: {items}",
       "delegateSaid": "You decide for me.",
+      "approvedAnswer": "Looks good",
+      "redraftSaid": "Draft it again from scratch",
       "picked": "{count} picked",
       "applying": "Applying {label}…",
       "applyingPick": "Applying your pick…",

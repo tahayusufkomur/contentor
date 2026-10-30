@@ -31,8 +31,11 @@ import {
   type QuestionStep,
 } from "@/lib/interview";
 import {
+  answerShown,
+  approveTurn,
   DELEGATE,
   DELEGATE_TEXT,
+  REDRAFT_TEXT,
   SKIP,
   isReview,
   type QuestionCards,
@@ -313,9 +316,7 @@ export function QuestionScreen({
     const field = step.field;
     if (review && field) {
       if (words) return send({ message: words, spoken });
-      return live
-        ? send({ message: "Looks good", choice: { field, value: "ok" } })
-        : onNext();
+      return live ? send(approveTurn(field, t)) : onNext();
     }
     if (!live && !changed) return onNext();
     const pick: TurnRequest =
@@ -455,10 +456,7 @@ export function QuestionScreen({
                 step.answer !== typed && (
                   <p className="max-w-[72ch] text-[15px] text-[var(--sf-graphite)]">
                     {t.rich("answer.youSaid", {
-                      answer:
-                        step.answer === DELEGATE_TEXT
-                          ? t("question.delegateSaid")
-                          : step.answer,
+                      answer: answerShown(step.answer, t),
                       b: (chunks) => (
                         <span className="text-[var(--sf-ink)]">{chunks}</span>
                       ),
@@ -495,9 +493,7 @@ export function QuestionScreen({
                   changing={sending && changing}
                   onCover={onCover}
                   onTrial={onTrial}
-                  onRetry={() =>
-                    send({ message: "Draft it again from scratch" })
-                  }
+                  onRetry={() => send({ message: REDRAFT_TEXT })}
                 />
               )}
 
