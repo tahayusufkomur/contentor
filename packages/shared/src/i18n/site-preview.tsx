@@ -29,7 +29,9 @@ export function SiteLocaleBoundary({
 /** The site's language where a studio page sets one, else null (the page's own). */
 export const useSiteLocale = () => useContext(SiteLocale);
 
-function InSiteLocale({
+/** Everything below formats (plurals, dates, numbers) in `locale`, over the
+ *  messages already loaded; `lang` follows for CSS casing. */
+export function InLocale({
   locale,
   children,
 }: {
@@ -60,7 +62,7 @@ function InSiteLocale({
 export function SitePreview({ children }: { children: React.ReactNode }) {
   const locale = useSiteLocale();
   return locale ? (
-    <InSiteLocale locale={locale}>{children}</InSiteLocale>
+    <InLocale locale={locale}>{children}</InLocale>
   ) : (
     <>{children}</>
   );

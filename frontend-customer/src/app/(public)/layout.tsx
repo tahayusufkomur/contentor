@@ -1,7 +1,8 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getAuthUser } from "@/lib/auth";
-import { SurfaceIntl } from "@/i18n/surface-provider";
+import { OwnerIntl, SurfaceIntl } from "@/i18n/surface-provider";
+import { AsCreator, AsSite } from "@/i18n/creator-scope";
 import { setupFlowActive } from "@/app/setup/gate";
 import { PublicFooter } from "@/components/shared/public-footer";
 import { fetchTenantConfig, getTenantSlug } from "@/lib/tenant";
@@ -79,16 +80,25 @@ export default async function PublicLayout({
         <StickyCta plansEnabled={plansEnabled} menu={menu} />
       )}
       {!isAdmin && !embed && <SiteAssistantBubble />}
-      {isAdmin && !embed && <CopilotBubble />}
+      {isAdmin && !embed && (
+        <AsCreator>
+          <CopilotBubble />
+        </AsCreator>
+      )}
     </div>
   );
 
   if (isAdmin && config) {
     return (
       <SurfaceIntl>
-        <EditSidebar initialConfig={config} embedded={editing}>
-          {content}
-        </EditSidebar>
+        <OwnerIntl>
+          {/* The tools count and date in the creator's language, the page in the site's. */}
+          <AsCreator>
+            <EditSidebar initialConfig={config} embedded={editing}>
+              <AsSite>{content}</AsSite>
+            </EditSidebar>
+          </AsCreator>
+        </OwnerIntl>
       </SurfaceIntl>
     );
   }
