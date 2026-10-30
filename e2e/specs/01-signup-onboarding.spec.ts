@@ -1,43 +1,10 @@
-import { test, expect, type Page } from "@playwright/test";
-import { latestEmail, firstLink } from "../helpers/email";
+import { test, expect } from "@playwright/test";
 import { manage } from "../helpers/compose";
+import { signupThroughVerify, grantTrial } from "../helpers/signup";
 import en from "../../frontend-main/messages/en/auth.json";
 
 const stamp = Date.now();
 const email = `e2e-coach-${stamp}@contentor.test`;
-
-// Signup asks only who you are: the site is named, and its bio added, in /setup.
-async function signupThroughVerify(page: Page) {
-  await page.goto("http://localhost/signup");
-  await page.getByPlaceholder(en.signup.namePlaceholder).fill("E2E Coach");
-  await page.getByPlaceholder(en.signup.emailPlaceholder).fill(email);
-  await page.getByRole("button", { name: en.signup.submit }).click();
-  await expect(page.getByRole("heading", { name: en.signup.verifyTitle })).toBeVisible({ timeout: 10_000 });
-  const mail = await latestEmail(email);
-  const link = firstLink(mail.html);
-  expect(link, `no link found in email: ${mail.subject}`).toMatch(/signup\/verify\?token=/);
-  await page.goto(link);
-}
-
-/** The card comes before the site: the Starter trial at Stripe Checkout.
- * Without Stripe the spec records the trial the webhook would. */
-function grantTrial() {
-  manage([
-    "shell",
-    "-c",
-    "from datetime import timedelta\n" +
-      "from django.utils import timezone\n" +
-      "from apps.accounts.models import User\n" +
-      "from apps.core.models import PlatformPlan, PlatformSubscription, Tenant\n" +
-      `t = Tenant.objects.get(owner_email='${email}')\n` +
-      // The checkout endpoint makes the owner's platform account; the spec skips it.
-      "u = User.objects.get_or_create(email=t.owner_email, region=t.region, defaults=dict(name='E2E Coach', role='coach'))[0]\n" +
-      "PlatformSubscription.objects.update_or_create(tenant=t, defaults=dict(\n" +
-      "    user=u, plan=PlatformPlan.objects.get(name='starter'),\n" +
-      `    status='trialing', provider='stripe', provider_subscription_id='sub_e2e_${stamp}',\n` +
-      "    current_period_end=timezone.now() + timedelta(days=14)))",
-  ]);
-}
 
 // A real-AI run of several minutes: a failure here is rarely flaky, and a
 // retry doubles the wait. Fail once.
@@ -64,10 +31,10 @@ test("signup lands in /setup and the interview ends in a published site", async 
   // Real AI or the pre-written fallback: the tiles exist in both, so the
   // spec is structurally deterministic. Page builds on the AI hub are slow.
   test.setTimeout(1_200_000);
-  await signupThroughVerify(page);
+  await signupThroughVerify(page, email);
   // No site before the card: the verify page offers the trial first.
   await expect(page.getByRole("button", { name: en.signup.verify.card.cta })).toBeVisible({ timeout: 20_000 });
-  grantTrial();
+  grantTrial(email, stamp);
   await page.reload();
 
   // Until it is named, the site lives at a temporary address.
