@@ -154,9 +154,14 @@ export default async function PricingPage() {
                       truncating beside the plan name. */}
                     <p className="text-eyebrow text-muted-foreground">
                       {t(`plans.${key}.name`)}
-                      {key === HIGHLIGHTED && (
+                      {key === HIGHLIGHTED ? (
                         <span className="block text-marketing-accent md:ml-2 md:inline">
                           {t("popular")}
+                        </span>
+                      ) : (
+                        // An empty line of the badge's height: every price starts at the same height on a phone.
+                        <span className="block md:hidden" aria-hidden>
+                          &nbsp;
                         </span>
                       )}
                     </p>

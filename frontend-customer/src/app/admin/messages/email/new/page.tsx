@@ -292,7 +292,7 @@ function AskTheDesigner({
               maxLength={2000}
               aria-label={t("askDesigner")}
               placeholder={t("newEmail.designerPlaceholder")}
-              className="min-h-0 resize-none"
+              className="placeholder-one-line min-h-0 resize-none"
             />
             <Button
               onClick={() => design()}

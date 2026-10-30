@@ -28,11 +28,11 @@
     @apply bg-background text-foreground;
   }
   /* German, Polish and Turkish words are long: a heading breaks inside a word
-     instead of running off a phone (works because <html lang> is right).
-     English keeps its line breaks exactly as they are. */
-  html:lang(de) :is(h1, h2, h3, h4),
-  html:lang(pl) :is(h1, h2, h3, h4),
-  html:lang(tr) :is(h1, h2, h3, h4) {
+     instead of running off a phone. Each heading goes by its own language
+     (the nearest lang attribute), so a page that mixes the site's language
+     with the creator's hyphenates both right. English keeps its line breaks
+     exactly as they are. */
+  :is(h1, h2, h3, h4):is(:lang(de), :lang(pl), :lang(tr)) {
     hyphens: auto;
     overflow-wrap: break-word;
   }
@@ -42,9 +42,25 @@
   textarea::placeholder {
     color: var(--muted-foreground);
   }
+  /* A placeholder longer than its field ends in an ellipsis instead of being
+     cut mid-word (long German hints on a phone). */
+  input::placeholder {
+    text-overflow: ellipsis;
+  }
 }
 
 @layer utilities {
+  /* A one-row textarea whose placeholder is one line with an ellipsis, not a
+     wrapped second line cut off by the box. Typed text still wraps. */
+  .placeholder-one-line:placeholder-shown {
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .placeholder-one-line::placeholder {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
   .bg-cinematic {
     background-color: var(--background);
     background-image: var(--cinematic-bg);

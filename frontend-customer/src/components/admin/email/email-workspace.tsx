@@ -459,7 +459,7 @@ export function EmailWorkspace({ target }: { target: WorkspaceTarget }) {
                 <ArrowRight className="h-4 w-4" />
               </Button>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -543,6 +543,7 @@ export function EmailWorkspace({ target }: { target: WorkspaceTarget }) {
                 type="submit"
                 size="sm"
                 variant="outline"
+                className="shrink-0"
                 disabled={!brief.trim()}
                 loading={asking}
                 loadingText={tr("asking")}

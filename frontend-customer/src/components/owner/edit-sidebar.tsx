@@ -425,7 +425,10 @@ export function EditSidebar({
                     style={{ minWidth: SIDEBAR_WIDTH }}
                   >
                     <div className="flex min-w-0 items-center gap-2">
-                      <h2 className="truncate text-sm font-semibold">
+                      <h2
+                        className="truncate text-sm font-semibold"
+                        title={tr("editSite")}
+                      >
                         {tr("editSite")}
                       </h2>
                       {saving && <Spinner size="sm" label={tr("saving")} />}

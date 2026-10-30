@@ -441,7 +441,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
                     } ${today ? "bg-primary/5 font-semibold" : ""}`}
                   >
                     {/* Date header inside cell */}
-                    <div className="flex items-center justify-between px-1 mb-1">
+                    <div className="flex flex-wrap items-center justify-between gap-x-1 px-1 mb-1">
                       <span
                         className={`inline-flex items-center justify-center text-xs h-5 w-5 rounded-full ${
                           today
@@ -453,7 +453,14 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
                       </span>
                       {dayEvents.length > 0 && (
                         <span className="text-[10px] text-muted-foreground font-mono">
-                          {t("itemCount", { count: dayEvents.length })}
+                          {/* A phone's day cell is ~50 px: a bare number there,
+                              the spelled-out count once there is room. */}
+                          <span aria-hidden className="md:hidden">
+                            {dayEvents.length}
+                          </span>
+                          <span className="sr-only md:not-sr-only">
+                            {t("itemCount", { count: dayEvents.length })}
+                          </span>
                         </span>
                       )}
                     </div>

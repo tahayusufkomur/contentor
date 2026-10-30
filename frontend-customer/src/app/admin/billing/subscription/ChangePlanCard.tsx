@@ -169,7 +169,7 @@ export function ChangePlanCard() {
               {t("comingSoonInCurrency", { currency })}
             </p>
           )}
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {paidPlans.map((plan) => {
               const isCurrent = plan.id === currentPlanId;
               const planIndex = sortedPlans.findIndex((p) => p.id === plan.id);
@@ -372,7 +372,7 @@ function UpgradeButton({
         loading={pending}
         loadingText={loadingLabel}
         variant={isCurrent ? "outline" : "default"}
-        className="w-full"
+        className="h-auto min-h-9 w-full whitespace-normal text-center"
       >
         {label}
       </Button>

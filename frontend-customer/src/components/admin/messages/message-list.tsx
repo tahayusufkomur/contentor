@@ -154,9 +154,9 @@ function Row({ row, onChanged }: { row: MessageRow; onChanged: () => void }) {
               });
 
   return (
-    <li className="flex items-center gap-3 p-3 text-sm">
+    <li className="flex flex-wrap items-center gap-x-3 gap-y-2 p-3 text-sm">
       <Icon className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-      <div className="min-w-0 flex-1">
+      <div className="min-w-[7rem] flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <NavLink
             href={row.href}
@@ -175,22 +175,28 @@ function Row({ row, onChanged }: { row: MessageRow; onChanged: () => void }) {
           )}
         </p>
       </div>
-      {row.status === "draft" && (
-        <Button asChild variant="outline" size="sm">
-          <NavLink href={row.href}>{t("review")}</NavLink>
-        </Button>
-      )}
-      {removal && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-muted-foreground hover:text-destructive"
-          loading={removing}
-          onClick={remove}
-        >
-          {t(`action.${removal}`)}
-        </Button>
-      )}
+      {/* A longer language wraps these under the text instead of squeezing
+          the title; English fits on one line as before. */}
+      <div
+        className={`ml-auto items-center gap-1 ${removal ? "flex" : "hidden"}`}
+      >
+        {row.status === "draft" && (
+          <Button asChild variant="outline" size="sm">
+            <NavLink href={row.href}>{t("review")}</NavLink>
+          </Button>
+        )}
+        {removal && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground hover:text-destructive"
+            loading={removing}
+            onClick={remove}
+          >
+            {t(`action.${removal}`)}
+          </Button>
+        )}
+      </div>
     </li>
   );
 }

@@ -93,7 +93,7 @@ function Way({
             onCheckedChange={(v) => onCheckedChange(v === true)}
           />
         )}
-        <div>
+        <div className="break-words">
           <Label htmlFor={id} className="text-sm font-semibold">
             {title}
           </Label>
@@ -427,7 +427,7 @@ function Loaded({
                         disabled={!canEditPlans}
                         onCheckedChange={(v) => togglePlan(plan.id, v === true)}
                       />
-                      <div>
+                      <div className="break-words">
                         <div className="flex flex-wrap items-center gap-x-1.5">
                           <Label htmlFor={id} className="text-sm font-medium">
                             {plan.name}
