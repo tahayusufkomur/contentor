@@ -29,16 +29,16 @@ def _ok(payload=None, status=200):
 class ClientTests(SimpleTestCase):
     @patch("apps.live.livecraft.requests.request", return_value=_ok({"join_url": "http://lc/room/r#token=t"}))
     def test_join_sends_identity_role_and_key(self, req):
-        assert livecraft.join_url("r", USER, role="participant") == "http://lc/room/r#token=t"
+        assert livecraft.join_url("r", USER, role="participant", lang="pl") == "http://lc/room/r#token=t"
         method, url = req.call_args.args
         assert (method, url) == ("POST", "http://livecraft:7800/api/v1/rooms/r/join")
-        assert req.call_args.kwargs["json"] == {"identity": "u7", "name": "Ada", "role": "participant"}
+        assert req.call_args.kwargs["json"] == {"identity": "u7", "name": "Ada", "role": "participant", "lang": "pl"}
         assert req.call_args.kwargs["headers"] == {"X-API-Key": "k1"}
 
     @patch("apps.live.livecraft.requests.request", return_value=_ok(status=403))
     def test_blocked_join_raises_with_status(self, _):
         with self.assertRaises(livecraft.LiveCraftError) as ctx:
-            livecraft.join_url("r", USER, role="participant")
+            livecraft.join_url("r", USER, role="participant", lang="pl")
         assert ctx.exception.status == 403
 
     @patch("apps.live.livecraft.requests.request", return_value=_ok({}))
@@ -65,7 +65,7 @@ class FakeTests(SimpleTestCase):
     @patch("apps.live.livecraft.requests.request")
     def test_fake_makes_no_requests(self, req):
         livecraft.create_room("r", title="t", layout="meeting")
-        assert livecraft.join_url("r", USER, role="host").endswith("/r/u7/host")
+        assert livecraft.join_url("r", USER, role="host", lang="en").endswith("/r/u7/host")
         req.assert_not_called()
 
 

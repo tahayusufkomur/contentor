@@ -12,6 +12,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from apps.core.access import ContentAccessService
+from apps.core.languages import creator_language, site_language
 from apps.core.pagination import StandardPagination, apply_ordering, apply_tag_filter
 from apps.core.permissions import IsCoachOrOwner, is_coach_or_owner
 from apps.core.storage import generate_presigned_download_url
@@ -69,9 +70,11 @@ def _join_response(request, event, *, guest_role, layout):
     """Join link for this user: hosts moderate; everyone else joins as `guest_role`."""
     host = _is_host(request.user, event)
     role = "host" if host else guest_role
+    # The room opens in the host's own language, in everyone else's the site's.
+    lang = creator_language(request.user) if host else site_language()
     try:
         try:
-            url = livecraft.join_url(event.room_name, request.user, role=role)
+            url = livecraft.join_url(event.room_name, request.user, role=role, lang=lang)
         except livecraft.LiveCraftError as exc:
             # LiveCraft drops a room left empty for 10 minutes while it is still live
             # here: the host opens it again, everyone else waits for the host.
@@ -83,7 +86,7 @@ def _join_response(request, event, *, guest_role, layout):
                     status=status.HTTP_409_CONFLICT,
                 )
             _start_room(event, layout=layout)
-            url = livecraft.join_url(event.room_name, request.user, role=role)
+            url = livecraft.join_url(event.room_name, request.user, role=role, lang=lang)
     except livecraft.LiveCraftError as exc:
         if exc.status == 403:
             return Response({"detail": _("You were removed from this session.")}, status=status.HTTP_403_FORBIDDEN)

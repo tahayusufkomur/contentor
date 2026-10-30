@@ -73,12 +73,14 @@ def end_room(room):
         logger.exception("Failed to end LiveCraft room %s", room)
 
 
-def join_url(room, user, *, role):
-    """role: "host", "participant" (may publish) or "viewer" (watch + chat)."""
+def join_url(room, user, *, role, lang):
+    """role: "host", "participant" (may publish) or "viewer" (watch + chat).
+    lang: the language the room opens in for this person (LiveCraft falls back to English)."""
     who = identity(user.id)
     if settings.LIVECRAFT_FAKE:
         return f"about:blank#livecraft-fake/{room}/{who}/{role}"
-    res = _request("POST", f"/rooms/{room}/join", json={"identity": who, "name": user.name or user.email, "role": role})
+    body = {"identity": who, "name": user.name or user.email, "role": role, "lang": lang}
+    res = _request("POST", f"/rooms/{room}/join", json=body)
     return res.json()["join_url"]
 
 
