@@ -131,7 +131,9 @@ class Command(BaseCommand):
         tenant.wizard_state = {"answers": answers}  # drops the previous brief's cached site plan
         tenant.template_niche = niche
         tenant.save(update_fields=["wizard_state", "template_niche"])
-        overrides = build_config_overrides(answers, brand_name=brand, landing_sections={})
+        overrides = build_config_overrides(
+            answers, brand_name=brand, landing_sections={}, locale=brief.get("language", "en")
+        )
         with tenant_context(tenant):
             config = TenantConfig.objects.first()
             config.brand_name = brand
