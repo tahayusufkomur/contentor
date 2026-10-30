@@ -57,22 +57,22 @@
     },
     "story": {
       "heading": "Cześć, cieszę się, że tu jesteś",
-      "body": "Opowiedz odwiedzającym o swoich początkach, z kim pracujesz i jak wygląda sesja z Tobą."
+      "body": "Opowiedz odwiedzającym o swoich początkach, z kim pracujesz i jak wygląda sesja z tobą."
     },
     "benefits": {
       "heading": "Co zyskasz",
       "items": [
         {
           "title": "Pierwsza korzyść",
-          "text": "Co zmienia się dla Twoich uczestników."
+          "text": "Co zmienia się dla twoich uczestników."
         },
         {
           "title": "Druga korzyść",
-          "text": "Co zmienia się dla Twoich uczestników."
+          "text": "Co zmienia się dla twoich uczestników."
         },
         {
           "title": "Trzecia korzyść",
-          "text": "Co zmienia się dla Twoich uczestników."
+          "text": "Co zmienia się dla twoich uczestników."
         }
       ]
     },
@@ -85,7 +85,7 @@
       "steps": [
         {
           "title": "Wybierz",
-          "text": "Wybierz kurs lub sesję, która Ci odpowiada."
+          "text": "Wybierz kurs lub sesję, która ci odpowiada."
         },
         {
           "title": "Dołącz",
@@ -98,7 +98,7 @@
       ]
     },
     "philosophy": {
-      "statement": "Zdanie o Twoim rzemiośle, w które wierzysz, własnymi słowami."
+      "statement": "Zdanie o twoim rzemiośle, w które wierzysz, własnymi słowami."
     },
     "moments": {
       "heading": "Chwile"
@@ -115,7 +115,7 @@
         },
         {
           "q": "Czy potrzebuję doświadczenia?",
-          "a": "Powiedz, czego potrzebuje początkujący."
+          "a": "Powiedz, czego potrzebują osoby początkujące."
         },
         {
           "q": "Jak zacząć?",
@@ -146,7 +146,7 @@
     "generic": {
       "hero": {
         "heading": "Ucz się od najlepszych",
-        "subheading": "Praktyczne lekcje krok po kroku, które pomogą Ci rozwijać się we własnym tempie.",
+        "subheading": "Praktyczne lekcje krok po kroku, które pomogą ci rozwijać się we własnym tempie.",
         "ctaText": "Przeglądaj programy"
       },
       "richText": {
@@ -155,7 +155,7 @@
       },
       "imageText": {
         "heading": "O mnie",
-        "body": "Cześć! Te kursy powstały, aby podzielić się tym, co sprawdziło się u setek uczestników — i pomóc Ci dotrzeć do celu szybciej, ze wsparciem na każdym kroku."
+        "body": "Cześć! Te kursy powstały, aby podzielić się tym, co sprawdziło się u setek uczestników — i pomóc ci dotrzeć do celu szybciej, ze wsparciem na każdym kroku."
       },
       "testimonials": {
         "heading": "Co mówią uczestnicy",
@@ -427,7 +427,7 @@
         "items": [
           {
             "q": "Czy potrzebuję jakiegoś sprzętu?",
-            "a": "Kurs Total Body Transformation nie wymaga żadnego sprzętu — wystarczy ciężar Twojego ciała. Programy HIIT i Strength zalecają hantle oraz gumę oporową, ale zawsze pokazujemy alternatywy z masą własnego ciała."
+            "a": "Kurs Total Body Transformation nie wymaga żadnego sprzętu — wystarczy ciężar twojego ciała. Programy HIIT i Strength zalecają hantle oraz gumę oporową, ale zawsze pokazujemy alternatywy z masą własnego ciała."
           },
           {
             "q": "Dopiero zaczynam — czy to coś dla mnie?",
@@ -473,7 +473,7 @@
       },
       "richText": {
         "heading": "Kilka Minut Dziennie",
-        "body": "W naturalnym odmładzaniu twarzy liczy się przede wszystkim systematyczność. Te krótkie, ukierunkowane zestawy ćwiczeń wykorzystują wyłącznie Twoje dłonie i własne mięśnie — na tyle proste, by wpisać się w Twój poranek, i na tyle skuteczne, by zauważyć i poczuć różnicę."
+        "body": "W naturalnym odmładzaniu twarzy liczy się przede wszystkim systematyczność. Te krótkie, ukierunkowane zestawy ćwiczeń wykorzystują wyłącznie twoje dłonie i własne mięśnie — na tyle proste, by wpisać się w twój poranek, i na tyle skuteczne, by zauważyć i poczuć różnicę."
       },
       "imageText": {
         "heading": "O Mnie",
@@ -621,7 +621,7 @@
       },
       "richText": {
         "heading": "Każdy Tancerz Gdzieś Zaczyna",
-        "body": "Doświadczenie gimnastyczne nie jest wymagane — wystarczy odwaga, by spróbować czegoś nowego. Szczegółowe progresje budują Twoją siłę krok po kroku, dzięki czemu nawet przerażające figury zaczynają wydawać się bezpieczne i w zasięgu ręki."
+        "body": "Doświadczenie gimnastyczne nie jest wymagane — wystarczy odwaga, by spróbować czegoś nowego. Szczegółowe progresje budują twoją siłę krok po kroku, dzięki czemu nawet przerażające figury zaczynają wydawać się bezpieczne i w zasięgu ręki."
       },
       "imageText": {
         "heading": "O Mnie",
@@ -657,7 +657,7 @@
           },
           {
             "q": "Czy mam dostęp do kursów na urządzeniach mobilnych?",
-            "a": "Tak! Platforma jest w pełni responsywna. Możesz odtwarzać lekcje na telefonie, tablecie lub komputerze — idealne rozwiązanie do ćwiczeń w Twojej przestrzeni treningowej."
+            "a": "Tak! Platforma jest w pełni responsywna. Możesz odtwarzać lekcje na telefonie, tablecie lub komputerze — idealne rozwiązanie do ćwiczeń w twojej przestrzeni treningowej."
           }
         ]
       },
@@ -695,7 +695,7 @@
       },
       "richText": {
         "heading": "Od Everyday Glam po Editorial",
-        "body": "Poznaj techniki, z których korzystają profesjonaliści — nieskazitelną bazę, płynne blendowanie i trwały wygląd. Przejrzyste instrukcje krok po kroku sprawiają, że nawet zaawansowane style edytorialowe są w Twoim zasięgu, niezależnie od posiadanego zestawu."
+        "body": "Poznaj techniki, z których korzystają profesjonaliści — nieskazitelną bazę, płynne blendowanie i trwały wygląd. Przejrzyste instrukcje krok po kroku sprawiają, że nawet zaawansowane style edytorialowe są w twoim zasięgu, niezależnie od posiadanego zestawu."
       },
       "imageText": {
         "heading": "O Mnie",

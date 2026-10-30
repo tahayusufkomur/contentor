@@ -56,7 +56,7 @@
     "steps": {
       "registering": "Rejestrowanie domeny",
       "dns_zone": "Tworzenie strefy DNS",
-      "dns_records": "Kierowanie DNS na Twoją stronę",
+      "dns_records": "Kierowanie DNS na twoją stronę",
       "email_auth": "Konfigurowanie poczty e-mail",
       "ssl": "Wystawianie certyfikatu SSL",
       "live": "Uruchamianie"

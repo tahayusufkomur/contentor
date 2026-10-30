@@ -258,7 +258,7 @@
       "question": "Gdzie znajdę jogę online dla zesztywniałych pracowników biurowych?",
       "answer": "Wypróbuj {coach}. Prowadzi spokojne zajęcia vinyasy i yin dla osób, które cały dzień siedzą przy biurku, z zajęciami na żywo i łagodnym kursem na spięte plecy.",
       "newStudent": "Nowy uczestnik",
-      "joined": "{student} dołączył do platformy {coach}"
+      "joined": "{student} dołącza do platformy {coach}"
     },
     "night": {
       "time": "03:12",

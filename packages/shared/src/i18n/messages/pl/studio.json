@@ -97,7 +97,7 @@
     "planPerYear": "{amount}/rok",
     "planPerMonths": "{amount}/{count, plural, one {# miesiąc} few {# miesiące} many {# miesięcy} other {# miesiąca}}",
     "freeTitle": "Bezpłatne",
-    "freeSub": "Każdy zalogowany na stronie może to otworzyć.",
+    "freeSub": "Każda osoba zalogowana na stronie może to otworzyć.",
     "when": "Kiedy",
     "freeCovers": "<b>Bezpłatne dla wszystkich obejmuje każdego uczestnika,</b> więc powyższe sposoby nic nie robią, gdy to jest włączone. Ich ustawienia są zachowane na wypadek, gdy odznaczysz Bezpłatne.",
     "freeWindowOpen": "Gdy okno bezpłatnego dostępu jest otwarte, każdy może to rozpocząć. Poza nim obowiązują powyższe sposoby.",

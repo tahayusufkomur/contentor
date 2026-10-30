@@ -14,9 +14,20 @@ const MASCULINE_CALLS =
 // she is a man or a woman. Named testimonials agree with their (named) author
 // and are exempt.
 export const READY_MASC_FEM = /(?<![\p{L}])gotow[ya](?![\p{L}])/iu;
-export const FIRST_PERSON_PAST = /(?<![\p{L}])\p{L}*(łem|łam)(?![\p{L}])/iu;
+// "tytułem", "ciałem"… end in -łem but are instrumental nouns, not "I did".
+export const FIRST_PERSON_PAST =
+  /(?<![\p{L}])(?!\p{L}*(tytuł|zespoł|artykuł|szczegół|ciał|oryginał|materiał|kanał)em(?![\p{L}]))\p{L}*(łem|łam)(?![\p{L}])/iu;
 export const GENDERED_JOB =
   /(?<![\p{L}])(certyfikowan[ya]|pełn[ay] pasji instruktor\p{L}*|instruktor(ka)?|trener(ka)?|wizażyst(ka)?|zawodni(k|czka)|(zupełnie|jesteś) początkując[ya])(?![\p{L}])/iu;
+
+// Everywhere else a masculine "ready" only matters when it is the reader who
+// is ready ("Czy jesteś gotowy?"); "twoja strona jest gotowa" agrees with a
+// noun. A "(a)" or "/a" tail is the slash form of a masculine word.
+export const READER_READY = /(jesteś|bądź)\s+gotow[ya](?![\p{L}])/iu;
+export const READER_PARTICIPLE =
+  /jesteś\s+(już\s+)?(zapisan|zalogowan|zarejestrowan|zweryfikowan|zainteresowan|pewn)[ya](?![\p{L}])/iu;
+export const SLASH_FORM =
+  /\p{L}\((a|ła|ka|-a)\)(?![\p{L}])|(?<=\p{L})\/(a|ła)(?![\p{L}])/iu;
 
 const ROOT = join(__dirname, "../../../..");
 const DIRS = [
@@ -91,7 +102,42 @@ describe("Polish default content", () => {
   });
 });
 
+describe("the wider guards themselves", () => {
+  it("catch the reader being 'ready' or 'enrolled' and slash forms", () => {
+    expect(READER_READY.test("Czy jesteś gotowy?")).toBe(true);
+    expect(READER_READY.test("Twoja strona jest gotowa.")).toBe(false);
+    expect(READER_PARTICIPLE.test("Jesteś już zapisany.")).toBe(true);
+    expect(READER_PARTICIPLE.test("Masz już zapis.")).toBe(false);
+    expect(SLASH_FORM.test("Dołączył(a)")).toBe(true);
+    expect(SLASH_FORM.test("Dołączył/a")).toBe(true);
+    expect(SLASH_FORM.test("Data dołączenia")).toBe(false);
+    expect(FIRST_PERSON_PAST.test("Zbudowałem coś")).toBe(true);
+    expect(FIRST_PERSON_PAST.test("Zdjęcie z tytułem na wierzchu")).toBe(false);
+    expect(FIRST_PERSON_PAST.test("Osoba stojąca za zespołem")).toBe(false);
+  });
+});
+
 describe("Polish message files", () => {
+  // Named testimonials agree with their (named) author and are exempt.
+  const spoken = all.filter(([key]) => !key.includes(".testimonials."));
+
+  it("never have the creator or the assistant speak in a first-person past form", () => {
+    expect(spoken.filter(([, t]) => FIRST_PERSON_PAST.test(t))).toEqual([]);
+  });
+
+  it("never use a gendered job title or beginner", () => {
+    expect(spoken.filter(([, t]) => GENDERED_JOB.test(t))).toEqual([]);
+  });
+
+  it("never ask the reader whether they are ready or tell them they are enrolled", () => {
+    expect(spoken.filter(([, t]) => READER_READY.test(t))).toEqual([]);
+    expect(spoken.filter(([, t]) => READER_PARTICIPLE.test(t))).toEqual([]);
+  });
+
+  it("never write a word as 'x(a)' or 'x/a'", () => {
+    expect(spoken.filter(([, t]) => SLASH_FORM.test(t))).toEqual([]);
+  });
+
   it("never use a masculine or feminine past form for the reader", () => {
     expect(all.filter(([, text]) => MASCULINE_PAST.test(text))).toEqual([]);
   });

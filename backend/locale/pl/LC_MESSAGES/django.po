@@ -1143,13 +1143,13 @@ msgid ""
 "You've used all your AI blog posts for this month — autopilot will resume "
 "next month."
 msgstr ""
-"Wykorzystano wszystkie posty na blogu AI w tym miesiącu — autopilot wznowi "
+"Wykorzystano wszystkie wpisy na blogu AI w tym miesiącu — autopilot wznowi "
 "działanie w przyszłym miesiącu."
 
 #: apps/blog/tasks.py
 #, fuzzy
 msgid "New blog post published"
-msgstr "Nowy post na blogu opublikowany"
+msgstr "Nowy wpis na blogu opublikowany"
 
 #: apps/blog/tasks.py
 #, python-format, fuzzy
@@ -1164,7 +1164,7 @@ msgstr "Twój nowy wpis na blogu jest gotowy"
 #: apps/blog/tasks.py
 #, python-format, fuzzy
 msgid "“%(title)s” is waiting for your review."
-msgstr "“%(title)s” czeka na Twoje sprawdzenie."
+msgstr "“%(title)s” czeka na twoje sprawdzenie."
 
 #: apps/community/access.py
 #, fuzzy
@@ -1376,12 +1376,12 @@ msgstr "Musi mieścić się w przedziale od 0 do 90."
 #: apps/community/payloads.py
 #, fuzzy, python-format
 msgid "%(author)s posted in the community"
-msgstr "%(author)s dodał(a) wpis w społeczności"
+msgstr "Nowy wpis w społeczności od %(author)s"
 
 #: apps/community/payloads.py
 #, fuzzy, python-format
 msgid "%(commenter)s commented on your post"
-msgstr "%(commenter)s skomentował(a) Twój post"
+msgstr "Nowy komentarz do twojego wpisu od %(commenter)s"
 
 #: apps/community/serializers.py
 #, fuzzy
@@ -3082,7 +3082,7 @@ msgstr "Dla kogo jest przeznaczony?"
 #: apps/core/focus/kinds/course.py apps/tenant_config/interview_brief.py
 #, fuzzy
 msgid "Complete beginners"
-msgstr "Zupełni początkujący"
+msgstr "Osoby zupełnie początkujące"
 
 #: apps/core/focus/kinds/course.py
 #, fuzzy
@@ -4057,7 +4057,7 @@ msgstr ""
 msgid ""
 "Writing posts for you is on a paid plan. Write it yourself, or upgrade."
 msgstr ""
-"Pisanie postów za ciebie jest dostępne w płatnym planie. Napisz post "
+"Pisanie wpisów za ciebie jest dostępne w płatnym planie. Napisz wpis "
 "samodzielnie albo przejdź na wyższy plan."
 
 #: apps/core/focus/post.py
@@ -4066,13 +4066,13 @@ msgid ""
 "You're out of AI posts for this month. Write it yourself, or upgrade for "
 "more."
 msgstr ""
-"Twój limit postów AI na ten miesiąc się wyczerpał. Napisz post samodzielnie "
+"Twój limit wpisów AI na ten miesiąc się wyczerpał. Napisz wpis samodzielnie "
 "albo przejdź na wyższy plan, aby mieć więcej."
 
 #: apps/core/focus/post.py
 #, fuzzy
 msgid "AI writing is unavailable right now. Write it yourself."
-msgstr "Pisanie z AI jest teraz niedostępne. Napisz post samodzielnie."
+msgstr "Pisanie z AI jest teraz niedostępne. Napisz wpis samodzielnie."
 
 #: apps/core/focus/pricing.py
 #, fuzzy
@@ -4204,12 +4204,12 @@ msgstr "Co otrzymują uczestnicy"
 #: apps/core/onboarding/about_check.py
 #, fuzzy
 msgid "Benefits across your home page"
-msgstr "Korzyści na Twojej stronie głównej"
+msgstr "Korzyści na twojej stronie głównej"
 
 #: apps/core/onboarding/about_check.py
 #, fuzzy
 msgid "What sets you apart"
-msgstr "Co Cię wyróżnia"
+msgstr "Co cię wyróżnia"
 
 #: apps/core/onboarding/about_check.py
 #, fuzzy
@@ -4932,7 +4932,7 @@ msgstr "Własne tempo"
 #, fuzzy
 msgid "Pause, repeat and come back to a lesson whenever your week allows."
 msgstr ""
-"Zatrzymaj, powtórz i wróć do lekcji, kiedy tylko pozwala na to Twój tydzień."
+"Zatrzymaj, powtórz i wróć do lekcji, kiedy tylko pozwala na to twój tydzień."
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
@@ -4982,7 +4982,7 @@ msgstr "Wybierz sesję"
 #, fuzzy
 msgid "Find a session above that fits your week, online or in person."
 msgstr ""
-"Znajdź powyżej sesję, która pasuje do Twojego tygodnia, online lub "
+"Znajdź powyżej sesję, która pasuje do twojego tygodnia, online lub "
 "stacjonarnie."
 
 #: apps/core/onboarding/site_composer.py apps/email_campaigns/starters.py
@@ -5005,12 +5005,12 @@ msgstr "Przyjdź i trenuj"
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid "Come as you are. I take it from there."
-msgstr "Przyjdź taki, jaki jesteś. Ja zajmę się resztą."
+msgstr "Przyjdź, jak jesteś. Ja zajmę się resztą."
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid "Come as you are. We take it from there."
-msgstr "Przyjdź taki, jaki jesteś. My zajmiemy się resztą."
+msgstr "Przyjdź, jak jesteś. My zajmiemy się resztą."
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
@@ -5039,7 +5039,7 @@ msgid ""
 "Follow the lessons when it suits you. Pause, repeat and return whenever you "
 "like."
 msgstr ""
-"Przerabiaj lekcje wtedy, gdy Ci to odpowiada. Zatrzymuj, powtarzaj i wracaj,"
+"Przerabiaj lekcje wtedy, gdy ci to odpowiada. Zatrzymuj, powtarzaj i wracaj,"
 " kiedy tylko chcesz."
 
 #: apps/core/onboarding/site_composer.py
@@ -5052,7 +5052,7 @@ msgstr "Pytaj na bieżąco"
 msgid ""
 "Stuck on something? Send me a message and I will help you find your footing."
 msgstr ""
-"Coś sprawia Ci trudność? Wyślij mi wiadomość, a pomogę Ci się odnaleźć."
+"Coś sprawia ci trudność? Wyślij mi wiadomość, a pomogę ci się odnaleźć."
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
@@ -5060,7 +5060,7 @@ msgid ""
 "Stuck on something? Send us a message and we will help you find your "
 "footing."
 msgstr ""
-"Coś sprawia Ci trudność? Wyślij nam wiadomość, a pomożemy Ci się odnaleźć."
+"Coś sprawia ci trudność? Wyślij nam wiadomość, a pomożemy ci się odnaleźć."
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
@@ -5108,7 +5108,7 @@ msgstr "Plany i cennik"
 msgid "Each plan lists what it includes. Pick the one that fits your week."
 msgstr ""
 "Każdy plan zawiera listę tego, co obejmuje. Wybierz ten, który pasuje do "
-"Twojego tygodnia."
+"twojego tygodnia."
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
@@ -5123,12 +5123,12 @@ msgstr "Przed twoją pierwszą sesją"
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid "Can't find yours? Send me a message."
-msgstr "Nie ma tu Twojego pytania? Napisz do mnie."
+msgstr "Nie ma tu twojego pytania? Napisz do mnie."
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid "Can't find yours? Send us a message."
-msgstr "Nie ma tu Twojego pytania? Napisz do nas."
+msgstr "Nie ma tu twojego pytania? Napisz do nas."
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
@@ -5236,7 +5236,7 @@ msgid ""
 "Yes. Recorded lessons can be paused, repeated and picked up again whenever "
 "it suits you."
 msgstr ""
-"Tak. Nagrane lekcje można zatrzymywać, powtarzać i wznawiać, kiedy tylko Ci "
+"Tak. Nagrane lekcje można zatrzymywać, powtarzać i wznawiać, kiedy tylko ci "
 "odpowiada."
 
 #: apps/core/onboarding/site_composer.py
@@ -5270,13 +5270,13 @@ msgstr "Do zobaczenia wkrótce"
 #, fuzzy
 msgid "Pick a session above, or ask me which one suits you best."
 msgstr ""
-"Wybierz sesję powyżej lub zapytaj mnie, która najbardziej Ci odpowiada."
+"Wybierz sesję powyżej lub zapytaj mnie, która najbardziej ci odpowiada."
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid "Pick a session above, or ask us which one suits you best."
 msgstr ""
-"Wybierz sesję powyżej lub zapytaj nas, która najbardziej Ci odpowiada."
+"Wybierz sesję powyżej lub zapytaj nas, która najbardziej ci odpowiada."
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
@@ -5292,13 +5292,13 @@ msgstr "Nie wiesz, od czego zacząć?"
 #, fuzzy
 msgid ""
 "Tell me a little about yourself and I will point you to the right course."
-msgstr "Opowiedz mi trochę o sobie, a wskażę Ci odpowiedni kurs."
+msgstr "Opowiedz mi trochę o sobie, a wskażę ci odpowiedni kurs."
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid ""
 "Tell us a little about yourself and we will point you to the right course."
-msgstr "Opowiedz nam trochę o sobie, a wskażemy Ci odpowiedni kurs."
+msgstr "Opowiedz nam trochę o sobie, a wskażemy ci odpowiedni kurs."
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
@@ -5308,13 +5308,13 @@ msgstr "Kiedy tylko zechcesz"
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid "Tell me where you are and I will help you take the first step."
-msgstr "Powiedz mi, na jakim jesteś etapie, a pomogę Ci zrobić pierwszy krok."
+msgstr "Powiedz mi, na jakim jesteś etapie, a pomogę ci zrobić pierwszy krok."
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
 msgid "Tell us where you are and we will help you take the first step."
 msgstr ""
-"Powiedz nam, na jakim jesteś etapie, a pomożemy Ci zrobić pierwszy krok."
+"Powiedz nam, na jakim jesteś etapie, a pomożemy ci zrobić pierwszy krok."
 
 #: apps/core/onboarding/site_composer.py
 #: apps/tenant_config/interview_golive.py
@@ -5335,7 +5335,7 @@ msgid ""
 " and I will get back to you."
 msgstr ""
 "Pytania o kurs, to, od czego zacząć, czy cokolwiek innego? Wyślij mi "
-"wiadomość, a odezwę się do Ciebie."
+"wiadomość, a odezwę się do ciebie."
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
@@ -5344,7 +5344,7 @@ msgid ""
 " and we will get back to you."
 msgstr ""
 "Pytania o kurs, to, od czego zacząć, czy cokolwiek innego? Wyślij nam "
-"wiadomość, a odezwiemy się do Ciebie."
+"wiadomość, a odezwiemy się do ciebie."
 
 #: apps/core/onboarding/site_composer.py
 #, fuzzy
@@ -5457,7 +5457,7 @@ msgstr "Porozmawiajmy"
 msgid ""
 "Questions about where to start or which course fits you? Send me a message."
 msgstr ""
-"Pytania o to, od czego zacząć lub który kurs jest dla Ciebie odpowiedni? "
+"Pytania o to, od czego zacząć lub który kurs jest dla ciebie odpowiedni? "
 "Wyślij mi wiadomość."
 
 #: apps/core/onboarding/site_composer.py
@@ -5465,7 +5465,7 @@ msgstr ""
 msgid ""
 "Questions about where to start or which course fits you? Send us a message."
 msgstr ""
-"Pytania o to, od czego zacząć lub który kurs jest dla Ciebie odpowiedni? "
+"Pytania o to, od czego zacząć lub który kurs jest dla ciebie odpowiedni? "
 "Wyślij nam wiadomość."
 
 #: apps/core/onboarding/site_composer.py
@@ -5828,7 +5828,7 @@ msgstr ""
 #: apps/courses/views.py
 #, fuzzy
 msgid "Already enrolled."
-msgstr "Jesteś już zapisany."
+msgstr "Masz już zapis."
 
 #: apps/courses/views.py
 #, fuzzy
@@ -5838,7 +5838,7 @@ msgstr "Ten kurs wymaga zakupu lub subskrypcji."
 #: apps/courses/views.py
 #, fuzzy
 msgid "Not enrolled."
-msgstr "Nie jesteś zapisany."
+msgstr "Nie masz zapisu."
 
 #: apps/courses/views.py
 #, fuzzy
@@ -6230,7 +6230,7 @@ msgstr "Oto co działo się w %(brand)s, i co wydarzy się wkrótce."
 #: apps/email_campaigns/starters.py
 #, fuzzy
 msgid "A few things I'd love you to see this month:"
-msgstr "Kilka rzeczy, które chcę Ci pokazać w tym miesiącu:"
+msgstr "Kilka rzeczy, które chcę ci pokazać w tym miesiącu:"
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
@@ -6260,17 +6260,17 @@ msgstr "Co nowego, i co nas czeka."
 #: apps/email_campaigns/starters.py
 #, fuzzy
 msgid "Something new for you"
-msgstr "Coś nowego dla Ciebie"
+msgstr "Coś nowego dla ciebie"
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
 msgid "I've been working on something, and it's ready."
-msgstr "Pracowałem nad czymś, i jest już gotowe."
+msgstr "Mam dla ciebie coś, co właśnie jest gotowe."
 
 #: apps/email_campaigns/starters.py
 #, fuzzy, python-format
 msgid "It's made to bring you %(outcome)s."
-msgstr "Zostało stworzone, aby przynieść Ci %(outcome)s."
+msgstr "Zostało stworzone, aby przynieść ci %(outcome)s."
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
@@ -6295,7 +6295,7 @@ msgstr "Coś nowego od %(brand)s"
 #: apps/email_campaigns/starters.py
 #, fuzzy
 msgid "It's ready, and I made it with you in mind."
-msgstr "Jest gotowe, i powstało z myślą o Tobie."
+msgstr "Jest gotowe, i powstało z myślą o tobie."
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
@@ -6305,7 +6305,7 @@ msgstr "Dołącz do mnie"
 #: apps/email_campaigns/starters.py
 #, fuzzy
 msgid "I'd love to see you at my next session. Here are the details:"
-msgstr "Z przyjemnością zobaczę Cię na mojej kolejnej sesji. Oto szczegóły:"
+msgstr "Z przyjemnością zobaczę cię na mojej kolejnej sesji. Oto szczegóły:"
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
@@ -6340,7 +6340,7 @@ msgstr "Notatka od %(name)s"
 #: apps/email_campaigns/starters.py
 #, fuzzy
 msgid "I wanted to write to you personally."
-msgstr "Chciałem do Ciebie napisać osobiście."
+msgstr "Piszę do ciebie osobiście."
 
 #: apps/email_campaigns/starters.py
 #, fuzzy
@@ -6359,7 +6359,7 @@ msgstr "Osobista notatka"
 #: apps/email_campaigns/starters.py
 #, fuzzy
 msgid "Something I wanted to share with you."
-msgstr "Coś, czym chciałem się z Tobą podzielić."
+msgstr "Coś, czym chcę się z tobą podzielić."
 
 #: apps/email_campaigns/tasks.py
 #, fuzzy
@@ -6489,7 +6489,7 @@ msgstr "Ta sesja jeszcze się nie rozpoczęła. Poczekaj, aż gospodarz dołącz
 #: apps/live/views.py
 #, fuzzy
 msgid "You were removed from this session."
-msgstr "Usunięto Cię z tej sesji."
+msgstr "Usunięto cię z tej sesji."
 
 #: apps/live/views.py
 #, fuzzy
@@ -7303,7 +7303,7 @@ msgstr "%(title)s zostało odwołane"
 #: apps/notifications/transactional.py
 #, fuzzy, python-format
 msgid "%(brand)s cancelled %(title)s on %(at)s. Sorry for the change."
-msgstr "%(brand)s odwołał %(title)s w dniu %(at)s. Przepraszamy za zmianę."
+msgstr "%(brand)s: odwołano %(title)s w dniu %(at)s. Przepraszamy za zmianę."
 
 #: apps/notifications/transactional.py
 #, fuzzy
@@ -7319,7 +7319,7 @@ msgstr "Zobacz, co się dzieje"
 #: apps/notifications/transactional.py
 #, fuzzy, python-format
 msgid "%(who)s replied to your post"
-msgstr "%(who)s odpowiedział na Twój post"
+msgstr "Nowa odpowiedź na twój wpis od %(who)s"
 
 #: apps/notifications/transactional.py
 #, fuzzy, python-format
@@ -7339,7 +7339,7 @@ msgstr "Nieprawidłowy lub wygasły link."
 #: apps/notifications/views.py
 #, fuzzy
 msgid "You've been unsubscribed from these emails."
-msgstr "Wypisano Cię z tych wiadomości e-mail."
+msgstr "Wypisano cię z tych wiadomości e-mail."
 
 #: apps/platform_email/serializers.py
 #, fuzzy, python-format
@@ -8100,7 +8100,7 @@ msgstr "Na razie bez artykułu"
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
 msgid "Come as you are. We'll take it slow."
-msgstr "Przyjdź taki, jaki jesteś. Nie będziemy się spieszyć."
+msgstr "Przyjdź, jak jesteś. Nie będziemy się spieszyć."
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
@@ -8140,7 +8140,7 @@ msgstr "Odważnie, jaskrawo i nie do zapomnienia."
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
 msgid "Come as you are. Your mat is a safe place."
-msgstr "Przyjdź taki, jaki jesteś. Twoja mata to bezpieczne miejsce."
+msgstr "Przyjdź, jak jesteś. Twoja mata to bezpieczne miejsce."
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
@@ -8490,7 +8490,7 @@ msgstr "Członkostwo w studiu"
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
 msgid "Train at your place as often as they like."
-msgstr "Trenują u Ciebie tak często, jak chcą."
+msgstr "Trenują u ciebie tak często, jak chcą."
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
@@ -11264,7 +11264,7 @@ msgstr "Otrzymuj płatności"
 #, fuzzy
 msgid "Connect Stripe so your sales reach your bank account."
 msgstr ""
-"Połącz Stripe, aby pieniądze ze sprzedaży trafiały na Twoje konto bankowe."
+"Połącz Stripe, aby pieniądze ze sprzedaży trafiały na twoje konto bankowe."
 
 #: apps/tenant_config/setup_flow.py
 #, fuzzy
@@ -11405,9 +11405,9 @@ msgstr "Twórca"
 #: apps/tenant_config/views.py
 #, fuzzy, python-format
 msgid "%(label)s asked for a human in Ask Contentor"
-msgstr "%(label)s poprosił o kontakt z człowiekiem w Ask Contentor"
+msgstr "%(label)s: prośba o kontakt z człowiekiem w Ask Contentor"
 
 #: apps/tenant_config/views.py
 #, fuzzy, python-format
 msgid "%(label)s asked for a human in Ask Contentor (tenant: %(tenant)s)."
-msgstr "%(label)s poprosił o człowieka w Ask Contentor (najemca: %(tenant)s)."
+msgstr "%(label)s: prośba o człowieka w Ask Contentor (najemca: %(tenant)s)."

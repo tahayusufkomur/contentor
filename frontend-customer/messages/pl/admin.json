@@ -383,7 +383,7 @@
     }
   },
   "plan": {
-    "subtitle": "Ile płacisz Contentor i co obejmuje Twój plan."
+    "subtitle": "Ile płacisz Contentor i co obejmuje twój plan."
   },
   "palette": {
     "placeholder": "Szukaj stron…",
@@ -400,7 +400,7 @@
     "brand": "Nazwa strony, logo i wygląd",
     "menu": "Menu strony i przycisk w nagłówku",
     "community": "Włączanie i wyłączanie społeczności oraz wiadomość powitalna",
-    "assistant": "Asystent widoczny dla Twoich uczestników",
+    "assistant": "Asystent widoczny dla twoich uczestników",
     "autopilot": "Autopilot bloga",
     "payouts": "Jak otrzymujesz wypłaty",
     "plan": "Twój plan Contentor"
@@ -414,7 +414,7 @@
       "help": "Pomoc",
       "history": "Historia"
     },
-    "noChangesYet": "Nie ma jeszcze zmian — tutaj pojawi się wszystko, co wprowadzi Twój asystent.",
+    "noChangesYet": "Nie ma jeszcze zmian — tutaj pojawi się wszystko, co wprowadzi twój asystent.",
     "placeholder": "Poproś o kurs, sesję na żywo, zmianę na stronie…",
     "startersTitle": "Wypróbuj na tej stronie",
     "undo": "Cofnij",
@@ -445,9 +445,9 @@
         "Co mam najbliżej w kalendarzu?"
       ],
       "blog": [
-        "Zaproponuj trzy pomysły na posty dla moich uczestników",
-        "Przygotuj szkic posta o moim najnowszym kursie",
-        "Które posty są wciąż szkicami?"
+        "Zaproponuj trzy pomysły na wpisy dla moich uczestników",
+        "Przygotuj szkic wpisu o moim najnowszym kursie",
+        "Które wpisy są wciąż szkicami?"
       ],
       "announcements": [
         "Przygotuj szkic ogłoszenia o moich najbliższych zajęciach",
@@ -580,8 +580,8 @@
     "transcriptSourceSite": "Asystent strony",
     "transcriptSourceHelp": "Zapytaj Contentor",
     "transcriptPreviewBadge": "Twój podgląd",
-    "ratingUp": "Odwiedzający oznaczył to jako pomocne.",
-    "ratingDown": "Odwiedzający oznaczył to jako niepomocne.",
+    "ratingUp": "Osoba odwiedzająca oceniła to jako pomocne.",
+    "ratingDown": "Osoba odwiedzająca oceniła to jako niepomocne.",
     "addToKnowledge": "Dodaj do wiedzy",
     "showMore": "Pokaż więcej",
     "showLess": "Pokaż mniej",
@@ -688,7 +688,7 @@
     "saved": "Zapisano",
     "regenerated": "Wygenerowano ponownie",
     "editor": {
-      "placeholder": "Napisz swój post…",
+      "placeholder": "Napisz swój wpis…",
       "bold": "Pogrubienie",
       "italic": "Kursywa",
       "heading2": "Nagłówek 2",
@@ -898,9 +898,9 @@
     "saved": "Zapisano.",
     "saveFailed": "Nie udało się zapisać. Spróbuj ponownie.",
     "yourLanguage": "Twój język",
-    "yourLanguageHint": "Język Twojego Studia twórcy i tego, co do Ciebie piszemy. Język Twoich uczestników ustawia się osobno.",
+    "yourLanguageHint": "Język twojego Studia twórcy i tego, co do ciebie piszemy. Język twoich uczestników ustawia się osobno.",
     "siteLanguage": "Język strony",
-    "siteLanguageHint": "Język, który Twoi uczestnicy widzą na Twojej stronie. Możesz go zmienić, dopóki Twoja strona nie zostanie opublikowana.",
+    "siteLanguageHint": "Język, który twoi uczestnicy widzą na twojej stronie. Możesz go zmienić, dopóki twoja strona nie zostanie opublikowana.",
     "siteLanguageLocked": "Twoja strona jest opublikowana, więc jej język pozostaje bez zmian.",
     "subtitle": "Skonfiguruj ogólne ustawienia swojej witryny.",
     "saving": "Zapisywanie…",
@@ -984,7 +984,7 @@
     "failed": "Nie udało się. Spróbuj ponownie albo utwórz to ręcznie."
   },
   "media": {
-    "subtitle": "Zdjęcia i filmy, których używasz na swojej stronie, w kursach i w postach.",
+    "subtitle": "Zdjęcia i filmy, których używasz na swojej stronie, w kursach i we wpisach.",
     "photos": "Zdjęcia",
     "videos": "Filmy",
     "mine": "Moje zdjęcia",
@@ -1624,7 +1624,7 @@
       "ends": "Kończy się:",
       "endsNever": "Nigdy",
       "endsOnDate": "W wybranym dniu",
-      "timezoneNote": "Godziny są podane w strefie czasowej Twojego konta.",
+      "timezoneNote": "Godziny są podane w strefie czasowej twojego konta.",
       "templates": {
         "title": "Wybierz szablon",
         "search": "Szukaj szablonów…",
@@ -1951,17 +1951,17 @@
         }
       },
       "post": {
-        "new": "Nowy post",
-        "continue": "Kontynuuj swój post: {title}",
+        "new": "Nowy wpis",
+        "continue": "Kontynuuj swój wpis: {title}",
         "fillMyself": "Napiszę go samodzielnie",
-        "writing": "Piszę twój post…",
-        "copyFailed": "Nie udało się przygotować posta.",
-        "thinking": "Zastanawiam się nad twoim postem…",
+        "writing": "Piszę twój wpis…",
+        "copyFailed": "Nie udało się przygotować wpisu.",
+        "thinking": "Zastanawiam się nad twoim wpisem…",
         "refused": {
-          "upgrade_required": "Pisanie postów za ciebie jest dostępne w płatnym planie. Napisz post samodzielnie lub przejdź na wyższy plan.",
-          "quota_exhausted": "Limit postów AI na ten miesiąc został wyczerpany. Napisz post samodzielnie lub przejdź na wyższy plan, aby mieć ich więcej.",
-          "disabled": "Pisanie z AI jest teraz niedostępne. Napisz post samodzielnie.",
-          "budget": "Pisanie z AI jest teraz niedostępne. Napisz post samodzielnie."
+          "upgrade_required": "Pisanie wpisów za ciebie jest dostępne w płatnym planie. Napisz wpis samodzielnie lub przejdź na wyższy plan.",
+          "quota_exhausted": "Limit wpisów AI na ten miesiąc został wyczerpany. Napisz wpis samodzielnie lub przejdź na wyższy plan, aby mieć ich więcej.",
+          "disabled": "Pisanie z AI jest teraz niedostępne. Napisz wpis samodzielnie.",
+          "budget": "Pisanie z AI jest teraz niedostępne. Napisz wpis samodzielnie."
         }
       }
     },
@@ -2008,8 +2008,8 @@
     },
     "yours": "Twoje",
     "upload": "Prześlij",
-    "makingPhoto": "Tworzę Twoje zdjęcie…",
-    "photoFailed": "Nie udało się utworzyć Twojego zdjęcia. Wybierz jedno z tych tutaj lub prześlij własne.",
+    "makingPhoto": "Tworzę twoje zdjęcie…",
+    "photoFailed": "Nie udało się utworzyć twojego zdjęcia. Wybierz jedno z tych tutaj lub prześlij własne.",
     "photoUnavailable": "Nie można użyć tego zdjęcia. Wybierz inne.",
     "useCover": "Użyj tej okładki",
     "moreStyles": "Cztery kolejne style",
@@ -2025,10 +2025,10 @@
     "schedule": "Zaplanuj",
     "notNow": "Nie teraz",
     "sendsAt": "Wysyłka {when}",
-    "writingAnnouncement": "Piszę Twoje ogłoszenie…",
+    "writingAnnouncement": "Piszę twoje ogłoszenie…",
     "announcementFailed": "Nie udało mi się napisać ogłoszenia.",
     "handOver": {
-      "cover": "Tu {name}: przygotujmy Twoją okładkę.",
+      "cover": "Tu {name}: przygotujmy twoją okładkę.",
       "access": "Tu {name}: zdecydujmy, jak uczestnicy uzyskają do tego dostęp.",
       "finish": "Tu {name}: pokażmy to światu."
     }
@@ -2132,11 +2132,11 @@
       "unbanned": "{name} ma ponownie dostęp do społeczności.",
       "unban": "Odblokuj",
       "confirmBan": "Zablokować {name}? Straci wszelki dostęp do społeczności.",
-      "bannedDone": "{name} został zablokowany.",
+      "bannedDone": "Zablokowano: {name}.",
       "ban": "Zablokuj",
       "muteLifted": "Wyciszenie zostało cofnięte.",
       "unmute": "Cofnij wyciszenie",
-      "muted": "{name} został wyciszony na 7 dni.",
+      "muted": "Wyciszono na 7 dni: {name}.",
       "mute": "Wycisz na 7 dni",
       "approvalOff": "Posty tej osoby są ponownie publikowane natychmiast.",
       "approvalOn": "Kolejne posty tej osoby będą czekać na twoje zatwierdzenie.",
@@ -2172,7 +2172,7 @@
       "approve": "Zatwierdź",
       "loadError": "Nie udało się załadować kolejki.",
       "allClear": "Wszystko w porządku",
-      "allClearHint": "Brak zgłoszeń lub postów czekających na Ciebie.",
+      "allClearHint": "Brak zgłoszeń lub postów czekających na ciebie.",
       "waiting": "Oczekujące na zatwierdzenie",
       "reports": "Zgłoszenia"
     }
@@ -2285,7 +2285,7 @@
       "student": "Uczestnik",
       "enrolled": "Zapisane kursy",
       "progress": "Postęp w kursie",
-      "joined": "Dołączył(a)",
+      "joined": "Data dołączenia",
       "active": "Ostatnia aktywność"
     },
     "unnamed": "Bez nazwy",
@@ -2298,7 +2298,7 @@
       "back": "Uczestnicy",
       "title": "Historia płatności",
       "empty": "Brak płatności",
-      "emptyHint": "Ten uczestnik nic jeszcze nie kupił.",
+      "emptyHint": "Ta osoba jeszcze niczego nie kupiła.",
       "type": {
         "one_time": "jednorazowa",
         "subscription": "subskrypcja"
@@ -2317,8 +2317,8 @@
       "grantError": "Nie udało się przyznać dostępu do kursu",
       "coursesError": "Nie udało się załadować kursów. Spróbuj ponownie.",
       "na": "N/D",
-      "unnamed": "Nienazwany Uczestnik",
-      "joined": "Dołączył {date}",
+      "unnamed": "Nienazwany uczestnik",
+      "joined": "Dołączenie: {date}",
       "tabOverview": "Przegląd",
       "tabActions": "Szybkie Akcje",
       "membership": "Członkostwo",
@@ -2380,7 +2380,7 @@
     "publishNow": "Opublikuj natychmiast",
     "publishedLabel": "Opublikowany",
     "filters": "Filtry",
-    "filtersHint": "Opcjonalne kategorie (poziom, styl…), według których uczestnicy mogą filtrować Twoje kursy.",
+    "filtersHint": "Opcjonalne kategorie (poziom, styl…), według których uczestnicy mogą filtrować twoje kursy.",
     "tags": "Tagi",
     "saving": "Zapisywanie…",
     "saveChanges": "Zapisz zmiany",
@@ -2498,7 +2498,7 @@
     "done": "Gotowe",
     "siteLive": "Twoja strona działa na żywo",
     "publishSite": "Opublikuj swoją stronę",
-    "liveStatus": "<live>● Na żywo</live> — uczestnicy mogą znaleźć i zainstalować Twoją stronę.",
+    "liveStatus": "<live>● Na żywo</live> — uczestnicy mogą znaleźć i zainstalować twoją stronę.",
     "copyLink": "Kopiuj link",
     "unpublishing": "Cofanie publikacji…",
     "unpublish": "Cofnij publikację",
@@ -2523,19 +2523,19 @@
       "first_event": "Zaplanuj swoją pierwszą sesję na żywo lub wydarzenie",
       "first_blog_post": "Opublikuj swój pierwszy wpis na blogu",
       "payouts": "Połącz płatności, aby sprzedawać płatne treści",
-      "payoutsTrial": "Płatne treści czekają na rozpoczęcie Twojego planu — rozpocznij go teraz lub zachowaj jako wersję roboczą",
+      "payoutsTrial": "Płatne treści czekają na rozpoczęcie twojego planu — rozpocznij go teraz lub zachowaj jako wersję roboczą",
       "payoutsFreePlan": "Płatne treści wymagają planu — wybierz jeden lub zachowaj jako wersję roboczą"
     },
     "close": "Zamknij"
   },
   "monetize": {
-    "trialing": "Sprzedaż będzie możliwa, gdy rozpocznie się Twój plan — możesz zapisać to jako wersję roboczą. <link>Rozpocznij go teraz</link>",
+    "trialing": "Sprzedaż będzie możliwa, gdy rozpocznie się twój plan — możesz zapisać to jako wersję roboczą. <link>Rozpocznij go teraz</link>",
     "freePlan": "Sprzedaż wymaga planu Starter — możesz zapisać to jako wersję roboczą. <link>Zobacz plany</link>",
     "noPayouts": "Uczestnicy nie mogą jeszcze kupować — <link>skonfiguruj wypłaty</link>, aby zacząć sprzedawać."
   },
   "paused": {
     "title": "Wybierz plan, aby otworzyć swoją stronę",
-    "hint": "Dopóki tego nie zrobisz, odwiedzający widzą stronę “wkrótce wracamy”. Wszystko, co zostało przez Ciebie zbudowane, jest zachowane i powróci w momencie, gdy zaczniesz."
+    "hint": "Dopóki tego nie zrobisz, odwiedzający widzą stronę “wkrótce wracamy”. Wszystko, co zostało przez ciebie zbudowane, jest zachowane i powróci w momencie, gdy zaczniesz."
   },
   "usage": {
     "title": "Adopcja aplikacji (30 dni)",
@@ -2716,7 +2716,7 @@
         "quota_exhausted": "Limit zmian AI na ten miesiąc został wykorzystany. Odnowi się w przyszłym miesiącu.",
         "error": "Nie udało mi się tego zbudować. Spróbuj opisać to trochę inaczej."
       },
-      "missing": "To jeszcze niemożliwe: {missing}. Zbudowałem coś najbardziej zbliżonego.",
+      "missing": "To jeszcze niemożliwe: {missing}. Udało mi się zbudować coś najbardziej zbliżonego.",
       "describe": "Opisz sekcję",
       "placeholder": "Plan dzień po dniu mojego 5-dniowego wyjazdu, ze zdjęciem na każdy dzień",
       "designing": "Projektowanie…",
@@ -2801,7 +2801,7 @@
       "delete": "Usuń"
     },
     "sidebar": {
-      "saveError": "Nie udało się zapisać Twoich zmian. Spróbuj ponownie.",
+      "saveError": "Nie udało się zapisać twoich zmian. Spróbuj ponownie.",
       "editSite": "Edytuj witrynę",
       "saving": "Zapisywanie",
       "exit": "Wyjdź z trybu edycji — zobacz podgląd swojej witryny",
@@ -2868,7 +2868,7 @@
       "showLogin": "Pokaż przycisk logowania",
       "showLoginHint": "Wyświetl link \"Zaloguj się\" w nawigacji",
       "showInstall": "Pokaż \"Zainstaluj aplikację\"",
-      "showInstallHint": "Odsyłaj odwiedzających do instalacji Twojej strony jako aplikacji"
+      "showInstallHint": "Odsyłaj odwiedzających do instalacji twojej strony jako aplikacji"
     },
     "link": {
       "title": "Wybierz link",
@@ -3809,7 +3809,7 @@
       "saving": "Zapisywanie…",
       "useLogo": "Użyj tego logo",
       "close": "Zamknij Studio logo",
-      "startOverConfirm": "Zacząć od nowa? To wyczyści Twój brief i zapisane postępy.",
+      "startOverConfirm": "Zacząć od nowa? To wyczyści twój brief i zapisane postępy.",
       "refineFailed": "Nie udało się ulepszyć projektu — spróbuj ponownie.",
       "unreachable": "Nie udało się teraz połączyć ze studiem projektowym.",
       "uploadFailed": "Przesyłanie nie powiodło się",
@@ -3818,7 +3818,7 @@
       "useFailed": "Nie udało się użyć tego logo — spróbuj ponownie.",
       "iconOnly": "Twoja ikona jest gotowa, ale kompozycja AI nie została ukończona — sformatuj tekst w edytorze.",
       "similarFailed": "Nie udało się zaprojektować podobnego logo — spróbuj ponownie.",
-      "gettingReady": "Przygotowywanie Twojego logo…",
+      "gettingReady": "Przygotowywanie twojego logo…",
       "similar": {
         "disabled": "Projektowanie z AI jest teraz niedostępne.",
         "upgrade_required": "Przejdź na wyższy plan, aby projektować z AI.",
@@ -3869,14 +3869,14 @@
     },
     "entrance": {
       "readyMade": "Gotowe logo",
-      "readyMadeHint": "Kompletne pomysły na logo dla Twojej marki — do bezpłatnego wykorzystania i dopracowania.",
+      "readyMadeHint": "Kompletne pomysły na logo dla twojej marki — do bezpłatnego wykorzystania i dopracowania.",
       "designWithAi": "Zaprojektuj z AI",
       "aiHint": "Opisz swój styl i pozwól AI stworzyć unikalne logo.",
       "aiUpgradeHint": "Przejdź na wyższy plan, aby zaprojektować unikalne logo z AI."
     },
     "gallery": {
       "empty": "Nie ma jeszcze gotowych logo — wypróbuj zamiast tego opcję Zaprojektuj z AI.",
-      "designing": "Projektowanie Twojej wersji…",
+      "designing": "Projektowanie twojej wersji…",
       "use": "Użyj tego",
       "createOwn": "Stwórz własne"
     },
@@ -3985,7 +3985,7 @@
         "title": "Sygnet",
         "aiDrawn": "Sygnet narysowany przez AI",
         "designedInSetup": "Zaprojektowany podczas konfiguracji",
-        "generatedHint": "To logo zostało zaprojektowane dla Ciebie podczas konfiguracji. Wybierz inne w Konfiguracja → Logo lub wybierz sygnet poniżej, aby zacząć od nowa.",
+        "generatedHint": "To logo zostało zaprojektowane dla ciebie podczas konfiguracji. Wybierz inne w Konfiguracja → Logo lub wybierz sygnet poniżej, aby zacząć od nowa.",
         "customHint": "Wybierz inny sygnet poniżej, aby go zamienić, lub użyj elementów sterowania kolorem, aby zmienić jego kolor.",
         "initials": {
           "plain": "{initials} Prosty",
