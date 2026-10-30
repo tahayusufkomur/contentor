@@ -2,12 +2,13 @@ import logging
 
 from celery import shared_task
 from django.db.models import F
-from django.utils import timezone
+from django.utils import timezone, translation
 from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 from django_tenants.utils import get_tenant_model, tenant_context
 
 from apps.core.email import send_email
-from apps.core.languages import site_language_context
+from apps.core.languages import creator_language, site_language_context
 
 logger = logging.getLogger(__name__)
 
@@ -44,23 +45,28 @@ def _dispatch_email_for_current_tenant(schema_name):
 
 
 def _build_recipient_summary(recipient_filter: dict) -> str:
+    """Who the campaign went to, in the active language. It is stored: the caller records it in the
+    sender's, the one person who reads it back."""
     filter_type = recipient_filter.get("type", "")
     if filter_type == "all":
-        return "All students"
+        return _("All students")
     if filter_type == "course":
         course_ids = recipient_filter.get("course_ids") or []
         if not course_ids:
-            return "No courses selected"
+            return _("No courses selected")
+        count = {"count": len(course_ids)}
         try:
             from apps.courses.models import Course
 
             names = list(Course.objects.filter(pk__in=course_ids).values_list("title", flat=True))
-            return ", ".join(names) if names else f"{len(course_ids)} course(s)"
+            return (
+                ", ".join(names) if names else ngettext("%(count)d course", "%(count)d courses", count["count"]) % count
+            )
         except Exception:
-            return f"{len(course_ids)} course(s)"
+            return ngettext("%(count)d course", "%(count)d courses", count["count"]) % count
     if filter_type == "individual":
-        user_ids = recipient_filter.get("user_ids") or []
-        return f"{len(user_ids)} selected student(s)"
+        count = len(recipient_filter.get("user_ids") or [])
+        return ngettext("%(count)d selected student", "%(count)d selected students", count) % {"count": count}
     return ""
 
 
@@ -168,7 +174,8 @@ def send_campaign_emails(_self, campaign_id: int, schema_name: str):
                 return
             recipients = list(resolve_recipients(campaign.recipient_filter).values("id", "name", "email"))
             recipient_count = len(recipients)
-            campaign.recipient_summary = _build_recipient_summary(campaign.recipient_filter)
+            with translation.override(creator_language(campaign.sender)):  # stored for the sender to read
+                campaign.recipient_summary = _build_recipient_summary(campaign.recipient_filter)
             campaign.save(update_fields=["recipient_summary"])
 
         today = timezone.now().date()

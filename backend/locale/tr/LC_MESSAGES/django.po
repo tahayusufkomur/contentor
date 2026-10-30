@@ -12,6 +12,64 @@ msgstr ""
 
 #: apps/accounts/admin_panels.py
 #, fuzzy
+msgid "User"
+msgstr "Kullanıcı"
+
+#: apps/accounts/admin_panels.py
+#, fuzzy
+msgid "Users"
+msgstr "Kullanıcılar"
+
+#: apps/accounts/admin_panels.py
+#, fuzzy
+msgid ""
+"Students and staff in this studio. Log in as a student to see exactly what "
+"they see."
+msgstr ""
+"Bu stüdyodaki öğrenciler ve personel. Tam olarak ne gördüklerini görmek için"
+" bir öğrenci olarak giriş yap."
+
+#: apps/accounts/admin_panels.py apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Email"
+msgstr "E-posta"
+
+#: apps/accounts/admin_panels.py apps/billing/admin_panels.py
+#, fuzzy
+msgid "Name"
+msgstr "Ad"
+
+#: apps/accounts/admin_panels.py
+#, fuzzy
+msgid "Role"
+msgstr "Rol"
+
+#: apps/accounts/admin_panels.py apps/community/admin_panels.py
+#, fuzzy
+msgid "Joined"
+msgstr "Katıldı"
+
+#: apps/accounts/admin_panels.py
+#, fuzzy
+msgid "Last login"
+msgstr "Son giriş"
+
+#: apps/accounts/admin_panels.py
+#, fuzzy
+msgid "Log in as"
+msgstr "Olarak giriş yap"
+
+#: apps/accounts/admin_panels.py
+#, fuzzy
+msgid ""
+"Open this student's account? You'll see the site exactly as they do, until "
+"you exit."
+msgstr ""
+"Bu öğrencinin hesabı açılsın mı? Çıkış yapana kadar siteyi tam olarak onun "
+"gördüğü gibi göreceksin."
+
+#: apps/accounts/admin_panels.py
+#, fuzzy
 msgid "User not found."
 msgstr "Kullanıcı bulunamadı."
 
@@ -182,6 +240,76 @@ msgstr "Bu %(label)s başka kayıtlar tarafından kullanıldığı için silinem
 msgid "Provide a non-empty `ids` list."
 msgstr "Boş olmayan bir `ids` listesi gönder."
 
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Subscription Plan"
+msgstr "Abonelik Planı"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Subscription Plans"
+msgstr "Abonelik Planları"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid ""
+"Recurring membership plans students subscribe to. Price/interval changes "
+"provision a new Stripe price at the next checkout; existing subscribers keep"
+" their old terms."
+msgstr ""
+"Öğrencilerin abone olduğu yinelenen üyelik planları. Fiyat/aralık "
+"değişiklikleri bir sonraki ödeme adımında yeni bir Stripe fiyatı oluşturur; "
+"mevcut aboneler eski koşullarını korur."
+
+#: apps/billing/admin_panels.py apps/courses/admin_panels.py
+#, fuzzy
+msgid "Description"
+msgstr "Açıklama"
+
+#: apps/billing/admin_panels.py apps/core/focus/kinds/bundle.py
+#: apps/core/focus/kinds/membership.py apps/courses/admin_panels.py
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Price"
+msgstr "Fiyat"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Currency"
+msgstr "Para birimi"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Billing interval (months)"
+msgstr "Faturalandırma aralığı (ay)"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Active"
+msgstr "Etkin"
+
+#: apps/billing/admin_panels.py apps/courses/admin_panels.py
+#, fuzzy
+msgid "Order"
+msgstr "Sıra"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Stripe price ID"
+msgstr "Stripe fiyat kimliği"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Deactivate"
+msgstr "Devre dışı bırak"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Deactivate selected plans? Students can no longer subscribe to them."
+msgstr ""
+"Seçilen planlar devre dışı bırakılsın mı? Öğrenciler artık bu planlara abone"
+" olamaz."
+
 #: apps/billing/admin_panels.py apps/billing/tests/test_error_language.py
 #, fuzzy, python-format
 msgid "Deactivated %(count)d plan."
@@ -190,11 +318,45 @@ msgstr[0] "%(count)d plan devre dışı bırakıldı."
 msgstr[1] "%(count)d plan devre dışı bırakıldı."
 
 #: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Activate"
+msgstr "Etkinleştir"
+
+#: apps/billing/admin_panels.py
 #, fuzzy, python-format
 msgid "Activated %(count)d plan."
 msgid_plural "Activated %(count)d plans."
 msgstr[0] "%(count)d plan etkinleştirildi."
 msgstr[1] "%(count)d plan etkinleştirildi."
+
+#: apps/billing/admin_panels.py apps/core/focus/kinds/bundle.py
+#, fuzzy
+msgid "Bundle"
+msgstr "Paket"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Bundles"
+msgstr "Paketler"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid ""
+"Discounted product groupings. Manage bundle contents from Billing → Bundles."
+msgstr ""
+"İndirimli ürün gruplandırmaları. Paket içeriklerini Faturalandırma → "
+"Paketler bölümünden yönet."
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Thumbnail URL"
+msgstr "Küçük resim URL'si"
+
+#: apps/billing/admin_panels.py apps/community/admin_panels.py
+#: apps/courses/admin_panels.py
+#, fuzzy
+msgid "Created"
+msgstr "Oluşturuldu"
 
 #: apps/billing/admin_panels.py
 #, fuzzy, python-format
@@ -209,6 +371,61 @@ msgid "Activated %(count)d bundle."
 msgid_plural "Activated %(count)d bundles."
 msgstr[0] "%(count)d paket etkinleştirildi."
 msgstr[1] "%(count)d paket etkinleştirildi."
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Payment"
+msgstr "Ödeme"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Payments"
+msgstr "Ödemeler"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Every charge and refund in this studio (read-only)."
+msgstr "Bu stüdyodaki her tahsilat ve iade (salt okunur)."
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Student"
+msgstr "Öğrenci"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Type"
+msgstr "Tür"
+
+#: apps/billing/admin_panels.py apps/community/admin_panels.py
+#, fuzzy
+msgid "Status"
+msgstr "Durum"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Amount"
+msgstr "Tutar"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Platform fee"
+msgstr "Platform ücreti"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Payout"
+msgstr "Hakediş"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Provider"
+msgstr "Sağlayıcı"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Provider payment ID"
+msgstr "Sağlayıcı ödeme kimliği"
 
 #: apps/billing/models/core.py
 #, fuzzy
@@ -867,6 +1084,40 @@ msgstr "haftalık için zorunlu"
 msgid "required for monthly"
 msgstr "aylık için zorunlu"
 
+#: apps/blog/tasks.py
+#, fuzzy
+msgid "Blog autopilot paused"
+msgstr "Blog otopilotu duraklatıldı"
+
+#: apps/blog/tasks.py
+#, fuzzy
+msgid ""
+"You've used all your AI blog posts for this month — autopilot will resume "
+"next month."
+msgstr ""
+"Bu ayki tüm yapay zekâ blog yazılarını kullandın — otopilot gelecek ay devam"
+" edecek."
+
+#: apps/blog/tasks.py
+#, fuzzy
+msgid "New blog post published"
+msgstr "Yeni blog yazısı yayımlandı"
+
+#: apps/blog/tasks.py
+#, fuzzy, python-format
+msgid "Autopilot published “%(title)s” on your site."
+msgstr "Otopilot sitende “%(title)s” yazısını yayımladı."
+
+#: apps/blog/tasks.py
+#, fuzzy
+msgid "Your new blog post is ready"
+msgstr "Yeni blog yazın hazır"
+
+#: apps/blog/tasks.py
+#, fuzzy, python-format
+msgid "“%(title)s” is waiting for your review."
+msgstr "“%(title)s” incelemeni bekliyor."
+
 #: apps/community/access.py
 #, fuzzy
 msgid "Community is not enabled."
@@ -881,6 +1132,179 @@ msgstr "Topluluktan yasaklandın."
 #, fuzzy
 msgid "You are muted in the community."
 msgstr "Toplulukta sessize alındın."
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Community Post"
+msgstr "Topluluk Gönderisi"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Community Posts"
+msgstr "Topluluk Gönderileri"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Every community post, including hidden and removed ones."
+msgstr "Gizlenenler ve kaldırılanlar dahil her topluluk gönderisi."
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Author"
+msgstr "Yazar"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Text"
+msgstr "Metin"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Pinned"
+msgstr "Sabitlenmiş"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Comments"
+msgstr "Yorumlar"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Reactions"
+msgstr "Tepkiler"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Remove"
+msgstr "Kaldır"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Remove selected posts from the community?"
+msgstr "Seçilen gönderiler topluluktan kaldırılsın mı?"
+
+#: apps/community/admin_panels.py
+#, fuzzy, python-format
+msgid "Removed %(count)d post."
+msgid_plural "Removed %(count)d posts."
+msgstr[0] "%(count)d gönderi kaldırıldı."
+msgstr[1] "%(count)d gönderi kaldırıldı."
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Community Comment"
+msgstr "Topluluk Yorumu"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Community Comments"
+msgstr "Topluluk Yorumları"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Every community comment, including removed ones."
+msgstr "Kaldırılanlar dahil her topluluk yorumu."
+
+#: apps/community/admin_panels.py apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "Post"
+msgstr "Gönderi"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Remove selected comments?"
+msgstr "Seçilen yorumlar kaldırılsın mı?"
+
+#: apps/community/admin_panels.py
+#, fuzzy, python-format
+msgid "Removed %(count)d comment."
+msgid_plural "Removed %(count)d comments."
+msgstr[0] "%(count)d yorum kaldırıldı."
+msgstr[1] "%(count)d yorum kaldırıldı."
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Community Report"
+msgstr "Topluluk Şikayeti"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Community Reports"
+msgstr "Topluluk Şikayetleri"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid ""
+"Member reports on posts and comments. Resolve them from Community → Reports."
+msgstr ""
+"Gönderiler ve yorumlar hakkındaki üye şikayetleri. Bunları Topluluk → "
+"Şikayetler bölümünden çözümle."
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Reporter"
+msgstr "Şikayet eden"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Reason"
+msgstr "Neden"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Action taken"
+msgstr "Yapılan işlem"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Details"
+msgstr "Ayrıntılar"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Resolved by"
+msgstr "Çözümleyen"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Resolved"
+msgstr "Çözümlendi"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Community Member"
+msgstr "Topluluk Üyesi"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Community Members"
+msgstr "Topluluk Üyeleri"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Community profiles with moderation state (ban / mute / approval)."
+msgstr ""
+"Moderasyon durumuna (yasaklama / susturma / onay) sahip topluluk profilleri."
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Display name"
+msgstr "Görünen ad"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Banned"
+msgstr "Yasaklı"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Muted until"
+msgstr "Şu tarihe kadar susturuldu"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Needs approval"
+msgstr "Onay gerekiyor"
 
 #: apps/community/moderation_views.py
 #, fuzzy
@@ -931,6 +1355,21 @@ msgstr "geçersiz belirteç"
 #, fuzzy, python-format
 msgid "New message from %(name)s"
 msgstr "%(name)s adlı kişiden yeni mesaj"
+
+#: apps/core/contact/views.py
+#, fuzzy, python-format
+msgid "Phone: %(phone)s"
+msgstr "Telefon: %(phone)s"
+
+#: apps/core/contact/views.py
+#, fuzzy
+msgid "New contact message"
+msgstr "Yeni iletişim mesajı"
+
+#: apps/core/contact/views.py
+#, fuzzy, python-format
+msgid "via %(brand)s"
+msgstr "%(brand)s aracılığıyla"
 
 #: apps/core/copilot/blocks.py apps/core/onboarding/compose.py
 #: apps/notifications/templates_builtin.py apps/tenant_config/defaults.py
@@ -1794,6 +2233,245 @@ msgstr "o logo artık mevcut değil"
 msgid "unknown action: %(kind)s"
 msgstr "bilinmeyen eylem: %(kind)s"
 
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Rewrote page copy (%(count)d field)"
+msgid_plural "Rewrote page copy (%(count)d fields)"
+msgstr[0] "Sayfa metni yeniden yazıldı (%(count)d alan)"
+msgstr[1] "Sayfa metni yeniden yazıldı (%(count)d alan)"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Added a %(type)s section to %(page)s"
+msgstr "%(page)s sayfasına bir %(type)s bölümü eklendi"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Removed %(block)s from %(page)s"
+msgstr "%(block)s %(page)s sayfasından kaldırıldı"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Moved %(block)s to %(page)s"
+msgstr "%(block)s %(page)s sayfasına taşındı"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Reordered %(block)s on %(page)s"
+msgstr "%(block)s %(page)s sayfasında yeniden sıralandı"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Edited %(count)d field on %(block)s (%(page)s)"
+msgid_plural "Edited %(count)d fields on %(block)s (%(page)s)"
+msgstr[0] "%(block)s (%(page)s) üzerinde %(count)d alan düzenlendi"
+msgstr[1] "%(block)s (%(page)s) üzerinde %(count)d alan düzenlendi"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Showed %(block)s on %(page)s"
+msgstr "%(block)s %(page)s sayfasında gösterildi"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Hid %(block)s on %(page)s"
+msgstr "%(block)s %(page)s sayfasında gizlendi"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Duplicated %(block)s on %(page)s"
+msgstr "%(block)s %(page)s sayfasında çoğaltıldı"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Switched site style to %(style)s"
+msgstr "Site stili %(style)s olarak değiştirildi"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Updated the navbar"
+msgstr "Gezinme çubuğu güncellendi"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Set access for %(title)s: %(access)s"
+msgstr "%(title)s için erişim ayarlandı: %(access)s"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Updated the search description"
+msgstr "Arama açıklaması güncellendi"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Set a new photo on %(block)s (%(page)s)"
+msgstr "%(block)s (%(page)s) üzerinde yeni bir fotoğraf ayarlandı"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Set the cover photo for '%(title)s'"
+msgstr "'%(title)s' için kapak fotoğrafı ayarlandı"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Set a course cover photo"
+msgstr "Bir kurs kapak fotoğrafı ayarlandı"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Set the cover photo for event '%(title)s'"
+msgstr "'%(title)s' etkinliği için kapak fotoğrafı ayarlandı"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Set an event cover photo"
+msgstr "Bir etkinlik kapak fotoğrafı ayarlandı"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Set a new logo"
+msgstr "Yeni bir logo ayarlandı"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Kept a new cover for '%(title)s'"
+msgstr "'%(title)s' için yeni bir kapak korundu"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Kept a new cover"
+msgstr "Yeni bir kapak korundu"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Updated course '%(title)s'"
+msgstr "'%(title)s' kursu güncellendi"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Updated a course"
+msgstr "Bir kurs güncellendi"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Changed the curriculum of '%(title)s'"
+msgstr "'%(title)s' müfredatı değiştirildi"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Changed a course's curriculum"
+msgstr "Bir kursun müfredatı değiştirildi"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Updated event '%(title)s'"
+msgstr "'%(title)s' etkinliği güncellendi"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Updated an event"
+msgstr "Bir etkinlik güncellendi"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Updated blog post '%(title)s'"
+msgstr "'%(title)s' blog yazısı güncellendi"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Updated a blog post"
+msgstr "Bir blog yazısı güncellendi"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Published course '%(title)s'"
+msgstr "'%(title)s' kursu yayınlandı"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Published a course"
+msgstr "Bir kurs yayınlandı"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Published blog post '%(title)s'"
+msgstr "'%(title)s' blog yazısı yayınlandı"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Published a blog post"
+msgstr "Bir blog yazısı yayınlandı"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Scheduled '%(title)s'"
+msgstr "'%(title)s' zamanlandı"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Scheduled an event"
+msgstr "Bir etkinlik zamanlandı"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Created draft course '%(title)s'"
+msgstr "'%(title)s' taslak kursu oluşturuldu"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Created a draft course"
+msgstr "Taslak bir kurs oluşturuldu"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Created draft blog post '%(title)s'"
+msgstr "'%(title)s' taslak blog yazısı oluşturuldu"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Created a draft blog post"
+msgstr "Taslak bir blog yazısı oluşturuldu"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Drafted announcement '%(title)s'"
+msgstr "'%(title)s' duyuru taslağı hazırlandı"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Drafted an announcement"
+msgstr "Bir duyuru taslağı hazırlandı"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Drafted email '%(title)s'"
+msgstr "'%(title)s' e-posta taslağı hazırlandı"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Drafted an email"
+msgstr "Bir e-posta taslağı hazırlandı"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Changed email '%(title)s'"
+msgstr "'%(title)s' e-postası değiştirildi"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Changed an email"
+msgstr "Bir e-posta değiştirildi"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Started reels from '%(title)s'"
+msgstr "'%(title)s' üzerinden reels başlatıldı"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Started reels from a video"
+msgstr "Bir videodan reels başlatıldı"
+
 #: apps/core/copilot/views.py apps/media/designs.py
 #, fuzzy
 msgid "that photo no longer exists"
@@ -2195,11 +2873,6 @@ msgstr ""
 
 #: apps/core/focus/kinds/bundle.py
 #, fuzzy
-msgid "Bundle"
-msgstr "Paket"
-
-#: apps/core/focus/kinds/bundle.py
-#, fuzzy
 msgid "Here's your bundle. Does it fit?"
 msgstr "İşte paketin. Uygun mu?"
 
@@ -2210,12 +2883,6 @@ msgstr "İşte paketin. Uygun mu?"
 #, fuzzy
 msgid "Say what to change, or edit it on the page yourself."
 msgstr "Neyin değişeceğini söyle veya sayfada kendin düzenle."
-
-#: apps/core/focus/kinds/bundle.py apps/core/focus/kinds/membership.py
-#: apps/notifications/transactional.py
-#, fuzzy
-msgid "Price"
-msgstr "Fiyat"
 
 #: apps/core/focus/kinds/bundle.py apps/core/focus/kinds/membership.py
 #, fuzzy
@@ -2823,7 +3490,8 @@ msgstr "Hiçbir şey işaretlenmedi"
 msgid "Two months free"
 msgstr "İki ay ücretsiz"
 
-#: apps/core/focus/kinds/membership.py apps/email_campaigns/catalog.py
+#: apps/core/focus/kinds/membership.py apps/courses/admin_panels.py
+#: apps/email_campaigns/catalog.py
 #, fuzzy
 msgid "Course"
 msgstr "Kurs"
@@ -2907,6 +3575,7 @@ msgid "%(n)d more"
 msgstr "%(n)d daha"
 
 #: apps/core/focus/kinds/membership.py apps/tenant_config/interview_brief.py
+#: apps/tenant_config/interview_schedule.py
 #, fuzzy, python-format
 msgid "%(items)s and %(last)s"
 msgstr "%(items)s ve %(last)s"
@@ -3198,11 +3867,6 @@ msgstr "Yaklaşık 1.400 kelime"
 
 #: apps/core/focus/kinds/post.py
 #, fuzzy
-msgid "Post"
-msgstr "Gönderi"
-
-#: apps/core/focus/kinds/post.py
-#, fuzzy
 msgid "Here's your post. Does it fit?"
 msgstr "İşte gönderin. Uygun mu?"
 
@@ -3476,7 +4140,8 @@ msgid "AI copy style across all pages"
 msgstr "Tüm sayfalardaki yapay zeka metin stili"
 
 #: apps/core/onboarding/compose.py apps/core/onboarding/site_composer.py
-#: apps/core/tasks.py apps/tenant_config/interview_golive.py
+#: apps/core/tasks.py apps/courses/admin_panels.py
+#: apps/tenant_config/interview_golive.py
 #: apps/tenant_config/interview_milestones.py
 #, fuzzy
 msgid "Courses"
@@ -3495,7 +4160,7 @@ msgid "Store"
 msgstr "Mağaza"
 
 #: apps/core/onboarding/compose.py apps/core/onboarding/site_composer.py
-#: apps/tenant_config/interview_golive.py
+#: apps/courses/admin_panels.py apps/tenant_config/interview_golive.py
 #: apps/tenant_config/interview_milestones.py
 #, fuzzy
 msgid "Pricing"
@@ -4924,6 +5589,81 @@ msgstr "URL kısa adı gerekli."
 msgid "'%(slug)s' is a reserved subdomain and cannot be used."
 msgstr "'%(slug)s' ayrılmış bir alt alan adı olduğu için kullanılamaz."
 
+#: apps/courses/admin_panels.py
+#, fuzzy
+msgid "Quick edits and publishing. Build course content in Content → Courses."
+msgstr ""
+"Hızlı düzenlemeler ve yayınlama. Kurs içeriğini İçerik → Kurslar bölümünde "
+"oluştur."
+
+#: apps/courses/admin_panels.py
+#, fuzzy
+msgid "Title"
+msgstr "Başlık"
+
+#: apps/courses/admin_panels.py
+#, fuzzy
+msgid "Published"
+msgstr "Yayınlandı"
+
+#: apps/courses/admin_panels.py
+#, fuzzy
+msgid "Slug"
+msgstr "Kısa ad"
+
+#: apps/courses/admin_panels.py
+#, fuzzy
+msgid "Filters"
+msgstr "Filtreler"
+
+#: apps/courses/admin_panels.py
+#, fuzzy
+msgid "Tags"
+msgstr "Etiketler"
+
+#: apps/courses/admin_panels.py
+#, fuzzy
+msgid "Publish"
+msgstr "Yayınla"
+
+#: apps/courses/admin_panels.py
+#, fuzzy, python-format
+msgid "Published %(count)d course."
+msgid_plural "Published %(count)d courses."
+msgstr[0] "%(count)d kurs yayınlandı."
+msgstr[1] "%(count)d kurs yayınlandı."
+
+#: apps/courses/admin_panels.py
+#, fuzzy, python-format
+msgid "%(count)d kept as a draft: every lesson needs a video or text first."
+msgid_plural ""
+"%(count)d kept as drafts: every lesson needs a video or text first."
+msgstr[0] ""
+"%(count)d tanesi taslak olarak bırakıldı: her dersin önce bir videoya veya "
+"metne ihtiyacı var."
+msgstr[1] ""
+"%(count)d tanesi taslak olarak bırakıldı: her dersin önce bir videoya veya "
+"metne ihtiyacı var."
+
+#: apps/courses/admin_panels.py
+#, fuzzy
+msgid "Unpublish"
+msgstr "Yayından kaldır"
+
+#: apps/courses/admin_panels.py
+#, fuzzy
+msgid "Unpublish selected courses? Students lose access to them."
+msgstr ""
+"Seçilen kurslar yayından kaldırılsın mı? Öğrenciler bunlara erişimini "
+"kaybeder."
+
+#: apps/courses/admin_panels.py
+#, fuzzy, python-format
+msgid "Unpublished %(count)d course."
+msgid_plural "Unpublished %(count)d courses."
+msgstr[0] "%(count)d kurs yayından kaldırıldı."
+msgstr[1] "%(count)d kurs yayından kaldırıldı."
+
 #: apps/courses/models.py
 #, fuzzy
 msgid ""
@@ -5490,6 +6230,30 @@ msgstr "Kişisel not"
 #, fuzzy
 msgid "Something I wanted to share with you."
 msgstr "Seninle paylaşmak istediğim bir şey."
+
+#: apps/email_campaigns/tasks.py
+#, fuzzy
+msgid "All students"
+msgstr "Tüm öğrenciler"
+
+#: apps/email_campaigns/tasks.py
+#, fuzzy
+msgid "No courses selected"
+msgstr "Hiçbir kurs seçilmedi"
+
+#: apps/email_campaigns/tasks.py
+#, fuzzy, python-format
+msgid "%(count)d course"
+msgid_plural "%(count)d courses"
+msgstr[0] "%(count)d kurs"
+msgstr[1] "%(count)d kurs"
+
+#: apps/email_campaigns/tasks.py
+#, fuzzy, python-format
+msgid "%(count)d selected student"
+msgid_plural "%(count)d selected students"
+msgstr[0] "%(count)d seçili öğrenci"
+msgstr[1] "%(count)d seçili öğrenci"
 
 #: apps/email_campaigns/tasks.py
 #, fuzzy
@@ -8999,11 +9763,6 @@ msgstr "Öğrenciler seninle nasıl iletişime geçsin?"
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
-msgid "Email"
-msgstr "E-posta"
-
-#: apps/tenant_config/interview_brief.py
-#, fuzzy
 msgid "WhatsApp"
 msgstr "WhatsApp"
 
@@ -9412,6 +10171,72 @@ msgstr "Açılış fotoğrafının yanındaki küçük vurgular."
 #, fuzzy
 msgid "A detail: hands, tools, a close-up."
 msgstr "Bir detay: eller, aletler, yakın bir çekim."
+
+#: apps/tenant_config/interview_schedule.py
+#, fuzzy
+msgid "Sundays"
+msgstr "Pazar günleri"
+
+#: apps/tenant_config/interview_schedule.py
+#, fuzzy
+msgid "Mondays"
+msgstr "Pazartesi günleri"
+
+#: apps/tenant_config/interview_schedule.py
+#, fuzzy
+msgid "Tuesdays"
+msgstr "Salı günleri"
+
+#: apps/tenant_config/interview_schedule.py
+#, fuzzy
+msgid "Wednesdays"
+msgstr "Çarşamba günleri"
+
+#: apps/tenant_config/interview_schedule.py
+#, fuzzy
+msgid "Thursdays"
+msgstr "Perşembe günleri"
+
+#: apps/tenant_config/interview_schedule.py
+#, fuzzy
+msgid "Fridays"
+msgstr "Cuma günleri"
+
+#: apps/tenant_config/interview_schedule.py
+#, fuzzy
+msgid "Saturdays"
+msgstr "Cumartesi günleri"
+
+#: apps/tenant_config/interview_schedule.py
+#, fuzzy
+msgctxt "time of day, as a Django date format"
+msgid "g:i A"
+msgstr "H:i"
+
+#: apps/tenant_config/interview_schedule.py
+#, fuzzy, python-format
+msgid "%(day)s %(date)s at %(time)s"
+msgstr "%(day)s %(date)s saat %(time)s"
+
+#: apps/tenant_config/interview_schedule.py
+#, fuzzy, python-format
+msgid "%(days)s at %(times)s"
+msgstr "%(days)s saat %(times)s"
+
+#: apps/tenant_config/interview_schedule.py
+#, fuzzy, python-format
+msgid "from %(start)s to %(end)s"
+msgstr "%(start)s ile %(end)s arası"
+
+#: apps/tenant_config/interview_schedule.py
+#, fuzzy, python-format
+msgid "from %(start)s"
+msgstr "%(start)s itibarıyla"
+
+#: apps/tenant_config/interview_schedule.py
+#, fuzzy, python-format
+msgid "%(when)s, %(span)s"
+msgstr "%(when)s, %(span)s"
 
 #: apps/tenant_config/interview_team.py
 #, fuzzy

@@ -733,7 +733,7 @@ def test_execute_records_audit_row(client, coach):
     assert resp.status_code == 200, resp.content
     row = CopilotAudit.objects.latest("created_at")
     assert row.kind == "edit_block_fields"
-    assert row.summary == "Edited 1 field(s) on blk_hero (home)"
+    assert row.summary == "Edited 1 field on blk_hero (home)"
     assert row.payload["fields"] == {"heading": "New"}
     assert row.actor_id == coach.pk
 

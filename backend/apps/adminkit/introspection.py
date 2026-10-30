@@ -104,7 +104,7 @@ def _field_type(model, name, field) -> str:
 def field_schema(admin, name, field) -> dict:
     schema = {
         "name": name,
-        "label": str(field.label or name.replace("_", " ").title()),
+        "label": str(admin.field_labels.get(name) or field.label or name.replace("_", " ").title()),
         "type": _field_type(admin.model, name, field),
         "required": bool(field.required),
         "read_only": bool(field.read_only),
@@ -198,7 +198,7 @@ def filter_schema(admin) -> list[dict]:
             out.append(
                 {
                     "name": name,
-                    "label": name.replace("_", " ").title(),
+                    "label": str(admin.field_labels.get(name) or name.replace("_", " ").title()),
                     "type": "choice",
                     "choices": new_choices,
                     "total_count": qs.count(),

@@ -8,9 +8,14 @@ A weekly schedule has one or more slots, each with its own days and times:
 
 from __future__ import annotations
 
+import contextlib
 import re
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
+from django.utils import dateformat, translation
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy, pgettext
 
 MODES = ("recurring", "once")
 MAX_SLOTS = 4
@@ -22,7 +27,15 @@ _DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 _TIME = re.compile(r"^([01]\d|2[0-3]):[0-5]\d$")
 _AT = re.compile(r"^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d$")
 # Python weekday() is Monday=0; the picker sends JS weekdays, Sunday=0.
-_DAY_NAMES = ("Sundays", "Mondays", "Tuesdays", "Wednesdays", "Thursdays", "Fridays", "Saturdays")
+_DAY_NAMES = (
+    gettext_lazy("Sundays"),
+    gettext_lazy("Mondays"),
+    gettext_lazy("Tuesdays"),
+    gettext_lazy("Wednesdays"),
+    gettext_lazy("Thursdays"),
+    gettext_lazy("Fridays"),
+    gettext_lazy("Saturdays"),
+)
 
 
 def _slot(raw) -> dict | None:
@@ -81,34 +94,55 @@ def parse(value) -> dict | None:
 
 
 def _list(items: list[str]) -> str:
-    return f"{', '.join(items[:-1])} and {items[-1]}" if len(items) > 1 else (items[0] if items else "")
+    return (
+        _("%(items)s and %(last)s") % {"items": ", ".join(items[:-1]), "last": items[-1]}
+        if len(items) > 1
+        else (items[0] if items else "")
+    )
 
 
 def _time(t: str) -> str:
+    """ "6:30 PM" in English; a language that reads a 24-hour clock translates the format ("H:i")."""
     h, m = (int(x) for x in t.split(":"))
-    return f"{(h + 11) % 12 + 1}:{m:02d} {'PM' if h >= 12 else 'AM'}"
+    return dateformat.time_format(time(h, m), pgettext("time of day, as a Django date format", "g:i A"))
 
 
 def _date(s: str, year: bool) -> str:
-    d = date.fromisoformat(s[:10])
-    return f"{d.day} {d.strftime('%b')}" + (f" {d.year}" if year else "")
+    return dateformat.format(date.fromisoformat(s[:10]), "j M Y" if year else "j M")
 
 
-def summary(s: dict) -> str:
+def summary(s: dict, language: str | None = None) -> str:
     """ "Tuesdays and Thursdays at 6:30 PM; Saturdays at 9:00 AM, from 12 Oct to
-    7 Dec 2026", or "Tuesday 13 Oct 2026 at 6:30 PM"."""
-    if s["mode"] == "once":
-        d = datetime.fromisoformat(s["at"])
-        return f"{d.strftime('%A')} {_date(s['at'], True)} at {_time(s['at'][11:16])}"
-    when = "; ".join(
-        f"{_list([_DAY_NAMES[d] for d in sl['days']])} at {_list([_time(t) for t in sl['times']])}" for sl in _slots(s)
-    )
-    span = (
-        f"from {_date(s['start'], False)} to {_date(s['end'], True)}"
-        if s.get("end")
-        else f"from {_date(s['start'], True)}"
-    )
-    return f"{when}, {span}"
+    7 Dec 2026", or "Tuesday 13 Oct 2026 at 6:30 PM", in `language` (default: the active one)."""
+    with translation.override(language) if language else contextlib.nullcontext():
+        if s["mode"] == "once":
+            d = datetime.fromisoformat(s["at"])
+            return _("%(day)s %(date)s at %(time)s") % {
+                "day": dateformat.format(d, "l"),
+                "date": _date(s["at"], True),
+                "time": _time(s["at"][11:16]),
+            }
+        when = "; ".join(
+            _("%(days)s at %(times)s")
+            % {"days": _list([str(_DAY_NAMES[d]) for d in sl["days"]]), "times": _list([_time(t) for t in sl["times"]])}
+            for sl in _slots(s)
+        )
+        span = (
+            _("from %(start)s to %(end)s") % {"start": _date(s["start"], False), "end": _date(s["end"], True)}
+            if s.get("end")
+            else _("from %(start)s") % {"start": _date(s["start"], True)}
+        )
+        return _("%(when)s, %(span)s") % {"when": when, "span": span}
+
+
+def when_text(answers: dict, key: str, language: str | None = None) -> str:
+    """What a session kind's schedule says ("live", "onsite"): rendered from the picked schedule in `language`
+    (default: the active one), so a reader never gets text stored in another language. An answer saved before
+    the schedule was kept is returned as stored."""
+    picked = answers.get(f"{key}_schedule")
+    if isinstance(picked, dict) and picked.get("mode") in MODES:
+        return summary(picked, language)
+    return str(answers.get(f"{key}_when") or "")
 
 
 def occurrences(s: dict, tz: str) -> list[datetime]:

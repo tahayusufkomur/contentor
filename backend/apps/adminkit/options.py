@@ -111,6 +111,9 @@ class ModelAdmin:
     search_fields: tuple = ()
     list_filters: tuple = ()
     ordering: tuple = ("-pk",)
+    # Column / field / filter labels by field name, for a panel whose reader is not English
+    # (gettext_lazy): the title-cased field name is only the fallback.
+    field_labels: dict = {}
     list_select_related: tuple = ()
     page_size: int = 20
 
@@ -229,6 +232,8 @@ class ModelAdmin:
     def column_label(self, name) -> str:
         if name == "__str__":
             return self.label
+        if name in self.field_labels:
+            return self.field_labels[name]
         attr = getattr(type(self), name, None)
         if attr is not None and getattr(attr, "short_description", None):
             return attr.short_description

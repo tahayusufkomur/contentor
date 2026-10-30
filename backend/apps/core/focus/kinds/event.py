@@ -505,7 +505,9 @@ def copy_facts(creation, row) -> dict:
     return {
         "topic": "" if topic == flow.DELEGATE else topic,
         "where": where,
-        "schedule": interview_schedule.summary(when) if isinstance(when, dict) else "",
+        "schedule": interview_schedule.summary(when, "en")
+        if isinstance(when, dict)
+        else "",  # the writing model reads English
         "duration_minutes": brief.get("duration_minutes"),
         "capacity": brief.get("capacity"),
         "notes": brief.get("notes", ""),
@@ -675,5 +677,5 @@ def announce_facts(row) -> dict:
         "title": row.title,
         "description": row.description,
         "link": f"/calendar/{content.EVENT_KINDS[kind][3]}/{row.pk}",
-        "when": interview_schedule.summary(schedule) if schedule else "",
+        "when": interview_schedule.summary(schedule, "en") if schedule else "",  # the writing model reads English
     }

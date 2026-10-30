@@ -12,6 +12,64 @@ msgstr ""
 
 #: apps/accounts/admin_panels.py
 #, fuzzy
+msgid "User"
+msgstr "Benutzer"
+
+#: apps/accounts/admin_panels.py
+#, fuzzy
+msgid "Users"
+msgstr "Benutzer"
+
+#: apps/accounts/admin_panels.py
+#, fuzzy
+msgid ""
+"Students and staff in this studio. Log in as a student to see exactly what "
+"they see."
+msgstr ""
+"Teilnehmer und Mitarbeiter in diesem Studio. Melde dich als Teilnehmer an, "
+"um genau zu sehen, was sie sehen."
+
+#: apps/accounts/admin_panels.py apps/tenant_config/interview_brief.py
+#, fuzzy
+msgid "Email"
+msgstr "E-Mail"
+
+#: apps/accounts/admin_panels.py apps/billing/admin_panels.py
+#, fuzzy
+msgid "Name"
+msgstr "Name"
+
+#: apps/accounts/admin_panels.py
+#, fuzzy
+msgid "Role"
+msgstr "Rolle"
+
+#: apps/accounts/admin_panels.py apps/community/admin_panels.py
+#, fuzzy
+msgid "Joined"
+msgstr "Beigetreten"
+
+#: apps/accounts/admin_panels.py
+#, fuzzy
+msgid "Last login"
+msgstr "Letzte Anmeldung"
+
+#: apps/accounts/admin_panels.py
+#, fuzzy
+msgid "Log in as"
+msgstr "Anmelden als"
+
+#: apps/accounts/admin_panels.py
+#, fuzzy
+msgid ""
+"Open this student's account? You'll see the site exactly as they do, until "
+"you exit."
+msgstr ""
+"Konto dieses Teilnehmers öffnen? Du siehst die Website genau so wie er, bis "
+"du die Ansicht verlässt."
+
+#: apps/accounts/admin_panels.py
+#, fuzzy
 msgid "User not found."
 msgstr "Benutzer nicht gefunden."
 
@@ -184,6 +242,76 @@ msgstr ""
 msgid "Provide a non-empty `ids` list."
 msgstr "Gib eine nicht leere `ids`-Liste an."
 
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Subscription Plan"
+msgstr "Abo-Tarif"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Subscription Plans"
+msgstr "Abo-Tarife"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid ""
+"Recurring membership plans students subscribe to. Price/interval changes "
+"provision a new Stripe price at the next checkout; existing subscribers keep"
+" their old terms."
+msgstr ""
+"Wiederkehrende Mitgliedschaftstarife, die Teilnehmer abonnieren. Bei "
+"Änderungen an Preis/Intervall wird beim nächsten Checkout ein neuer Stripe-"
+"Preis angelegt; bestehende Abonnenten behalten ihre bisherigen Konditionen."
+
+#: apps/billing/admin_panels.py apps/courses/admin_panels.py
+#, fuzzy
+msgid "Description"
+msgstr "Beschreibung"
+
+#: apps/billing/admin_panels.py apps/core/focus/kinds/bundle.py
+#: apps/core/focus/kinds/membership.py apps/courses/admin_panels.py
+#: apps/notifications/transactional.py
+#, fuzzy
+msgid "Price"
+msgstr "Preis"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Currency"
+msgstr "Währung"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Billing interval (months)"
+msgstr "Abrechnungsintervall (Monate)"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Active"
+msgstr "Aktiv"
+
+#: apps/billing/admin_panels.py apps/courses/admin_panels.py
+#, fuzzy
+msgid "Order"
+msgstr "Reihenfolge"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Stripe price ID"
+msgstr "Stripe-Preis-ID"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Deactivate"
+msgstr "Deaktivieren"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Deactivate selected plans? Students can no longer subscribe to them."
+msgstr ""
+"Ausgewählte Tarife deaktivieren? Teilnehmer können sie dann nicht mehr "
+"abonnieren."
+
 #: apps/billing/admin_panels.py apps/billing/tests/test_error_language.py
 #, fuzzy, python-format
 msgid "Deactivated %(count)d plan."
@@ -192,11 +320,45 @@ msgstr[0] "%(count)d Tarif deaktiviert."
 msgstr[1] "%(count)d Tarife deaktiviert."
 
 #: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Activate"
+msgstr "Aktivieren"
+
+#: apps/billing/admin_panels.py
 #, fuzzy, python-format
 msgid "Activated %(count)d plan."
 msgid_plural "Activated %(count)d plans."
 msgstr[0] "%(count)d Tarif aktiviert."
 msgstr[1] "%(count)d Tarife aktiviert."
+
+#: apps/billing/admin_panels.py apps/core/focus/kinds/bundle.py
+#, fuzzy
+msgid "Bundle"
+msgstr "Bundle"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Bundles"
+msgstr "Bundles"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid ""
+"Discounted product groupings. Manage bundle contents from Billing → Bundles."
+msgstr ""
+"Rabattierte Produktpakete. Verwalte die Bundle-Inhalte unter Abrechnung → "
+"Bundles."
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Thumbnail URL"
+msgstr "Vorschaubild-URL"
+
+#: apps/billing/admin_panels.py apps/community/admin_panels.py
+#: apps/courses/admin_panels.py
+#, fuzzy
+msgid "Created"
+msgstr "Erstellt"
 
 #: apps/billing/admin_panels.py
 #, fuzzy, python-format
@@ -211,6 +373,62 @@ msgid "Activated %(count)d bundle."
 msgid_plural "Activated %(count)d bundles."
 msgstr[0] "%(count)d Bundle aktiviert."
 msgstr[1] "%(count)d Bundles aktiviert."
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Payment"
+msgstr "Zahlung"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Payments"
+msgstr "Zahlungen"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Every charge and refund in this studio (read-only)."
+msgstr ""
+"Alle Belastungen und Rückerstattungen in diesem Studio (schreibgeschützt)."
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Student"
+msgstr "Teilnehmer"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Type"
+msgstr "Typ"
+
+#: apps/billing/admin_panels.py apps/community/admin_panels.py
+#, fuzzy
+msgid "Status"
+msgstr "Status"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Amount"
+msgstr "Betrag"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Platform fee"
+msgstr "Plattformgebühr"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Payout"
+msgstr "Auszahlung"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Provider"
+msgstr "Anbieter"
+
+#: apps/billing/admin_panels.py
+#, fuzzy
+msgid "Provider payment ID"
+msgstr "Zahlungs-ID des Anbieters"
 
 #: apps/billing/models/core.py
 #, fuzzy
@@ -873,6 +1091,40 @@ msgstr "erforderlich für wöchentlich"
 msgid "required for monthly"
 msgstr "erforderlich für monatlich"
 
+#: apps/blog/tasks.py
+#, fuzzy
+msgid "Blog autopilot paused"
+msgstr "Blog-Autopilot pausiert"
+
+#: apps/blog/tasks.py
+#, fuzzy
+msgid ""
+"You've used all your AI blog posts for this month — autopilot will resume "
+"next month."
+msgstr ""
+"Du hast alle deine KI-Blogbeiträge für diesen Monat aufgebraucht – der "
+"Autopilot läuft nächsten Monat weiter."
+
+#: apps/blog/tasks.py
+#, fuzzy
+msgid "New blog post published"
+msgstr "Neuer Blogbeitrag veröffentlicht"
+
+#: apps/blog/tasks.py
+#, fuzzy, python-format
+msgid "Autopilot published “%(title)s” on your site."
+msgstr "Der Autopilot hat „%(title)s“ auf deiner Website veröffentlicht."
+
+#: apps/blog/tasks.py
+#, fuzzy
+msgid "Your new blog post is ready"
+msgstr "Dein neuer Blogbeitrag ist fertig"
+
+#: apps/blog/tasks.py
+#, fuzzy, python-format
+msgid "“%(title)s” is waiting for your review."
+msgstr "„%(title)s“ wartet auf deine Prüfung."
+
 #: apps/community/access.py
 #, fuzzy
 msgid "Community is not enabled."
@@ -887,6 +1139,180 @@ msgstr "Du bist aus der Community verbannt."
 #, fuzzy
 msgid "You are muted in the community."
 msgstr "Du bist in der Community stummgeschaltet."
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Community Post"
+msgstr "Community-Beitrag"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Community Posts"
+msgstr "Community-Beiträge"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Every community post, including hidden and removed ones."
+msgstr "Alle Community-Beiträge, auch ausgeblendete und entfernte."
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Author"
+msgstr "Autor"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Text"
+msgstr "Text"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Pinned"
+msgstr "Angeheftet"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Comments"
+msgstr "Kommentare"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Reactions"
+msgstr "Reaktionen"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Remove"
+msgstr "Entfernen"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Remove selected posts from the community?"
+msgstr "Ausgewählte Beiträge aus der Community entfernen?"
+
+#: apps/community/admin_panels.py
+#, fuzzy, python-format
+msgid "Removed %(count)d post."
+msgid_plural "Removed %(count)d posts."
+msgstr[0] "%(count)d Beitrag entfernt."
+msgstr[1] "%(count)d Beiträge entfernt."
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Community Comment"
+msgstr "Community-Kommentar"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Community Comments"
+msgstr "Community-Kommentare"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Every community comment, including removed ones."
+msgstr "Alle Community-Kommentare, auch entfernte."
+
+#: apps/community/admin_panels.py apps/core/focus/kinds/post.py
+#, fuzzy
+msgid "Post"
+msgstr "Veröffentlichen"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Remove selected comments?"
+msgstr "Ausgewählte Kommentare entfernen?"
+
+#: apps/community/admin_panels.py
+#, fuzzy, python-format
+msgid "Removed %(count)d comment."
+msgid_plural "Removed %(count)d comments."
+msgstr[0] "%(count)d Kommentar entfernt."
+msgstr[1] "%(count)d Kommentare entfernt."
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Community Report"
+msgstr "Community-Meldung"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Community Reports"
+msgstr "Community-Meldungen"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid ""
+"Member reports on posts and comments. Resolve them from Community → Reports."
+msgstr ""
+"Meldungen von Mitgliedern zu Beiträgen und Kommentaren. Bearbeite sie unter "
+"Community → Meldungen."
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Reporter"
+msgstr "Gemeldet von"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Reason"
+msgstr "Grund"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Action taken"
+msgstr "Ergriffene Maßnahme"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Details"
+msgstr "Details"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Resolved by"
+msgstr "Erledigt von"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Resolved"
+msgstr "Erledigt"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Community Member"
+msgstr "Community-Mitglied"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Community Members"
+msgstr "Community-Mitglieder"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Community profiles with moderation state (ban / mute / approval)."
+msgstr ""
+"Community-Profile mit Moderationsstatus (Sperre / Stummschaltung / "
+"Freigabe)."
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Display name"
+msgstr "Anzeigename"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Banned"
+msgstr "Gesperrt"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Muted until"
+msgstr "Stummgeschaltet bis"
+
+#: apps/community/admin_panels.py
+#, fuzzy
+msgid "Needs approval"
+msgstr "Freigabe erforderlich"
 
 #: apps/community/moderation_views.py
 #, fuzzy
@@ -937,6 +1363,21 @@ msgstr "ungültiges Token"
 #, fuzzy, python-format
 msgid "New message from %(name)s"
 msgstr "Neue Nachricht von %(name)s"
+
+#: apps/core/contact/views.py
+#, fuzzy, python-format
+msgid "Phone: %(phone)s"
+msgstr "Telefon: %(phone)s"
+
+#: apps/core/contact/views.py
+#, fuzzy
+msgid "New contact message"
+msgstr "Neue Kontaktnachricht"
+
+#: apps/core/contact/views.py
+#, fuzzy, python-format
+msgid "via %(brand)s"
+msgstr "über %(brand)s"
 
 #: apps/core/copilot/blocks.py apps/core/onboarding/compose.py
 #: apps/notifications/templates_builtin.py apps/tenant_config/defaults.py
@@ -1810,6 +2251,245 @@ msgstr "dieses Logo ist nicht mehr verfügbar"
 msgid "unknown action: %(kind)s"
 msgstr "unbekannte Aktion: %(kind)s"
 
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Rewrote page copy (%(count)d field)"
+msgid_plural "Rewrote page copy (%(count)d fields)"
+msgstr[0] "Seitentext umgeschrieben (%(count)d Feld)"
+msgstr[1] "Seitentext neu geschrieben (%(count)d Felder)"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Added a %(type)s section to %(page)s"
+msgstr "Abschnitt vom Typ %(type)s zu %(page)s hinzugefügt"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Removed %(block)s from %(page)s"
+msgstr "%(block)s von %(page)s entfernt"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Moved %(block)s to %(page)s"
+msgstr "%(block)s nach %(page)s verschoben"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Reordered %(block)s on %(page)s"
+msgstr "%(block)s auf %(page)s neu angeordnet"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Edited %(count)d field on %(block)s (%(page)s)"
+msgid_plural "Edited %(count)d fields on %(block)s (%(page)s)"
+msgstr[0] "%(count)d Feld in %(block)s bearbeitet (%(page)s)"
+msgstr[1] "%(count)d Felder in %(block)s bearbeitet (%(page)s)"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Showed %(block)s on %(page)s"
+msgstr "%(block)s auf %(page)s eingeblendet"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Hid %(block)s on %(page)s"
+msgstr "%(block)s auf %(page)s ausgeblendet"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Duplicated %(block)s on %(page)s"
+msgstr "%(block)s auf %(page)s dupliziert"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Switched site style to %(style)s"
+msgstr "Website-Stil auf %(style)s umgestellt"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Updated the navbar"
+msgstr "Navigationsleiste aktualisiert"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Set access for %(title)s: %(access)s"
+msgstr "Zugriff für %(title)s festgelegt: %(access)s"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Updated the search description"
+msgstr "Suchbeschreibung aktualisiert"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Set a new photo on %(block)s (%(page)s)"
+msgstr "Neues Foto für %(block)s festgelegt (%(page)s)"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Set the cover photo for '%(title)s'"
+msgstr "Titelbild für '%(title)s' festgelegt"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Set a course cover photo"
+msgstr "Kurs-Titelbild festgelegt"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Set the cover photo for event '%(title)s'"
+msgstr "Titelbild für die Veranstaltung '%(title)s' festgelegt"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Set an event cover photo"
+msgstr "Veranstaltungs-Titelbild festgelegt"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Set a new logo"
+msgstr "Neues Logo festgelegt"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Kept a new cover for '%(title)s'"
+msgstr "Neues Titelbild für '%(title)s' übernommen"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Kept a new cover"
+msgstr "Neues Titelbild übernommen"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Updated course '%(title)s'"
+msgstr "Kurs '%(title)s' aktualisiert"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Updated a course"
+msgstr "Einen Kurs aktualisiert"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Changed the curriculum of '%(title)s'"
+msgstr "Lehrplan von '%(title)s' geändert"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Changed a course's curriculum"
+msgstr "Lehrplan eines Kurses geändert"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Updated event '%(title)s'"
+msgstr "Veranstaltung '%(title)s' aktualisiert"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Updated an event"
+msgstr "Eine Veranstaltung aktualisiert"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Updated blog post '%(title)s'"
+msgstr "Blogbeitrag '%(title)s' aktualisiert"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Updated a blog post"
+msgstr "Einen Blogbeitrag aktualisiert"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Published course '%(title)s'"
+msgstr "Kurs '%(title)s' veröffentlicht"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Published a course"
+msgstr "Einen Kurs veröffentlicht"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Published blog post '%(title)s'"
+msgstr "Blogbeitrag '%(title)s' veröffentlicht"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Published a blog post"
+msgstr "Einen Blogbeitrag veröffentlicht"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Scheduled '%(title)s'"
+msgstr "'%(title)s' geplant"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Scheduled an event"
+msgstr "Eine Veranstaltung geplant"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Created draft course '%(title)s'"
+msgstr "Kursentwurf '%(title)s' erstellt"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Created a draft course"
+msgstr "Einen Kursentwurf erstellt"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Created draft blog post '%(title)s'"
+msgstr "Blogbeitragsentwurf '%(title)s' erstellt"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Created a draft blog post"
+msgstr "Einen Blogbeitragsentwurf erstellt"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Drafted announcement '%(title)s'"
+msgstr "Ankündigung '%(title)s' entworfen"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Drafted an announcement"
+msgstr "Eine Ankündigung entworfen"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Drafted email '%(title)s'"
+msgstr "E-Mail '%(title)s' entworfen"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Drafted an email"
+msgstr "Eine E-Mail entworfen"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Changed email '%(title)s'"
+msgstr "E-Mail '%(title)s' geändert"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Changed an email"
+msgstr "Eine E-Mail geändert"
+
+#: apps/core/copilot/views.py
+#, fuzzy, python-format
+msgid "Started reels from '%(title)s'"
+msgstr "Reels aus '%(title)s' gestartet"
+
+#: apps/core/copilot/views.py
+#, fuzzy
+msgid "Started reels from a video"
+msgstr "Reels aus einem Video gestartet"
+
 #: apps/core/copilot/views.py apps/media/designs.py
 #, fuzzy
 msgid "that photo no longer exists"
@@ -2220,11 +2900,6 @@ msgstr ""
 
 #: apps/core/focus/kinds/bundle.py
 #, fuzzy
-msgid "Bundle"
-msgstr "Bundle"
-
-#: apps/core/focus/kinds/bundle.py
-#, fuzzy
 msgid "Here's your bundle. Does it fit?"
 msgstr "Hier ist dein Bundle. Passt es?"
 
@@ -2236,12 +2911,6 @@ msgstr "Hier ist dein Bundle. Passt es?"
 msgid "Say what to change, or edit it on the page yourself."
 msgstr ""
 "Sag, was geändert werden soll, oder bearbeite es selbst auf der Seite."
-
-#: apps/core/focus/kinds/bundle.py apps/core/focus/kinds/membership.py
-#: apps/notifications/transactional.py
-#, fuzzy
-msgid "Price"
-msgstr "Preis"
 
 #: apps/core/focus/kinds/bundle.py apps/core/focus/kinds/membership.py
 #, fuzzy
@@ -2858,7 +3527,8 @@ msgstr "Nichts angehakt"
 msgid "Two months free"
 msgstr "Zwei Monate kostenlos"
 
-#: apps/core/focus/kinds/membership.py apps/email_campaigns/catalog.py
+#: apps/core/focus/kinds/membership.py apps/courses/admin_panels.py
+#: apps/email_campaigns/catalog.py
 #, fuzzy
 msgid "Course"
 msgstr "Kurs"
@@ -2944,6 +3614,7 @@ msgid "%(n)d more"
 msgstr "%(n)d weitere"
 
 #: apps/core/focus/kinds/membership.py apps/tenant_config/interview_brief.py
+#: apps/tenant_config/interview_schedule.py
 #, fuzzy, python-format
 msgid "%(items)s and %(last)s"
 msgstr "%(items)s und %(last)s"
@@ -3240,11 +3911,6 @@ msgstr "Etwa 1.400 Wörter"
 
 #: apps/core/focus/kinds/post.py
 #, fuzzy
-msgid "Post"
-msgstr "Veröffentlichen"
-
-#: apps/core/focus/kinds/post.py
-#, fuzzy
 msgid "Here's your post. Does it fit?"
 msgstr "Hier ist dein Beitrag. Passt er so?"
 
@@ -3522,7 +4188,8 @@ msgid "AI copy style across all pages"
 msgstr "KI-Textstil auf allen Seiten"
 
 #: apps/core/onboarding/compose.py apps/core/onboarding/site_composer.py
-#: apps/core/tasks.py apps/tenant_config/interview_golive.py
+#: apps/core/tasks.py apps/courses/admin_panels.py
+#: apps/tenant_config/interview_golive.py
 #: apps/tenant_config/interview_milestones.py
 #, fuzzy
 msgid "Courses"
@@ -3541,7 +4208,7 @@ msgid "Store"
 msgstr "Shop"
 
 #: apps/core/onboarding/compose.py apps/core/onboarding/site_composer.py
-#: apps/tenant_config/interview_golive.py
+#: apps/courses/admin_panels.py apps/tenant_config/interview_golive.py
 #: apps/tenant_config/interview_milestones.py
 #, fuzzy
 msgid "Pricing"
@@ -4990,6 +5657,81 @@ msgid "'%(slug)s' is a reserved subdomain and cannot be used."
 msgstr ""
 "'%(slug)s' ist eine reservierte Subdomain und kann nicht verwendet werden."
 
+#: apps/courses/admin_panels.py
+#, fuzzy
+msgid "Quick edits and publishing. Build course content in Content → Courses."
+msgstr ""
+"Schnelle Bearbeitung und Veröffentlichung. Erstelle Kursinhalte unter "
+"Inhalte → Kurse."
+
+#: apps/courses/admin_panels.py
+#, fuzzy
+msgid "Title"
+msgstr "Titel"
+
+#: apps/courses/admin_panels.py
+#, fuzzy
+msgid "Published"
+msgstr "Veröffentlicht"
+
+#: apps/courses/admin_panels.py
+#, fuzzy
+msgid "Slug"
+msgstr "Slug"
+
+#: apps/courses/admin_panels.py
+#, fuzzy
+msgid "Filters"
+msgstr "Filter"
+
+#: apps/courses/admin_panels.py
+#, fuzzy
+msgid "Tags"
+msgstr "Tags"
+
+#: apps/courses/admin_panels.py
+#, fuzzy
+msgid "Publish"
+msgstr "Veröffentlichen"
+
+#: apps/courses/admin_panels.py
+#, fuzzy, python-format
+msgid "Published %(count)d course."
+msgid_plural "Published %(count)d courses."
+msgstr[0] "%(count)d Kurs veröffentlicht."
+msgstr[1] "%(count)d Kurse veröffentlicht."
+
+#: apps/courses/admin_panels.py
+#, fuzzy, python-format
+msgid "%(count)d kept as a draft: every lesson needs a video or text first."
+msgid_plural ""
+"%(count)d kept as drafts: every lesson needs a video or text first."
+msgstr[0] ""
+"%(count)d als Entwurf behalten: jede Lektion benötigt zuerst ein Video oder "
+"einen Text."
+msgstr[1] ""
+"%(count)d als Entwürfe behalten: jede Lektion benötigt zuerst ein Video oder"
+" einen Text."
+
+#: apps/courses/admin_panels.py
+#, fuzzy
+msgid "Unpublish"
+msgstr "Veröffentlichung aufheben"
+
+#: apps/courses/admin_panels.py
+#, fuzzy
+msgid "Unpublish selected courses? Students lose access to them."
+msgstr ""
+"Veröffentlichung ausgewählter Kurse aufheben? Teilnehmer verlieren den "
+"Zugriff darauf."
+
+#: apps/courses/admin_panels.py
+#, fuzzy, python-format
+msgid "Unpublished %(count)d course."
+msgid_plural "Unpublished %(count)d courses."
+msgstr[0] "Veröffentlichung von %(count)d Kurs aufgehoben."
+msgstr[1] "Veröffentlichung von %(count)d Kursen aufgehoben."
+
 #: apps/courses/models.py
 #, fuzzy
 msgid ""
@@ -5568,6 +6310,30 @@ msgstr "Persönliche Notiz"
 #, fuzzy
 msgid "Something I wanted to share with you."
 msgstr "Etwas, das ich mit dir teilen wollte."
+
+#: apps/email_campaigns/tasks.py
+#, fuzzy
+msgid "All students"
+msgstr "Alle Teilnehmer"
+
+#: apps/email_campaigns/tasks.py
+#, fuzzy
+msgid "No courses selected"
+msgstr "Keine Kurse ausgewählt"
+
+#: apps/email_campaigns/tasks.py
+#, fuzzy, python-format
+msgid "%(count)d course"
+msgid_plural "%(count)d courses"
+msgstr[0] "%(count)d Kurs"
+msgstr[1] "%(count)d Kurse"
+
+#: apps/email_campaigns/tasks.py
+#, fuzzy, python-format
+msgid "%(count)d selected student"
+msgid_plural "%(count)d selected students"
+msgstr[0] "%(count)d ausgewählter Teilnehmer"
+msgstr[1] "%(count)d ausgewählte Teilnehmer"
 
 #: apps/email_campaigns/tasks.py
 #, fuzzy
@@ -9126,11 +9892,6 @@ msgstr "Wie sollen Teilnehmer mit dir Kontakt aufnehmen?"
 
 #: apps/tenant_config/interview_brief.py
 #, fuzzy
-msgid "Email"
-msgstr "E-Mail"
-
-#: apps/tenant_config/interview_brief.py
-#, fuzzy
 msgid "WhatsApp"
 msgstr "WhatsApp"
 
@@ -9544,6 +10305,72 @@ msgstr "Kleine Akzente neben dem Startfoto."
 #, fuzzy
 msgid "A detail: hands, tools, a close-up."
 msgstr "Ein Detail: Hände, Werkzeuge, eine Nahaufnahme."
+
+#: apps/tenant_config/interview_schedule.py
+#, fuzzy
+msgid "Sundays"
+msgstr "Sonntags"
+
+#: apps/tenant_config/interview_schedule.py
+#, fuzzy
+msgid "Mondays"
+msgstr "Montags"
+
+#: apps/tenant_config/interview_schedule.py
+#, fuzzy
+msgid "Tuesdays"
+msgstr "Dienstags"
+
+#: apps/tenant_config/interview_schedule.py
+#, fuzzy
+msgid "Wednesdays"
+msgstr "Mittwochs"
+
+#: apps/tenant_config/interview_schedule.py
+#, fuzzy
+msgid "Thursdays"
+msgstr "Donnerstags"
+
+#: apps/tenant_config/interview_schedule.py
+#, fuzzy
+msgid "Fridays"
+msgstr "Freitags"
+
+#: apps/tenant_config/interview_schedule.py
+#, fuzzy
+msgid "Saturdays"
+msgstr "Samstags"
+
+#: apps/tenant_config/interview_schedule.py
+#, fuzzy
+msgctxt "time of day, as a Django date format"
+msgid "g:i A"
+msgstr "H:i"
+
+#: apps/tenant_config/interview_schedule.py
+#, fuzzy, python-format
+msgid "%(day)s %(date)s at %(time)s"
+msgstr "%(day)s %(date)s um %(time)s"
+
+#: apps/tenant_config/interview_schedule.py
+#, fuzzy, python-format
+msgid "%(days)s at %(times)s"
+msgstr "%(days)s um %(times)s"
+
+#: apps/tenant_config/interview_schedule.py
+#, fuzzy, python-format
+msgid "from %(start)s to %(end)s"
+msgstr "von %(start)s bis %(end)s"
+
+#: apps/tenant_config/interview_schedule.py
+#, fuzzy, python-format
+msgid "from %(start)s"
+msgstr "ab %(start)s"
+
+#: apps/tenant_config/interview_schedule.py
+#, fuzzy, python-format
+msgid "%(when)s, %(span)s"
+msgstr "%(when)s, %(span)s"
 
 #: apps/tenant_config/interview_team.py
 #, fuzzy

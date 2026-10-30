@@ -1,6 +1,7 @@
 """Studio admin-kit registration for tenant users (coach SPA)."""
 
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 
 from apps.adminkit.options import ModelAdmin, admin_action
 from apps.adminkit.sites import studio_site
@@ -12,10 +13,17 @@ from .models import User
 @studio_site.register(User)
 class StudioUserAdmin(ModelAdmin):
     key = "users"
-    label = "User"
-    label_plural = "Users"
+    label = gettext_lazy("User")
+    label_plural = gettext_lazy("Users")
     icon = "users"
-    description = "Students and staff in this studio. Log in as a student to see exactly what they see."
+    description = gettext_lazy("Students and staff in this studio. Log in as a student to see exactly what they see.")
+    field_labels = {
+        "email": gettext_lazy("Email"),
+        "name": gettext_lazy("Name"),
+        "role": gettext_lazy("Role"),
+        "date_joined": gettext_lazy("Joined"),
+        "last_login": gettext_lazy("Last login"),
+    }
     list_display = ("email", "name", "role", "date_joined", "last_login")
     search_fields = ("email", "name")
     list_filters = ("role",)
@@ -27,10 +35,10 @@ class StudioUserAdmin(ModelAdmin):
     can_delete = False
 
     @admin_action(
-        label="Log in as",
+        label=gettext_lazy("Log in as"),
         style="primary",
         row=True,
-        confirm="Open this student's account? You'll see the site exactly as they do, until you exit.",
+        confirm=gettext_lazy("Open this student's account? You'll see the site exactly as they do, until you exit."),
     )
     def login_as(self, request, queryset):
         user = queryset.first()

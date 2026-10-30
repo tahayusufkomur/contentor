@@ -11,7 +11,9 @@ from decimal import Decimal
 from django.core.cache import cache
 from django.db import connection
 from django.http import JsonResponse
+from django.utils import translation
 from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 from django_tenants.utils import tenant_context
 from rest_framework.decorators import api_view, permission_classes, renderer_classes, throttle_classes
 from rest_framework.renderers import JSONRenderer
@@ -22,6 +24,7 @@ from apps.core.ai_sse import EventStreamRenderer, sse_frame, stream_response
 from apps.core.copilot import blocks, chrome, content, engine, logos, photos, runs, team, tokens
 from apps.core.copilot import context as page_context
 from apps.core.copilot.tokens import ActionTokenError
+from apps.core.languages import creator_language
 from apps.core.onboarding import ai_compose, site_ai
 from apps.core.permissions import IsCoachOrOwner
 from apps.core.throttling import CopilotThrottle
@@ -444,73 +447,95 @@ def _execute(tenant, user, action):
 
 
 def _audit_summary(action, result):
-    """One human-readable line per executed action for the audit feed.
-    English like every other backend-generated card string (TR pass is a
-    queued fast-follow across all of them)."""
+    """One human-readable line per executed action for the audit feed, in the active language
+    (`_record_audit` runs it in the creator's: the trail has one reader)."""
     kind = action.get("kind", "")
     page = action.get("page") or ""
     block = action.get("block_id") or ""
     title = (result or {}).get("title") or ""
+    where = {"page": page, "block": block}
     if kind == "edit_pages":
-        return f"Rewrote page copy ({(result or {}).get('changes_count', 0)} field(s))"
+        count = (result or {}).get("changes_count", 0)
+        return ngettext("Rewrote page copy (%(count)d field)", "Rewrote page copy (%(count)d fields)", count) % {
+            "count": count
+        }
     if kind == "add_block":
-        return f"Added a {(action.get('block') or {}).get('type', 'section')} section to {page}"
+        return _("Added a %(type)s section to %(page)s") % {
+            "type": (action.get("block") or {}).get("type", "section"),
+            "page": page,
+        }
     if kind == "remove_block":
-        return f"Removed {block} from {page}"
+        return _("Removed %(block)s from %(page)s") % where
     if kind == "move_block":
         to_page = action.get("to_page")
-        return f"Moved {block} to {to_page}" if to_page else f"Reordered {block} on {page}"
+        if to_page:
+            return _("Moved %(block)s to %(page)s") % {"block": block, "page": to_page}
+        return _("Reordered %(block)s on %(page)s") % where
     if kind == "edit_block_fields":
-        return f"Edited {len(action.get('fields') or {})} field(s) on {block} ({page})"
+        count = len(action.get("fields") or {})
+        return ngettext(
+            "Edited %(count)d field on %(block)s (%(page)s)", "Edited %(count)d fields on %(block)s (%(page)s)", count
+        ) % {"count": count, **where}
     if kind == "toggle_block":
-        return f"{'Showed' if action.get('enabled') else 'Hid'} {block} on {page}"
+        if action.get("enabled"):
+            return _("Showed %(block)s on %(page)s") % where
+        return _("Hid %(block)s on %(page)s") % where
     if kind == "duplicate_block":
-        return f"Duplicated {block} on {page}"
+        return _("Duplicated %(block)s on %(page)s") % where
     if kind == "edit_style":
-        return f"Switched site style to {action.get('style')}"
+        return _("Switched site style to %(style)s") % {"style": action.get("style")}
     if kind == "edit_navbar":
-        return "Updated the navbar"
+        return _("Updated the navbar")
     if kind == "set_access":
-        return f"Set access for {title}: {result['describe']}"
+        return _("Set access for %(title)s: %(access)s") % {"title": title, "access": result["describe"]}
     if kind == "edit_seo":
-        return "Updated the search description"
+        return _("Updated the search description")
     if kind == "set_block_image":
-        return f"Set a new photo on {block} ({page})"
+        return _("Set a new photo on %(block)s (%(page)s)") % where
     if kind == "set_course_cover":
-        return f"Set the cover photo for '{title}'" if title else "Set a course cover photo"
+        return _("Set the cover photo for '%(title)s'") % {"title": title} if title else _("Set a course cover photo")
     if kind == "set_event_cover":
-        return f"Set the cover photo for event '{title}'" if title else "Set an event cover photo"
+        return (
+            _("Set the cover photo for event '%(title)s'") % {"title": title}
+            if title
+            else _("Set an event cover photo")
+        )
     if kind == "set_logo":
-        return "Set a new logo"
+        return _("Set a new logo")
     if kind == "keep_cover":
         title = action.get("title") or title
-        return f"Kept a new cover for '{title}'" if title else "Kept a new cover"
+        return _("Kept a new cover for '%(title)s'") % {"title": title} if title else _("Kept a new cover")
     if kind == "edit_course":
-        return f"Updated course '{title}'" if title else "Updated a course"
+        return _("Updated course '%(title)s'") % {"title": title} if title else _("Updated a course")
     if kind == "edit_curriculum":
-        return f"Changed the curriculum of '{title}'" if title else "Changed a course's curriculum"
+        return (
+            _("Changed the curriculum of '%(title)s'") % {"title": title}
+            if title
+            else _("Changed a course's curriculum")
+        )
     if kind == "edit_event":
-        return f"Updated event '{title}'" if title else "Updated an event"
+        return _("Updated event '%(title)s'") % {"title": title} if title else _("Updated an event")
     if kind == "edit_blog_post":
-        return f"Updated blog post '{title}'" if title else "Updated a blog post"
+        return _("Updated blog post '%(title)s'") % {"title": title} if title else _("Updated a blog post")
     if kind == "publish_course":
-        return f"Published course '{title}'" if title else "Published a course"
+        return _("Published course '%(title)s'") % {"title": title} if title else _("Published a course")
     if kind == "publish_blog_post":
-        return f"Published blog post '{title}'" if title else "Published a blog post"
+        return _("Published blog post '%(title)s'") % {"title": title} if title else _("Published a blog post")
     if kind == "create_event":
         # Not a draft: students see it from the moment she confirms.
-        return f"Scheduled '{title}'" if title else "Scheduled an event"
-    if kind in ("create_course", "create_blog_post"):
-        noun = {"create_course": "course", "create_blog_post": "blog post"}[kind]
-        return f"Created draft {noun} '{title}'" if title else f"Created a draft {noun}"
+        return _("Scheduled '%(title)s'") % {"title": title} if title else _("Scheduled an event")
+    if kind == "create_course":
+        return _("Created draft course '%(title)s'") % {"title": title} if title else _("Created a draft course")
+    if kind == "create_blog_post":
+        return _("Created draft blog post '%(title)s'") % {"title": title} if title else _("Created a draft blog post")
     if kind == "draft_announcement":
-        return f"Drafted announcement '{title}'" if title else "Drafted an announcement"
+        return _("Drafted announcement '%(title)s'") % {"title": title} if title else _("Drafted an announcement")
     if kind == "draft_email":
-        return f"Drafted email '{title}'" if title else "Drafted an email"
+        return _("Drafted email '%(title)s'") % {"title": title} if title else _("Drafted an email")
     if kind == "edit_email":
-        return f"Changed email '{title}'" if title else "Changed an email"
+        return _("Changed email '%(title)s'") % {"title": title} if title else _("Changed an email")
     if kind == "make_reels":
-        return f"Started reels from '{title}'" if title else "Started reels from a video"
+        return _("Started reels from '%(title)s'") % {"title": title} if title else _("Started reels from a video")
     return kind
 
 
@@ -527,9 +552,13 @@ def _record_audit(tenant, user, action, result, inverse):
             # What the change left behind: undo later only if it still stands.
             inverse = {**inverse, "after": _state_stamp(tenant, inverse)}
         with tenant_context(tenant):
+            # The trail's one reader is the creator: the acting user, else the owner (a background
+            # step has no one acting), whatever language the request or task runs in.
+            with translation.override(creator_language(user if getattr(user, "pk", None) else None)):
+                summary = _audit_summary(action, result)[:300]
             row = CopilotAudit.objects.create(
                 kind=str(action.get("kind") or "")[:40],
-                summary=_audit_summary(action, result)[:300],
+                summary=summary,
                 payload=action,
                 result=result if isinstance(result, dict) else {},
                 inverse=inverse,

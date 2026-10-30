@@ -54,6 +54,11 @@ def _default_subject(name: str) -> str:
         return _("New message from %(name)s") % {"name": name}
 
 
+def _phone_line(phone: str) -> str:
+    with translation.override(creator_language()):
+        return _("Phone: %(phone)s") % {"phone": phone}
+
+
 @api_view(["POST"])
 @authentication_classes([])
 @permission_classes([AllowAny])
@@ -88,7 +93,7 @@ def contact_submit(request):
         inbox_address, _from_name = sending_identity(tenant)
         text = data["message"]
         if data.get("phone"):
-            text += f"\n\nPhone: {data['phone']}"
+            text += f"\n\n{_phone_line(data['phone'])}"
         receive_inbound(
             from_email=data["email"],
             to_email=inbox_address,
@@ -103,14 +108,20 @@ def contact_submit(request):
     if recipient:
         name = escape(data["name"])
         reply_email = escape(data["email"])
-        phone = escape(data.get("phone", ""))
         subject = data.get("subject") or _default_subject(data["name"])
         body = escape(data["message"]).replace("\n", "<br/>")
-        phone_row = f"<p style='color:#888;font-size:13px;'>Phone: {phone}</p>" if phone else ""
+        phone_row = (
+            f"<p style='color:#888;font-size:13px;'>{escape(_phone_line(data['phone']))}</p>"
+            if data.get("phone")
+            else ""
+        )
+        with translation.override(creator_language()):  # the creator reads this email
+            heading = escape(_("New contact message"))
+            via = escape(_("via %(brand)s") % {"brand": brand_name})
         html = f"""
         <div style="font-family: system-ui, sans-serif; max-width: 520px; margin: 0 auto; padding: 24px;">
-            <h2 style="color:#1a1a2e;margin:0 0 4px;">New contact message</h2>
-            <p style="color:#888;font-size:13px;margin:0 0 16px;">via {escape(brand_name)}</p>
+            <h2 style="color:#1a1a2e;margin:0 0 4px;">{heading}</h2>
+            <p style="color:#888;font-size:13px;margin:0 0 16px;">{via}</p>
             <p style="color:#444;"><strong>{name}</strong> &lt;{reply_email}&gt;</p>
             {phone_row}
             <div style="margin-top:12px;padding:16px;background:#f5f5f7;border-radius:8px;color:#222;">{body}</div>

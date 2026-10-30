@@ -387,8 +387,11 @@ def draft_prompt(answers: dict, kind: str) -> str:
         key = EVENT_KEYS[kind]
         place = f" Where: {answers['location']}." if kind == "onsite" and answers.get("location") else ""
         first = first_class_at(answers, kind)
-        when = f"{_val(answers, f'{key}_when', 'an evening that suits my students')}" + (
-            f" (the first one on {first.strftime('%Y-%m-%dT%H:%M')})" if first else ""
+        # The writing model reads English: from the schedule itself, never from the text stored in her language.
+        when_answer = schedule.when_text(answers, key, "en")
+        when = (
+            f"{_val({**answers, f'{key}_when': when_answer}, f'{key}_when', 'an evening that suits my students')}"
+            + (f" (the first one on {first.strftime('%Y-%m-%dT%H:%M')})" if first else "")
         )
         what = "in person event" if kind == "onsite" else "live session"
         return f"My first {what}. Topic: {_val(answers, f'{key}_topic', 'you choose')}. When: {when}.{place}"

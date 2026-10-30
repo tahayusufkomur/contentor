@@ -5,10 +5,11 @@ exact pattern of notifications.dispatch_due_recurrences."""
 import logging
 
 from celery import shared_task
-from django.utils import timezone
+from django.utils import timezone, translation
+from django.utils.translation import gettext as _
 from django_tenants.utils import get_tenant_model, tenant_context
 
-from apps.core.languages import site_language
+from apps.core.languages import creator_language, site_language
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +77,23 @@ def _notify_coach(title, body_html):
     send_to_subscriptions(subs, announcement_payload(title, body_html, url="/admin/blog"))
 
 
+def notify_autopilot_paused():
+    with translation.override(creator_language()):  # the creator's push, in her language
+        _notify_coach(
+            _("Blog autopilot paused"),
+            "<p>" + _("You've used all your AI blog posts for this month — autopilot will resume next month.") + "</p>",
+        )
+
+
+def notify_autopilot_result(post, *, published):
+    with translation.override(creator_language()):
+        if published:
+            title, body = _("New blog post published"), _("Autopilot published “%(title)s” on your site.")
+        else:
+            title, body = _("Your new blog post is ready"), _("“%(title)s” is waiting for your review.")
+        _notify_coach(title, "<p>" + body % {"title": post.title} + "</p>")
+
+
 def _generate_for_current_tenant(tenant):
     from apps.media.models import Photo
 
@@ -88,10 +106,7 @@ def _generate_for_current_tenant(tenant):
         month = ai.current_month()
         if status["reason"] == "quota_exhausted" and rule.last_skip_notice_month != month:
             BlogAutopilot.objects.filter(pk=rule.pk).update(last_skip_notice_month=month)
-            _notify_coach(
-                "Blog autopilot paused",
-                "<p>You've used all your AI blog posts for this month — autopilot will resume next month.</p>",
-            )
+            notify_autopilot_paused()
         return
 
     topic = BlogTopicIdea.objects.filter(status="available").first()
@@ -146,7 +161,4 @@ def _generate_for_current_tenant(tenant):
         **fields,
     )
     BlogTopicIdea.objects.filter(pk=topic.pk).update(status="used")
-    if publish:
-        _notify_coach("New blog post published", f"<p>Autopilot published “{post.title}” on your site.</p>")
-    else:
-        _notify_coach("Your new blog post is ready", f"<p>“{post.title}” is waiting for your review.</p>")
+    notify_autopilot_result(post, published=publish)

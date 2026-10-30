@@ -14,6 +14,7 @@ from apps.core.models import PlatformSubscription
 from apps.core.monetization import can_monetize, is_paid_active, trial_days_for
 
 from . import interview_brief as brief
+from . import interview_schedule as schedule
 from . import site_qa
 from .interview_milestones import _draft_row, expand_class_series, fire, membership_plan_ids
 from .models import TenantConfig
@@ -168,7 +169,8 @@ def _summary(tenant, answers, flow) -> list[dict]:
         ("onsite", _("In-person events"), "onsite_when", "onsite_price", "onsite"),
     ):
         if offer in offers and brief.is_settled(answers, when_id):
-            when = str(answers.get(when_id) or _("times to suit your students"))
+            # Rendered from the picked schedule in her language now, not the text stored when she picked it.
+            when = schedule.when_text(answers, offer) or _("times to suit your students")
             # The drafted class says how it is opened: sold per class, to members only, or free.
             row = _draft_row(flow, key)
             price = answers.get(price_id) if row is None or row.pricing_type == "paid" else None
