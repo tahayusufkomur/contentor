@@ -1,7 +1,7 @@
 {
   "hero": {
     "pill": "<b>Twórcy-założyciele</b>: konfigurujemy wszystko z tobą, jeden na jeden",
-    "title": "To ty jesteś ekspertem. <accent>My jesteśmy całym twoim zespołem.</accent>",
+    "title": "To ty znasz się na rzeczy. <accent>My jesteśmy całym twoim zespołem.</accent>",
     "lead": "Contentor działa jak zespół, który stoi za tobą. Buduje twoją stronę, przyciąga uczestników, sprawia, że wracają, i dba o to, żebyś dostawał zapłatę.",
     "cta": "Rozpocznij darmowy okres próbny",
     "secondary": "Poznaj swój zespół",
@@ -234,7 +234,7 @@
     "humanModeNotice": "Rozmawiasz z: {name}"
   },
   "meta": {
-    "title": "Contentor — Jesteś ekspertem. Jesteśmy twoim całym zespołem.",
+    "title": "Contentor — Ty znasz się na rzeczy. Jesteśmy twoim całym zespołem.",
     "description": "Contentor działa jak stojący za tobą zespół: buduje twoją stronę, przyciąga uczestników, sprawia, że wracają, i dba o to, byś zarabiał. Wypróbuj go za darmo przez 14 dni."
   },
   "blogMeta": {

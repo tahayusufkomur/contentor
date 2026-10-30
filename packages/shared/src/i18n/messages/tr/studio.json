@@ -714,7 +714,7 @@
       },
       "toolbar": {
         "dragToMove": "Taşımak için sürükle",
-        "moveBlock": "Bloğu taşı",
+        "moveBlock": "Bloğu taşı: {label}",
         "moveUp": "Yukarı taşı",
         "moveDown": "Aşağı taşı",
         "duplicate": "Çoğalt",

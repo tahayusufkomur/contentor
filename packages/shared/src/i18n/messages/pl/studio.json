@@ -714,7 +714,7 @@
       },
       "toolbar": {
         "dragToMove": "Przeciągnij, aby przenieść",
-        "moveBlock": "Przenieś blok",
+        "moveBlock": "Przesuń blok: {label}",
         "moveUp": "Przenieś w górę",
         "moveDown": "Przenieś w dół",
         "duplicate": "Duplikuj",

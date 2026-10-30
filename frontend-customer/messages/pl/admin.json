@@ -587,7 +587,7 @@
     "showLess": "Pokaż mniej",
     "loadMore": "Wczytaj więcej",
     "loadFailed": "Nie udało się wczytać. Spróbuj ponownie.",
-    "previewTitle": "Wypróbuj sam",
+    "previewTitle": "Wypróbuj samodzielnie",
     "previewHint": "Testuj tu odpowiedzi — działa to nawet wtedy, gdy asystent jest wyłączony, i nie zużywa twoich miesięcznych pytań.",
     "previewPlaceholder": "Zadaj pytanie…",
     "previewSend": "Wyślij",
@@ -2106,7 +2106,7 @@
       "notifyHint": "Wysyła powiadomienie push do członków za każdym razem, gdy publikujesz ty lub twój zespół.",
       "welcome": "Wiadomość powitalna",
       "welcomeHint": "Wyświetlana na górze kanału społeczności.",
-      "welcomePlaceholder": "Witaj! Przedstaw się i bądź życzliwy. 💛",
+      "welcomePlaceholder": "Witaj! Przedstaw się i pamiętaj o życzliwości. 💛",
       "saving": "Zapisywanie…",
       "saveMessage": "Zapisz wiadomość"
     },

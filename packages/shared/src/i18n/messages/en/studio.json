@@ -714,7 +714,7 @@
       },
       "toolbar": {
         "dragToMove": "Drag to move",
-        "moveBlock": "Move block",
+        "moveBlock": "Move block: {label}",
         "moveUp": "Move up",
         "moveDown": "Move down",
         "duplicate": "Duplicate",

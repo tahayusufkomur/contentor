@@ -201,7 +201,7 @@ function BlockToolbar({
         type="button"
         className={cn(toolBtn, "cursor-grab active:cursor-grabbing")}
         title={t("dragToMove")}
-        aria-label={t("moveBlock")}
+        aria-label={t("moveBlock", { label })}
       >
         <GripVertical className="h-4 w-4" />
       </button>

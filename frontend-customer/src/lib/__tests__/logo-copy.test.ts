@@ -25,7 +25,7 @@ describe("the logo studio's messages", () => {
 
   it("Polish never assumes the creator's gender", () => {
     const gendered = leaves(pl.logo).filter(([, text]) =>
-      /\p{L}+(łeś|łaś)\b/iu.test(text),
+      /(łeś|łaś)(?![\p{L}])/iu.test(text),
     );
     expect(gendered).toEqual([]);
   });
