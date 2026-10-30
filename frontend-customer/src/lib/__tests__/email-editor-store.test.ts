@@ -9,9 +9,10 @@ import {
 } from "@shared/email/editor/store";
 import { findBlock } from "@shared/email/editor/tree";
 import type { HeadingBlock } from "@shared/email/editor/types";
+import { englishText } from "./email-fixtures";
 
 function withHeading() {
-  const heading = createBlock("heading") as HeadingBlock;
+  const heading = createBlock("heading", englishText) as HeadingBlock;
   const state = editorReducer(initEditorState(blankDesign()), {
     type: "insert",
     block: heading,
@@ -79,7 +80,9 @@ describe("email editor store", () => {
     const { state, heading } = withHeading();
     const outside = {
       ...state.design,
-      body: { blocks: [...state.design.body.blocks, createBlock("text")] },
+      body: {
+        blocks: [...state.design.body.blocks, createBlock("text", englishText)],
+      },
     };
     const synced = editorReducer(state, { type: "sync", design: outside });
     expect(synced.design).toBe(outside);

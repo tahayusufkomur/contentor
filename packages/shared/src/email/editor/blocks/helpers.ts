@@ -1,27 +1,13 @@
 import type { CSSProperties } from "react";
+import { useTranslations } from "next-intl";
 
 import type { Block, BlockType, Spacing } from "../types";
 
-export const BLOCK_LABELS: Record<BlockType, string> = {
-  text: "Text",
-  heading: "Heading",
-  button: "Button",
-  image: "Image",
-  divider: "Divider",
-  spacer: "Spacer",
-  columns: "Columns",
-  social: "Social links",
-  hero: "Hero",
-  card: "Card",
-  list: "List",
-  profile: "Profile",
-  html: "Custom HTML",
-  brandHeader: "Brand header",
-  brandFooter: "Brand footer",
-  item: "Featured item",
-};
-
-export const blockLabel = (type: BlockType) => BLOCK_LABELS[type] ?? type;
+/** A block type's name for the creator (studio.emailEditor.block.<type>). */
+export function useBlockLabel() {
+  const t = useTranslations("studio.emailEditor.block");
+  return (type: BlockType) => t(type);
+}
 
 export function padCss(p: Partial<Spacing> | undefined, fallback = 0): string {
   const v = (n: number | undefined) => `${n ?? fallback}px`;

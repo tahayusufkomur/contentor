@@ -751,5 +751,30 @@
   "unknownHost": {
     "title": "Nie znaleziono witryny",
     "text": "Pod tym adresem nie ma witryny Contentor. Sprawdź link lub skontaktuj się z właścicielem witryny."
+  },
+  "email": {
+    "defaults": {
+      "message": "Napisz tutaj swoją wiadomość.",
+      "headline": "Nagłówek warty przeczytania",
+      "buttonLabel": "Dowiedz się więcej",
+      "heroHeadline": "Coś nowego już tu jest",
+      "heroSupport": "Jedno zdanie o tym, dlaczego to dla nich ważne.",
+      "heroButton": "Zobacz",
+      "cardBadge": "Nowość",
+      "cardTitle": "Krótki tytuł",
+      "cardBody": "Dwa zdania o tym, czym to jest i dla kogo.",
+      "cardButton": "Dowiedz się więcej",
+      "listFirst": "Pierwsza rzecz, którą otrzymają",
+      "listSecond": "Druga rzecz, którą otrzymają",
+      "listThird": "Trzecia rzecz, którą otrzymają",
+      "profileName": "Twoje imię i nazwisko",
+      "profileRole": "Czym się zajmujesz",
+      "profileBio": "Zdanie o tobie, twoim własnym głosem.",
+      "profileBadge": "Twórca",
+      "quote": "„Zdanie wypowiedziane przez uczestnika, które szczególnie sobie cenisz.”",
+      "quoteBy": "— Ich imię i nazwisko",
+      "itemButton": "Zobacz"
+    },
+    "unsubscribe": "Wypisz się"
   }
 }

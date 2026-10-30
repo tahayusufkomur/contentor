@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "../../../ui/button";
 import { useEmailEditor } from "../store";
@@ -59,6 +60,7 @@ function useSetters<B extends Block>(block: B): Setters<B> {
 
 /** The settings of the selected block, grouped as Content / Style / Spacing. */
 export function BlockSettings({ block }: { block: Block }) {
+  const t = useTranslations("studio.emailEditor.settings");
   switch (block.type) {
     case "text":
       return <TextSettings block={block} />;
@@ -92,10 +94,9 @@ export function BlockSettings({ block }: { block: Block }) {
       return <ItemSettings block={block} />;
     case "html":
       return (
-        <Section title="Custom HTML">
+        <Section title={t("section.customHtml")}>
           <p className="text-sm text-muted-foreground">
-            This block came with an imported template. It is sent as it is and
-            can be moved or deleted, not edited.
+            {t("hint.customHtml")}
           </p>
         </Section>
       );
@@ -106,24 +107,22 @@ export function BlockSettings({ block }: { block: Block }) {
 
 function TextSettings({ block }: { block: TextBlock }) {
   const set = useSetters(block);
+  const t = useTranslations("studio.emailEditor.settings");
   const { resolved } = useEmailEditor();
   const s = block.style;
   return (
     <>
-      <Section title="Text">
-        <p className="text-sm text-muted-foreground">
-          Type straight into the email. Select words to make them bold, a link
-          or a list; @ adds the reader’s first name.
-        </p>
+      <Section title={t("section.text")}>
+        <p className="text-sm text-muted-foreground">{t("hint.text")}</p>
         <NumberField
-          label="Size"
+          label={t("field.size")}
           min={11}
           max={32}
           value={s.fontSize ?? resolved.settings.defaultFontSize}
           onChange={(fontSize) => set.style({ fontSize })}
         />
         <ColorField
-          label="Colour"
+          label={t("field.colour")}
           value={s.color ?? "brand:foreground"}
           onChange={(color) => set.style({ color })}
         />
@@ -132,7 +131,7 @@ function TextSettings({ block }: { block: TextBlock }) {
           onChange={(alignment) => set.style({ alignment })}
         />
         <NumberField
-          label="Line height"
+          label={t("field.lineHeight")}
           min={1}
           max={2.4}
           step={0.1}
@@ -141,9 +140,9 @@ function TextSettings({ block }: { block: TextBlock }) {
           onChange={(lineHeight) => set.style({ lineHeight })}
         />
       </Section>
-      <Section title="Box">
+      <Section title={t("section.box")}>
         <ColorField
-          label="Background"
+          label={t("field.background")}
           allowNone
           value={s.backgroundColor}
           onChange={(backgroundColor) => set.style({ backgroundColor })}
@@ -159,17 +158,18 @@ function TextSettings({ block }: { block: TextBlock }) {
 
 function HeadingSettings({ block }: { block: HeadingBlock }) {
   const set = useSetters(block);
+  const t = useTranslations("studio.emailEditor.settings");
   const { data: d, style: s } = block;
   return (
     <>
-      <Section title="Heading">
+      <Section title={t("section.heading")}>
         <TextField
-          label="Text"
+          label={t("field.text")}
           value={d.text}
           onChange={(text) => set.data({ text })}
         />
         <Segmented<1 | 2 | 3 | 4>
-          label="Level"
+          label={t("field.level")}
           value={d.level}
           onChange={(level) => set.data({ level })}
           options={[
@@ -180,32 +180,32 @@ function HeadingSettings({ block }: { block: HeadingBlock }) {
           ]}
         />
       </Section>
-      <Section title="Style">
+      <Section title={t("section.style")}>
         <FontField
           value={s.fontFamily}
           onChange={(fontFamily) => set.style({ fontFamily })}
         />
         <NumberField
-          label="Size"
+          label={t("field.size")}
           min={12}
           max={64}
           value={s.fontSize}
           onChange={(fontSize) => set.style({ fontSize })}
         />
         <SelectField
-          label="Weight"
+          label={t("field.weight")}
           value={s.fontWeight ?? 700}
           onChange={(fontWeight) => set.style({ fontWeight })}
           options={[
-            [400, "Regular"],
-            [500, "Medium"],
-            [600, "Semibold"],
-            [700, "Bold"],
-            [800, "Extra bold"],
+            [400, t("option.regular")],
+            [500, t("option.medium")],
+            [600, t("option.semibold")],
+            [700, t("option.bold")],
+            [800, t("option.extraBold")],
           ]}
         />
         <ColorField
-          label="Colour"
+          label={t("field.colour")}
           value={s.color}
           onChange={(color) =>
             set.style({ color: color ?? "brand:foreground" })
@@ -216,7 +216,7 @@ function HeadingSettings({ block }: { block: HeadingBlock }) {
           onChange={(alignment) => set.style({ alignment })}
         />
         <NumberField
-          label="Letter spacing"
+          label={t("field.letterSpacing")}
           min={-2}
           max={8}
           step={0.5}
@@ -224,16 +224,16 @@ function HeadingSettings({ block }: { block: HeadingBlock }) {
           onChange={(letterSpacing) => set.style({ letterSpacing })}
         />
         <ToggleField
-          label="Capitals"
+          label={t("field.capitals")}
           checked={s.textTransform === "uppercase"}
           onChange={(on) =>
             set.style({ textTransform: on ? "uppercase" : "none" })
           }
         />
       </Section>
-      <Section title="Box">
+      <Section title={t("section.box")}>
         <ColorField
-          label="Background"
+          label={t("field.background")}
           allowNone
           value={s.backgroundColor}
           onChange={(backgroundColor) => set.style({ backgroundColor })}
@@ -249,25 +249,26 @@ function HeadingSettings({ block }: { block: HeadingBlock }) {
 
 function ButtonSettings({ block }: { block: ButtonBlock }) {
   const set = useSetters(block);
+  const t = useTranslations("studio.emailEditor.settings");
   const { data: d, style: s } = block;
   return (
     <>
-      <Section title="Button">
+      <Section title={t("section.button")}>
         <TextField
-          label="Label"
+          label={t("field.label")}
           value={d.text}
           onChange={(text) => set.data({ text })}
         />
         <LinkField value={d.url} onChange={(url) => set.data({ url })} />
       </Section>
-      <Section title="Style">
+      <Section title={t("section.style")}>
         <ColorField
-          label="Button colour"
+          label={t("field.buttonColour")}
           value={s.backgroundColor}
           onChange={(v) => set.style({ backgroundColor: v ?? "brand:primary" })}
         />
         <ColorField
-          label="Label colour"
+          label={t("field.labelColour")}
           value={s.color}
           onChange={(v) => set.style({ color: v ?? "brand:primaryForeground" })}
         />
@@ -276,21 +277,21 @@ function ButtonSettings({ block }: { block: ButtonBlock }) {
           onChange={(fontFamily) => set.style({ fontFamily })}
         />
         <NumberField
-          label="Text size"
+          label={t("field.textSize")}
           min={11}
           max={24}
           value={s.fontSize}
           onChange={(fontSize) => set.style({ fontSize })}
         />
         <NumberField
-          label="Corner radius"
+          label={t("field.cornerRadius")}
           min={0}
           max={40}
           value={s.borderRadius}
           onChange={(borderRadius) => set.style({ borderRadius })}
         />
         <ToggleField
-          label="Full width"
+          label={t("field.fullWidth")}
           checked={!!s.fullWidth}
           onChange={(fullWidth) => set.style({ fullWidth })}
         />
@@ -301,21 +302,21 @@ function ButtonSettings({ block }: { block: ButtonBlock }) {
           />
         )}
         <NumberField
-          label="Inner padding (sides)"
+          label={t("field.innerPaddingSides")}
           min={8}
           max={60}
           value={s.paddingX ?? 24}
           onChange={(paddingX) => set.style({ paddingX })}
         />
         <NumberField
-          label="Inner padding (top/bottom)"
+          label={t("field.innerPaddingVertical")}
           min={4}
           max={30}
           value={s.paddingY ?? 12}
           onChange={(paddingY) => set.style({ paddingY })}
         />
       </Section>
-      <Section title="Box">
+      <Section title={t("section.box")}>
         <SpacingField
           value={s.padding}
           onChange={(padding) => set.style({ padding })}
@@ -327,10 +328,11 @@ function ButtonSettings({ block }: { block: ButtonBlock }) {
 
 function ImageSettings({ block }: { block: ImageBlock }) {
   const set = useSetters(block);
+  const t = useTranslations("studio.emailEditor.settings");
   const { data: d, style: s } = block;
   return (
     <>
-      <Section title="Image">
+      <Section title={t("section.image")}>
         <ImageField
           value={d.src}
           onPick={(src, alt, width, height) =>
@@ -346,28 +348,28 @@ function ImageSettings({ block }: { block: ImageBlock }) {
           onClear={() => set.data({ src: "" })}
         />
         <TextField
-          label="Description (alt text)"
+          label={t("field.altText")}
           value={d.alt}
-          placeholder="What the picture shows"
+          placeholder={t("placeholder.altTextExample")}
           onChange={(alt) => set.data({ alt })}
-          hint="Read aloud by screen readers and shown when images are off."
+          hint={t("hint.altTextHint")}
         />
         <LinkField
-          label="Link (optional)"
+          label={t("field.linkOptional")}
           value={d.link ?? ""}
           onChange={(link) => set.data({ link })}
         />
       </Section>
-      <Section title="Size">
+      <Section title={t("section.size")}>
         <ToggleField
-          label="Edge to edge"
+          label={t("field.edgeToEdge")}
           checked={!!s.fullWidth}
           onChange={(fullWidth) => set.style({ fullWidth })}
         />
         {!s.fullWidth && (
           <>
             <NumberField
-              label="Width"
+              label={t("field.width")}
               min={40}
               max={600}
               value={d.width}
@@ -380,7 +382,7 @@ function ImageSettings({ block }: { block: ImageBlock }) {
           </>
         )}
         <NumberField
-          label="Corner radius"
+          label={t("field.cornerRadius")}
           min={0}
           max={40}
           value={s.borderRadius ?? 0}
@@ -388,7 +390,7 @@ function ImageSettings({ block }: { block: ImageBlock }) {
         />
       </Section>
       {!s.fullWidth && (
-        <Section title="Box">
+        <Section title={t("section.box")}>
           <SpacingField
             value={s.padding}
             onChange={(padding) => set.style({ padding })}
@@ -401,33 +403,34 @@ function ImageSettings({ block }: { block: ImageBlock }) {
 
 function DividerSettings({ block }: { block: DividerBlock }) {
   const set = useSetters(block);
+  const t = useTranslations("studio.emailEditor.settings");
   const s = block.style;
   return (
-    <Section title="Divider">
+    <Section title={t("section.divider")}>
       <ColorField
-        label="Colour"
+        label={t("field.colour")}
         value={s.lineColor}
         onChange={(v) => set.style({ lineColor: v ?? "brand:border" })}
       />
       <NumberField
-        label="Thickness"
+        label={t("field.thickness")}
         min={1}
         max={8}
         value={s.lineThickness}
         onChange={(lineThickness) => set.style({ lineThickness })}
       />
       <Segmented<"solid" | "dashed" | "dotted">
-        label="Line"
+        label={t("field.line")}
         value={s.lineStyle ?? "solid"}
         onChange={(lineStyle) => set.style({ lineStyle })}
         options={[
-          ["solid", "Solid"],
-          ["dashed", "Dashed"],
-          ["dotted", "Dotted"],
+          ["solid", t("option.solid")],
+          ["dashed", t("option.dashed")],
+          ["dotted", t("option.dotted")],
         ]}
       />
       <NumberField
-        label="Space above and below"
+        label={t("field.spaceAboveAndBelow")}
         min={0}
         max={60}
         value={s.spacing}
@@ -439,18 +442,19 @@ function DividerSettings({ block }: { block: DividerBlock }) {
 
 function SpacerSettings({ block }: { block: SpacerBlock }) {
   const set = useSetters(block);
+  const t = useTranslations("studio.emailEditor.settings");
   const s = block.style;
   return (
-    <Section title="Spacer">
+    <Section title={t("section.spacer")}>
       <NumberField
-        label="Height"
+        label={t("field.height")}
         min={4}
         max={160}
         value={s.height}
         onChange={(height) => set.style({ height })}
       />
       <ColorField
-        label="Background"
+        label={t("field.background")}
         allowNone
         value={s.backgroundColor}
         onChange={(backgroundColor) => set.style({ backgroundColor })}
@@ -459,18 +463,21 @@ function SpacerSettings({ block }: { block: SpacerBlock }) {
   );
 }
 
-const RATIOS: Record<number, [string, number[]][]> = {
-  1: [["Full", [100]]],
+type RatioName =
+  "full" | "half" | "thirdTwoThirds" | "twoThirdsThird" | "thirds";
+const RATIOS: Record<number, [RatioName, number[]][]> = {
+  1: [["full", [100]]],
   2: [
-    ["Half / half", [50, 50]],
-    ["Third / two thirds", [33, 67]],
-    ["Two thirds / third", [67, 33]],
+    ["half", [50, 50]],
+    ["thirdTwoThirds", [33, 67]],
+    ["twoThirdsThird", [67, 33]],
   ],
-  3: [["Thirds", [33, 33, 34]]],
+  3: [["thirds", [33, 33, 34]]],
 };
 
 function ColumnsSettings({ block }: { block: ColumnsBlock }) {
   const set = useSetters(block);
+  const t = useTranslations("studio.emailEditor.settings");
   const { data: d, style: s } = block;
   const count = d.columns.length;
 
@@ -501,9 +508,9 @@ function ColumnsSettings({ block }: { block: ColumnsBlock }) {
   const ratioOptions = RATIOS[count] ?? [];
   return (
     <>
-      <Section title="Columns">
+      <Section title={t("section.columns")}>
         <Segmented<number>
-          label="How many"
+          label={t("field.howMany")}
           value={count}
           onChange={setCount}
           options={[
@@ -514,7 +521,7 @@ function ColumnsSettings({ block }: { block: ColumnsBlock }) {
         />
         {ratioOptions.length > 1 && (
           <SelectField
-            label="Widths"
+            label={t("field.widths")}
             value={
               ratioOptions.some(([, r]) => r.join("/") === ratioKey)
                 ? ratioKey
@@ -524,36 +531,37 @@ function ColumnsSettings({ block }: { block: ColumnsBlock }) {
               set.data({ columnRatio: key.split("/").map(Number) })
             }
             options={ratioOptions.map(
-              ([name, r]) => [r.join("/"), name] as [string, string],
+              ([name, r]) =>
+                [r.join("/"), t(`ratio.${name}`)] as [string, string],
             )}
           />
         )}
         <NumberField
-          label="Gap"
+          label={t("field.gap")}
           min={0}
           max={48}
           value={s.gap ?? 10}
           onChange={(gap) => set.style({ gap })}
         />
         <Segmented<"top" | "center" | "bottom">
-          label="Vertical alignment"
+          label={t("field.verticalAlignment")}
           value={s.verticalAlignment ?? "top"}
           onChange={(verticalAlignment) => set.style({ verticalAlignment })}
           options={[
-            ["top", "Top"],
-            ["center", "Middle"],
-            ["bottom", "Bottom"],
+            ["top", t("option.top")],
+            ["center", t("option.middle")],
+            ["bottom", t("option.bottom")],
           ]}
         />
         <ToggleField
-          label="Stack on phones"
+          label={t("field.stackOnPhones")}
           checked={s.stackOnMobile !== false}
           onChange={(stackOnMobile) => set.style({ stackOnMobile })}
         />
       </Section>
-      <Section title="Box">
+      <Section title={t("section.box")}>
         <ColorField
-          label="Column background"
+          label={t("field.columnBackground")}
           allowNone
           value={background}
           onChange={(backgroundColor) =>
@@ -563,7 +571,7 @@ function ColumnsSettings({ block }: { block: ColumnsBlock }) {
           }
         />
         <NumberField
-          label="Column corner radius"
+          label={t("field.columnCornerRadius")}
           min={0}
           max={32}
           value={d.columns[0]?.borderRadius ?? 0}
@@ -589,6 +597,7 @@ const NETWORK_OPTIONS: [SocialNetwork, string][] = [
 
 function SocialSettings({ block }: { block: SocialBlock }) {
   const set = useSetters(block);
+  const t = useTranslations("studio.emailEditor.settings");
   const { kit } = useEmailEditor();
   const { data: d, style: s } = block;
   const platforms = d.platforms;
@@ -597,7 +606,7 @@ function SocialSettings({ block }: { block: SocialBlock }) {
   );
   return (
     <>
-      <Section title="Profiles">
+      <Section title={t("section.profiles")}>
         {known.length > 0 && (
           <Button
             type="button"
@@ -613,14 +622,14 @@ function SocialSettings({ block }: { block: SocialBlock }) {
               })
             }
           >
-            Use my profiles
+            {t("action.useMyProfiles")}
           </Button>
         )}
         {platforms.map((p, i) => (
           <div key={i} className="space-y-1.5 rounded-lg border p-2">
             <div className="flex items-center gap-1.5">
               <select
-                aria-label="Network"
+                aria-label={t("aria.network")}
                 value={p.type}
                 onChange={(e) =>
                   set.data({
@@ -644,7 +653,7 @@ function SocialSettings({ block }: { block: SocialBlock }) {
                 size="icon"
                 variant="ghost"
                 className="size-8 shrink-0"
-                aria-label="Remove profile"
+                aria-label={t("aria.removeProfile")}
                 onClick={() =>
                   set.data({ platforms: platforms.filter((_, j) => j !== i) })
                 }
@@ -653,7 +662,7 @@ function SocialSettings({ block }: { block: SocialBlock }) {
               </Button>
             </div>
             <input
-              aria-label="Profile link"
+              aria-label={t("aria.profileLink")}
               value={p.url}
               placeholder="https://"
               onChange={(e) =>
@@ -677,24 +686,24 @@ function SocialSettings({ block }: { block: SocialBlock }) {
             })
           }
         >
-          <Plus /> Add a profile
+          <Plus /> {t("action.addProfile")}
         </Button>
       </Section>
-      <Section title="Style">
+      <Section title={t("section.style")}>
         <NumberField
-          label="Icon size"
+          label={t("field.iconSize")}
           min={16}
           max={48}
           value={s.iconSize ?? 32}
           onChange={(iconSize) => set.style({ iconSize })}
         />
         <Segmented<"colored" | "monochrome">
-          label="Icons"
+          label={t("field.icons")}
           value={s.iconStyle ?? "colored"}
           onChange={(iconStyle) => set.style({ iconStyle })}
           options={[
-            ["colored", "Colour"],
-            ["monochrome", "Grey"],
+            ["colored", t("option.colour")],
+            ["monochrome", t("option.grey")],
           ]}
         />
         <AlignField
@@ -702,14 +711,14 @@ function SocialSettings({ block }: { block: SocialBlock }) {
           onChange={(alignment) => set.style({ alignment })}
         />
         <NumberField
-          label="Space between"
+          label={t("field.spaceBetween")}
           min={0}
           max={32}
           value={s.spacing ?? 10}
           onChange={(spacing) => set.style({ spacing })}
         />
       </Section>
-      <Section title="Box">
+      <Section title={t("section.box")}>
         <SpacingField
           value={s.padding}
           onChange={(padding) => set.style({ padding })}
@@ -721,56 +730,57 @@ function SocialSettings({ block }: { block: SocialBlock }) {
 
 function HeroSettings({ block }: { block: HeroBlock }) {
   const set = useSetters(block);
+  const t = useTranslations("studio.emailEditor.settings");
   const { data: d, style: s } = block;
   return (
     <>
-      <Section title="Hero">
+      <Section title={t("section.hero")}>
         <ImageField
-          label="Background image"
+          label={t("field.backgroundImage")}
           value={d.backgroundImage}
           onPick={(backgroundImage) => set.data({ backgroundImage })}
           onClear={() => set.data({ backgroundImage: "" })}
         />
         <TextField
-          label="Headline"
+          label={t("field.headline")}
           value={d.heading}
           onChange={(heading) => set.data({ heading })}
         />
         <TextAreaField
-          label="Supporting line"
+          label={t("field.supportingLine")}
           rows={2}
           value={d.subheading}
           onChange={(subheading) => set.data({ subheading })}
         />
         <TextField
-          label="Button label"
+          label={t("field.buttonLabel")}
           value={d.buttonText}
           onChange={(buttonText) => set.data({ buttonText })}
-          placeholder="Leave empty for no button"
+          placeholder={t("placeholder.noButton")}
         />
         {d.buttonText && (
           <LinkField
-            label="Button link"
+            label={t("field.buttonLink")}
             value={d.buttonUrl}
             onChange={(buttonUrl) => set.data({ buttonUrl })}
           />
         )}
       </Section>
-      <Section title="Style">
+      <Section title={t("section.style")}>
         <NumberField
-          label="Height"
+          label={t("field.height")}
           min={200}
           max={600}
           value={s.height ?? 360}
           onChange={(height) => set.style({ height })}
         />
         <ColorField
-          label="Shade colour"
+          label={t("field.shadeColour")}
           value={s.overlayColor ?? "#000000"}
           onChange={(v) => set.style({ overlayColor: v ?? "#000000" })}
         />
         <NumberField
-          label="Shade strength"
+          label={t("field.shadeStrength")}
           min={0}
           max={0.9}
           step={0.05}
@@ -779,49 +789,49 @@ function HeroSettings({ block }: { block: HeroBlock }) {
           onChange={(overlayOpacity) => set.style({ overlayOpacity })}
         />
         <FontField
-          label="Headline font"
+          label={t("field.headlineFont")}
           value={s.headingFontFamily}
           onChange={(headingFontFamily) => set.style({ headingFontFamily })}
         />
         <NumberField
-          label="Headline size"
+          label={t("field.headlineSize")}
           min={18}
           max={60}
           value={s.headingFontSize ?? 34}
           onChange={(headingFontSize) => set.style({ headingFontSize })}
         />
         <ColorField
-          label="Headline colour"
+          label={t("field.headlineColour")}
           value={s.headingColor ?? "#ffffff"}
           onChange={(v) => set.style({ headingColor: v ?? "#ffffff" })}
         />
         <ColorField
-          label="Button colour"
+          label={t("field.buttonColour")}
           value={s.buttonBackgroundColor}
           onChange={(v) =>
             set.style({ buttonBackgroundColor: v ?? "brand:primary" })
           }
         />
         <ColorField
-          label="Button label colour"
+          label={t("field.buttonLabelColour")}
           value={s.buttonTextColor}
           onChange={(v) =>
             set.style({ buttonTextColor: v ?? "brand:primaryForeground" })
           }
         />
         <AlignField
-          label="Text alignment"
+          label={t("field.textAlignment")}
           value={s.contentAlignment ?? "center"}
           onChange={(contentAlignment) => set.style({ contentAlignment })}
         />
         <Segmented<"top" | "center" | "bottom">
-          label="Text position"
+          label={t("field.textPosition")}
           value={s.verticalAlignment ?? "bottom"}
           onChange={(verticalAlignment) => set.style({ verticalAlignment })}
           options={[
-            ["top", "Top"],
-            ["center", "Middle"],
-            ["bottom", "Bottom"],
+            ["top", t("option.top")],
+            ["center", t("option.middle")],
+            ["bottom", t("option.bottom")],
           ]}
         />
       </Section>
@@ -831,28 +841,29 @@ function HeroSettings({ block }: { block: HeroBlock }) {
 
 function CardSettings({ block }: { block: CardBlock }) {
   const set = useSetters(block);
+  const t = useTranslations("studio.emailEditor.settings");
   const { data: d, style: s } = block;
   return (
     <>
-      <Section title="Card">
+      <Section title={t("section.card")}>
         <TextField
-          label="Title"
+          label={t("field.title")}
           value={d.heading}
           onChange={(heading) => set.data({ heading })}
         />
         <TextAreaField
-          label="Text"
+          label={t("field.text")}
           value={d.body}
           onChange={(body) => set.data({ body })}
         />
         <ToggleField
-          label="Emoji on top"
+          label={t("field.emojiOnTop")}
           checked={d.showIcon}
           onChange={(showIcon) => set.data({ showIcon, iconMode: "emoji" })}
         />
         {d.showIcon && (
           <TextField
-            label="Emoji"
+            label={t("field.emoji")}
             value={d.iconEmoji}
             onChange={(iconEmoji) =>
               set.data({ iconEmoji: iconEmoji.slice(0, 4), iconMode: "emoji" })
@@ -860,53 +871,53 @@ function CardSettings({ block }: { block: CardBlock }) {
           />
         )}
         <ToggleField
-          label="Badge"
+          label={t("field.badge")}
           checked={d.showBadge}
           onChange={(showBadge) => set.data({ showBadge })}
         />
         {d.showBadge && (
           <TextField
-            label="Badge text"
+            label={t("field.badgeText")}
             value={d.badgeText}
             onChange={(badgeText) => set.data({ badgeText })}
           />
         )}
         <ToggleField
-          label="Button"
+          label={t("field.button")}
           checked={d.showButton}
           onChange={(showButton) => set.data({ showButton })}
         />
         {d.showButton && (
           <>
             <TextField
-              label="Button label"
+              label={t("field.buttonLabel")}
               value={d.buttonText}
               onChange={(buttonText) => set.data({ buttonText })}
             />
             <LinkField
-              label="Button link"
+              label={t("field.buttonLink")}
               value={d.buttonUrl}
               onChange={(buttonUrl) => set.data({ buttonUrl })}
             />
           </>
         )}
       </Section>
-      <Section title="Style">
+      <Section title={t("section.style")}>
         <ColorField
-          label="Card colour"
+          label={t("field.cardColour")}
           allowNone
           value={s.backgroundColor}
           onChange={(backgroundColor) => set.style({ backgroundColor })}
         />
         <NumberField
-          label="Corner radius"
+          label={t("field.cornerRadius")}
           min={0}
           max={32}
           value={s.borderRadius ?? 12}
           onChange={(borderRadius) => set.style({ borderRadius })}
         />
         <NumberField
-          label="Border"
+          label={t("field.border")}
           min={0}
           max={4}
           value={s.borderWidth ?? 0}
@@ -914,37 +925,37 @@ function CardSettings({ block }: { block: CardBlock }) {
         />
         {(s.borderWidth ?? 0) > 0 && (
           <ColorField
-            label="Border colour"
+            label={t("field.borderColour")}
             value={s.borderColor}
             onChange={(v) => set.style({ borderColor: v ?? "brand:border" })}
           />
         )}
         <FontField
-          label="Title font"
+          label={t("field.titleFont")}
           value={s.headingFontFamily}
           onChange={(headingFontFamily) => set.style({ headingFontFamily })}
         />
         <ColorField
-          label="Title colour"
+          label={t("field.titleColour")}
           value={s.headingColor}
           onChange={(v) => set.style({ headingColor: v ?? "brand:foreground" })}
         />
         <ColorField
-          label="Text colour"
+          label={t("field.textColour")}
           value={s.bodyColor}
           onChange={(v) => set.style({ bodyColor: v ?? "brand:muted" })}
         />
         {d.showButton && (
           <>
             <ColorField
-              label="Button colour"
+              label={t("field.buttonColour")}
               value={s.buttonBackgroundColor}
               onChange={(v) =>
                 set.style({ buttonBackgroundColor: v ?? "brand:primary" })
               }
             />
             <ColorField
-              label="Button label colour"
+              label={t("field.buttonLabelColour")}
               value={s.buttonTextColor}
               onChange={(v) =>
                 set.style({ buttonTextColor: v ?? "brand:primaryForeground" })
@@ -957,9 +968,9 @@ function CardSettings({ block }: { block: CardBlock }) {
           onChange={(contentAlignment) => set.style({ contentAlignment })}
         />
       </Section>
-      <Section title="Box">
+      <Section title={t("section.box")}>
         <SpacingField
-          label="Inner padding"
+          label={t("field.innerPadding")}
           value={s.padding}
           onChange={(padding) => set.style({ padding })}
         />
@@ -970,18 +981,19 @@ function CardSettings({ block }: { block: CardBlock }) {
 
 function ListSettings({ block }: { block: ListBlock }) {
   const set = useSetters(block);
+  const t = useTranslations("studio.emailEditor.settings");
   const { data: d, style: s } = block;
   const items = d.items;
   const setItems = (next: ListBlock["data"]["items"]) =>
     set.data({ items: next });
   return (
     <>
-      <Section title="Items">
+      <Section title={t("section.items")}>
         {items.map((item, i) => (
           <div key={item.id} className="space-y-1.5 rounded-lg border p-2">
             <div className="flex items-center gap-1.5">
               <input
-                aria-label="Bullet"
+                aria-label={t("aria.bullet")}
                 value={item.icon}
                 onChange={(e) =>
                   setItems(
@@ -999,7 +1011,7 @@ function ListSettings({ block }: { block: ListBlock }) {
                 className={`${fieldClass} w-12 text-center`}
               />
               <input
-                aria-label="Item text"
+                aria-label={t("aria.itemText")}
                 value={item.text}
                 onChange={(e) =>
                   setItems(
@@ -1013,9 +1025,9 @@ function ListSettings({ block }: { block: ListBlock }) {
             </div>
             <div className="flex items-center gap-1.5">
               <input
-                aria-label="Item detail"
+                aria-label={t("aria.itemDetail")}
                 value={item.subtitle}
-                placeholder="Detail (optional)"
+                placeholder={t("placeholder.itemDetail")}
                 onChange={(e) =>
                   setItems(
                     items.map((x) =>
@@ -1030,7 +1042,7 @@ function ListSettings({ block }: { block: ListBlock }) {
                 size="icon"
                 variant="ghost"
                 className="size-8 shrink-0"
-                aria-label="Move item up"
+                aria-label={t("aria.moveItemUp")}
                 disabled={i === 0}
                 onClick={() =>
                   setItems([
@@ -1048,7 +1060,7 @@ function ListSettings({ block }: { block: ListBlock }) {
                 size="icon"
                 variant="ghost"
                 className="size-8 shrink-0"
-                aria-label="Move item down"
+                aria-label={t("aria.moveItemDown")}
                 disabled={i === items.length - 1}
                 onClick={() =>
                   setItems([
@@ -1066,7 +1078,7 @@ function ListSettings({ block }: { block: ListBlock }) {
                 size="icon"
                 variant="ghost"
                 className="size-8 shrink-0"
-                aria-label="Remove item"
+                aria-label={t("aria.removeItem")}
                 onClick={() => setItems(items.filter((x) => x.id !== item.id))}
               >
                 <Trash2 />
@@ -1090,17 +1102,17 @@ function ListSettings({ block }: { block: ListBlock }) {
             ])
           }
         >
-          <Plus /> Add an item
+          <Plus /> {t("action.addItem")}
         </Button>
       </Section>
-      <Section title="Style">
+      <Section title={t("section.style")}>
         <ColorField
-          label="Bullet colour"
+          label={t("field.bulletColour")}
           value={s.iconColor}
           onChange={(v) => set.style({ iconColor: v ?? "brand:primary" })}
         />
         <ColorField
-          label="Text colour"
+          label={t("field.textColour")}
           value={s.textColor}
           onChange={(v) => set.style({ textColor: v ?? "brand:foreground" })}
         />
@@ -1109,32 +1121,32 @@ function ListSettings({ block }: { block: ListBlock }) {
           onChange={(textFontFamily) => set.style({ textFontFamily })}
         />
         <NumberField
-          label="Text size"
+          label={t("field.textSize")}
           min={11}
           max={24}
           value={s.textFontSize ?? 15}
           onChange={(textFontSize) => set.style({ textFontSize })}
         />
         <Segmented<"vertical" | "horizontal">
-          label="Layout"
+          label={t("field.layout")}
           value={s.layout ?? "vertical"}
           onChange={(layout) => set.style({ layout })}
           options={[
-            ["vertical", "Stacked"],
-            ["horizontal", "In a row"],
+            ["vertical", t("option.stacked")],
+            ["horizontal", t("option.inARow")],
           ]}
         />
         <NumberField
-          label="Space between"
+          label={t("field.spaceBetween")}
           min={0}
           max={32}
           value={s.spacing ?? 12}
           onChange={(spacing) => set.style({ spacing })}
         />
       </Section>
-      <Section title="Box">
+      <Section title={t("section.box")}>
         <ColorField
-          label="Background"
+          label={t("field.background")}
           allowNone
           value={s.backgroundColor}
           onChange={(backgroundColor) => set.style({ backgroundColor })}
@@ -1150,12 +1162,13 @@ function ListSettings({ block }: { block: ListBlock }) {
 
 function ProfileSettings({ block }: { block: ProfileBlock }) {
   const set = useSetters(block);
+  const t = useTranslations("studio.emailEditor.settings");
   const { data: d, style: s } = block;
   return (
     <>
-      <Section title="Profile">
+      <Section title={t("section.profile")}>
         <ImageField
-          label="Photo"
+          label={t("field.photo")}
           value={d.imageSrc}
           onPick={(imageSrc, alt) =>
             set.data({ imageSrc, imageAlt: alt || d.imageAlt })
@@ -1163,83 +1176,83 @@ function ProfileSettings({ block }: { block: ProfileBlock }) {
           onClear={() => set.data({ imageSrc: "" })}
         />
         <TextField
-          label="Name"
+          label={t("field.name")}
           value={d.name}
           onChange={(name) => set.data({ name })}
         />
         <TextField
-          label="Role"
+          label={t("field.role")}
           value={d.role}
           onChange={(role) => set.data({ role })}
         />
         <TextAreaField
-          label="Bio"
+          label={t("field.bio")}
           value={d.bio}
           onChange={(bio) => set.data({ bio })}
         />
         <ToggleField
-          label="Badge"
+          label={t("field.badge")}
           checked={d.showBadge}
           onChange={(showBadge) => set.data({ showBadge })}
         />
         {d.showBadge && (
           <TextField
-            label="Badge text"
+            label={t("field.badgeText")}
             value={d.badgeText}
             onChange={(badgeText) => set.data({ badgeText })}
           />
         )}
       </Section>
-      <Section title="Style">
+      <Section title={t("section.style")}>
         <Segmented<"left" | "right" | "top">
-          label="Photo position"
+          label={t("field.photoPosition")}
           value={s.imagePosition ?? "left"}
           onChange={(imagePosition) => set.style({ imagePosition })}
           options={[
-            ["left", "Left"],
-            ["top", "Top"],
-            ["right", "Right"],
+            ["left", t("option.left")],
+            ["top", t("option.top")],
+            ["right", t("option.right")],
           ]}
         />
         <NumberField
-          label="Photo size"
+          label={t("field.photoSize")}
           min={40}
           max={160}
           value={s.imageSize ?? 72}
           onChange={(imageSize) => set.style({ imageSize })}
         />
         <ColorField
-          label="Card colour"
+          label={t("field.cardColour")}
           allowNone
           value={s.backgroundColor}
           onChange={(backgroundColor) => set.style({ backgroundColor })}
         />
         <ColorField
-          label="Name colour"
+          label={t("field.nameColour")}
           value={s.nameColor}
           onChange={(v) => set.style({ nameColor: v ?? "brand:foreground" })}
         />
         <ColorField
-          label="Role colour"
+          label={t("field.roleColour")}
           value={s.roleColor}
           onChange={(v) => set.style({ roleColor: v ?? "brand:primary" })}
         />
         <ColorField
-          label="Bio colour"
+          label={t("field.bioColour")}
           value={s.bioColor}
           onChange={(v) => set.style({ bioColor: v ?? "brand:muted" })}
         />
         <NumberField
-          label="Corner radius"
+          label={t("field.cornerRadius")}
           min={0}
           max={32}
           value={s.borderRadius ?? 12}
           onChange={(borderRadius) => set.style({ borderRadius })}
         />
       </Section>
-      <Section title="Box">
+      <Section title={t("section.box")}>
         <SpacingField
-          label="Inner padding"
+          label={t("field.innerPadding")}
           value={s.padding}
           onChange={(padding) => set.style({ padding })}
         />
@@ -1250,28 +1263,26 @@ function ProfileSettings({ block }: { block: ProfileBlock }) {
 
 function BrandHeaderSettings({ block }: { block: BrandHeaderBlock }) {
   const set = useSetters(block);
+  const t = useTranslations("studio.emailEditor.settings");
   const { data: d, style: s } = block;
   return (
     <>
-      <Section title="Brand header">
-        <p className="text-sm text-muted-foreground">
-          Your logo and name come from your brand, so every email updates when
-          they change.
-        </p>
+      <Section title={t("section.brandHeader")}>
+        <p className="text-sm text-muted-foreground">{t("hint.brandHeader")}</p>
         <SelectField<BrandHeaderBlock["data"]["variant"]>
-          label="Show"
+          label={t("field.show")}
           value={d.variant}
           onChange={(variant) => set.data({ variant })}
           options={[
-            ["logo", "Logo"],
-            ["logoName", "Logo and name"],
-            ["mark", "Square mark"],
-            ["name", "Name only"],
+            ["logo", t("option.logo")],
+            ["logoName", t("option.logoAndName")],
+            ["mark", t("option.squareMark")],
+            ["name", t("option.nameOnly")],
           ]}
         />
         {d.variant !== "name" && (
           <NumberField
-            label="Logo height"
+            label={t("field.logoHeight")}
             min={20}
             max={120}
             value={s.logoHeight ?? 44}
@@ -1284,7 +1295,7 @@ function BrandHeaderSettings({ block }: { block: BrandHeaderBlock }) {
         />
         {d.variant !== "logo" && d.variant !== "mark" && (
           <ColorField
-            label="Name colour"
+            label={t("field.nameColour")}
             value={s.color}
             onChange={(color) =>
               set.style({ color: color ?? "brand:foreground" })
@@ -1292,9 +1303,9 @@ function BrandHeaderSettings({ block }: { block: BrandHeaderBlock }) {
           />
         )}
       </Section>
-      <Section title="Box">
+      <Section title={t("section.box")}>
         <ColorField
-          label="Background"
+          label={t("field.background")}
           allowNone
           value={s.backgroundColor}
           onChange={(backgroundColor) => set.style({ backgroundColor })}
@@ -1310,46 +1321,44 @@ function BrandHeaderSettings({ block }: { block: BrandHeaderBlock }) {
 
 function BrandFooterSettings({ block }: { block: BrandFooterBlock }) {
   const set = useSetters(block);
+  const t = useTranslations("studio.emailEditor.settings");
   const { kit } = useEmailEditor();
   const { data: d, style: s } = block;
   return (
     <>
-      <Section title="Brand footer">
-        <p className="text-sm text-muted-foreground">
-          Your name, site and profiles come from your brand. The unsubscribe
-          link is always there.
-        </p>
+      <Section title={t("section.brandFooter")}>
+        <p className="text-sm text-muted-foreground">{t("hint.brandFooter")}</p>
         <ToggleField
-          label="Social profiles"
+          label={t("field.socialProfiles")}
           checked={d.showSocial}
           onChange={(showSocial) => set.data({ showSocial })}
         />
         <ToggleField
-          label="Address"
+          label={t("field.address")}
           checked={d.showAddress}
           onChange={(showAddress) => set.data({ showAddress })}
         />
         {d.showAddress && !kit.address && (
           <p className="text-xs text-muted-foreground">
-            Add your address in your contact details and it shows here.
+            {t("hint.addressMissing")}
           </p>
         )}
         <TextAreaField
-          label="Note"
+          label={t("field.note")}
           rows={2}
           value={d.note}
-          placeholder="e.g. You get this because you joined my classes."
+          placeholder={t("placeholder.footerNote")}
           onChange={(note) => set.data({ note })}
         />
       </Section>
-      <Section title="Style">
+      <Section title={t("section.style")}>
         <ColorField
-          label="Text colour"
+          label={t("field.textColour")}
           value={s.color}
           onChange={(color) => set.style({ color: color ?? "brand:muted" })}
         />
         <NumberField
-          label="Text size"
+          label={t("field.textSize")}
           min={10}
           max={16}
           value={s.fontSize ?? 13}
@@ -1360,7 +1369,7 @@ function BrandFooterSettings({ block }: { block: BrandFooterBlock }) {
           onChange={(alignment) => set.style({ alignment })}
         />
         <ColorField
-          label="Background"
+          label={t("field.background")}
           allowNone
           value={s.backgroundColor}
           onChange={(backgroundColor) => set.style({ backgroundColor })}
@@ -1374,42 +1383,48 @@ function BrandFooterSettings({ block }: { block: BrandFooterBlock }) {
   );
 }
 
-const KIND_LABELS: Record<string, string> = {
-  course: "Course",
-  live: "Live session",
-  stream: "Live stream",
-  zoom: "Zoom session",
-  onsite: "In person",
-  event: "Event",
-  download: "Download",
-  post: "Post",
-  plan: "Membership",
-  page: "Page",
-  subscription: "Membership",
-  "blog post": "Post",
-};
+// The catalog's kinds, each worded as a message (settings.kind.<name>).
+const KIND_NAMES = {
+  course: "course",
+  live: "live",
+  stream: "stream",
+  zoom: "zoom",
+  onsite: "onsite",
+  event: "event",
+  download: "download",
+  post: "post",
+  plan: "plan",
+  page: "page",
+  subscription: "subscription",
+  "blog post": "blogPost",
+} as const;
 
 function ItemSettings({ block }: { block: ItemBlock }) {
   const set = useSetters(block);
+  const t = useTranslations("studio.emailEditor.settings");
   const store = useEmailEditor();
   const { data: d, style: s } = block;
   const current = store.items.find((i) => i.ref === d.ref);
+  const kindLabel = (kind: string) =>
+    kind in KIND_NAMES
+      ? t(`kind.${KIND_NAMES[kind as keyof typeof KIND_NAMES]}`)
+      : kind;
   const options: [string, string][] = [
-    ["", "Choose what to feature…"],
+    ["", t("option.chooseFeature")],
     ...store.items.map(
       (i) =>
-        [i.ref, `${KIND_LABELS[i.kind] ?? i.kind}: ${i.title}`] as [
-          string,
-          string,
-        ],
+        [
+          i.ref,
+          t("option.itemOf", { kind: kindLabel(i.kind), title: i.title }),
+        ] as [string, string],
     ),
   ];
-  if (d.ref && !current) options.push([d.ref, "No longer available"]);
+  if (d.ref && !current) options.push([d.ref, t("option.unavailable")]);
   return (
     <>
-      <Section title="Featured item">
+      <Section title={t("section.featuredItem")}>
         <SelectField
-          label="Feature"
+          label={t("field.feature")}
           value={d.ref}
           options={options}
           onChange={(ref) => set.data({ ref })}
@@ -1425,91 +1440,90 @@ function ItemSettings({ block }: { block: ItemBlock }) {
               if (picked) set.data({ ref: picked.ref });
             }}
           >
-            Browse your offers…
+            {t("action.browseOffers")}
           </Button>
         )}
         {current && (
           <p className="text-xs text-muted-foreground">
-            Its title, picture, {current.meta ? "price or date, " : ""}and link
-            stay up to date: the email shows it as it is when it is sent.
+            {current.meta ? t("hint.itemFreshWithMeta") : t("hint.itemFresh")}
           </p>
         )}
         <Segmented<ItemBlock["data"]["layout"]>
-          label="Layout"
+          label={t("field.layout")}
           value={d.layout}
           onChange={(layout) => set.data({ layout })}
           options={[
-            ["card", "Card"],
-            ["row", "Row"],
-            ["compact", "Compact"],
+            ["card", t("option.card")],
+            ["row", t("option.row")],
+            ["compact", t("option.compact")],
           ]}
         />
         {d.layout !== "compact" && (
           <>
             <ToggleField
-              label="Picture"
+              label={t("field.picture")}
               checked={d.showImage}
               onChange={(showImage) => set.data({ showImage })}
             />
             <ToggleField
-              label="Description"
+              label={t("field.description")}
               checked={d.showSummary}
               onChange={(showSummary) => set.data({ showSummary })}
             />
           </>
         )}
         <ToggleField
-          label="Price or date"
+          label={t("field.priceOrDate")}
           checked={d.showMeta}
           onChange={(showMeta) => set.data({ showMeta })}
         />
         {d.layout !== "compact" && (
           <TextField
-            label="Button label"
+            label={t("field.buttonLabel")}
             value={d.buttonText}
-            placeholder="Leave empty for no button"
+            placeholder={t("placeholder.noButton")}
             onChange={(buttonText) => set.data({ buttonText })}
           />
         )}
       </Section>
-      <Section title="Style">
+      <Section title={t("section.style")}>
         <ColorField
-          label="Card colour"
+          label={t("field.cardColour")}
           allowNone
           value={s.backgroundColor}
           onChange={(backgroundColor) => set.style({ backgroundColor })}
         />
         <ColorField
-          label="Title colour"
+          label={t("field.titleColour")}
           value={s.titleColor}
           onChange={(v) => set.style({ titleColor: v ?? "brand:foreground" })}
         />
         <ColorField
-          label="Text colour"
+          label={t("field.textColour")}
           value={s.textColor}
           onChange={(v) => set.style({ textColor: v ?? "brand:muted" })}
         />
         <ColorField
-          label="Button colour"
+          label={t("field.buttonColour")}
           value={s.buttonColor}
           onChange={(v) => set.style({ buttonColor: v ?? "brand:primary" })}
         />
         <ColorField
-          label="Button label colour"
+          label={t("field.buttonLabelColour")}
           value={s.buttonTextColor}
           onChange={(v) =>
             set.style({ buttonTextColor: v ?? "brand:primaryForeground" })
           }
         />
         <NumberField
-          label="Corner radius"
+          label={t("field.cornerRadius")}
           min={0}
           max={32}
           value={s.borderRadius ?? 12}
           onChange={(borderRadius) => set.style({ borderRadius })}
         />
       </Section>
-      <Section title="Box">
+      <Section title={t("section.box")}>
         <SpacingField
           value={s.padding}
           onChange={(padding) => set.style({ padding })}

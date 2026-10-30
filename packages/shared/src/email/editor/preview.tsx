@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 
 import { cn } from "../../lib/utils";
@@ -17,6 +18,7 @@ export function PreviewPane({
   device: "desktop" | "mobile";
   renderPreview: (design: EmailDesign) => Promise<string>;
 }) {
+  const t = useTranslations("studio.emailEditor.preview");
   const [html, setHtml] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -43,16 +45,14 @@ export function PreviewPane({
   if (failed) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
-        <p className="text-sm text-muted-foreground">
-          The preview could not be made just now.
-        </p>
+        <p className="text-sm text-muted-foreground">{t("failed")}</p>
         <Button
           type="button"
           size="sm"
           variant="outline"
           onClick={() => setAttempt((n) => n + 1)}
         >
-          Try again
+          {t("retry")}
         </Button>
       </div>
     );
@@ -60,14 +60,14 @@ export function PreviewPane({
   if (html === null) {
     return (
       <div className="flex h-full items-center justify-center">
-        <Spinner size="lg" label="Making the preview" />
+        <Spinner size="lg" label={t("loading")} />
       </div>
     );
   }
   return (
     <div className="flex h-full justify-center overflow-auto bg-muted/40 p-4">
       <iframe
-        title="Email preview"
+        title={t("title")}
         sandbox=""
         srcDoc={html}
         className={cn(

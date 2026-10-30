@@ -2,6 +2,8 @@
 
 import { ImagePlus, UserRound } from "lucide-react";
 
+import { useTranslations } from "next-intl";
+
 import { Button } from "../../../ui/button";
 import { useEmailEditor } from "../store";
 import type { CardBlock, HeroBlock, ListBlock, ProfileBlock } from "../types";
@@ -10,6 +12,7 @@ import { InlineText } from "./inline-text";
 
 export function HeroView({ block }: { block: HeroBlock }) {
   const store = useEmailEditor();
+  const t = useTranslations("studio.emailEditor.canvas");
   const { data, style: s } = block;
   const height = s.height || 360;
   const set = (patch: Partial<HeroBlock["data"]>) =>
@@ -53,7 +56,7 @@ export function HeroView({ block }: { block: HeroBlock }) {
             variant="outline"
             onClick={() => void choose()}
           >
-            <ImagePlus /> Choose image
+            <ImagePlus /> {t("chooseImage")}
           </Button>
         </div>
       )}
@@ -68,8 +71,8 @@ export function HeroView({ block }: { block: HeroBlock }) {
         <InlineText
           as="h2"
           value={data.heading}
-          placeholder="Headline"
-          label="Hero headline"
+          placeholder={t("headline")}
+          label={t("heroHeadline")}
           onChange={(heading) => set({ heading })}
           style={{
             margin: "0 0 8px",
@@ -83,8 +86,8 @@ export function HeroView({ block }: { block: HeroBlock }) {
         <InlineText
           as="p"
           value={data.subheading}
-          placeholder="A supporting line"
-          label="Hero subheading"
+          placeholder={t("supportingLine")}
+          label={t("heroSubheading")}
           onChange={(subheading) => set({ subheading })}
           style={{
             margin: "0 0 20px",
@@ -105,8 +108,8 @@ export function HeroView({ block }: { block: HeroBlock }) {
         >
           <InlineText
             value={data.buttonText}
-            placeholder="Button"
-            label="Hero button"
+            placeholder={t("button")}
+            label={t("heroButton")}
             onChange={(buttonText) => set({ buttonText })}
           />
         </span>
@@ -159,6 +162,7 @@ function IconBadge({ block }: { block: CardBlock }) {
 
 export function CardView({ block }: { block: CardBlock }) {
   const store = useEmailEditor();
+  const t = useTranslations("studio.emailEditor.canvas");
   const { data, style: s } = block;
   const set = (patch: Partial<CardBlock["data"]>) =>
     store.update(block.id, { data: patch });
@@ -197,8 +201,8 @@ export function CardView({ block }: { block: CardBlock }) {
           >
             <InlineText
               value={data.badgeText}
-              placeholder="Badge"
-              label="Badge"
+              placeholder={t("badge")}
+              label={t("badge")}
               onChange={(badgeText) => set({ badgeText })}
             />
           </span>
@@ -207,8 +211,8 @@ export function CardView({ block }: { block: CardBlock }) {
       <InlineText
         as="h3"
         value={data.heading}
-        placeholder="Card heading"
-        label="Card heading"
+        placeholder={t("cardHeading")}
+        label={t("cardHeading")}
         onChange={(heading) => set({ heading })}
         style={{
           margin: "0 0 8px",
@@ -222,8 +226,8 @@ export function CardView({ block }: { block: CardBlock }) {
       <InlineText
         as="p"
         value={data.body}
-        placeholder="A short description"
-        label="Card text"
+        placeholder={t("shortDescription")}
+        label={t("cardText")}
         onChange={(body) => set({ body })}
         style={{
           margin: "0 0 16px",
@@ -250,8 +254,8 @@ export function CardView({ block }: { block: CardBlock }) {
         >
           <InlineText
             value={data.buttonText}
-            placeholder="Button"
-            label="Card button"
+            placeholder={t("button")}
+            label={t("cardButton")}
             onChange={(buttonText) => set({ buttonText })}
           />
         </span>
@@ -262,6 +266,7 @@ export function CardView({ block }: { block: CardBlock }) {
 
 export function ListView({ block }: { block: ListBlock }) {
   const store = useEmailEditor();
+  const t = useTranslations("studio.emailEditor.canvas");
   const { data, style: s } = block;
   const horizontal = s.layout === "horizontal";
   const iconSize = s.iconSize ?? 20;
@@ -317,8 +322,8 @@ export function ListView({ block }: { block: ListBlock }) {
             <div>
               <InlineText
                 value={item.text}
-                placeholder="List item"
-                label="List item"
+                placeholder={t("listItem")}
+                label={t("listItem")}
                 onChange={(text) => setItem(item.id, text)}
                 style={{
                   color: s.textColor,
@@ -351,6 +356,7 @@ export function ListView({ block }: { block: ListBlock }) {
 
 export function ProfileView({ block }: { block: ProfileBlock }) {
   const store = useEmailEditor();
+  const t = useTranslations("studio.emailEditor.canvas");
   const { data, style: s } = block;
   const set = (patch: Partial<ProfileBlock["data"]>) =>
     store.update(block.id, { data: patch });
@@ -379,7 +385,7 @@ export function ProfileView({ block }: { block: ProfileBlock }) {
   ) : (
     <button
       type="button"
-      title="Choose a photo"
+      title={t("choosePhoto")}
       onClick={() => void choose()}
       className="flex items-center justify-center border-2 border-dashed border-[#cbd5e1] bg-[#f1f5f9] text-[#94a3b8]"
       style={{
@@ -441,8 +447,8 @@ export function ProfileView({ block }: { block: ProfileBlock }) {
         <InlineText
           as="div"
           value={data.name}
-          placeholder="Name"
-          label="Name"
+          placeholder={t("name")}
+          label={t("name")}
           onChange={(name) => set({ name })}
           style={{
             color: s.nameColor,
@@ -455,8 +461,8 @@ export function ProfileView({ block }: { block: ProfileBlock }) {
         <InlineText
           as="div"
           value={data.role}
-          placeholder="Role"
-          label="Role"
+          placeholder={t("role")}
+          label={t("role")}
           onChange={(role) => set({ role })}
           style={{
             color: s.roleColor,
@@ -470,8 +476,8 @@ export function ProfileView({ block }: { block: ProfileBlock }) {
         <InlineText
           as="div"
           value={data.bio}
-          placeholder="A short bio"
-          label="Bio"
+          placeholder={t("shortBio")}
+          label={t("bio")}
           onChange={(bio) => set({ bio })}
           style={{
             color: s.bioColor,

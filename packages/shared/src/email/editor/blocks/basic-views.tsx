@@ -11,6 +11,8 @@ import {
   Youtube,
 } from "lucide-react";
 
+import { useTranslations } from "next-intl";
+
 import { Button } from "../../../ui/button";
 import { useEmailEditor } from "../store";
 import type {
@@ -27,6 +29,7 @@ import { InlineText } from "./inline-text";
 
 export function HeadingView({ block }: { block: HeadingBlock }) {
   const store = useEmailEditor();
+  const t = useTranslations("studio.emailEditor.canvas");
   const s = block.style;
   const size = s.fontSize || 28;
   const tag = `h${block.data.level || 2}` as "h1" | "h2" | "h3" | "h4";
@@ -41,8 +44,8 @@ export function HeadingView({ block }: { block: HeadingBlock }) {
       <InlineText
         as={tag}
         value={block.data.text}
-        placeholder="Heading"
-        label="Heading"
+        placeholder={t("heading")}
+        label={t("heading")}
         onChange={(text) => store.update(block.id, { data: { text } })}
         style={{
           margin: 0,
@@ -64,6 +67,7 @@ export function HeadingView({ block }: { block: HeadingBlock }) {
 
 export function ButtonView({ block }: { block: ButtonBlock }) {
   const store = useEmailEditor();
+  const t = useTranslations("studio.emailEditor.canvas");
   const s = block.style;
   const border = s.borderWidth
     ? `${s.borderWidth}px ${s.borderStyle && s.borderStyle !== "none" ? s.borderStyle : "solid"} ${s.borderColor || s.backgroundColor}`
@@ -95,8 +99,8 @@ export function ButtonView({ block }: { block: ButtonBlock }) {
       >
         <InlineText
           value={block.data.text}
-          placeholder="Button"
-          label="Button label"
+          placeholder={t("button")}
+          label={t("buttonLabel")}
           onChange={(text) => store.update(block.id, { data: { text } })}
         />
       </span>
@@ -106,6 +110,7 @@ export function ButtonView({ block }: { block: ButtonBlock }) {
 
 export function ImageView({ block }: { block: ImageBlock }) {
   const store = useEmailEditor();
+  const t = useTranslations("studio.emailEditor.canvas");
   const s = block.style;
   const full = !!s.fullWidth;
 
@@ -138,7 +143,7 @@ export function ImageView({ block }: { block: ImageBlock }) {
             variant="outline"
             onClick={() => void choose()}
           >
-            Choose image
+            {t("chooseImage")}
           </Button>
         </div>
       </div>
@@ -182,9 +187,10 @@ export function DividerView({ block }: { block: DividerBlock }) {
 }
 
 export function SpacerView({ block }: { block: SpacerBlock }) {
+  const t = useTranslations("studio.emailEditor.canvas");
   return (
     <div
-      aria-label="Spacer"
+      aria-label={t("spacer")}
       style={{
         height: Math.max(0, block.style.height || 0),
         backgroundColor: block.style.backgroundColor ?? undefined,
@@ -239,6 +245,7 @@ export function SocialIcon({
 }
 
 export function SocialView({ block }: { block: SocialBlock }) {
+  const t = useTranslations("studio.emailEditor.canvas");
   const s = block.style;
   const justify = { left: "flex-start", center: "center", right: "flex-end" }[
     s.alignment ?? "center"
@@ -264,21 +271,19 @@ export function SocialView({ block }: { block: SocialBlock }) {
         />
       ))}
       {block.data.platforms.length === 0 && (
-        <span className="font-sans text-xs opacity-50">
-          Add your social profiles in the settings
-        </span>
+        <span className="font-sans text-xs opacity-50">{t("socialEmpty")}</span>
       )}
     </div>
   );
 }
 
 export function HtmlView({ block }: { block: HtmlBlock }) {
+  const t = useTranslations("studio.emailEditor.canvas");
   return (
     <div style={{ padding: padCss(block.style.padding) }}>
       <div className="flex items-center gap-2 rounded-md border border-dashed border-[#b8b8b8] bg-[#f4f4f4] px-4 py-6 font-sans text-xs text-[#6b6b6b]">
         <Code2 className="h-4 w-4 shrink-0" />
-        Custom HTML (from an imported template). It sends as it is; it can’t be
-        edited here.
+        {t("htmlNote")}
       </div>
     </div>
   );

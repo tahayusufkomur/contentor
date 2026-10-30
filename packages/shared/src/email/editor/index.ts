@@ -1,7 +1,7 @@
 // The native email editor (spec: docs/superpowers/specs/2026-10-22-native-email-design.md).
 export { EmailEditor } from "./email-editor";
 export type { EmailEditorProps } from "./email-editor";
-export { blockLabel } from "./blocks/helpers";
+export { useBlockLabel } from "./blocks/helpers";
 export { blankDesign, createBlock } from "./factory";
 export {
   EMPTY_DESIGN,

@@ -22,18 +22,21 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+import { useTranslations } from "next-intl";
+
 import { cn } from "../../../lib/utils";
 import { Button } from "../../../ui/button";
-import { blockLabel } from "../blocks/helpers";
+import { useBlockLabel } from "../blocks/helpers";
 import { PaletteSource } from "../canvas/dnd";
 import {
   createBlock,
   createQuote,
   createSection,
   createThreeColumns,
+  useDefaultText,
 } from "../factory";
 import { useEmailEditor } from "../store";
-import type { Block } from "../types";
+import type { Block, BlockType } from "../types";
 import { BlockSettings } from "./block-settings";
 import { ColorField, FontField, NumberField, Section } from "./controls";
 
@@ -44,121 +47,54 @@ interface Entry {
   create: () => Block;
 }
 
-const BASICS: Entry[] = [
-  {
-    key: "heading",
-    label: "Heading",
-    icon: Heading,
-    create: () => createBlock("heading"),
-  },
-  {
-    key: "text",
-    label: "Text",
-    icon: Pilcrow,
-    create: () => createBlock("text"),
-  },
-  {
-    key: "button",
-    label: "Button",
-    icon: RectangleHorizontal,
-    create: () => createBlock("button"),
-  },
-  {
-    key: "image",
-    label: "Image",
-    icon: ImageIcon,
-    create: () => createBlock("image"),
-  },
-  {
-    key: "divider",
-    label: "Divider",
-    icon: Minus,
-    create: () => createBlock("divider"),
-  },
-  {
-    key: "spacer",
-    label: "Spacer",
-    icon: MoveVertical,
-    create: () => createBlock("spacer"),
-  },
-];
-
-const LAYOUT: Entry[] = [
-  {
-    key: "columns",
-    label: "2 columns",
-    icon: Columns2,
-    create: () => createBlock("columns"),
-  },
-  {
-    key: "columns3",
-    label: "3 columns",
-    icon: Rows3,
-    create: createThreeColumns,
-  },
-  {
-    key: "section",
-    label: "Section",
-    icon: StretchHorizontal,
-    create: createSection,
-  },
-];
-
-const RICH: Entry[] = [
-  {
-    key: "hero",
-    label: "Hero",
-    icon: ImagePlay,
-    create: () => createBlock("hero"),
-  },
-  {
-    key: "card",
-    label: "Card",
-    icon: LayoutList,
-    create: () => createBlock("card"),
-  },
-  { key: "list", label: "List", icon: List, create: () => createBlock("list") },
-  { key: "quote", label: "Quote", icon: Quote, create: createQuote },
-  {
-    key: "profile",
-    label: "Profile",
-    icon: CircleUser,
-    create: () => createBlock("profile"),
-  },
-  {
-    key: "social",
-    label: "Social links",
-    icon: Share2,
-    create: () => createBlock("social"),
-  },
-];
-
-const ITEM: Entry = {
-  key: "item",
-  label: "Featured item",
-  icon: Sparkles,
-  create: () => createBlock("item"),
-};
-
-const BRAND: Entry[] = [
-  {
-    key: "brandHeader",
-    label: "Brand header",
-    icon: PanelTop,
-    create: () => createBlock("brandHeader"),
-  },
-  {
-    key: "brandFooter",
-    label: "Brand footer",
-    icon: PanelBottom,
-    create: () => createBlock("brandFooter"),
-  },
-];
+/** The palette's entries: names in the creator's language, the blocks they
+ *  create written in the site's. */
+function useEntries() {
+  const t = useTranslations("studio.emailEditor");
+  const text = useDefaultText();
+  const entry = (
+    key: string,
+    label: string,
+    icon: LucideIcon,
+    create: () => Block,
+  ): Entry => ({ key, label, icon, create });
+  const of = (type: BlockType, icon: LucideIcon) =>
+    entry(type, t(`block.${type}`), icon, () => createBlock(type, text));
+  return {
+    item: of("item", Sparkles),
+    basics: [
+      of("heading", Heading),
+      of("text", Pilcrow),
+      of("button", RectangleHorizontal),
+      of("image", ImageIcon),
+      of("divider", Minus),
+      of("spacer", MoveVertical),
+    ],
+    layout: [
+      entry("columns", t("palette.columns2"), Columns2, () =>
+        createBlock("columns", text),
+      ),
+      entry("columns3", t("palette.columns3"), Rows3, createThreeColumns),
+      entry("section", t("palette.section"), StretchHorizontal, createSection),
+    ],
+    rich: [
+      of("hero", ImagePlay),
+      of("card", LayoutList),
+      of("list", List),
+      entry("quote", t("palette.quote"), Quote, () => createQuote(text)),
+      of("profile", CircleUser),
+      of("social", Share2),
+    ],
+    brand: [of("brandHeader", PanelTop), of("brandFooter", PanelBottom)],
+  };
+}
 
 /** The blocks she can add: click puts one after the selected block (or at the
  *  end of the body), drag drops it anywhere. */
 export function Palette({ onAdded }: { onAdded?: () => void }) {
   const store = useEmailEditor();
+  const t = useTranslations("studio.emailEditor");
+  const entries = useEntries();
 
   async function add(entry: Entry) {
     const block = entry.create();
@@ -201,11 +137,11 @@ export function Palette({ onAdded }: { onAdded?: () => void }) {
 
   return (
     <div className="space-y-5 p-3">
-      {store.features.items && group("Your content", [ITEM])}
-      {group("Basics", BASICS)}
-      {group("Layout", LAYOUT)}
-      {group("Blocks", RICH)}
-      {store.features.brand && group("Brand", BRAND)}
+      {store.features.items && group(t("palette.yourContent"), [entries.item])}
+      {group(t("palette.basics"), entries.basics)}
+      {group(t("palette.layout"), entries.layout)}
+      {group(t("palette.blocks"), entries.rich)}
+      {store.features.brand && group(t("palette.brand"), entries.brand)}
     </div>
   );
 }
@@ -213,6 +149,8 @@ export function Palette({ onAdded }: { onAdded?: () => void }) {
 /** Right column: the selected block's settings, else the email's. */
 export function SettingsPanel() {
   const store = useEmailEditor();
+  const t = useTranslations("studio.emailEditor.panel");
+  const blockLabel = useBlockLabel();
   const block = store.selected;
   if (!block) return <EmailSettings />;
   return (
@@ -225,7 +163,7 @@ export function SettingsPanel() {
           variant="ghost"
           onClick={() => store.select(null)}
         >
-          Email settings
+          {t("emailSettings")}
         </Button>
       </div>
       <BlockSettings key={block.id} block={block} />
@@ -235,52 +173,53 @@ export function SettingsPanel() {
 
 function EmailSettings() {
   const store = useEmailEditor();
+  const t = useTranslations("studio.emailEditor.panel");
   const s = store.design.settings;
   const set = store.updateSettings;
   return (
     <div>
       <div className="border-b px-4 py-3">
-        <h3 className="text-sm font-semibold">Email settings</h3>
+        <h3 className="text-sm font-semibold">{t("emailSettings")}</h3>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          Select a block in the email to change it.
+          {t("selectBlockHint")}
         </p>
       </div>
-      <Section title="Colours">
+      <Section title={t("section.colours")}>
         <ColorField
-          label="Page background"
+          label={t("field.pageBackground")}
           value={s.backgroundColor}
           onChange={(v) => set({ backgroundColor: v ?? "brand:surface" })}
         />
         <ColorField
-          label="Email background"
+          label={t("field.emailBackground")}
           value={s.bodyBackgroundColor}
           onChange={(v) =>
             set({ bodyBackgroundColor: v ?? "brand:background" })
           }
         />
         <ColorField
-          label="Text colour"
+          label={t("field.textColour")}
           value={s.defaultColor}
           onChange={(v) => set({ defaultColor: v ?? "brand:foreground" })}
         />
       </Section>
-      <Section title="Text">
+      <Section title={t("section.text")}>
         <FontField
-          label="Font"
+          label={t("field.font")}
           value={s.defaultFont}
           onChange={(defaultFont) => set({ defaultFont })}
         />
         <NumberField
-          label="Text size"
+          label={t("field.textSize")}
           min={12}
           max={22}
           value={s.defaultFontSize}
           onChange={(defaultFontSize) => set({ defaultFontSize })}
         />
       </Section>
-      <Section title="Shape">
+      <Section title={t("section.shape")}>
         <NumberField
-          label="Width"
+          label={t("field.width")}
           min={480}
           max={720}
           step={10}
@@ -288,7 +227,7 @@ function EmailSettings() {
           onChange={(contentWidth) => set({ contentWidth })}
         />
         <NumberField
-          label="Corner radius"
+          label={t("field.cornerRadius")}
           min={0}
           max={24}
           value={s.bodyBorderRadius ?? 0}
@@ -306,12 +245,13 @@ export function PanelTabs({
   value: "add" | "edit";
   onChange: (v: "add" | "edit") => void;
 }) {
+  const t = useTranslations("studio.emailEditor.panel");
   return (
     <div className="flex rounded-lg border bg-muted/40 p-0.5" role="tablist">
       {(
         [
-          ["add", "Add"],
-          ["edit", "Edit"],
+          ["add", t("tabAdd")],
+          ["edit", t("tabEdit")],
         ] as const
       ).map(([v, label]) => (
         <button

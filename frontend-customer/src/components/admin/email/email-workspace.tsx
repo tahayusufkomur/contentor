@@ -38,8 +38,8 @@ import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { useNavigate } from "@shared/navigation/navigation-provider";
 import {
   EmailEditor,
-  blockLabel,
   normalizeDesign,
+  useBlockLabel,
   type Block,
   type BrandKit,
   type CatalogItem,
@@ -210,9 +210,11 @@ export function EmailWorkspace({ target }: { target: WorkspaceTarget }) {
   const [focus, setFocus] = useState<{ id: string; label: string } | null>(
     null,
   );
+  const blockLabel = useBlockLabel();
   const onSelectBlock = useCallback(
     (block: Block | null) =>
       setFocus(block && { id: block.id, label: blockLabel(block.type) }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the label's language only changes with a reload
     [],
   );
 

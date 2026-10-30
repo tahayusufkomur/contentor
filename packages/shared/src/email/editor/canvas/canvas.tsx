@@ -9,6 +9,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Fragment, useState } from "react";
 
 import { SitePreview } from "../../../i18n/site-preview";
@@ -27,7 +28,7 @@ import {
   SocialView,
   SpacerView,
 } from "../blocks/basic-views";
-import { blockLabel, frameCss, padCss } from "../blocks/helpers";
+import { frameCss, padCss, useBlockLabel } from "../blocks/helpers";
 import {
   CardView,
   HeroView,
@@ -40,22 +41,11 @@ import { locateBlock, REGIONS, type ListLoc } from "../tree";
 import type { Block, ColumnsBlock, RegionKey } from "../types";
 import { DropZone, useBlockDrag, useCanvasRef } from "./dnd";
 
-const REGION_LABELS: Record<RegionKey, string> = {
-  header: "Header",
-  body: "Body",
-  footer: "Footer",
-};
-
-const EMPTY_HINTS: Record<RegionKey, string> = {
-  header: "Your header: drop the brand header (logo) here",
-  body: "Drag blocks here, or click one in the Add panel",
-  footer: "Your footer: drop the brand footer here",
-};
-
 /** The email as she will see it, editable: her brand's backdrop, the body at
  *  its width, and the header / body / footer regions marked out. */
 export function Canvas() {
   const store = useEmailEditor();
+  const t = useTranslations("studio.emailEditor.canvas");
   const canvasRef = useCanvasRef();
   const s = store.resolved.settings;
   return (
@@ -87,19 +77,19 @@ export function Canvas() {
         {REGIONS.map((region) => (
           <section
             key={region}
-            aria-label={REGION_LABELS[region]}
+            aria-label={t(`region.${region}`)}
             // Blocks stop their own mouseover: one that reaches here is off every block.
             onMouseOver={() => store.hover(null)}
           >
             <div className="pointer-events-none flex select-none items-center gap-2 px-2 pt-1.5 font-sans text-[10px] font-medium uppercase tracking-[0.14em] text-[#9a9a9a]">
               <span className="h-px flex-1 border-t border-dashed border-[#c9c9c9]" />
-              {REGION_LABELS[region]}
+              {t(`region.${region}`)}
               <span className="h-px flex-1 border-t border-dashed border-[#c9c9c9]" />
             </div>
             <BlockList
               blocks={store.resolved[region].blocks}
               loc={{ region, parentId: null, columnId: null }}
-              empty={EMPTY_HINTS[region]}
+              empty={t(`empty.${region}`)}
             />
           </section>
         ))}
@@ -137,7 +127,7 @@ const toolBtn =
 
 function BlockShell({ block, region }: { block: Block; region: RegionKey }) {
   const store = useEmailEditor();
-  const label = blockLabel(block.type);
+  const label = useBlockLabel()(block.type);
   const { setNodeRef, setActivatorNodeRef, attributes, listeners, isDragging } =
     useBlockDrag(block, label);
   const selected = store.selectedId === block.id;
@@ -196,6 +186,7 @@ function BlockToolbar({
   dragProps: Record<string, unknown>;
 }) {
   const store = useEmailEditor();
+  const t = useTranslations("studio.emailEditor.canvas.toolbar");
   const [confirming, setConfirming] = useState(false);
   const at = locateBlock(store.design, block.id);
   return (
@@ -209,8 +200,8 @@ function BlockToolbar({
         {...dragProps}
         type="button"
         className={cn(toolBtn, "cursor-grab active:cursor-grabbing")}
-        title="Drag to move"
-        aria-label={`Move ${label} block`}
+        title={t("dragToMove")}
+        aria-label={t("moveBlock")}
       >
         <GripVertical className="h-4 w-4" />
       </button>
@@ -218,8 +209,8 @@ function BlockToolbar({
       <button
         type="button"
         className={toolBtn}
-        title="Move up"
-        aria-label="Move up"
+        title={t("moveUp")}
+        aria-label={t("moveUp")}
         disabled={!at || at.index === 0}
         onClick={() => store.moveBy(block.id, -1)}
       >
@@ -228,8 +219,8 @@ function BlockToolbar({
       <button
         type="button"
         className={toolBtn}
-        title="Move down"
-        aria-label="Move down"
+        title={t("moveDown")}
+        aria-label={t("moveDown")}
         disabled={!at || at.index >= at.size - 1}
         onClick={() => store.moveBy(block.id, 1)}
       >
@@ -238,8 +229,8 @@ function BlockToolbar({
       <button
         type="button"
         className={toolBtn}
-        title="Duplicate"
-        aria-label="Duplicate"
+        title={t("duplicate")}
+        aria-label={t("duplicate")}
         onClick={() => store.duplicate(block.id)}
       >
         <Copy className="h-4 w-4" />
@@ -252,8 +243,8 @@ function BlockToolbar({
               toolBtn,
               "text-destructive hover:bg-destructive/10 hover:text-destructive",
             )}
-            title="Delete this block"
-            aria-label="Confirm delete"
+            title={t("deleteThis")}
+            aria-label={t("confirmDelete")}
             onClick={() => store.remove(block.id)}
           >
             <Check className="h-4 w-4" />
@@ -261,8 +252,8 @@ function BlockToolbar({
           <button
             type="button"
             className={toolBtn}
-            title="Keep it"
-            aria-label="Cancel delete"
+            title={t("keepIt")}
+            aria-label={t("cancelDelete")}
             onClick={() => setConfirming(false)}
           >
             <X className="h-4 w-4" />
@@ -275,8 +266,8 @@ function BlockToolbar({
             toolBtn,
             "hover:bg-destructive/10 hover:text-destructive",
           )}
-          title="Delete"
-          aria-label="Delete"
+          title={t("delete")}
+          aria-label={t("delete")}
           onClick={() => setConfirming(true)}
         >
           <Trash2 className="h-4 w-4" />
@@ -293,6 +284,7 @@ function ColumnsView({
   block: ColumnsBlock;
   region: RegionKey;
 }) {
+  const t = useTranslations("studio.emailEditor.canvas");
   const s = block.style;
   const columns = block.data.columns;
   const ratios = block.data.columnRatio ?? [];
@@ -334,7 +326,7 @@ function ColumnsView({
           <BlockList
             blocks={col.blocks}
             loc={{ region, parentId: block.id, columnId: col.id }}
-            empty={`Column ${i + 1}: drop a block`}
+            empty={t("empty.column", { number: i + 1 })}
           />
         </div>
       ))}

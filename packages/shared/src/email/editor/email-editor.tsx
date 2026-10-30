@@ -8,6 +8,7 @@ import {
   Smartphone,
   Undo2,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { cn } from "../../lib/utils";
@@ -139,6 +140,7 @@ function EditorLayout({
   onSelect: (block: Block | null) => void;
 }) {
   const store = useEmailEditor();
+  const t = useTranslations("studio.emailEditor.toolbar");
   const root = useRef<HTMLDivElement>(null);
   const [mode, setMode] = useState<"edit" | "preview">("edit");
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
@@ -201,8 +203,8 @@ function EditorLayout({
           className={barBtn}
           onClick={store.undo}
           disabled={!store.canUndo || mode !== "edit"}
-          title="Undo (⌘Z)"
-          aria-label="Undo"
+          title={t("undoHint")}
+          aria-label={t("undo")}
         >
           <Undo2 className="h-4 w-4" />
         </button>
@@ -211,8 +213,8 @@ function EditorLayout({
           className={barBtn}
           onClick={store.redo}
           disabled={!store.canRedo || mode !== "edit"}
-          title="Redo (⇧⌘Z)"
-          aria-label="Redo"
+          title={t("redoHint")}
+          aria-label={t("redo")}
         >
           <Redo2 className="h-4 w-4" />
         </button>
@@ -221,12 +223,12 @@ function EditorLayout({
             <div
               className="mr-1 flex rounded-md border p-0.5"
               role="group"
-              aria-label="Preview size"
+              aria-label={t("previewSize")}
             >
               {(
                 [
-                  ["desktop", Monitor, "Desktop"],
-                  ["mobile", Smartphone, "Phone"],
+                  ["desktop", Monitor, t("desktop")],
+                  ["mobile", Smartphone, t("phone")],
                 ] as const
               ).map(([value, Icon, label]) => (
                 <button
@@ -249,12 +251,12 @@ function EditorLayout({
           <div
             className="flex rounded-md border p-0.5"
             role="group"
-            aria-label="Mode"
+            aria-label={t("mode")}
           >
             {(
               [
-                ["edit", PencilLine, "Edit"],
-                ["preview", Eye, "Preview"],
+                ["edit", PencilLine, t("edit")],
+                ["preview", Eye, t("preview")],
               ] as const
             ).map(([value, Icon, label]) => (
               <button
@@ -286,7 +288,7 @@ function EditorLayout({
       ) : (
         <div className="flex min-h-0 flex-1 flex-col lg:grid lg:grid-cols-[minmax(200px,232px)_minmax(0,1fr)_minmax(280px,320px)]">
           <aside
-            aria-label="Add blocks"
+            aria-label={t("addBlocks")}
             className="hidden min-h-0 overflow-y-auto border-r bg-muted/20 lg:block"
           >
             <Palette />
@@ -295,7 +297,7 @@ function EditorLayout({
             <Canvas />
           </div>
           <aside
-            aria-label="Block settings"
+            aria-label={t("blockSettings")}
             className="hidden min-h-0 overflow-y-auto border-l lg:block"
           >
             <SettingsPanel />

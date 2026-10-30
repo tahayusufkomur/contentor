@@ -2339,6 +2339,90 @@
     "src": "3cfdfb4f",
     "reviewed": false
   },
+  "site.email.defaults.message": {
+    "src": "42115e91",
+    "reviewed": false
+  },
+  "site.email.defaults.headline": {
+    "src": "c6eb798a",
+    "reviewed": false
+  },
+  "site.email.defaults.buttonLabel": {
+    "src": "9a5ac23f",
+    "reviewed": false
+  },
+  "site.email.defaults.heroHeadline": {
+    "src": "27119778",
+    "reviewed": false
+  },
+  "site.email.defaults.heroSupport": {
+    "src": "e5413031",
+    "reviewed": false
+  },
+  "site.email.defaults.heroButton": {
+    "src": "721a0a79",
+    "reviewed": false
+  },
+  "site.email.defaults.cardBadge": {
+    "src": "6403f2b7",
+    "reviewed": false
+  },
+  "site.email.defaults.cardTitle": {
+    "src": "499886a1",
+    "reviewed": false
+  },
+  "site.email.defaults.cardBody": {
+    "src": "699f11ac",
+    "reviewed": false
+  },
+  "site.email.defaults.cardButton": {
+    "src": "824d76b1",
+    "reviewed": false
+  },
+  "site.email.defaults.listFirst": {
+    "src": "bc80adb3",
+    "reviewed": false
+  },
+  "site.email.defaults.listSecond": {
+    "src": "9726732f",
+    "reviewed": false
+  },
+  "site.email.defaults.listThird": {
+    "src": "120072ff",
+    "reviewed": false
+  },
+  "site.email.defaults.profileName": {
+    "src": "ab42293e",
+    "reviewed": false
+  },
+  "site.email.defaults.profileRole": {
+    "src": "ab3d8531",
+    "reviewed": false
+  },
+  "site.email.defaults.profileBio": {
+    "src": "178e1d19",
+    "reviewed": false
+  },
+  "site.email.defaults.profileBadge": {
+    "src": "817b79b0",
+    "reviewed": false
+  },
+  "site.email.defaults.quote": {
+    "src": "4ff99834",
+    "reviewed": false
+  },
+  "site.email.defaults.quoteBy": {
+    "src": "34e364fd",
+    "reviewed": false
+  },
+  "site.email.defaults.itemButton": {
+    "src": "721a0a79",
+    "reviewed": false
+  },
+  "site.email.unsubscribe": {
+    "src": "834cc0ee",
+    "reviewed": false
+  },
   "studio.plan.perMonth": {
     "src": "e9e0ceb5",
     "reviewed": false
@@ -3621,6 +3705,1258 @@
   },
   "studio.adminKit.page.deleted": {
     "src": "f95f2aae",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.section.customHtml": {
+    "src": "32d53e75",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.section.text": {
+    "src": "c3328c39",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.section.box": {
+    "src": "239ca576",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.section.heading": {
+    "src": "a3089b7f",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.section.style": {
+    "src": "99a0efc6",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.section.button": {
+    "src": "794145f0",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.section.image": {
+    "src": "50e19fda",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.section.size": {
+    "src": "b7152342",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.section.divider": {
+    "src": "912fc145",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.section.spacer": {
+    "src": "f38bbbf9",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.section.columns": {
+    "src": "cf723c59",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.section.profiles": {
+    "src": "0c2a9300",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.section.hero": {
+    "src": "17f5d4f0",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.section.card": {
+    "src": "4d4ce73b",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.section.items": {
+    "src": "44d25b5d",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.section.profile": {
+    "src": "ff4fc027",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.section.brandHeader": {
+    "src": "d21ea5b3",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.section.brandFooter": {
+    "src": "4d457898",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.section.featuredItem": {
+    "src": "36cb67b2",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.size": {
+    "src": "b7152342",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.colour": {
+    "src": "f28563a4",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.lineHeight": {
+    "src": "65be5133",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.background": {
+    "src": "64dd60fe",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.text": {
+    "src": "c3328c39",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.level": {
+    "src": "7c7f5d04",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.weight": {
+    "src": "69c0b815",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.letterSpacing": {
+    "src": "71ae715e",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.capitals": {
+    "src": "ae37f693",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.label": {
+    "src": "74341e3c",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.buttonColour": {
+    "src": "9f2abaf6",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.labelColour": {
+    "src": "14eebac0",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.textSize": {
+    "src": "3cc6e124",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.cornerRadius": {
+    "src": "c7a86e07",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.fullWidth": {
+    "src": "8087e6de",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.innerPaddingSides": {
+    "src": "32c656d8",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.innerPaddingVertical": {
+    "src": "4e366f18",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.altText": {
+    "src": "fa8d7a6c",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.linkOptional": {
+    "src": "0744e3e9",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.edgeToEdge": {
+    "src": "9acb17a1",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.width": {
+    "src": "a58ddf50",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.thickness": {
+    "src": "ad48f341",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.line": {
+    "src": "ea967600",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.spaceAboveAndBelow": {
+    "src": "504aae6f",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.height": {
+    "src": "3f608b49",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.howMany": {
+    "src": "503ce866",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.widths": {
+    "src": "d8e4d9f4",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.gap": {
+    "src": "b2464742",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.verticalAlignment": {
+    "src": "eadf99ec",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.stackOnPhones": {
+    "src": "50d5b66f",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.columnBackground": {
+    "src": "da1886a3",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.columnCornerRadius": {
+    "src": "0178ce4e",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.iconSize": {
+    "src": "7a6728bd",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.icons": {
+    "src": "edb8f6c1",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.spaceBetween": {
+    "src": "b344e091",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.backgroundImage": {
+    "src": "5eb0ff1a",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.headline": {
+    "src": "442250df",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.supportingLine": {
+    "src": "0e543ba3",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.buttonLabel": {
+    "src": "347b2acc",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.buttonLink": {
+    "src": "0058880a",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.shadeColour": {
+    "src": "ab59a4ea",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.shadeStrength": {
+    "src": "cb013591",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.headlineFont": {
+    "src": "55c66bea",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.headlineSize": {
+    "src": "f79aa6d7",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.headlineColour": {
+    "src": "12d5f410",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.buttonLabelColour": {
+    "src": "6c5dfec0",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.textAlignment": {
+    "src": "ca9524f8",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.textPosition": {
+    "src": "da4c81cd",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.title": {
+    "src": "768e0c1c",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.emojiOnTop": {
+    "src": "0a57ac66",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.emoji": {
+    "src": "5090a9e7",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.badge": {
+    "src": "6d12c8ad",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.badgeText": {
+    "src": "effad6ac",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.button": {
+    "src": "794145f0",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.cardColour": {
+    "src": "dd1efde6",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.border": {
+    "src": "5d10d3f4",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.borderColour": {
+    "src": "eeffa837",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.titleFont": {
+    "src": "14088da3",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.titleColour": {
+    "src": "04129768",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.textColour": {
+    "src": "d160595f",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.innerPadding": {
+    "src": "183d4e8c",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.bulletColour": {
+    "src": "743b59d8",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.layout": {
+    "src": "972ad8d8",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.photo": {
+    "src": "d01d9003",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.name": {
+    "src": "709a2322",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.role": {
+    "src": "c3f104d1",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.bio": {
+    "src": "b31fc969",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.photoPosition": {
+    "src": "69d2d4e0",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.photoSize": {
+    "src": "c737ce53",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.nameColour": {
+    "src": "e5a97b07",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.roleColour": {
+    "src": "567faf60",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.bioColour": {
+    "src": "c4ac1043",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.show": {
+    "src": "d97d1ee3",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.logoHeight": {
+    "src": "aa0ddd6d",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.socialProfiles": {
+    "src": "7cce3842",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.address": {
+    "src": "d70f93df",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.note": {
+    "src": "2c924e30",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.feature": {
+    "src": "f981e461",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.picture": {
+    "src": "61852524",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.description": {
+    "src": "55f8ebc8",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.field.priceOrDate": {
+    "src": "6dffe336",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.placeholder.altTextExample": {
+    "src": "a653198f",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.placeholder.noButton": {
+    "src": "9f156f9c",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.placeholder.itemDetail": {
+    "src": "588297d7",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.placeholder.footerNote": {
+    "src": "34c4c607",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.hint.altTextHint": {
+    "src": "9fed3eea",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.hint.customHtml": {
+    "src": "95320d6f",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.hint.text": {
+    "src": "798054fa",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.hint.brandHeader": {
+    "src": "4d2367bd",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.hint.brandFooter": {
+    "src": "700114fc",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.hint.addressMissing": {
+    "src": "ba1dc935",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.hint.itemFreshWithMeta": {
+    "src": "7b92bed0",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.hint.itemFresh": {
+    "src": "671ba119",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.aria.network": {
+    "src": "53ebc572",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.aria.removeProfile": {
+    "src": "362a1984",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.aria.profileLink": {
+    "src": "1d2db1e5",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.aria.bullet": {
+    "src": "b98da0cc",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.aria.itemText": {
+    "src": "20a2b53a",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.aria.itemDetail": {
+    "src": "62bc95ed",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.aria.moveItemUp": {
+    "src": "3b075ee2",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.aria.moveItemDown": {
+    "src": "ccbb951b",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.aria.removeItem": {
+    "src": "76ecba1f",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.option.regular": {
+    "src": "8d4e4ef3",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.option.medium": {
+    "src": "d404968e",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.option.semibold": {
+    "src": "d0f518d7",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.option.bold": {
+    "src": "19e07430",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.option.extraBold": {
+    "src": "59f27d90",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.option.solid": {
+    "src": "d0063586",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.option.dashed": {
+    "src": "7b0a09ba",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.option.dotted": {
+    "src": "14949230",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.option.top": {
+    "src": "cae0435c",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.option.middle": {
+    "src": "ced02810",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.option.bottom": {
+    "src": "cce7f2f2",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.option.colour": {
+    "src": "f28563a4",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.option.grey": {
+    "src": "1ced325d",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.option.stacked": {
+    "src": "9eafca46",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.option.inARow": {
+    "src": "63d76288",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.option.left": {
+    "src": "8ae1c34b",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.option.right": {
+    "src": "954daa8b",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.option.logo": {
+    "src": "83fce832",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.option.logoAndName": {
+    "src": "df6a2ec5",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.option.squareMark": {
+    "src": "35f6b734",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.option.nameOnly": {
+    "src": "224e65ba",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.option.card": {
+    "src": "4d4ce73b",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.option.row": {
+    "src": "9bf7a8e8",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.option.compact": {
+    "src": "1df39aa5",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.option.chooseFeature": {
+    "src": "2199a256",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.option.unavailable": {
+    "src": "7da6ae96",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.option.itemOf": {
+    "src": "b9cab9fd",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.action.useMyProfiles": {
+    "src": "af5bf4ac",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.action.addProfile": {
+    "src": "fbc0fa9f",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.action.addItem": {
+    "src": "fc1290c0",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.action.browseOffers": {
+    "src": "6dc6854a",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.ratio.half": {
+    "src": "95ebd9aa",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.ratio.thirdTwoThirds": {
+    "src": "29bd50cf",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.ratio.twoThirdsThird": {
+    "src": "0336fb43",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.ratio.full": {
+    "src": "10b28a8c",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.ratio.thirds": {
+    "src": "46ca2af6",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.kind.course": {
+    "src": "d82b56ca",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.kind.live": {
+    "src": "8f1dfa30",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.kind.stream": {
+    "src": "d65e4dee",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.kind.zoom": {
+    "src": "95c27c05",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.kind.onsite": {
+    "src": "fb95e850",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.kind.event": {
+    "src": "ad8919ac",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.kind.download": {
+    "src": "a479c9c3",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.kind.post": {
+    "src": "7858ac3f",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.kind.plan": {
+    "src": "53bc9670",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.kind.page": {
+    "src": "fb06270f",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.kind.subscription": {
+    "src": "53bc9670",
+    "reviewed": false
+  },
+  "studio.emailEditor.settings.kind.blogPost": {
+    "src": "7858ac3f",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.colorToken.primary": {
+    "src": "a9a96ec0",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.colorToken.primaryForeground": {
+    "src": "21f9b2aa",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.colorToken.accent": {
+    "src": "233064dd",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.colorToken.accentForeground": {
+    "src": "016ad621",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.colorToken.foreground": {
+    "src": "c3328c39",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.colorToken.muted": {
+    "src": "dee48bca",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.colorToken.background": {
+    "src": "64dd60fe",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.colorToken.surface": {
+    "src": "cda05ca6",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.colorToken.border": {
+    "src": "5d10d3f4",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.colorToken.inverse": {
+    "src": "bbe73938",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.colorToken.inverseForeground": {
+    "src": "91776ef8",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.alignment": {
+    "src": "7f8c5176",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.left": {
+    "src": "8ae1c34b",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.center": {
+    "src": "a2391118",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.right": {
+    "src": "954daa8b",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.numberValue": {
+    "src": "e993f2fb",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.padding": {
+    "src": "9c47ca55",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.top": {
+    "src": "cae0435c",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.bottom": {
+    "src": "cce7f2f2",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.paddingTop": {
+    "src": "eeb6e0d7",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.paddingRight": {
+    "src": "8b46e7bf",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.paddingBottom": {
+    "src": "498c2a8b",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.paddingLeft": {
+    "src": "1f360dda",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.none": {
+    "src": "6eef6648",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.brandColour": {
+    "src": "207b28d4",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.pickAnyColour": {
+    "src": "2f02ccc2",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.hexValue": {
+    "src": "113664f9",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.brandHeadingFont": {
+    "src": "d769ec99",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.brandBodyFont": {
+    "src": "4bcf6fe3",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.font": {
+    "src": "b97c4d4c",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.link": {
+    "src": "d0517071",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.linkPlaceholder": {
+    "src": "e13d33a5",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.choosePageOrOffer": {
+    "src": "36bdaa79",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.image": {
+    "src": "50e19fda",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.replaceImage": {
+    "src": "a7cf7b25",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.chooseImage": {
+    "src": "6c406be5",
+    "reviewed": false
+  },
+  "studio.emailEditor.controls.removeImage": {
+    "src": "5f94b03c",
+    "reviewed": false
+  },
+  "studio.emailEditor.panel.section.colours": {
+    "src": "eb4e9125",
+    "reviewed": false
+  },
+  "studio.emailEditor.panel.section.text": {
+    "src": "c3328c39",
+    "reviewed": false
+  },
+  "studio.emailEditor.panel.section.shape": {
+    "src": "ea5c1a20",
+    "reviewed": false
+  },
+  "studio.emailEditor.panel.field.pageBackground": {
+    "src": "8ef08bf8",
+    "reviewed": false
+  },
+  "studio.emailEditor.panel.field.emailBackground": {
+    "src": "c118adc1",
+    "reviewed": false
+  },
+  "studio.emailEditor.panel.field.textColour": {
+    "src": "d160595f",
+    "reviewed": false
+  },
+  "studio.emailEditor.panel.field.font": {
+    "src": "b97c4d4c",
+    "reviewed": false
+  },
+  "studio.emailEditor.panel.field.textSize": {
+    "src": "3cc6e124",
+    "reviewed": false
+  },
+  "studio.emailEditor.panel.field.width": {
+    "src": "a58ddf50",
+    "reviewed": false
+  },
+  "studio.emailEditor.panel.field.cornerRadius": {
+    "src": "c7a86e07",
+    "reviewed": false
+  },
+  "studio.emailEditor.panel.emailSettings": {
+    "src": "180dd66f",
+    "reviewed": false
+  },
+  "studio.emailEditor.panel.selectBlockHint": {
+    "src": "6800a4b2",
+    "reviewed": false
+  },
+  "studio.emailEditor.panel.tabAdd": {
+    "src": "61cc55aa",
+    "reviewed": false
+  },
+  "studio.emailEditor.panel.tabEdit": {
+    "src": "5301648d",
+    "reviewed": false
+  },
+  "studio.emailEditor.palette.yourContent": {
+    "src": "c11514a6",
+    "reviewed": false
+  },
+  "studio.emailEditor.palette.basics": {
+    "src": "5fcebeef",
+    "reviewed": false
+  },
+  "studio.emailEditor.palette.layout": {
+    "src": "972ad8d8",
+    "reviewed": false
+  },
+  "studio.emailEditor.palette.blocks": {
+    "src": "54c45c03",
+    "reviewed": false
+  },
+  "studio.emailEditor.palette.brand": {
+    "src": "62b4aa57",
+    "reviewed": false
+  },
+  "studio.emailEditor.palette.columns2": {
+    "src": "484e0448",
+    "reviewed": false
+  },
+  "studio.emailEditor.palette.columns3": {
+    "src": "7d1cd5ab",
+    "reviewed": false
+  },
+  "studio.emailEditor.palette.section": {
+    "src": "f2c6b564",
+    "reviewed": false
+  },
+  "studio.emailEditor.palette.quote": {
+    "src": "309028a9",
+    "reviewed": false
+  },
+  "studio.emailEditor.block.text": {
+    "src": "c3328c39",
+    "reviewed": false
+  },
+  "studio.emailEditor.block.heading": {
+    "src": "a3089b7f",
+    "reviewed": false
+  },
+  "studio.emailEditor.block.button": {
+    "src": "794145f0",
+    "reviewed": false
+  },
+  "studio.emailEditor.block.image": {
+    "src": "50e19fda",
+    "reviewed": false
+  },
+  "studio.emailEditor.block.divider": {
+    "src": "912fc145",
+    "reviewed": false
+  },
+  "studio.emailEditor.block.spacer": {
+    "src": "f38bbbf9",
+    "reviewed": false
+  },
+  "studio.emailEditor.block.columns": {
+    "src": "cf723c59",
+    "reviewed": false
+  },
+  "studio.emailEditor.block.social": {
+    "src": "52e0b0a3",
+    "reviewed": false
+  },
+  "studio.emailEditor.block.hero": {
+    "src": "17f5d4f0",
+    "reviewed": false
+  },
+  "studio.emailEditor.block.card": {
+    "src": "4d4ce73b",
+    "reviewed": false
+  },
+  "studio.emailEditor.block.list": {
+    "src": "a1fffaaa",
+    "reviewed": false
+  },
+  "studio.emailEditor.block.profile": {
+    "src": "ff4fc027",
+    "reviewed": false
+  },
+  "studio.emailEditor.block.html": {
+    "src": "32d53e75",
+    "reviewed": false
+  },
+  "studio.emailEditor.block.brandHeader": {
+    "src": "d21ea5b3",
+    "reviewed": false
+  },
+  "studio.emailEditor.block.brandFooter": {
+    "src": "4d457898",
+    "reviewed": false
+  },
+  "studio.emailEditor.block.item": {
+    "src": "36cb67b2",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.region.header": {
+    "src": "31341c6f",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.region.body": {
+    "src": "718a7e8a",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.region.footer": {
+    "src": "26c01e70",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.empty.header": {
+    "src": "513d6268",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.empty.body": {
+    "src": "b96f5295",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.empty.footer": {
+    "src": "f0da0d83",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.empty.column": {
+    "src": "44763b06",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.toolbar.dragToMove": {
+    "src": "0d84b3e5",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.toolbar.moveBlock": {
+    "src": "124aea5f",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.toolbar.moveUp": {
+    "src": "b4f57cd0",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.toolbar.moveDown": {
+    "src": "260ff8ae",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.toolbar.duplicate": {
+    "src": "972d5737",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.toolbar.deleteThis": {
+    "src": "654bb99f",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.toolbar.confirmDelete": {
+    "src": "c9f2829e",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.toolbar.keepIt": {
+    "src": "d9f36924",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.toolbar.cancelDelete": {
+    "src": "c7c4de08",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.toolbar.delete": {
+    "src": "f6fdbe48",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.text": {
+    "src": "c3328c39",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.heading": {
+    "src": "a3089b7f",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.button": {
+    "src": "794145f0",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.buttonLabel": {
+    "src": "347b2acc",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.chooseImage": {
+    "src": "6c406be5",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.spacer": {
+    "src": "f38bbbf9",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.socialEmpty": {
+    "src": "3fb6f910",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.htmlNote": {
+    "src": "17a828a8",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.itemGone": {
+    "src": "84994d04",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.itemPick": {
+    "src": "e85af993",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.itemChoose": {
+    "src": "c3b69e66",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.headline": {
+    "src": "442250df",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.heroHeadline": {
+    "src": "1c3f38ce",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.supportingLine": {
+    "src": "cdd35833",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.heroSubheading": {
+    "src": "b18fe03d",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.heroButton": {
+    "src": "38902ca3",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.badge": {
+    "src": "6d12c8ad",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.cardHeading": {
+    "src": "8d689310",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.shortDescription": {
+    "src": "5284b1f0",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.cardText": {
+    "src": "602fc552",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.cardButton": {
+    "src": "488d0944",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.listItem": {
+    "src": "8709df24",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.choosePhoto": {
+    "src": "90bd2810",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.name": {
+    "src": "709a2322",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.role": {
+    "src": "c3f104d1",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.shortBio": {
+    "src": "dfbfc8ce",
+    "reviewed": false
+  },
+  "studio.emailEditor.canvas.bio": {
+    "src": "b31fc969",
+    "reviewed": false
+  },
+  "studio.emailEditor.toolbar.undoHint": {
+    "src": "b35df2eb",
+    "reviewed": false
+  },
+  "studio.emailEditor.toolbar.undo": {
+    "src": "39fc7212",
+    "reviewed": false
+  },
+  "studio.emailEditor.toolbar.redoHint": {
+    "src": "95914ad2",
+    "reviewed": false
+  },
+  "studio.emailEditor.toolbar.redo": {
+    "src": "471b94d4",
+    "reviewed": false
+  },
+  "studio.emailEditor.toolbar.previewSize": {
+    "src": "ea238910",
+    "reviewed": false
+  },
+  "studio.emailEditor.toolbar.desktop": {
+    "src": "532c67fe",
+    "reviewed": false
+  },
+  "studio.emailEditor.toolbar.phone": {
+    "src": "77064d52",
+    "reviewed": false
+  },
+  "studio.emailEditor.toolbar.mode": {
+    "src": "a7b93d21",
+    "reviewed": false
+  },
+  "studio.emailEditor.toolbar.edit": {
+    "src": "5301648d",
+    "reviewed": false
+  },
+  "studio.emailEditor.toolbar.preview": {
+    "src": "f1fbb2b4",
+    "reviewed": false
+  },
+  "studio.emailEditor.toolbar.addBlocks": {
+    "src": "11d0841f",
+    "reviewed": false
+  },
+  "studio.emailEditor.toolbar.blockSettings": {
+    "src": "a11ff58a",
+    "reviewed": false
+  },
+  "studio.emailEditor.preview.failed": {
+    "src": "e6dbee19",
+    "reviewed": false
+  },
+  "studio.emailEditor.preview.retry": {
+    "src": "042c862e",
+    "reviewed": false
+  },
+  "studio.emailEditor.preview.loading": {
+    "src": "589bd4e4",
+    "reviewed": false
+  },
+  "studio.emailEditor.preview.title": {
+    "src": "a991b7e6",
+    "reviewed": false
+  },
+  "studio.emailEditor.text.placeholder": {
+    "src": "2ceb3a53",
+    "reviewed": false
+  },
+  "studio.emailEditor.text.format.bold": {
+    "src": "19e07430",
+    "reviewed": false
+  },
+  "studio.emailEditor.text.format.italic": {
+    "src": "1616e2e5",
+    "reviewed": false
+  },
+  "studio.emailEditor.text.format.underline": {
+    "src": "39773aa3",
+    "reviewed": false
+  },
+  "studio.emailEditor.text.format.link": {
+    "src": "d0517071",
+    "reviewed": false
+  },
+  "studio.emailEditor.text.format.bulletedList": {
+    "src": "dd870cfc",
+    "reviewed": false
+  },
+  "studio.emailEditor.text.format.numberedList": {
+    "src": "8294ea4f",
+    "reviewed": false
+  },
+  "studio.emailEditor.text.format.insertFirstName": {
+    "src": "ea0587cf",
     "reviewed": false
   }
 }

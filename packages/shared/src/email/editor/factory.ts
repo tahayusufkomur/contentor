@@ -2,6 +2,9 @@
 // added today follows a look change tomorrow. Insets match the text column
 // (32px each side) so blocks line up without fiddling.
 
+import { useTranslations } from "next-intl";
+
+import type siteEn from "../../i18n/messages/en/site.json";
 import { BRAND_SETTINGS, mintBlockId } from "./tree";
 import type {
   Block,
@@ -10,6 +13,20 @@ import type {
   EmailDesign,
   Spacing,
 } from "./types";
+
+/** The words a new block starts with. What a student reads if she leaves them
+ *  alone, so they come in the SITE's language (site.email.defaults.*), once:
+ *  after that the text is hers. */
+export type DefaultKey = keyof (typeof siteEn)["email"]["defaults"];
+export type DefaultText = (key: DefaultKey) => string;
+
+export function useDefaultText(): DefaultText {
+  const t = useTranslations("site.email.defaults");
+  return (key) => t(key);
+}
+
+const escapeHtml = (s: string) =>
+  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 const pad = (top: number, side: number, bottom: number = top): Spacing => ({
   top,
@@ -45,21 +62,21 @@ function columns(
   };
 }
 
-export function createBlock(type: BlockType): Block {
+export function createBlock(type: BlockType, text: DefaultText): Block {
   const id = mintBlockId();
   switch (type) {
     case "text":
       return {
         id,
         type,
-        data: { html: "<p>Write your message here.</p>", variables: [] },
+        data: { html: `<p>${escapeHtml(text("message"))}</p>`, variables: [] },
         style: { padding: pad(10, SIDE) },
       };
     case "heading":
       return {
         id,
         type,
-        data: { text: "A headline worth reading", level: 2 },
+        data: { text: text("headline"), level: 2 },
         style: {
           padding: pad(20, SIDE, 8),
           alignment: "left",
@@ -75,7 +92,7 @@ export function createBlock(type: BlockType): Block {
       return {
         id,
         type,
-        data: { text: "Find out more", url: "/" },
+        data: { text: text("buttonLabel"), url: "/" },
         style: {
           padding: pad(16, SIDE),
           alignment: "left",
@@ -148,9 +165,9 @@ export function createBlock(type: BlockType): Block {
         type,
         data: {
           backgroundImage: "",
-          heading: "Something new is here",
-          subheading: "One line on why it matters to them.",
-          buttonText: "Take a look",
+          heading: text("heroHeadline"),
+          subheading: text("heroSupport"),
+          buttonText: text("heroButton"),
           buttonUrl: "/",
         },
         style: {
@@ -179,11 +196,11 @@ export function createBlock(type: BlockType): Block {
           iconImageSrc: "",
           iconImageAlt: "",
           showBadge: false,
-          badgeText: "New",
-          heading: "A short title",
-          body: "Two lines on what this is and who it is for.",
+          badgeText: text("cardBadge"),
+          heading: text("cardTitle"),
+          body: text("cardBody"),
           showButton: true,
-          buttonText: "Learn more",
+          buttonText: text("cardButton"),
           buttonUrl: "/",
         },
         style: {
@@ -222,16 +239,14 @@ export function createBlock(type: BlockType): Block {
         id,
         type,
         data: {
-          items: [
-            "First thing they get",
-            "Second thing they get",
-            "Third thing they get",
-          ].map((text) => ({
-            id: mintBlockId(),
-            icon: "✓",
-            text,
-            subtitle: "",
-          })),
+          items: [text("listFirst"), text("listSecond"), text("listThird")].map(
+            (item) => ({
+              id: mintBlockId(),
+              icon: "✓",
+              text: item,
+              subtitle: "",
+            }),
+          ),
         },
         style: {
           padding: pad(12, SIDE),
@@ -255,11 +270,11 @@ export function createBlock(type: BlockType): Block {
         data: {
           imageSrc: "",
           imageAlt: "",
-          name: "Your name",
-          role: "What you do",
-          bio: "A sentence about you, in your own voice.",
+          name: text("profileName"),
+          role: text("profileRole"),
+          bio: text("profileBio"),
           showBadge: false,
-          badgeText: "Teacher",
+          badgeText: text("profileBadge"),
         },
         style: {
           padding: pad(24, SIDE),
@@ -323,7 +338,7 @@ export function createBlock(type: BlockType): Block {
           showImage: true,
           showSummary: true,
           showMeta: true,
-          buttonText: "Take a look",
+          buttonText: text("itemButton"),
         },
         style: {
           padding: pad(12, SIDE),
@@ -353,12 +368,12 @@ export function createSection(): ColumnsBlock {
 }
 
 /** A quote: larger serif-ish text on the surface colour. */
-export function createQuote(): Block {
+export function createQuote(text: DefaultText): Block {
   return {
     id: mintBlockId(),
     type: "text",
     data: {
-      html: "<p><em>“A sentence a student said that you are proud of.”</em></p><p>— Their name</p>",
+      html: `<p><em>${escapeHtml(text("quote"))}</em></p><p>${escapeHtml(text("quoteBy"))}</p>`,
       variables: [],
     },
     style: {
@@ -372,11 +387,13 @@ export function createQuote(): Block {
 
 /** Her header, an empty body and her footer, all in brand tokens. */
 export function blankDesign(): EmailDesign {
+  // The header and footer carry her brand, no words of ours.
+  const none: DefaultText = () => "";
   return {
     version: 1,
     settings: { ...BRAND_SETTINGS },
-    header: { blocks: [createBlock("brandHeader")] },
+    header: { blocks: [createBlock("brandHeader", none)] },
     body: { blocks: [] },
-    footer: { blocks: [createBlock("brandFooter")] },
+    footer: { blocks: [createBlock("brandFooter", none)] },
   };
 }

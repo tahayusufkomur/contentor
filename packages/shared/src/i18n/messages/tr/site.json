@@ -751,5 +751,30 @@
   "unknownHost": {
     "title": "Site bulunamadı",
     "text": "Bu adreste bir Contentor sitesi yok. Bağlantıyı kontrol et ya da site sahibiyle iletişime geç."
+  },
+  "email": {
+    "defaults": {
+      "message": "Mesajını buraya yaz.",
+      "headline": "Okumaya değer bir başlık",
+      "buttonLabel": "Daha fazlasını öğren",
+      "heroHeadline": "Yeni bir şey var",
+      "heroSupport": "Bunun onlar için neden önemli olduğunu tek satırda anlat.",
+      "heroButton": "Göz at",
+      "cardBadge": "Yeni",
+      "cardTitle": "Kısa bir başlık",
+      "cardBody": "Bunun ne olduğunu ve kimin için olduğunu iki satırda anlat.",
+      "cardButton": "Daha fazla bilgi",
+      "listFirst": "Aldıkları ilk şey",
+      "listSecond": "Aldıkları ikinci şey",
+      "listThird": "Aldıkları üçüncü şey",
+      "profileName": "Adın",
+      "profileRole": "Ne iş yaptığın",
+      "profileBio": "Kendi ağzından, seni anlatan bir cümle.",
+      "profileBadge": "İçerik üreticisi",
+      "quote": "“Bir öğrencinin söylediği, gurur duyduğun bir cümle.”",
+      "quoteBy": "— Öğrencinin adı",
+      "itemButton": "Göz at"
+    },
+    "unsubscribe": "Abonelikten çık"
   }
 }

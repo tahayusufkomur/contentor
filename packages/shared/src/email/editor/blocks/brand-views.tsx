@@ -2,6 +2,8 @@
 
 import { Sparkles } from "lucide-react";
 
+import { useTranslations } from "next-intl";
+
 import { Button } from "../../../ui/button";
 import { useEmailEditor } from "../store";
 import type {
@@ -65,6 +67,8 @@ export function BrandHeaderView({ block }: { block: BrandHeaderBlock }) {
 
 export function BrandFooterView({ block }: { block: BrandFooterBlock }) {
   const { kit } = useEmailEditor();
+  // What students read at the foot of the email: the site's language.
+  const site = useTranslations("site.email");
   const s = block.style;
   const size = s.fontSize ?? 13;
   const align = s.alignment ?? "center";
@@ -106,7 +110,9 @@ export function BrandFooterView({ block }: { block: BrandFooterBlock }) {
       )}
       {block.data.note && <p style={line}>{block.data.note}</p>}
       <p style={{ ...line, margin: 0 }}>
-        <span style={{ textDecoration: "underline" }}>Unsubscribe</span>
+        <span style={{ textDecoration: "underline" }}>
+          {site("unsubscribe")}
+        </span>
       </p>
     </div>
   );
@@ -131,6 +137,7 @@ function ItemImage({ item, height }: { item: CatalogItem; height?: number }) {
 
 export function ItemView({ block }: { block: ItemBlock }) {
   const store = useEmailEditor();
+  const t = useTranslations("studio.emailEditor.canvas");
   const s = block.style;
   const d = block.data;
   const item = store.items.find((i) => i.ref === d.ref);
@@ -147,9 +154,7 @@ export function ItemView({ block }: { block: ItemBlock }) {
       <div style={{ padding: padCss(s.padding) }}>
         <div className="flex flex-col items-center justify-center gap-2 rounded-md border border-dashed border-[#b8b8b8] bg-[#f4f4f4] px-4 py-8 text-center font-sans text-sm text-[#6b6b6b]">
           <Sparkles className="h-5 w-5" />
-          {d.ref
-            ? "This item is no longer available. Pick something else to feature."
-            : "Pick something to feature"}
+          {d.ref ? t("itemGone") : t("itemPick")}
           {store.pickItem && (
             <Button
               type="button"
@@ -157,7 +162,7 @@ export function ItemView({ block }: { block: ItemBlock }) {
               variant="outline"
               onClick={() => void choose()}
             >
-              Choose…
+              {t("itemChoose")}
             </Button>
           )}
         </div>

@@ -751,5 +751,30 @@
   "unknownHost": {
     "title": "Website nicht gefunden",
     "text": "Unter dieser Adresse gibt es keine Contentor-Website. Prüf den Link oder wende dich an den Inhaber der Website."
+  },
+  "email": {
+    "defaults": {
+      "message": "Schreib hier deine Nachricht.",
+      "headline": "Eine Überschrift, die sich lohnt",
+      "buttonLabel": "Mehr erfahren",
+      "heroHeadline": "Es gibt etwas Neues",
+      "heroSupport": "Eine Zeile dazu, warum es für sie wichtig ist.",
+      "heroButton": "Jetzt ansehen",
+      "cardBadge": "Neu",
+      "cardTitle": "Ein kurzer Titel",
+      "cardBody": "Zwei Zeilen dazu, was das ist und für wen es gedacht ist.",
+      "cardButton": "Mehr erfahren",
+      "listFirst": "Das Erste, was sie bekommen",
+      "listSecond": "Das Zweite, was sie bekommen",
+      "listThird": "Das Dritte, was sie bekommen",
+      "profileName": "Dein Name",
+      "profileRole": "Was du machst",
+      "profileBio": "Ein Satz über dich, in deinen eigenen Worten.",
+      "profileBadge": "Creator",
+      "quote": "„Ein Satz eines Teilnehmers, auf den du stolz bist.“",
+      "quoteBy": "— Name der Person",
+      "itemButton": "Jetzt ansehen"
+    },
+    "unsubscribe": "Abmelden"
   }
 }

@@ -14,7 +14,8 @@ import {
   ListOrdered,
   Underline as UnderlineIcon,
 } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
+import { useEffect, useMemo, useRef } from "react";
 
 import { cn } from "../../../lib/utils";
 import { useEmailEditor } from "../store";
@@ -23,7 +24,7 @@ import type { TextBlock } from "../types";
 import { padCss } from "./helpers";
 
 // Email-safe rich text: paragraphs, bold/italic/underline, links and lists.
-const EXTENSIONS = [
+const extensions = (placeholder: string) => [
   StarterKit.configure({
     heading: false,
     codeBlock: false,
@@ -34,7 +35,7 @@ const EXTENSIONS = [
   }),
   Underline,
   Link.configure({ openOnClick: false, autolink: false }),
-  Placeholder.configure({ placeholder: "Write something…" }),
+  Placeholder.configure({ placeholder }),
 ];
 
 /** Text the renderer gives paragraphs, links and lists (see _normalize_text_html). */
@@ -51,11 +52,14 @@ export function TextView({
 }) {
   const store = useEmailEditor();
   const settings = store.resolved.settings;
+  const t = useTranslations("studio.emailEditor.text");
   const update = useRef(store.update);
   update.current = store.update;
+  const placeholder = t("placeholder");
+  const exts = useMemo(() => extensions(placeholder), [placeholder]);
 
   const editor = useEditor({
-    extensions: EXTENSIONS,
+    extensions: exts,
     content: block.data.html,
     immediatelyRender: false,
     editorProps: {
@@ -103,6 +107,7 @@ const tool =
 
 function FormatBar({ editor }: { editor: Editor }) {
   const store = useEmailEditor();
+  const t = useTranslations("studio.emailEditor.text.format");
   const button = (
     label: string,
     icon: React.ReactNode,
@@ -140,44 +145,44 @@ function FormatBar({ editor }: { editor: Editor }) {
       className="absolute bottom-full left-1 z-30 mb-1 flex items-center gap-0.5 rounded-lg border bg-background/95 p-0.5 font-sans shadow-md backdrop-blur"
     >
       {button(
-        "Bold",
+        t("bold"),
         <Bold className="h-4 w-4" />,
         () => editor.chain().focus().toggleBold().run(),
         editor.isActive("bold"),
       )}
       {button(
-        "Italic",
+        t("italic"),
         <Italic className="h-4 w-4" />,
         () => editor.chain().focus().toggleItalic().run(),
         editor.isActive("italic"),
       )}
       {button(
-        "Underline",
+        t("underline"),
         <UnderlineIcon className="h-4 w-4" />,
         () => editor.chain().focus().toggleUnderline().run(),
         editor.isActive("underline"),
       )}
       {button(
-        "Link",
+        t("link"),
         <Link2 className="h-4 w-4" />,
         () => void link(),
         editor.isActive("link"),
       )}
       <span className="mx-0.5 h-5 w-px bg-border" />
       {button(
-        "Bulleted list",
+        t("bulletedList"),
         <List className="h-4 w-4" />,
         () => editor.chain().focus().toggleBulletList().run(),
         editor.isActive("bulletList"),
       )}
       {button(
-        "Numbered list",
+        t("numberedList"),
         <ListOrdered className="h-4 w-4" />,
         () => editor.chain().focus().toggleOrderedList().run(),
         editor.isActive("orderedList"),
       )}
       <span className="mx-0.5 h-5 w-px bg-border" />
-      {button("Insert first name", <AtSign className="h-4 w-4" />, () =>
+      {button(t("insertFirstName"), <AtSign className="h-4 w-4" />, () =>
         editor.chain().focus().insertContent("{{FirstName}}").run(),
       )}
     </div>

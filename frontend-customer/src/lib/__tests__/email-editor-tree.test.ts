@@ -20,6 +20,7 @@ import type {
   EmailDesign,
   HeadingBlock,
 } from "@shared/email/editor/types";
+import { englishText } from "./email-fixtures";
 
 const KIT: BrandKit = {
   name: "Studio Sol",
@@ -44,9 +45,9 @@ const KIT: BrandKit = {
 
 /** body: [heading, columns(col A: [text], col B: [])], footer: [brandFooter] */
 function sample() {
-  const heading = createBlock("heading") as HeadingBlock;
-  const text = createBlock("text");
-  const columns = createBlock("columns") as ColumnsBlock;
+  const heading = createBlock("heading", englishText) as HeadingBlock;
+  const text = createBlock("text", englishText);
+  const columns = createBlock("columns", englishText) as ColumnsBlock;
   columns.data.columns[0].blocks = [text];
   const design: EmailDesign = {
     ...blankDesign(),
@@ -172,7 +173,7 @@ describe("email editor tree", () => {
 
   it("inserts at an index, clamped", () => {
     const { design } = sample();
-    const spacer = createBlock("spacer");
+    const spacer = createBlock("spacer", englishText);
     expect(
       insertBlock(design, spacer, { region: "body", index: 99 }).body.blocks.at(
         -1,

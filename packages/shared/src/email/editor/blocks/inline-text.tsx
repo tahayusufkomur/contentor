@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { createElement, useEffect, useRef, type CSSProperties } from "react";
 
 import { cn } from "../../../lib/utils";
@@ -27,6 +28,7 @@ export function InlineText({
   className?: string;
   label?: string;
 }) {
+  const t = useTranslations("studio.emailEditor.canvas");
   const ref = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -42,7 +44,7 @@ export function InlineText({
     suppressContentEditableWarning: true,
     spellCheck: false,
     role: "textbox",
-    "aria-label": label ?? placeholder ?? "Text",
+    "aria-label": label ?? placeholder ?? t("text"),
     style,
     className: cn(
       "cursor-text rounded-sm outline-none focus:ring-2 focus:ring-primary/40",

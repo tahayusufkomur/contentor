@@ -8,6 +8,7 @@ import {
   Link2,
   X,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { cn } from "../../../lib/utils";
@@ -18,22 +19,24 @@ import { useEmailEditor } from "../store";
 import { tokenName } from "../tree";
 import type { Alignment, Spacing } from "../types";
 
-// Her brand's colours, in the order the swatch grid shows them.
-export const COLOR_TOKENS: [string, string][] = [
-  ["primary", "Primary"],
-  ["primaryForeground", "On primary"],
-  ["accent", "Accent"],
-  ["accentForeground", "On accent"],
-  ["foreground", "Text"],
-  ["muted", "Muted text"],
-  ["background", "Background"],
-  ["surface", "Surface"],
-  ["border", "Border"],
-  ["inverse", "Inverse"],
-  ["inverseForeground", "On inverse"],
-];
-
-const TOKEN_LABEL = Object.fromEntries(COLOR_TOKENS);
+// Her brand's colours, in the order the swatch grid shows them (each is a
+// message: studio.emailEditor.controls.colorToken.<name>).
+export const COLOR_TOKENS = [
+  "primary",
+  "primaryForeground",
+  "accent",
+  "accentForeground",
+  "foreground",
+  "muted",
+  "background",
+  "surface",
+  "border",
+  "inverse",
+  "inverseForeground",
+] as const;
+type ColorToken = (typeof COLOR_TOKENS)[number];
+const isColorToken = (name: string | null): name is ColorToken =>
+  (COLOR_TOKENS as readonly string[]).includes(name ?? "");
 
 export const EMAIL_FONTS: [string, string][] = [
   ["Georgia, 'Times New Roman', Times, serif", "Georgia"],
@@ -152,6 +155,7 @@ export function NumberField({
   step?: number;
   unit?: string;
 }) {
+  const t = useTranslations("studio.emailEditor.controls");
   const v = value ?? min;
   return (
     <Field label={label}>
@@ -169,7 +173,7 @@ export function NumberField({
         <div className="flex w-[4.75rem] items-center rounded-lg border border-input bg-background pr-2 focus-within:ring-[3px] focus-within:ring-ring">
           <input
             type="number"
-            aria-label={`${label} value`}
+            aria-label={t("numberValue", { label })}
             min={min}
             max={max}
             step={step}
@@ -266,7 +270,7 @@ export function Segmented<T extends string | number>({
 }
 
 export function AlignField({
-  label = "Alignment",
+  label,
   value,
   onChange,
 }: {
@@ -274,15 +278,16 @@ export function AlignField({
   value: Alignment | undefined;
   onChange: (v: Alignment) => void;
 }) {
+  const t = useTranslations("studio.emailEditor.controls");
   return (
     <Segmented<Alignment>
-      label={label}
+      label={label ?? t("alignment")}
       value={value ?? "left"}
       onChange={onChange}
       options={[
-        ["left", <AlignLeft key="l" className="h-4 w-4" />, "Left"],
-        ["center", <AlignCenter key="c" className="h-4 w-4" />, "Center"],
-        ["right", <AlignRight key="r" className="h-4 w-4" />, "Right"],
+        ["left", <AlignLeft key="l" className="h-4 w-4" />, t("left")],
+        ["center", <AlignCenter key="c" className="h-4 w-4" />, t("center")],
+        ["right", <AlignRight key="r" className="h-4 w-4" />, t("right")],
       ]}
     />
   );
@@ -306,7 +311,7 @@ export function ToggleField({
 }
 
 export function SpacingField({
-  label = "Padding",
+  label,
   value,
   onChange,
 }: {
@@ -314,23 +319,25 @@ export function SpacingField({
   value: Spacing | undefined;
   onChange: (v: Spacing) => void;
 }) {
+  const t = useTranslations("studio.emailEditor.controls");
   const v = value ?? { top: 0, right: 0, bottom: 0, left: 0 };
-  const sides: [keyof Spacing, string][] = [
-    ["top", "Top"],
-    ["right", "Right"],
-    ["bottom", "Bottom"],
-    ["left", "Left"],
+  const shown = label ?? t("padding");
+  const sides: [keyof Spacing, string, string][] = [
+    ["top", t("top"), t("paddingTop", { label: shown })],
+    ["right", t("right"), t("paddingRight", { label: shown })],
+    ["bottom", t("bottom"), t("paddingBottom", { label: shown })],
+    ["left", t("left"), t("paddingLeft", { label: shown })],
   ];
   return (
-    <Field label={label}>
+    <Field label={shown}>
       <div className="grid grid-cols-4 gap-1.5">
-        {sides.map(([side, name]) => (
+        {sides.map(([side, name, aria]) => (
           <label key={side} className="space-y-0.5 text-center">
             <input
               type="number"
               min={0}
               max={160}
-              aria-label={`${label} ${name.toLowerCase()}`}
+              aria-label={aria}
               value={v[side] ?? 0}
               onChange={(e) =>
                 onChange({
@@ -363,14 +370,17 @@ export function ColorField({
   onChange: (v: string | null) => void;
   allowNone?: boolean;
 }) {
+  const t = useTranslations("studio.emailEditor.controls");
   const { kit } = useEmailEditor();
   const [open, setOpen] = useState(false);
   const token = tokenName(value);
   const shown = token ? (kit.colors[token] ?? "#000000") : value || "";
   const name = token
-    ? `Brand · ${TOKEN_LABEL[token] ?? token}`
-    : value || "None";
-  const tokens = COLOR_TOKENS.filter(([t]) => kit.colors[t]);
+    ? t("brandColour", {
+        name: isColorToken(token) ? t(`colorToken.${token}`) : token,
+      })
+    : value || t("none");
+  const tokens = COLOR_TOKENS.filter((id) => kit.colors[id]);
   const [draft, setDraft] = useState("");
 
   return (
@@ -400,36 +410,41 @@ export function ColorField({
         <div className="space-y-2 rounded-lg border bg-muted/30 p-2">
           {tokens.length > 0 && (
             <div className="grid grid-cols-6 gap-1.5">
-              {tokens.map(([t, tLabel]) => (
-                <button
-                  key={t}
-                  type="button"
-                  title={`Brand · ${tLabel}`}
-                  aria-label={`Brand ${tLabel}`}
-                  onClick={() => {
-                    onChange(`brand:${t}`);
-                    setOpen(false);
-                  }}
-                  className={cn(
-                    "h-7 w-full rounded-md border transition-transform hover:scale-105",
-                    token === t &&
-                      "ring-2 ring-primary ring-offset-1 ring-offset-background",
-                  )}
-                  style={{ backgroundColor: kit.colors[t] }}
-                />
-              ))}
+              {tokens.map((tokenId) => {
+                const swatch = t("brandColour", {
+                  name: t(`colorToken.${tokenId}`),
+                });
+                return (
+                  <button
+                    key={tokenId}
+                    type="button"
+                    title={swatch}
+                    aria-label={swatch}
+                    onClick={() => {
+                      onChange(`brand:${tokenId}`);
+                      setOpen(false);
+                    }}
+                    className={cn(
+                      "h-7 w-full rounded-md border transition-transform hover:scale-105",
+                      token === tokenId &&
+                        "ring-2 ring-primary ring-offset-1 ring-offset-background",
+                    )}
+                    style={{ backgroundColor: kit.colors[tokenId] }}
+                  />
+                );
+              })}
             </div>
           )}
           <div className="flex items-center gap-1.5">
             <input
               type="color"
-              aria-label={`${label}: pick any colour`}
+              aria-label={t("pickAnyColour", { label })}
               value={HEX.test(shown) && shown.length === 7 ? shown : "#000000"}
               onChange={(e) => onChange(e.target.value)}
               className="h-8 w-9 shrink-0 cursor-pointer rounded border bg-background p-0.5"
             />
             <input
-              aria-label={`${label}: hex`}
+              aria-label={t("hexValue", { label })}
               placeholder="#1a1a1a"
               value={draft}
               onChange={(e) => {
@@ -449,7 +464,7 @@ export function ColorField({
                   setOpen(false);
                 }}
               >
-                None
+                {t("none")}
               </Button>
             )}
           </div>
@@ -461,7 +476,7 @@ export function ColorField({
 
 /** Her brand fonts first, then fonts every inbox has. */
 export function FontField({
-  label = "Font",
+  label,
   value,
   onChange,
 }: {
@@ -469,19 +484,23 @@ export function FontField({
   value: string | undefined;
   onChange: (v: string) => void;
 }) {
+  const t = useTranslations("studio.emailEditor.controls");
   const { kit } = useEmailEditor();
   const first = (stack: string) =>
     stack.split(",")[0].replace(/['"]/g, "").trim();
   const options: [string, string][] = [
-    ["brand:heading", `Brand heading (${first(kit.fonts.heading)})`],
-    ["brand:body", `Brand body (${first(kit.fonts.body)})`],
+    [
+      "brand:heading",
+      t("brandHeadingFont", { font: first(kit.fonts.heading) }),
+    ],
+    ["brand:body", t("brandBodyFont", { font: first(kit.fonts.body) })],
     ...EMAIL_FONTS,
   ];
   if (value && !options.some(([v]) => v === value))
     options.push([value, first(value)]);
   return (
     <SelectField
-      label={label}
+      label={label ?? t("font")}
       value={value ?? "brand:body"}
       options={options}
       onChange={onChange}
@@ -491,7 +510,7 @@ export function FontField({
 
 /** A link: typed, or picked from her pages and content. */
 export function LinkField({
-  label = "Link",
+  label,
   value,
   onChange,
 }: {
@@ -499,15 +518,17 @@ export function LinkField({
   value: string;
   onChange: (v: string) => void;
 }) {
+  const t = useTranslations("studio.emailEditor.controls");
   const { pickLink } = useEmailEditor();
+  const shown = label ?? t("link");
   return (
-    <Field label={label}>
+    <Field label={shown}>
       <div className="flex gap-1.5">
         <Input
-          aria-label={label}
+          aria-label={shown}
           className="h-9 min-w-0 flex-1"
           value={value ?? ""}
-          placeholder="https:// or /courses/…"
+          placeholder={t("linkPlaceholder")}
           onChange={(e) => onChange(e.target.value)}
         />
         <Button
@@ -515,8 +536,8 @@ export function LinkField({
           size="icon"
           variant="outline"
           className="size-9 shrink-0"
-          title="Choose a page or offer"
-          aria-label="Choose a page or offer"
+          title={t("choosePageOrOffer")}
+          aria-label={t("choosePageOrOffer")}
           onClick={async () => {
             const href = await pickLink(value ?? "");
             if (href !== null) onChange(href);
@@ -531,7 +552,7 @@ export function LinkField({
 
 /** An image: picked from her library (or the catalog), shown as a thumbnail. */
 export function ImageField({
-  label = "Image",
+  label,
   value,
   onPick,
   onClear,
@@ -541,9 +562,10 @@ export function ImageField({
   onPick: (src: string, alt: string, width?: number, height?: number) => void;
   onClear?: () => void;
 }) {
+  const t = useTranslations("studio.emailEditor.controls");
   const { pickImage } = useEmailEditor();
   return (
-    <Field label={label}>
+    <Field label={label ?? t("image")}>
       <div className="flex items-center gap-2">
         <div className="flex h-14 w-20 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted">
           {value ? (
@@ -563,7 +585,7 @@ export function ImageField({
               onPick(picked.src, picked.alt, picked.width, picked.height);
           }}
         >
-          {value ? "Replace" : "Choose image"}
+          {value ? t("replaceImage") : t("chooseImage")}
         </Button>
         {value && onClear && (
           <Button
@@ -571,8 +593,8 @@ export function ImageField({
             size="icon"
             variant="ghost"
             className="size-8"
-            title="Remove image"
-            aria-label="Remove image"
+            title={t("removeImage")}
+            aria-label={t("removeImage")}
             onClick={onClear}
           >
             <X />

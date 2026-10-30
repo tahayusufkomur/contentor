@@ -751,5 +751,30 @@
   "unknownHost": {
     "title": "Site not found",
     "text": "There’s no Contentor site at this address. Check the link or contact the site owner."
+  },
+  "email": {
+    "defaults": {
+      "message": "Write your message here.",
+      "headline": "A headline worth reading",
+      "buttonLabel": "Find out more",
+      "heroHeadline": "Something new is here",
+      "heroSupport": "One line on why it matters to them.",
+      "heroButton": "Take a look",
+      "cardBadge": "New",
+      "cardTitle": "A short title",
+      "cardBody": "Two lines on what this is and who it is for.",
+      "cardButton": "Learn more",
+      "listFirst": "First thing they get",
+      "listSecond": "Second thing they get",
+      "listThird": "Third thing they get",
+      "profileName": "Your name",
+      "profileRole": "What you do",
+      "profileBio": "A sentence about you, in your own voice.",
+      "profileBadge": "Creator",
+      "quote": "“A sentence a student said that you are proud of.”",
+      "quoteBy": "— Their name",
+      "itemButton": "Take a look"
+    },
+    "unsubscribe": "Unsubscribe"
   }
 }
