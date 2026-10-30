@@ -30,7 +30,7 @@
 // studio home, settings and courses, and then a student with an English browser walks
 // the new site as test 1 walks demo-yoga.
 
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Locator, type Page } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
 import { TENANT } from "../helpers/auth";
@@ -150,9 +150,26 @@ test.afterAll(() => {
   setSiteLanguage(SCRATCH_SLUG.replace("-", "_"), "en");
 });
 
-async function expectTurkish(page: Page, pathname: string, base = TENANT, words = candidates, own = authored) {
+/**
+ * `rightPage`, when given, proves the page asked for is the page shown: the address did not redirect
+ * (/admin* goes to /setup while setup is active; a student without a session goes to /login) and
+ * `shown` (a page-specific text of the Turkish messages) is there. Without it only the language and the
+ * leaks are checked, and a Turkish plan picker or setup screen would pass for the studio.
+ */
+async function expectTurkish(
+  page: Page,
+  pathname: string,
+  base = TENANT,
+  words = candidates,
+  own = authored,
+  rightPage?: { shown?: (page: Page) => Locator },
+) {
   await page.goto(`${base}${pathname}`);
   await expect(page.locator("html")).toHaveAttribute("lang", "tr", { timeout: 20_000 });
+  if (rightPage) {
+    await expect(page, `${pathname} redirected`).toHaveURL(`${base}${pathname}`, { timeout: 20_000 });
+    if (rightPage.shown) await expect(rightPage.shown(page).first(), `${pathname} is not the page`).toBeVisible({ timeout: 30_000 });
+  }
   await page.waitForLoadState("networkidle").catch(() => undefined);
   await page.waitForTimeout(500); // client-rendered pages: skeleton to content
   const leaks = await englishLeaks(page, words, own);
@@ -296,13 +313,17 @@ test.describe("creator", () => {
     // The AI may offer a typo fix or alternatives first; Continue keeps the name.
     const answer = page.getByLabel(sf.answerBox.label, { exact: true });
     const keepName = guideAtStart.getByText(sf.opening.pickOrKeep);
-    await expect(keepName.or(answer)).toBeVisible({ timeout: 60_000 });
+    // The first question is "What do you offer?" (or "...I ticked what your bio says."): its Turkish is a
+    // substring of both, read from the backend's own catalog.
+    const offer = page.getByText(translated("What do you offer?")).first();
+    await expect(keepName.or(offer)).toBeVisible({ timeout: 60_000 });
     if (await keepName.isVisible()) await guideAtStart.getByRole("button", { name: sf.opening.continue, exact: true }).click();
     await page.waitForURL(new RegExp(`${SITE_SLUG}\\.localhost/setup`), { timeout: 60_000 });
     await expect(page.locator("html")).toHaveAttribute("lang", "tr");
 
     // ── 3. The interview, in Turkish ───────────────────────────────────────────────
-    await expect(answer).toBeVisible({ timeout: 30_000 });
+    await expect(offer).toBeVisible({ timeout: 30_000 });
+    await expect(answer).toBeVisible();
     await answer.fill(OFFER);
     const send = page.getByRole("button", { name: sf.answerBox.send, exact: true });
     await send.click();
@@ -340,9 +361,9 @@ test.describe("creator", () => {
     // Story and training are real answers, not "you decide" words. The question's identity comes from
     // the interview itself (its field), never from its wording.
     const ownWords = async () => {
-      const res = await page.request.get(`${new URL(page.url()).origin}/api/v1/admin/setup-flow/`).catch(() => null);
-      const state = res?.ok() ? await res.json() : null;
-      const field: string | null = state?.interview?.guide?.field ?? null;
+      const res = await page.request.get(`${new URL(page.url()).origin}/api/v1/admin/setup-flow/`);
+      expect(res.ok(), `the setup-flow state call failed (${res.status()}): the question's field is unknown`).toBeTruthy();
+      const field: string | null = (await res.json())?.interview?.guide?.field ?? null;
       if (field === "story") return STORY;
       if (field === "credentials") return TRAINING;
       return ANYTHING;
@@ -431,9 +452,19 @@ test.describe("creator", () => {
       .join("\n");
     const studioWords = [...new Set([...leakCandidates(enAdmin, trAdmin, trTexts), ...STUDIO_DATES])];
     expect(studioWords.length, "no English admin candidates: message files missing?").toBeGreaterThan(500);
-    const studioOwn = [...stored.authored, ...STUDIO_ALLOWED];
-    for (const pathname of ["/admin", "/admin/settings", "/admin/courses"]) {
-      await expectTurkish(page, pathname, SITE, studioWords, studioOwn);
+    // The studio's course list also holds drafts: with her session the same endpoint returns them, and the
+    // titles the AI wrote are hers (the public read above has only the published ones).
+    const adminCourses = await page.request.get(`${SITE}/api/v1/courses/?limit=100`);
+    expect(adminCourses.ok(), `the studio's course list failed (${adminCourses.status()})`).toBeTruthy();
+    const courseTexts = authoredLeaves(await adminCourses.json());
+    const studioOwn = [...stored.authored, ...courseTexts, ...STUDIO_ALLOWED];
+    const studioPages: [string, (page: Page) => Locator][] = [
+      ["/admin", (p) => p.getByText(trAdmin.welcome.overview)], // the greeting of a live site (setup is over)
+      ["/admin/settings", (p) => p.getByRole("heading", { level: 1, name: trAdmin.nav.items.settings, exact: true })],
+      ["/admin/courses", (p) => p.getByRole("heading", { level: 1, name: trAdmin.nav.items.courses, exact: true })],
+    ];
+    for (const [pathname, shown] of studioPages) {
+      await expectTurkish(page, pathname, SITE, studioWords, studioOwn, { shown });
     }
 
     // ── 6. Test 1's student path, on this site: a student with an English browser ──
@@ -442,10 +473,10 @@ test.describe("creator", () => {
       const student = await studentContext.newPage();
       const publicPaths = ["/", "/courses", "/plans", "/events", "/calendar", "/login"];
       if (stored.courseSlug) publicPaths.splice(2, 0, `/courses/${stored.courseSlug}`);
-      const siteOwn = [...stored.authored, ...STUDIO_ALLOWED];
+      const siteOwn = [...stored.authored, ...courseTexts, ...STUDIO_ALLOWED];
       // Her Turkish copy may hold "sat" or "sun" as words: no date there either.
       const siteWords = candidates.filter((w) => w !== "Sat" && w !== "Sun");
-      for (const pathname of publicPaths) await expectTurkish(student, pathname, SITE, siteWords, siteOwn);
+      for (const pathname of publicPaths) await expectTurkish(student, pathname, SITE, siteWords, siteOwn, {});
 
       // A real tenant emails the sign-in link (demo tenants return it instead).
       await student.goto(`${SITE}/login`);
@@ -455,8 +486,8 @@ test.describe("creator", () => {
       expect(link, "no /callback link in the sign-in email").toBeTruthy();
       await student.goto(link!.replace(/&amp;/g, "&"));
       await student.waitForURL((url) => !url.pathname.startsWith("/callback"), { timeout: 30_000 });
-      await expectTurkish(student, "/dashboard", SITE, siteWords, siteOwn);
-      expect(student.url(), "the signed-in student reaches the dashboard").toBe(`${SITE}/dashboard`);
+      // The address must hold (a new student with no access could be sent elsewhere) before the leak check.
+      await expectTurkish(student, "/dashboard", SITE, siteWords, siteOwn, {});
     } finally {
       await studentContext.close();
     }

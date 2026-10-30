@@ -20,11 +20,19 @@ export function leafValues(tree: object): string[] {
 
 const isLetter = (ch: string | undefined) => !!ch && /[\p{L}\p{N}]/u.test(ch);
 
-/** The phrases found in `text` as whole phrases, ignoring case. */
+/**
+ * Lower-case for comparing, with the dotted capital İ read as an i. A page in Turkish uppercases
+ * through CSS to "LİVE" and "PUBLİSHED", and "İ".toLowerCase() is "i" plus a combining dot, which
+ * would never match the English "live". The fold keeps the length, so offsets stay valid.
+ * e.g. fold("PUBLİSHED") === "published"
+ */
+const fold = (text: string) => text.replace(/İ/g, "i").toLowerCase();
+
+/** The phrases found in `text` as whole phrases, ignoring case (and İ/i). */
 export function phrasesIn(text: string, phrases: string[]): string[] {
-  const hay = text.toLowerCase();
+  const hay = fold(text);
   return phrases.filter((phrase) => {
-    const needle = phrase.toLowerCase();
+    const needle = fold(phrase);
     for (let at = hay.indexOf(needle); at !== -1; at = hay.indexOf(needle, at + 1)) {
       if (!isLetter(hay[at - 1]) && !isLetter(hay[at + needle.length])) return true;
     }
@@ -83,13 +91,13 @@ export function authoredLeaves(data: unknown, out = new Set<string>()): string[]
  */
 export function withoutAuthored(text: string, authored: string[]): string {
   const multi = authored.filter((leaf) => /\s/.test(leaf)).sort((a, b) => b.length - a.length);
-  const single = new Set(authored.filter((leaf) => !/\s/.test(leaf)).map((leaf) => leaf.toLowerCase()));
-  let out = text;
+  const single = new Set(authored.filter((leaf) => !/\s/.test(leaf)).map(fold));
+  let out = fold(text);
   const escape = (word: string) => word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  for (const leaf of multi) out = out.split(new RegExp(leaf.split(/\s+/).map(escape).join("\\s+"), "gi")).join("\n");
+  for (const leaf of multi) out = out.split(new RegExp(fold(leaf).split(/\s+/).map(escape).join("\\s+"), "g")).join("\n");
   return out
     .split("\n")
-    .filter((line) => !single.has(line.trim().toLowerCase()))
+    .filter((line) => !single.has(fold(line.trim())))
     .join("\n");
 }
 
