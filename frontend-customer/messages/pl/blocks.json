@@ -21,7 +21,7 @@
       "heading": "Często zadawane pytania"
     },
     "cta": {
-      "heading": "Gotowy, aby zacząć?",
+      "heading": "Czas zacząć?",
       "buttonText": "Dołącz teraz"
     },
     "logos": {
@@ -124,7 +124,7 @@
       ]
     },
     "cta": {
-      "heading": "Gotowy, aby zacząć?",
+      "heading": "Czas zacząć?",
       "ctaLabel": "Rozpocznij"
     },
     "contact": {
@@ -151,11 +151,11 @@
       },
       "richText": {
         "heading": "Dlaczego warto uczyć się ze mną?",
-        "body": "Spędziłem lata na dopracowywaniu prostego, sprawdzonego podejścia, dzięki czemu możesz robić realne postępy bez zgadywania. Każda lekcja bazuje na poprzedniej — przejrzysta, praktyczna i stworzona dla każdego poziomu."
+        "body": "Od lat dopracowuję prosty, sprawdzony sposób nauki, dzięki czemu możesz robić realne postępy bez zgadywania. Każda lekcja bazuje na poprzedniej — przejrzysta, praktyczna i stworzona dla każdego poziomu."
       },
       "imageText": {
         "heading": "O mnie",
-        "body": "Cześć, jestem Twoim instruktorem. Stworzyłem te kursy, aby podzielić się tym, co sprawdziło się u setek uczestników — i pomóc Ci dotrzeć do celu szybciej, ze wsparciem na każdym kroku."
+        "body": "Cześć! Te kursy powstały, aby podzielić się tym, co sprawdziło się u setek uczestników — i pomóc Ci dotrzeć do celu szybciej, ze wsparciem na każdym kroku."
       },
       "testimonials": {
         "heading": "Co mówią uczestnicy",
@@ -192,7 +192,7 @@
         ]
       },
       "cta": {
-        "heading": "Gotowy, aby zacząć?",
+        "heading": "Czas zacząć?",
         "buttonText": "Dołącz teraz"
       },
       "stats": {
@@ -246,16 +246,16 @@
     "yoga": {
       "hero": {
         "heading": "Znajdź Swoją Równowagę Dzięki Jodze",
-        "subheading": "Odmień swoje ciało i umysł dzięki prowadzonym praktykom jogi — bez względu na to, czy jesteś zupełnie początkujący, czy jesteś doświadczonym joginem.",
+        "subheading": "Odmień swoje ciało i umysł dzięki prowadzonym praktykom jogi — bez względu na to, czy dopiero zaczynasz, czy masz już doświadczenie.",
         "ctaText": "Przeglądaj Programy"
       },
       "richText": {
         "heading": "Dlaczego Warto Praktykować Ze Mną?",
-        "body": "Każde zajęcia łączą uważną pracę z oddechem z bezpiecznym, precyzyjnym ustawieniem ciała, dzięki czemu możesz budować regularną praktykę we własnym tempie. Rozwiń matę, i stańmy się silniejsi i spokojniejsi razem."
+        "body": "Każda lekcja łączy uważną pracę z oddechem z bezpiecznym, precyzyjnym ustawieniem ciała, dzięki czemu możesz budować regularną praktykę we własnym tempie. Rozwiń matę i razem budujmy siłę oraz spokój."
       },
       "imageText": {
         "heading": "O Mnie",
-        "body": "Certyfikowany instruktor jogi z ponad 12-letnim doświadczeniem w nauczaniu w tradycjach Hatha, Vinyasa i Ashtanga. Wierzę, że joga to podróż w głąb siebie — spotkanie z samym sobą na macie ze współczuciem, oddechem i intencją."
+        "body": "Mam certyfikat nauczania jogi i od ponad 12 lat uczę w tradycjach Hatha, Vinyasa i Ashtanga. Wierzę, że joga to podróż w głąb siebie — spotkanie ze sobą na macie ze współczuciem, oddechem i intencją."
       },
       "testimonials": {
         "heading": "Co Mówią Uczestnicy",
@@ -292,7 +292,7 @@
         ]
       },
       "cta": {
-        "heading": "Gotowy, Aby Rozpocząć Swoją Podróż?",
+        "heading": "Czas rozpocząć swoją podróż?",
         "buttonText": "Dołącz Teraz"
       },
       "stats": {
@@ -329,7 +329,7 @@
       },
       "imageText": {
         "heading": "O mnie",
-        "body": "Certyfikowany instruktor pilatesu z ponad 12-letnim doświadczeniem w pilatesie na macie i reformerze. Specjalizuję się w pomaganiu osobom na każdym poziomie sprawności w budowaniu silnego, zrównoważonego ciała poprzez precyzyjny, kontrolowany ruch — siłownia nie jest wymagana, wystarczy mata i zaangażowanie."
+        "body": "Mam certyfikat pilatesu i od ponad 12 lat pracuję z pilatesem na macie i na reformerze. Specjalizuję się w pomaganiu osobom na każdym poziomie sprawności w budowaniu silnego, zrównoważonego ciała poprzez precyzyjny, kontrolowany ruch — siłownia nie jest potrzebna, wystarczy mata i zaangażowanie."
       },
       "testimonials": {
         "heading": "Co mówią uczestnicy",
@@ -366,7 +366,7 @@
         ]
       },
       "cta": {
-        "heading": "Gotowy, by poczuć się silniej?",
+        "heading": "Czas poczuć się silniej?",
         "buttonText": "Dołącz teraz"
       },
       "stats": {
@@ -403,7 +403,7 @@
       },
       "imageText": {
         "heading": "O mnie",
-        "body": "Certyfikowany trener personalny i absolwent nauk o sporcie z ponad 8-letnim doświadczeniem trenerskim. Specjalizuję się w treningu funkcjonalnym, HIIT oraz programowaniu siłowym dla osób na każdym poziomie zaawansowania. Moją misją jest uczynienie profesjonalnego treningu dostępnym dla każdego — bez konieczności korzystania z siłowni."
+        "body": "Mam certyfikat trenerski i dyplom z nauk o sporcie, a od ponad 8 lat prowadzę treningi. Specjalizuję się w treningu funkcjonalnym, HIIT oraz programowaniu siłowym dla osób na każdym poziomie zaawansowania. Moją misją jest uczynienie profesjonalnego treningu dostępnym dla każdego — bez konieczności korzystania z siłowni."
       },
       "testimonials": {
         "heading": "Co mówią uczestnicy",
@@ -430,7 +430,7 @@
             "a": "Kurs Total Body Transformation nie wymaga żadnego sprzętu — wystarczy ciężar Twojego ciała. Programy HIIT i Strength zalecają hantle oraz gumę oporową, ale zawsze pokazujemy alternatywy z masą własnego ciała."
           },
           {
-            "q": "Jestem zupełnie początkujący — czy to coś dla mnie?",
+            "q": "Dopiero zaczynam — czy to coś dla mnie?",
             "a": "Jak najbardziej! Każdy program zawiera omówienie techniki i modyfikacje dla początkujących do każdego ćwiczenia. Zacznij od bezpłatnego kursu Total Body Transformation i rób postępy we własnym tempie."
           },
           {
@@ -440,7 +440,7 @@
         ]
       },
       "cta": {
-        "heading": "Gotowy Na Rozpoczęcie Treningu?",
+        "heading": "Czas zacząć trening?",
         "buttonText": "Dołącz Teraz"
       },
       "stats": {
@@ -477,7 +477,7 @@
       },
       "imageText": {
         "heading": "O Mnie",
-        "body": "Certyfikowana instruktorka jogi twarzy i holistyczna trenerka wellness z ponad 6-letnim doświadczeniem. Gdy zobaczyłam spektakularne rezultaty na własnej skórze, poświęciłam swoją karierę nauczaniu naturalnych technik odmładzania twarzy, które każdy może stosować w domu."
+        "body": "Mam certyfikat z jogi twarzy i od ponad 6 lat zajmuję się holistycznym dobrostanem. Spektakularne rezultaty na własnej skórze sprawiły, że poświęcam karierę nauczaniu naturalnych technik odmładzania twarzy, które każdy może stosować w domu."
       },
       "testimonials": {
         "heading": "Co Mówią Uczestnicy",
@@ -514,7 +514,7 @@
         ]
       },
       "cta": {
-        "heading": "Gotowy, by Naturalnie Odmienić Swoją Twarz?",
+        "heading": "Czas naturalnie odmienić swoją twarz?",
         "buttonText": "Dołącz Teraz"
       },
       "stats": {
@@ -551,7 +551,7 @@
       },
       "imageText": {
         "heading": "O Mnie",
-        "body": "Pełna pasji instruktorka tańca brzucha z ponad 10-letnim doświadczeniem w stylach: orientalnym, tribal fusion i klasycznym egipskim. Wierzę, że taniec jest dla każdego — doświadczenie nie jest wymagane, wystarczy otwarte serce i miłość do ruchu."
+        "body": "Z pasją uczę tańca brzucha od ponad 10 lat — w stylach orientalnym, tribal fusion i klasycznym egipskim. Wierzę, że taniec jest dla każdego — doświadczenie nie jest wymagane, wystarczy otwarte serce i miłość do ruchu."
       },
       "testimonials": {
         "heading": "Co Mówią Uczestnicy",
@@ -588,7 +588,7 @@
         ]
       },
       "cta": {
-        "heading": "Gotowy, by Zacząć Tańczyć?",
+        "heading": "Czas zacząć tańczyć?",
         "buttonText": "Dołącz Teraz"
       },
       "stats": {
@@ -616,7 +616,7 @@
     "poleDance": {
       "hero": {
         "heading": "Uwolnij Swoją Siłę na Rurze",
-        "subheading": "Buduj pewność siebie, siłę i artyzm dzięki pole dance — niezależnie od tego, czy jesteś zupełnie początkujący, czy opanowujesz zaawansowane triki.",
+        "subheading": "Buduj pewność siebie, siłę i artyzm dzięki pole dance — niezależnie od tego, czy dopiero zaczynasz, czy opanowujesz zaawansowane triki.",
         "ctaText": "Przeglądaj Programy"
       },
       "richText": {
@@ -625,7 +625,7 @@
       },
       "imageText": {
         "heading": "O Mnie",
-        "body": "Certyfikowana instruktorka i zawodniczka pole dance z ponad 8-letnim doświadczeniem w nauczaniu. Moją misją jest uczynienie pole dance dostępnym dla każdego typu sylwetki i poziomu sprawności — doświadczenie gimnastyczne nie jest wymagane, wystarczy odwaga, by spróbować czegoś nowego."
+        "body": "Mam certyfikat pole dance, startuję w zawodach i od ponad 8 lat uczę. Moją misją jest uczynienie pole dance dostępnym dla każdego typu sylwetki i poziomu sprawności — doświadczenie gimnastyczne nie jest wymagane, wystarczy odwaga, by spróbować czegoś nowego."
       },
       "testimonials": {
         "heading": "Co Mówią Uczestnicy",
@@ -662,7 +662,7 @@
         ]
       },
       "cta": {
-        "heading": "Gotowa Opanować Rurę?",
+        "heading": "Czas opanować rurę?",
         "buttonText": "Dołącz Teraz"
       },
       "stats": {
@@ -699,7 +699,7 @@
       },
       "imageText": {
         "heading": "O Mnie",
-        "body": "Profesjonalna wizażystka z ponad 12-letnim doświadczeniem w makijażu ślubnym, edytorialowym i modowym. Pracowałam za kulisami tygodni mody oraz ze znanymi klientami, a teraz z pasją dzielę się swoimi technikami z aspirującymi artystami na całym świecie."
+        "body": "Od ponad 12 lat zajmuję się makijażem ślubnym, edytorialowym i modowym. Praca za kulisami tygodni mody i ze znanymi klientami dała mi doświadczenie, którym dziś z pasją dzielę się z osobami marzącymi o karierze w makijażu na całym świecie."
       },
       "testimonials": {
         "heading": "Co Mówią Uczestnicy",
@@ -736,7 +736,7 @@
         ]
       },
       "cta": {
-        "heading": "Gotowa na Metamorfozę?",
+        "heading": "Czas na metamorfozę?",
         "buttonText": "Dołącz Teraz"
       },
       "stats": {
@@ -776,7 +776,7 @@
         "heading": "Co mówią uczestnicy"
       },
       "cta": {
-        "heading": "Gotowy na start?",
+        "heading": "Czas zacząć?",
         "buttonText": "Dołącz teraz"
       }
     },
@@ -840,7 +840,7 @@
             "label": "Doświadczenie"
           },
           {
-            "value": "1,000+",
+            "value": "1 000+",
             "label": "Przeszkoleni uczestnicy"
           }
         ]
@@ -874,8 +874,5 @@
         "heading": "Najczęstsze pytania"
       }
     }
-  },
-  "lookPreview": {
-    "creator": "twórca"
   }
 }

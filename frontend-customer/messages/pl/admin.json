@@ -3174,7 +3174,7 @@
           "video": "Krótki klip z twojej biblioteki. Odtwarza się bez dźwięku, w pętli."
         }
       },
-      "upTo": "Do {max, plural, one {# znak} few {# znaki} many {# znaków} other {# znaku}}.",
+      "upTo": "Maksymalnie {max, plural, one {# znak} few {# znaki} many {# znaków} other {# znaku}}.",
       "template": {
         "homeClassic": {
           "name": "Klasyczny",

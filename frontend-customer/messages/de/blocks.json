@@ -155,7 +155,7 @@
       },
       "imageText": {
         "heading": "Über mich",
-        "body": "Hi, ich bin dein Kursleiter. Ich habe diese Kurse erstellt, um das weiterzugeben, was bei Hunderten von Teilnehmern funktioniert hat — und um dir dabei zu helfen, schneller ans Ziel zu kommen, mit Begleitung bei jedem Schritt."
+        "body": "Hi, schön, dass du da bist. Ich habe diese Kurse erstellt, um das weiterzugeben, was bei Hunderten von Teilnehmern funktioniert hat — und um dir zu helfen, schneller ans Ziel zu kommen, mit Unterstützung bei jedem Schritt."
       },
       "testimonials": {
         "heading": "Was Teilnehmer sagen",
@@ -255,7 +255,7 @@
       },
       "imageText": {
         "heading": "Über mich",
-        "body": "Zertifizierte Yogalehrkraft mit über 12 Jahren Unterrichtserfahrung in Hatha-, Vinyasa- und Ashtanga-Traditionen. Ich glaube, dass Yoga eine Reise der Selbstentdeckung ist — dir selbst auf der Matte mit Mitgefühl, Atem und Intention zu begegnen."
+        "body": "Mit Yoga-Zertifizierung und über 12 Jahren Unterrichtserfahrung in Hatha-, Vinyasa- und Ashtanga-Traditionen. Ich glaube, dass Yoga eine Reise der Selbstentdeckung ist — dir selbst auf der Matte mit Mitgefühl, Atem und Intention zu begegnen."
       },
       "testimonials": {
         "heading": "Was Teilnehmer sagen",
@@ -329,7 +329,7 @@
       },
       "imageText": {
         "heading": "Über mich",
-        "body": "Zertifizierter Pilates-Trainer mit über 12 Jahren Erfahrung im Matten- und Reformer-Pilates. Ich habe mich darauf spezialisiert, Menschen aller Fitnesslevel dabei zu helfen, durch präzise, kontrollierte Bewegungen einen starken, ausgeglichenen Körper aufzubauen — kein Fitnessstudio erforderlich, nur eine Matte und Engagement."
+        "body": "Mit Pilates-Zertifizierung und über 12 Jahren Erfahrung im Matten- und Reformer-Pilates. Ich habe mich darauf spezialisiert, Menschen aller Fitnesslevel dabei zu helfen, durch präzise, kontrollierte Bewegungen einen starken, ausgeglichenen Körper aufzubauen — kein Fitnessstudio erforderlich, nur eine Matte und Engagement."
       },
       "testimonials": {
         "heading": "Was Teilnehmer sagen",
@@ -403,7 +403,7 @@
       },
       "imageText": {
         "heading": "Über mich",
-        "body": "Zertifizierter Personal Trainer und Sportwissenschaftler mit über 8 Jahren Coaching-Erfahrung. Ich habe mich auf funktionelles Training, HIIT und Krafttrainingsplanung für alle Fitnesslevel spezialisiert. Meine Mission ist es, Training auf Profi-Niveau für jeden zugänglich zu machen — kein Fitnessstudio erforderlich."
+        "body": "Mit Personal-Training-Zertifizierung, einem Abschluss in Sportwissenschaft und über 8 Jahren Coaching-Erfahrung. Ich habe mich auf funktionelles Training, HIIT und Krafttrainingsplanung für alle Fitnesslevel spezialisiert. Meine Mission ist es, Training auf Profi-Niveau für jeden zugänglich zu machen — kein Fitnessstudio erforderlich."
       },
       "testimonials": {
         "heading": "Was Teilnehmer sagen",
@@ -477,7 +477,7 @@
       },
       "imageText": {
         "heading": "Über mich",
-        "body": "Zertifizierte Gesichtsyoga-Trainerin und ganzheitlicher Wellness-Coach mit über 6 Jahren Erfahrung. Nachdem ich dramatische Ergebnisse an meiner eigenen Haut gesehen hatte, widmete ich meine Karriere dem Unterrichten natürlicher Gesichtsverjüngungstechniken, die jeder zu Hause anwenden kann."
+        "body": "Mit Gesichtsyoga-Zertifizierung, ganzheitlichem Wellness-Coaching und über 6 Jahren Erfahrung. Nachdem ich dramatische Ergebnisse an meiner eigenen Haut gesehen hatte, habe ich meine Karriere dem Unterrichten natürlicher Gesichtsverjüngungstechniken gewidmet, die jeder zu Hause anwenden kann."
       },
       "testimonials": {
         "heading": "Was Teilnehmer sagen",
@@ -551,7 +551,7 @@
       },
       "imageText": {
         "heading": "Über mich",
-        "body": "Leidenschaftliche Bauchtanz-Lehrerin mit über 10 Jahren Erfahrung in Oriental, Tribal Fusion und Classical Egyptian. Ich glaube, Tanzen ist für alle da — keine Vorerfahrung nötig, nur ein offenes Herz und die Liebe zur Bewegung."
+        "body": "Mit Leidenschaft unterrichte ich Bauchtanz seit über 10 Jahren — in Oriental, Tribal Fusion und Classical Egyptian. Ich glaube, Tanzen ist für alle da — keine Vorerfahrung nötig, nur ein offenes Herz und die Liebe zur Bewegung."
       },
       "testimonials": {
         "heading": "Was Teilnehmer sagen",
@@ -625,7 +625,7 @@
       },
       "imageText": {
         "heading": "Über mich",
-        "body": "Zertifizierte Pole-Dance-Trainerin und Wettkämpferin mit über 8 Jahren Unterrichtserfahrung. Meine Mission ist es, Pole Dance für alle Körpertypen und Fitnesslevel zugänglich zu machen — keine turnerischen Vorkenntnisse erforderlich, nur der Mut, etwas Neues auszuprobieren."
+        "body": "Mit Pole-Dance-Zertifizierung, Wettkampferfahrung und über 8 Jahren Unterrichtserfahrung. Meine Mission ist es, Pole Dance für alle Körpertypen und Fitnesslevel zugänglich zu machen — keine turnerischen Vorkenntnisse erforderlich, nur der Mut, etwas Neues auszuprobieren."
       },
       "testimonials": {
         "heading": "Was Teilnehmer sagen",
@@ -840,7 +840,7 @@
             "label": "Erfahrung"
           },
           {
-            "value": "1,000+",
+            "value": "1.000+",
             "label": "Unterrichtete Teilnehmer"
           }
         ]
@@ -874,8 +874,5 @@
         "heading": "Häufige Fragen"
       }
     }
-  },
-  "lookPreview": {
-    "creator": "der Creator"
   }
 }
