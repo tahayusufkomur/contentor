@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 /** The blank tile at the end of a several-pick question. What is typed here
@@ -12,7 +13,7 @@ export function OwnOptionCard({
   disabled,
   delay,
   sentence = false,
-  placeholder = "Add your own…",
+  placeholder,
   onAdd,
 }: {
   disabled: boolean;
@@ -21,6 +22,7 @@ export function OwnOptionCard({
   placeholder?: string;
   onAdd: (labels: string[]) => void;
 }) {
+  const t = useTranslations("admin.setupFlow");
   const [text, setText] = useState("");
   const add = () => {
     const labels = (sentence ? [text] : text.split(","))
@@ -42,8 +44,8 @@ export function OwnOptionCard({
         value={text}
         maxLength={sentence ? 200 : 60}
         disabled={disabled}
-        aria-label="Add your own option"
-        placeholder={placeholder}
+        aria-label={t("ownOption.label")}
+        placeholder={placeholder ?? t("ownOption.placeholder")}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={(e) => {
           if (e.key !== "Enter") return;

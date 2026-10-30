@@ -18,18 +18,19 @@ export function siteLook(styleId?: string | null): SiteStyle {
   return getSiteStyle(styleId) ?? rankStylesForNiche("general")[0];
 }
 
-/** The looks a coach can filter by, in the order the chips show them. The
- *  tags themselves live in each style's manifest (`tags`). */
-export const STYLE_TAGS: [tag: string, label: string][] = [
-  ["selling", "Made to sell"],
-  ["expertise", "Shows expertise"],
-  ["short", "Short page"],
-  ["long", "Long page"],
-  ["sensual", "Soft and moody"],
-  ["confident", "Confident"],
-  ["sexy", "Sexy"],
-  ["playful", "Playful"],
-];
+/** The looks a coach can filter by, in the order the chips show them (their
+ *  names are `look.tag.<tag>` in the messages). The tags themselves live in
+ *  each style's manifest (`tags`). */
+export const STYLE_TAGS = [
+  "selling",
+  "expertise",
+  "short",
+  "long",
+  "sensual",
+  "confident",
+  "sexy",
+  "playful",
+] as const;
 
 /** The palette a site wears: the style's own, or one of its alternatives.
  *  An id the style does not have (e.g. left over from a style switch) means

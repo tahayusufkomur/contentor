@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Hanken_Grotesk } from "next/font/google";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { SetupFlow } from "@/components/setup-flow/setup-flow";
 import { requireAuth, requireRole } from "@/lib/auth";
 import {
@@ -17,7 +18,10 @@ const ui = Hanken_Grotesk({
 });
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Set up your site" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("admin.setupFlow");
+  return { title: t("pageTitle") };
+}
 
 export default async function SetupPage({
   searchParams,

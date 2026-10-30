@@ -17,7 +17,6 @@ import {
   finishedNotes,
   landedPage,
   nextToReview,
-  pageLabel,
   idOf,
   idsOfText,
   questionSteps,
@@ -58,14 +57,8 @@ import { QuestionScreen, type StepDraft } from "./question-screen";
 import { SetupMenu } from "./setup-menu";
 import { SetupSkeleton } from "./skeleton";
 import { SHELL_CSS, SHELL_TOKENS } from "./tokens";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
-type Stages = [string, string, string];
-const PAGE_STAGES: Stages = [
-  "Choosing the layout",
-  "Writing your copy",
-  "Finding your photos",
-];
 const WALL: CSSProperties = {
   backgroundImage:
     "radial-gradient(90% 60% at 50% 8%, var(--sf-wall-lit), transparent 72%), radial-gradient(140% 110% at 50% 45%, transparent 55%, rgb(72 52 28 / 0.07))",
@@ -123,6 +116,8 @@ export function SetupFlow({
   fontClassName: string;
 }) {
   const api = mock ? mockSetupFlowApi : setupFlowApi;
+  const t = useTranslations("admin.setupFlow");
+  const unavailable = t("flow.unavailable");
   const [flow, setFlow] = useState<SetupFlowState | null>(null);
   const [loadError, setLoadError] = useState<unknown>(null);
 
@@ -133,11 +128,11 @@ export function SetupFlow({
     } catch (err) {
       setLoadError(
         err instanceof ApiError && err.status === 404
-          ? new Error("Guided setup isn’t available for this site yet.")
+          ? new Error(unavailable)
           : err,
       );
     }
-  }, [api]);
+  }, [api, unavailable]);
   useEffect(() => {
     void load();
   }, [load]);
@@ -193,6 +188,7 @@ function Flow({
   host: string;
 }) {
   const locale = useLocale();
+  const t = useTranslations("admin.setupFlow");
   const narrow = useNarrow();
   const iv = flow.interview;
   // The live guide keeps what only a turn's reply carries (the status line).
@@ -258,7 +254,7 @@ function Flow({
   const working =
     Object.values(flow.page_builds).some((b) => b.status === "building") ||
     Object.values(iv.draft_status).some((s) => s === "building");
-  const activity = activityLine(flow.page_builds, iv.draft_status);
+  const activity = activityLine(flow.page_builds, iv.draft_status, t);
 
   // A turn on its way owns the transcript until its reply has landed. The
   // server saves the answer before it finishes the reply (the look cards
@@ -288,8 +284,8 @@ function Flow({
   }, [api, setFlow]);
   useEffect(() => {
     if (!working) return;
-    const t = setInterval(() => void refresh(), 3000);
-    return () => clearInterval(t);
+    const timer = setInterval(() => void refresh(), 3000);
+    return () => clearInterval(timer);
   }, [working, refresh]);
 
   // Work that finished since the last poll: at go-live the guide says so
@@ -299,23 +295,23 @@ function Flow({
   // being built.
   useEffect(() => {
     const next = { builds: flow.page_builds, drafts: iv.draft_status };
-    const notes = finishedNotes(seen.current, next);
+    const notes = finishedNotes(seen.current, next, t);
     const key = landedPage(seen.current.builds, next.builds);
     seen.current = next;
     if (!golive) return;
     for (const note of notes) toast.success(note);
     if (!key) return;
     setReloadKey((k) => k + 1);
-  }, [flow.page_builds, iv.draft_status, golive]);
+  }, [flow.page_builds, iv.draft_status, golive, t]);
 
   const { run: undo, loading: undoing } = useAsyncAction(
     async (auditId: number) => {
       await undoCopilotAction(auditId);
       announceSiteUpdated();
       setReloadKey((k) => k + 1);
-      toast.success("Change undone");
+      toast.success(t("flow.undone"));
     },
-    { errorToast: "Couldn’t undo that. Try again." },
+    { errorToast: t("flow.undoError") },
   );
 
   const applyEdit = useCallback(
@@ -340,17 +336,17 @@ function Flow({
         void refresh();
       }
       const text = failed
-        ? `Changed: ${titles.join(", ")}. The rest didn’t go through. Ask again to finish.`
-        : `Done: ${titles.join(", ")}.`;
+        ? t("flow.editPartial", { titles: titles.join(", ") })
+        : t("flow.editDone", { titles: titles.join(", ") });
       const id = auditId;
       toast.success(
         text,
         id == null
           ? undefined
-          : { action: { label: "Undo", onClick: () => void undo(id) } },
+          : { action: { label: t("flow.undo"), onClick: () => void undo(id) } },
       );
     },
-    [refresh, undo],
+    [refresh, undo, t],
   );
 
   // Unsent ticks and text per question (by field; the go-live box under
@@ -406,7 +402,7 @@ function Flow({
       });
       if (edit) await applyEdit(edit);
     },
-    { onError: (err) => toast.error(turnErrorText(err)) },
+    { onError: (err) => toast.error(turnErrorText(err, t)) },
   );
 
   // A shared bio or CV answers the bio screen like a turn does. Failures
@@ -465,7 +461,7 @@ function Flow({
       );
       if (next) setPath(next.path);
     },
-    { errorToast: "Couldn’t save that. Try again." },
+    { errorToast: t("flow.saveError") },
   );
 
   const currentPage = flow.steps.find((s) => s.preview_path === path)?.page_key;
@@ -491,20 +487,18 @@ function Flow({
       }
       pickedBlock={picked?.selection.block_id}
       flashBlock={flash}
-      busy={
-        sending
-          ? "Making that change…"
-          : undoing
-            ? "Undoing that change…"
-            : null
-      }
+      busy={sending ? t("panel.making") : undoing ? t("flow.undoing") : null}
       overlay={
         composing && currentPage ? (
           <Composing
-            title={`Building your ${pageLabel(currentPage)}`}
-            stages={PAGE_STAGES}
+            title={t("compose.title", { page: currentPage })}
+            stages={[
+              t("compose.stage.0"),
+              t("compose.stage.1"),
+              t("compose.stage.2"),
+            ]}
             current={stageIndex(build?.stage)}
-            note="Usually ready in under a minute."
+            note={t("draft.usually")}
           />
         ) : null
       }
@@ -540,6 +534,7 @@ function Flow({
                 : "recurring",
               draft.schedule,
               locale,
+              t,
             )
           : undefined
         : draft.ticked?.length
@@ -552,7 +547,7 @@ function Flow({
         answers[step.field] = now;
         if (step.field.endsWith("_access"))
           wayIds[step.field] = draft.ticked?.length
-            ? draft.ticked.map((t) => idOf(t, step.options, step.ids))
+            ? draft.ticked.map((o) => idOf(o, step.options, step.ids))
             : idsOfText(now, step.options, step.ids);
       }
       const reviewField = `${step.builder}_review`;
@@ -581,10 +576,14 @@ function Flow({
             // The price she is typing, once it reads as one; a membership
             // she named starts at the own price.
             price: priceOk(draft.prices?.[label] ?? "")
-              ? `${step.sign ?? ""}${draft.prices?.[label]?.trim()} a month`
+              ? t("priceMonthly", {
+                  price: `${step.sign ?? ""}${draft.prices?.[label]?.trim()}`,
+                })
               : (step.hints?.[label] ??
                 (step.own_price != null
-                  ? `${step.sign ?? ""}${step.own_price} a month`
+                  ? t("priceMonthly", {
+                      price: `${step.sign ?? ""}${step.own_price}`,
+                    })
                   : "")),
             blurb: step.details?.[label] ?? "",
           })),
@@ -608,7 +607,7 @@ function Flow({
           className="flex h-16 shrink-0 items-center gap-1.5 border-b border-[var(--sf-line)] px-3 sm:gap-3 sm:px-6"
         >
           <NavButton
-            label="Previous question"
+            label={t("flow.prev")}
             disabled={index === 0 || sending}
             onClick={goBack}
           >
@@ -618,17 +617,20 @@ function Flow({
             <div className="flex items-baseline justify-between gap-3 text-[12px] text-[var(--sf-faint)]">
               {/* The second of signup's three stages (Account, Your site, Go live). */}
               <span className="hidden truncate font-medium text-[var(--sf-graphite)] sm:inline">
-                Your site, step 2 of 3
+                {t("flow.step")}
               </span>
               <span className="shrink-0">
-                {SECTIONS[section]?.label} · part {section + 1} of{" "}
-                {SECTIONS.length}
+                {t("flow.part", {
+                  section: t(`section.${SECTIONS[section]?.key}` as never),
+                  n: section + 1,
+                  total: SECTIONS.length,
+                })}
               </span>
             </div>
             {/* One segment per section: done, current, still to come. */}
             <div
               role="progressbar"
-              aria-label="Setup progress"
+              aria-label={t("flow.progress")}
               aria-valuemin={0}
               aria-valuemax={SECTIONS.length}
               aria-valuenow={section}
@@ -636,7 +638,7 @@ function Flow({
             >
               {SECTIONS.map((s, i) => (
                 <span
-                  key={s.label}
+                  key={s.key}
                   className={cn(
                     "h-full flex-1 rounded-full transition-colors duration-500",
                     i < section
@@ -650,7 +652,7 @@ function Flow({
             </div>
           </div>
           <NavButton
-            label="Next question"
+            label={t("flow.next")}
             disabled={live || sending}
             onClick={goNext}
           >
@@ -665,8 +667,8 @@ function Flow({
               className="ml-1 flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--sf-line)] bg-white px-3 py-1.5 text-[12.5px] font-medium text-[var(--sf-ink)] transition-colors hover:border-[var(--sf-line-strong)]"
             >
               <Eye className="size-3.5" aria-hidden />
-              <span className="hidden sm:inline">Peek at your home page</span>
-              <span className="sm:hidden">Peek</span>
+              <span className="hidden sm:inline">{t("flow.peekFull")}</span>
+              <span className="sm:hidden">{t("flow.peek")}</span>
             </button>
           )}
           {started && activity && (
@@ -688,7 +690,7 @@ function Flow({
             <div
               role="dialog"
               aria-modal
-              aria-label="Your home page so far"
+              aria-label={t("flow.peekTitle")}
               style={{
                 ...SHELL_TOKENS,
                 backgroundColor: "rgb(34 33 31 / 0.6)",
@@ -702,17 +704,17 @@ function Flow({
               >
                 <div className="min-w-0">
                   <p className="text-[15px] font-semibold">
-                    Your home page so far
+                    {t("flow.peekTitle")}
                   </p>
                   <p className="text-[13px] text-white/70">
-                    It keeps getting better as you answer.
+                    {t("flow.peekSub")}
                   </p>
                 </div>
                 <Button
                   onClick={() => setPeek(false)}
                   className="shrink-0 rounded-full bg-white text-[var(--sf-ink)] hover:bg-white/90"
                 >
-                  Back to the questions
+                  {t("flow.backToQuestions")}
                 </Button>
               </div>
               <div
@@ -730,7 +732,7 @@ function Flow({
           </ModalPortal>
         )}
         <section
-          aria-label="Your setup guide"
+          aria-label={t("panel.aria")}
           style={{ viewTransitionName: "sf-slide" }}
           className="min-h-0 flex-1 overflow-y-auto"
         >
@@ -814,7 +816,7 @@ function Flow({
             onClick={() => setTab(tab === "guide" ? "preview" : "guide")}
             className="rounded-full"
           >
-            {tab === "guide" ? "See your site" : "Back to go-live"}
+            {tab === "guide" ? t("flow.seeSite") : t("flow.backToGoLive")}
           </Button>
         </div>
       )}
@@ -880,7 +882,7 @@ function Flow({
       {editing && (
         <PageEditor
           path={editing.path}
-          label={pageLabel(editing.key)}
+          page={editing.key}
           onDone={(to) => {
             setEditing(null);
             // The editor may have moved to another page: the review follows.
@@ -949,16 +951,17 @@ function DeviceToggle({
   device: Device;
   onDevice: (d: Device) => void;
 }) {
+  const t = useTranslations("admin.setupFlow");
   return (
     <div
       role="radiogroup"
-      aria-label="Preview size"
+      aria-label={t("flow.previewSize")}
       className="flex rounded-full bg-[rgb(255_255_255/0.6)] p-0.5 ring-1 ring-[var(--sf-line)]"
     >
       {(
         [
-          ["desktop", Monitor, "Desktop"],
-          ["phone", Smartphone, "Phone"],
+          ["desktop", Monitor, t("flow.desktop")],
+          ["phone", Smartphone, t("flow.phone")],
         ] as const
       ).map(([d, Icon, label]) => (
         <button

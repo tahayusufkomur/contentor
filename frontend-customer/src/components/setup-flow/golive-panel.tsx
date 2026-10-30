@@ -8,10 +8,11 @@ import {
   Pencil,
   X,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import type { SelectionPayload } from "@/lib/copilot/types";
-import { pageLabel, type ReviewPage } from "@/lib/interview";
+import type { ReviewPage } from "@/lib/interview";
 import type {
   GuideTurn,
   SetupFlowApi,
@@ -76,10 +77,11 @@ export function GoLivePanel({
 }) {
   // While pages still build the site is not ready yet: say what is left
   // (it used to say "Your site is ready" above a skeleton).
-  const busy = sending ? "Making that change…" : null;
+  const t = useTranslations("admin.setupFlow");
+  const busy = sending ? t("panel.making") : null;
   return (
     <section
-      aria-label="Your setup guide"
+      aria-label={t("panel.aria")}
       className={cn(
         "relative min-h-0 flex-col bg-[var(--sf-paper)]",
         className,
@@ -96,7 +98,7 @@ export function GoLivePanel({
           <PageReview {...review} sending={sending} />
         ) : (
           <h1 className="mt-1 text-[26px] font-semibold leading-tight tracking-[-0.02em]">
-            {activity ? "Almost ready" : guide.question}
+            {activity ? t("panel.almostReady") : guide.question}
           </h1>
         )}
         {activity && (
@@ -119,7 +121,7 @@ export function GoLivePanel({
             </span>
             <span className="min-w-0 flex-1">
               <span className="block text-[14.5px] font-semibold">
-                See your site
+                {t("panel.seeSite")}
               </span>
               {host && (
                 <span className="block truncate text-[12.5px] text-[var(--sf-graphite)]">
@@ -132,8 +134,7 @@ export function GoLivePanel({
         )}
         {!review && (
           <p className="mt-3 text-[14.5px] leading-relaxed text-[var(--sf-graphite)]">
-            Want something changed first? Tell me below, like “make the headline
-            warmer” or “use a calmer photo”.
+            {t("panel.askHint")}
           </p>
         )}
         {/* Mounted while she reviews, so the last visual check starts then. */}
@@ -158,15 +159,19 @@ export function GoLivePanel({
               aria-hidden
             />
             <span className="min-w-0 truncate">
-              Changing{" "}
-              <strong className="font-medium text-[var(--sf-ink)]">
-                {review.picked.label}
-              </strong>
+              {t.rich("panel.changing", {
+                label: review.picked.label,
+                b: (chunks) => (
+                  <strong className="font-medium text-[var(--sf-ink)]">
+                    {chunks}
+                  </strong>
+                ),
+              })}
             </span>
             <button
               type="button"
               onClick={review.picked.onClear}
-              aria-label="Change the whole page instead"
+              aria-label={t("panel.changeWhole")}
               className="ml-auto rounded-full p-1 text-[var(--sf-faint)] transition-colors hover:bg-[var(--sf-tint-strong)] hover:text-[var(--sf-ink)]"
             >
               <X className="size-3.5" aria-hidden />
@@ -179,14 +184,14 @@ export function GoLivePanel({
           sending={sending}
           placeholder={
             review?.picked
-              ? "What should change here? Like “shorter” or “a warmer photo”…"
+              ? t("panel.placeholderPicked")
               : review
-                ? `Change something on your ${pageLabel(review.focus.key)}…`
-                : "Ask for a change…"
+                ? t("panel.placeholderPage", { page: review.focus.key })
+                : t("panel.placeholderAsk")
           }
-          onSubmit={(t, spoken) =>
+          onSubmit={(words, spoken) =>
             onSend({
-              message: t,
+              message: words,
               spoken,
               page: review?.focus.key,
               selection: review?.picked?.selection,
@@ -197,11 +202,6 @@ export function GoLivePanel({
     </section>
   );
 }
-
-const pageName = (key: string) => {
-  const name = pageLabel(key).replace(/ page$/, "");
-  return name.charAt(0).toUpperCase() + name.slice(1);
-};
 
 /** One page at a time: is she happy with it? Approved, the next one opens. */
 function PageReview({
@@ -214,40 +214,41 @@ function PageReview({
   onShow,
   sending,
 }: PageReviewProps & { sending: boolean }) {
+  const t = useTranslations("admin.setupFlow");
+  const pageName = (key: string) =>
+    t.has(`page.name.${key}` as never) ? t(`page.name.${key}` as never) : key;
   const index = pages.findIndex((p) => p.key === focus.key);
   const left = pages.filter((p) => !p.ok).length;
   return (
     <>
       <p className="text-[12.5px] font-medium text-[var(--sf-faint)]">
-        Before you go live · page {index + 1} of {pages.length}
+        {t("panel.progress", { n: index + 1, total: pages.length })}
       </p>
       <h1 className="mt-1 text-[26px] font-semibold leading-tight tracking-[-0.02em]">
-        Happy with your {pageLabel(focus.key)}?
+        {t("panel.happy", { page: focus.key })}
       </h1>
       <p className="mt-3 text-[14.5px] leading-relaxed text-[var(--sf-graphite)]">
-        Look it over. Tap any part of it to change just that part, or tell me
-        below what to change on the page. Or open the editor and change anything
-        yourself. Approve it and we&rsquo;ll go to the next one.
+        {t("panel.lookOver")}
       </p>
       <div className="mt-5 flex flex-wrap items-center gap-2">
         {!shown ? (
           <Button onClick={() => onShow(focus)} className="rounded-full px-5">
-            Show your {pageLabel(focus.key)}
+            {t("panel.showPage", { page: focus.key })}
           </Button>
         ) : focus.ok ? (
           <p className="flex items-center gap-1.5 text-[14px] font-medium">
             <Check className="size-4 text-[var(--sf-brass)]" aria-hidden />
-            Approved. {left} {left === 1 ? "page" : "pages"} to go.
+            {t("panel.approvedLeft", { count: left })}
           </p>
         ) : (
           <Button
             onClick={onApprove}
             loading={approving}
-            loadingText="Saving…"
+            loadingText={t("panel.saving")}
             disabled={focus.building || sending}
             className="rounded-full px-5"
           >
-            This page looks good
+            {t("panel.approve")}
           </Button>
         )}
         {shown && (
@@ -259,16 +260,16 @@ function PageReview({
             className="rounded-full px-5"
           >
             <Pencil aria-hidden />
-            Edit this page
+            {t("panel.editPage")}
           </Button>
         )}
         {focus.building && (
           <span className="text-[13.5px] text-[var(--sf-graphite)]">
-            Still building this page…
+            {t("panel.stillBuilding")}
           </span>
         )}
       </div>
-      <ol aria-label="Your pages" className="mt-6 space-y-1">
+      <ol aria-label={t("panel.pagesAria")} className="mt-6 space-y-1">
         {pages.map((p) => (
           <li key={p.key}>
             <button
@@ -300,7 +301,11 @@ function PageReview({
                 {pageName(p.key)}
               </span>
               <span className="text-[12.5px] text-[var(--sf-faint)]">
-                {p.ok ? "Approved" : p.building ? "Building" : "To review"}
+                {p.ok
+                  ? t("panel.state.approved")
+                  : p.building
+                    ? t("panel.state.building")
+                    : t("panel.state.toReview")}
               </span>
             </button>
           </li>

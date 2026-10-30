@@ -22,6 +22,7 @@ export function Celebration({
   onGo: (href: "/" | "/admin") => void;
 }) {
   const t = useTranslations("admin");
+  const s = useTranslations("admin.setupFlow");
   return (
     <div className="absolute inset-0 z-20 overflow-hidden bg-[rgb(228_229_232/0.9)] backdrop-blur-md motion-safe:animate-fade-in">
       <div
@@ -46,11 +47,10 @@ export function Celebration({
             <Check className="size-6" strokeWidth={2.5} aria-hidden />
           </span>
           <h2 className="mt-6 text-[36px] font-semibold leading-[1.1] tracking-[-0.03em] sm:text-[44px]">
-            {brandName} is live
+            {s("launch.live", { brand: brandName })}
           </h2>
           <p className="mt-3 text-[15px] text-[var(--sf-graphite)]">
-            Anyone can visit your site now.
-            {team.length > 0 && " Here’s who’s looking after what."}
+            {team.length > 0 ? s("launch.visitWithTeam") : s("launch.visit")}
           </p>
           <NavLink
             href="/"
@@ -87,7 +87,7 @@ export function Celebration({
               onClick={() => onGo("/admin")}
               className="rounded-full px-8"
             >
-              Go to your control panel
+              {s("launch.toAdmin")}
             </Button>
             <Button
               size="lg"
@@ -95,7 +95,7 @@ export function Celebration({
               onClick={() => onGo("/")}
               className="rounded-full bg-white px-8"
             >
-              Visit your site
+              {s("launch.toSite")}
             </Button>
           </div>
         </div>

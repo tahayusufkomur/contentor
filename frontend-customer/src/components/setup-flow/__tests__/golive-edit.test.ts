@@ -7,6 +7,7 @@ import {
 import { renderToStaticMarkup } from "react-dom/server";
 import { NextIntlClientProvider } from "next-intl";
 import { describe, expect, it } from "vitest";
+import admin from "../../../../messages/en/admin.json";
 import student from "../../../../messages/en/student.json";
 import type { ReviewPage } from "@/lib/interview";
 import type { SetupFlowApi } from "@/lib/setup-flow";
@@ -20,11 +21,11 @@ const page = (key: string, over: Partial<ReviewPage> = {}): ReviewPage => ({
   ...over,
 });
 
-// The answer box's mic button reads its words from the student messages.
+// The answer box's mic button reads its words from the student messages, the panel's from the studio's.
 const Intl = NextIntlClientProvider as FC<{
   locale: string;
   timeZone: string;
-  messages: { student: typeof student };
+  messages: { student: typeof student; admin: typeof admin };
   children?: ReactNode;
 }>;
 
@@ -37,7 +38,7 @@ function panel(
   return renderToStaticMarkup(
     createElement(
       Intl,
-      { locale: "en", timeZone: "UTC", messages: { student } },
+      { locale: "en", timeZone: "UTC", messages: { student, admin } },
       createElement(GoLivePanel, {
         guide: { question: "", ack: "" } as never,
         api: {} as SetupFlowApi,

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Check } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { SpecialistFace } from "@/components/copilot/specialist-face";
 import { Button } from "@/components/ui/button";
@@ -28,7 +29,6 @@ import {
 import { cn } from "@/lib/utils";
 import { ApiError } from "@/types/api";
 import { PayoutsCard } from "./payouts-card";
-import { useLocale } from "next-intl";
 
 /** The last stretch: a paid plan and Stripe only when the coach sells, one
  * way out of both ("go live now, sell later" keeps her prices), then
@@ -43,6 +43,7 @@ export function GoLiveCard({
   onPublished: (team: TeamLine[]) => void;
 }) {
   const locale = useLocale();
+  const t = useTranslations("admin.setupFlow");
   const [state, setState] = useState<GoLiveState | null>(null);
   const [payoutsReady, setPayoutsReady] = useState(false);
   const [session, setSession] = useState<
@@ -68,14 +69,12 @@ export function GoLiveCard({
   // the plan card again (with its way out) instead of spinning forever.
   useEffect(() => {
     if (!returning) return;
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       setReturning(false);
-      toast.message(
-        "Your payment is still being confirmed. If it went through, reload this page in a minute.",
-      );
+      toast.message(t("goLive.paymentPending"));
     }, 60_000);
-    return () => clearTimeout(t);
-  }, [returning]);
+    return () => clearTimeout(timer);
+  }, [returning, t]);
 
   const load = useCallback(async () => {
     try {
@@ -96,8 +95,8 @@ export function GoLiveCard({
       (returning && state.needs_plan));
   useEffect(() => {
     if (!waiting) return;
-    const t = setInterval(() => void load(), 3000);
-    return () => clearInterval(t);
+    const timer = setInterval(() => void load(), 3000);
+    return () => clearInterval(timer);
   }, [waiting, load]);
   useEffect(() => {
     if (payoutsReady) void load();
@@ -111,22 +110,19 @@ export function GoLiveCard({
         setSession({ ...res, client_secret: res.client_secret });
       else window.location.href = res.checkout_url ?? "";
     },
-    { errorToast: "Couldn’t open checkout. Try again." },
+    { errorToast: t("goLive.checkoutError") },
   );
   const { run: startNow, loading: starting } = useAsyncAction(
     async () => {
       const sub = await updateSubscription("start_now");
-      if (sub.status !== "active")
-        toast.error(
-          "Your card couldn’t be charged yet. Check it with your bank and try again.",
-        );
+      if (sub.status !== "active") toast.error(t("goLive.cardError"));
       await load();
     },
-    { errorToast: "Couldn’t start your plan. Try again." },
+    { errorToast: t("goLive.startError") },
   );
   const { run: sellLater, loading: holding } = useAsyncAction(
     async () => setState(await api.goliveAction("sell_later")),
-    { errorToast: "Couldn’t hold your paid items back. Try again." },
+    { errorToast: t("goLive.holdError") },
   );
   const { run: publish, loading: publishing } = useAsyncAction(
     async () => {
@@ -140,13 +136,13 @@ export function GoLiveCard({
           setState((prev) =>
             prev ? { ...prev, blockers: blockers as string[] } : prev,
           );
-          toast.error("A few things need finishing before you go live.");
+          toast.error(t("goLive.blockedToast"));
           return;
         }
         throw err;
       }
     },
-    { errorToast: "Couldn’t publish your site. Try again." },
+    { errorToast: t("goLive.publishError") },
   );
 
   const shell = (children: React.ReactNode) => (
@@ -159,17 +155,14 @@ export function GoLiveCard({
           session={session}
           onClose={() => setSession(null)}
           aside={
-            <CoachPlanAside
-              title="Your site goes live next"
-              plan={state.plan}
-            />
+            <CoachPlanAside title={t("goLive.asideTitle")} plan={state.plan} />
           }
         />
       )}
       {state && state.summary?.length > 0 && (
         <dl className="mt-5 space-y-1.5 border-t border-[var(--sf-line)] pt-4 text-[13.5px] leading-snug">
           <p className="mb-2 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-[var(--sf-faint)]">
-            What I built
+            {t("goLive.built")}
           </p>
           {state.summary.map((line) => (
             <div key={line.label} className="flex gap-3">
@@ -189,8 +182,8 @@ export function GoLiveCard({
       <p className="flex items-center gap-2 text-[14px] text-[var(--sf-graphite)]">
         <Spinner size="sm" className="text-[var(--sf-brass)]" />
         {returning && state?.needs_plan
-          ? "Confirming your plan…"
-          : "Finishing your pages…"}
+          ? t("goLive.confirming")
+          : t("goLive.finishing")}
       </p>,
     );
   }
@@ -200,22 +193,21 @@ export function GoLiveCard({
       variant="outline"
       onClick={() => sellLater()}
       loading={holding}
-      loadingText="Holding them back…"
+      loadingText={t("goLive.holding")}
       className="rounded-full"
     >
-      Go live now, sell later
+      {t("goLive.sellLater")}
     </Button>
   );
   const laterHint = (
     <p className="mt-3 text-[13px] leading-relaxed text-[var(--sf-faint)]">
-      Going live now keeps your prices: paid items wait as drafts and go on sale
-      on their own once you can take payments.
+      {t("goLive.sellLaterHint")}
     </p>
   );
 
   // Plan names are stored lowercase ("starter"); shown capitalised.
   const planName = (plan: { name: string }) =>
-    plan.name.charAt(0).toUpperCase() + plan.name.slice(1);
+    plan.name.charAt(0).toLocaleUpperCase(locale) + plan.name.slice(1);
   const day = (date: Date) =>
     date.toLocaleDateString(locale, { month: "long", day: "numeric" });
 
@@ -230,13 +222,14 @@ export function GoLiveCard({
     return shell(
       <>
         <p className="text-[15px] font-semibold">
-          Start your {days}-day free trial
+          {t("goLive.trial.title", { days })}
         </p>
         <p className="mt-1 text-[14px] leading-relaxed text-[var(--sf-graphite)]">
-          {planName(state.plan)} is free until {firstCharge}
-          {price ? `, then ${price} a month` : ""}. Add your card now: cancel
-          any time before then and you won’t be charged. You’ll come straight
-          back here.
+          {t(price ? "goLive.trial.bodyPrice" : "goLive.trial.body", {
+            plan: planName(state.plan),
+            date: firstCharge,
+            price,
+          })}
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           <Button
@@ -244,7 +237,7 @@ export function GoLiveCard({
             loading={checkingOut}
             className="rounded-full px-6"
           >
-            Start free trial
+            {t("goLive.trial.start")}
           </Button>
         </div>
       </>,
@@ -257,25 +250,25 @@ export function GoLiveCard({
       state.plan.currency,
       locale,
     );
-    const ends = state.trial_end ? ` on ${day(new Date(state.trial_end))}` : "";
+    const end = state.trial_end ? day(new Date(state.trial_end)) : "";
     return shell(
       <>
-        <p className="text-[15px] font-semibold">
-          Selling opens when your plan starts
-        </p>
+        <p className="text-[15px] font-semibold">{t("goLive.start.title")}</p>
         <p className="mt-1 text-[14px] leading-relaxed text-[var(--sf-graphite)]">
-          A trial can’t take payments. Start your {planName(state.plan)} plan
-          today to sell right away{price ? ` (${price} a month)` : ""}, or go
-          live now and sell once your trial ends{ends}.
+          {t(`goLive.start.body${price ? "Price" : ""}${end ? "End" : ""}`, {
+            plan: planName(state.plan),
+            price,
+            end,
+          })}
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           <Button
             onClick={() => startNow()}
             loading={starting}
-            loadingText="Starting your plan…"
+            loadingText={t("goLive.start.starting")}
             className="rounded-full px-6"
           >
-            Start my plan now
+            {t("goLive.start.now")}
           </Button>
           {later}
         </div>
@@ -294,11 +287,13 @@ export function GoLiveCard({
     return shell(
       <>
         <p className="text-[15px] font-semibold">
-          To sell on your site, choose {name}
+          {t("goLive.plan.title", { name })}
         </p>
         <p className="mt-1 text-[14px] leading-relaxed text-[var(--sf-graphite)]">
-          Paid courses and live sessions need the {name} plan
-          {price ? ` (${price} a month)` : ""}. You’ll come straight back here.
+          {t(price ? "goLive.plan.bodyPrice" : "goLive.plan.body", {
+            name,
+            price,
+          })}
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           <Button
@@ -306,7 +301,7 @@ export function GoLiveCard({
             loading={checkingOut}
             className="rounded-full px-6"
           >
-            Choose {name}
+            {t("goLive.plan.choose", { name })}
           </Button>
           {later}
         </div>
@@ -329,27 +324,24 @@ export function GoLiveCard({
 
   return shell(
     <>
-      <p className="text-[15px] font-semibold">Ready when you are</p>
+      <p className="text-[15px] font-semibold">{t("goLive.ready")}</p>
       {state.held?.length > 0 && (
         <div className="mt-2 rounded-xl bg-[var(--sf-tint)] p-3 text-[13.5px] leading-relaxed">
-          <p className="font-medium">
-            Waiting, with your prices, until you sell:
-          </p>
+          <p className="font-medium">{t("goLive.held")}</p>
           <ul className="mt-1 list-disc space-y-0.5 pl-5 text-[var(--sf-graphite)]">
             {state.held.map((line) => (
               <li key={line}>{line}</li>
             ))}
           </ul>
           <p className="mt-1.5 text-[var(--sf-graphite)]">
-            Choose a plan and set up payouts from your dashboard any time; they
-            go on sale on their own.
+            {t("goLive.heldHint")}
           </p>
         </div>
       )}
       {state.blockers.length > 0 && (
         <ul className="mt-2 list-disc space-y-1 pl-5 text-[14px] text-[var(--sf-graphite)]">
           {state.blockers.map((b) => (
-            <li key={b}>{BLOCKERS[b]?.label ?? b}</li>
+            <li key={b}>{BLOCKERS[b] ? t(`blockers.${b}` as never) : b}</li>
           ))}
         </ul>
       )}
@@ -357,13 +349,13 @@ export function GoLiveCard({
         size="lg"
         onClick={() => publish()}
         loading={publishing}
-        loadingText="Going live…"
+        loadingText={t("goLive.going")}
         className="mt-4 rounded-full px-7"
       >
-        Go live
+        {t("goLive.goLive")}
       </Button>
       <p className="mt-3 text-[13px] leading-relaxed text-[var(--sf-faint)]">
-        You can keep editing your site after it goes live.
+        {t("goLive.keepEditing")}
       </p>
     </>,
   );
@@ -373,6 +365,7 @@ export function GoLiveCard({
 /** The last look over the finished site: said while it runs (going live
  * never waits on it), then what it covered and what it tidied. */
 function VisualCheck({ qa }: { qa: NonNullable<GoLiveState["qa"]> }) {
+  const t = useTranslations("admin.setupFlow");
   if (qa.status === "failed") return null;
   const checking = qa.status === "checking";
   return (
@@ -392,15 +385,15 @@ function VisualCheck({ qa }: { qa: NonNullable<GoLiveState["qa"]> }) {
         <p className="flex items-center gap-1.5 font-medium">
           {checking && <SpecialistFace k="designer" size="sm" />}
           {checking
-            ? "Giving every page a last look"
-            : `I looked over ${qa.pages === 1 ? "your page" : `all ${qa.pages} pages`}`}
+            ? t("goLive.qa.checking")
+            : t("goLive.qa.looked", { count: qa.pages })}
         </p>
         <p className="text-[var(--sf-graphite)]">
           {checking
-            ? "On desktop and phone, in light and dark, so nothing looks off when you go live. You don’t have to wait for me."
+            ? t("goLive.qa.checkingBody")
             : qa.fixed.length
-              ? "On desktop and phone, in light and dark. I tidied up along the way:"
-              : "On desktop and phone, in light and dark."}
+              ? t("goLive.qa.fixedBody")
+              : t("goLive.qa.plainBody")}
         </p>
         {!checking && qa.fixed.length > 0 && (
           <ul className="mt-1 list-disc space-y-0.5 pl-5 text-[var(--sf-graphite)]">
@@ -415,6 +408,7 @@ function VisualCheck({ qa }: { qa: NonNullable<GoLiveState["qa"]> }) {
 }
 
 function Steps({ steps }: { steps: GoLiveStep[] }) {
+  const t = useTranslations("admin.setupFlow");
   const current = steps.find((s) => !s.done)?.id;
   return (
     <ol className="mb-4 space-y-2 border-b border-[var(--sf-line)] pb-4">
@@ -440,11 +434,11 @@ function Steps({ steps }: { steps: GoLiveStep[] }) {
             )}
           >
             {s.label}
-            {s.done && <span className="sr-only"> (done)</span>}
+            {s.done && <span className="sr-only"> {t("goLive.stepDone")}</span>}
           </span>
           {!s.done && (
             <span className="ml-auto shrink-0 text-[12.5px] text-[var(--sf-faint)]">
-              about {s.minutes} min
+              {t("goLive.stepMinutes", { minutes: s.minutes })}
             </span>
           )}
         </li>

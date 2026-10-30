@@ -16,18 +16,9 @@ import {
 import { ApiError } from "@/types/api";
 
 const FACTS = [
-  {
-    icon: CreditCard,
-    text: "Students pay by card or wallet at a checkout Stripe runs for you.",
-  },
-  {
-    icon: Landmark,
-    text: "Stripe sends the money to your bank account on a regular schedule.",
-  },
-  {
-    icon: ShieldCheck,
-    text: "Your bank details stay with Stripe. Contentor never sees them.",
-  },
+  { icon: CreditCard, key: "pay" },
+  { icon: Landmark, key: "bank" },
+  { icon: ShieldCheck, key: "private" },
 ];
 
 /** The payouts step: what payouts are, in plain words, and the Stripe
@@ -38,6 +29,7 @@ export function PayoutsCard({
   onReady: (ready: boolean) => void;
 }) {
   const t = useTranslations("admin");
+  const s = useTranslations("admin.setupFlow");
   const [status, setStatus] = useState<ConnectStatus | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [ownerOnly, setOwnerOnly] = useState(false);
@@ -92,26 +84,24 @@ export function PayoutsCard({
               {t("team.specialists.finance.name")}
             </p>
             <p className="text-[13.5px] text-[var(--sf-graphite)]">
-              Here’s how you get paid.
+              {s("payouts.lead")}
             </p>
           </div>
         </div>
         <h2 className="text-[28px] font-semibold leading-[1.15] tracking-[-0.025em] sm:text-[34px]">
-          Get paid by your students
+          {s("payouts.title")}
         </h2>
         <p className="mt-3 max-w-[50ch] text-[15px] leading-relaxed text-[var(--sf-graphite)]">
-          Payments run through Stripe and go straight to your bank. You’ll
-          confirm who you are and where the money should go. It takes about five
-          minutes.
+          {s("payouts.body")}
         </p>
         <ul className="mt-6 divide-y divide-[var(--sf-line)] rounded-xl border border-[var(--sf-line)] bg-white">
-          {FACTS.map(({ icon: Icon, text }) => (
-            <li key={text} className="flex gap-3 px-4 py-3.5 text-sm">
+          {FACTS.map(({ icon: Icon, key }) => (
+            <li key={key} className="flex gap-3 px-4 py-3.5 text-sm">
               <Icon
                 className="mt-0.5 size-4 shrink-0 text-[var(--sf-brass)]"
                 aria-hidden
               />
-              {text}
+              {s(`payouts.fact.${key}` as never)}
             </li>
           ))}
         </ul>
@@ -119,8 +109,7 @@ export function PayoutsCard({
         <div className="mt-7">
           {ownerOnly ? (
             <p className="rounded-xl bg-[var(--sf-brass-soft)] px-4 py-3.5 text-sm leading-relaxed">
-              Only the studio owner can connect payouts. Skip this step for now;
-              the owner can connect Stripe later from Payouts.
+              {s("payouts.ownerOnly")}
             </p>
           ) : (
             <PageState
@@ -134,26 +123,25 @@ export function PayoutsCard({
                   <span className="flex size-6 items-center justify-center rounded-full bg-[var(--sf-ink)] text-white">
                     <Check className="size-3.5" strokeWidth={3} aria-hidden />
                   </span>
-                  Payouts are connected
+                  {s("payouts.connected")}
                 </p>
               ) : (
                 <div className="space-y-3">
                   {status?.connected && (
                     <p className="text-sm text-[var(--sf-graphite)]">
-                      Stripe still needs a few details before you can take
-                      payments.
+                      {s("payouts.needsDetails")}
                     </p>
                   )}
                   <Button
                     size="lg"
                     onClick={() => connect()}
                     loading={connecting}
-                    loadingText="Opening Stripe…"
+                    loadingText={s("payouts.opening")}
                     className="rounded-full px-7"
                   >
                     {status?.connected
-                      ? "Continue on Stripe"
-                      : "Connect with Stripe"}
+                      ? s("payouts.continue")
+                      : s("payouts.connect")}
                   </Button>
                 </div>
               )}

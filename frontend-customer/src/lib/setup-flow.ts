@@ -158,14 +158,14 @@ export const startConnectOnboarding = () =>
     post({ return_path: "/setup?connect=return" }),
   );
 
-/** Which step fixes each publish blocker, and how to say it. */
-export const BLOCKERS: Record<string, { label: string; step: string }> = {
-  plan: { label: "Start your free trial", step: "plan" },
-  first_course: { label: "Publish your first course", step: "course" },
-  payouts: { label: "Connect payouts", step: "payouts" },
-  first_event: { label: "Schedule your first live session", step: "event" },
-  first_blog_post: { label: "Publish your first article", step: "post" },
-  look: { label: "Finish your home page", step: "page:home" },
+/** Which step fixes each publish blocker (how it reads is `blockers.<code>`). */
+export const BLOCKERS: Record<string, { step: string }> = {
+  plan: { step: "plan" },
+  first_course: { step: "course" },
+  payouts: { step: "payouts" },
+  first_event: { step: "event" },
+  first_blog_post: { step: "post" },
+  look: { step: "page:home" },
 };
 
 /** iframe src for a public path, flagged so the site renders without the
@@ -195,29 +195,32 @@ export const siteNameIdeas = (topic: string, firstName: string) =>
     post({ ideas: topic, first_name: firstName }),
   ).then((r) => r.ideas ?? []);
 
-/** A refused answer (the server's 400 detail code), in the coach's words. */
-const CHOICE_ERRORS: Record<string, string> = {
-  brand_taken: "That name is taken. Try another one.",
-  brand_unusable: "Use letters or numbers in your site’s name.",
-  invalid_handle:
-    "That handle doesn’t look right. Use your handle, like @mira.yoga, or paste the link to your profile.",
-  invalid_schedule: "Pick at least one day and a time for the session.",
-  unknown_logo: "That logo isn’t available any more. Pick another one.",
-  unknown_style: "That look isn’t available any more. Pick another one.",
-  trial_unavailable:
-    "A free trial needs a weekly class with a price and at least two sessions.",
-};
+/** The server's 400 detail codes a refused answer comes back with; each has
+ * a message (`turnError.<code>`) in the creator's words. */
+const CHOICE_ERRORS = [
+  "brand_taken",
+  "brand_unusable",
+  "invalid_handle",
+  "invalid_schedule",
+  "unknown_logo",
+  "unknown_style",
+  "trial_unavailable",
+];
 
-export function turnErrorText(err: unknown): string {
+export function turnErrorText(err: unknown, t: T): string {
   const code =
     err instanceof ApiError && err.status === 400
       ? String(err.data.detail ?? "")
       : "";
-  return (
-    CHOICE_ERRORS[code] ??
-    "That didn’t go through. Your answer is still here, so try again in a moment."
+  return t(
+    CHOICE_ERRORS.includes(code) ? `turnError.${code}` : "turnError.other",
   );
 }
+
+/** The setup flow's translator (`useTranslations("admin.setupFlow")`), as the
+ * pure helpers take it: they name their messages by string. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type T = (key: any, values?: any) => string;
 
 export const DELEGATE = "__delegate__";
 /** Skip a section (the first course, class or article). */

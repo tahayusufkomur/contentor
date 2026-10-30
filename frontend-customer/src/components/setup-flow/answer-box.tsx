@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { ArrowUp } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { MicButton } from "@/components/copilot/mic-button";
 import { joinSpeech } from "@/lib/interview";
@@ -25,6 +26,7 @@ export function AnswerBox({
   placeholder: string;
   className?: string;
 }) {
+  const t = useTranslations("admin.setupFlow");
   const [hearing, setHearing] = useState("");
   const spoken = useRef(false);
 
@@ -50,7 +52,7 @@ export function AnswerBox({
       <div className="min-w-0 flex-1 py-1.5">
         <textarea
           id="setup-answer"
-          aria-label="Your answer"
+          aria-label={t("answerBox.label")}
           value={value}
           onChange={(e) => {
             const next = e.target.value;
@@ -92,8 +94,8 @@ export function AnswerBox({
       <Button
         type="submit"
         size="icon"
-        aria-label="Send"
-        title="Send"
+        aria-label={t("answerBox.send")}
+        title={t("answerBox.send")}
         loading={sending}
         disabled={!text}
         className="size-9 shrink-0 rounded-full"

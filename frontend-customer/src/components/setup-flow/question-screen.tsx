@@ -47,14 +47,14 @@ import { AnswerBox } from "./answer-box";
 import { BuilderPreview, type BuilderData } from "./builder-preview";
 import { DemoHint, StarterDemo } from "./demo-hint";
 import { BusyOverlay } from "./busy-overlay";
-import { DraftReview, NOUN } from "./draft-review";
+import { DraftReview } from "./draft-review";
 import { LookCardsView } from "./look-cards";
 import { OwnOptionCard } from "./own-option-card";
 import { QuestionHelp } from "./question-help";
 import { SchedulePicker } from "./schedule-picker";
 import { SocialsPicker } from "./socials-picker";
 import { StarterCard } from "./starter-card";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 export type { StepDraft };
 
@@ -105,6 +105,7 @@ export function QuestionScreen({
   onNext: () => void;
 }) {
   const locale = useLocale();
+  const t = useTranslations("admin.setupFlow");
   const multi = !!step.multi && step.options.length > 1;
   const prefill = live ? prefilledPicks(step) : { tiles: [], own: [] };
   // Own options: the ones sent with the answer, plus any added but not sent.
@@ -234,8 +235,8 @@ export function QuestionScreen({
   useEffect(() => {
     setSlow(false);
     if (!sending) return;
-    const t = setTimeout(() => setSlow(true), 12000);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setSlow(true), 12000);
+    return () => clearTimeout(timer);
   }, [sending]);
   // The "tap a sentence, then finish it" demo: plays until the coach touches
   // any card, and stays away on later starter questions once she has
@@ -264,7 +265,7 @@ export function QuestionScreen({
   const pickedLabel =
     draft.card?.label ??
     (ticked.length > 1
-      ? `${ticked.length} picked`
+      ? t("question.picked", { count: ticked.length })
       : step.starter
         ? textOf(ticked[0])
         : ticked[0]);
@@ -282,12 +283,12 @@ export function QuestionScreen({
   // Ticking the "alone" option ("Free for now") clears the rest, and the
   // other way round.
   const toggle = (o: string) =>
-    setTicked((t) =>
-      t.includes(o)
-        ? t.filter((x) => x !== o)
+    setTicked((all) =>
+      all.includes(o)
+        ? all.filter((x) => x !== o)
         : o === step.alone
           ? [o]
-          : [...t.filter((x) => x !== step.alone), o],
+          : [...all.filter((x) => x !== step.alone), o],
     );
   // A typed option is picked at once, and joins the tiles after the others.
   const addOwn = (labels: string[]) =>
@@ -320,7 +321,7 @@ export function QuestionScreen({
     const pick: TurnRequest =
       sched && field
         ? {
-            message: scheduleSummary(mode, sched, locale),
+            message: scheduleSummary(mode, sched, locale, t),
             choice: {
               field,
               value: JSON.stringify({ mode, ...sched }),
@@ -445,7 +446,7 @@ export function QuestionScreen({
                         aria-hidden
                         className="size-3.5 text-[var(--sf-brass)]"
                       />
-                      Noted: {step.noted.join(" · ")}
+                      {t("question.noted", { items: step.noted.join(" · ") })}
                     </p>
                   )}
                 </>
@@ -453,8 +454,15 @@ export function QuestionScreen({
                 step.answer &&
                 step.answer !== typed && (
                   <p className="max-w-[72ch] text-[15px] text-[var(--sf-graphite)]">
-                    You said:{" "}
-                    <span className="text-[var(--sf-ink)]">{step.answer}</span>
+                    {t.rich("answer.youSaid", {
+                      answer:
+                        step.answer === DELEGATE_TEXT
+                          ? t("question.delegateSaid")
+                          : step.answer,
+                      b: (chunks) => (
+                        <span className="text-[var(--sf-ink)]">{chunks}</span>
+                      ),
+                    })}
                   </p>
                 )
               )}
@@ -518,23 +526,20 @@ export function QuestionScreen({
                     variant="screen"
                     message={
                       draft.card?.label
-                        ? `Applying ${draft.card.label}…`
-                        : "Applying your pick…"
+                        ? t("question.applying", { label: draft.card.label })
+                        : t("question.applyingPick")
                     }
                     hint={
                       slow
-                        ? "Still working. Your site is being built at the same time, so this can take a little longer."
-                        : "Your site updates while I get the next question ready."
+                        ? t("question.stillWorking")
+                        : t("question.siteUpdates")
                     }
                   />
                 </ModalPortal>
               )}
 
               {step.starter && demoOk && (
-                <DemoHint
-                  show={showDemo}
-                  caption="Tap a sentence, then finish it in your own words."
-                >
+                <DemoHint show={showDemo} caption={t("demo.caption")}>
                   <StarterDemo />
                 </DemoHint>
               )}
@@ -656,7 +661,7 @@ export function QuestionScreen({
                       disabled={sending}
                       delay={answersAt + Math.min(shown.length, 15) * 32}
                       sentence={step.starter}
-                      placeholder={prices ? "Name your own…" : undefined}
+                      placeholder={prices ? t("question.nameOwn") : undefined}
                       onAdd={addOwn}
                     />
                   )}
@@ -665,7 +670,7 @@ export function QuestionScreen({
 
               {zone && (
                 <select
-                  aria-label="Time zone"
+                  aria-label={t("question.timeZone")}
                   value={zone}
                   disabled={sending}
                   onChange={(e) =>
@@ -697,14 +702,19 @@ export function QuestionScreen({
               {details && ways.length > 0 && (
                 <SocialsPicker
                   networks={ways}
+                  labelOf={(w) =>
+                    step.address
+                      ? t(w === "Place" ? "question.place" : "question.address")
+                      : w
+                  }
                   value={details}
                   onChange={(v) => onDraft((d) => ({ ...d, details: v }))}
                   disabled={sending}
                   placeholder={(w) =>
                     step.address
                       ? w === "Place"
-                        ? "Studio Lumen, Kreuzberg"
-                        : "Hauptstraße 12, 10827 Berlin"
+                        ? t("question.placePlaceholder")
+                        : t("question.addressPlaceholder")
                       : CONTACT_DETAILS[idOf(w, step.options, step.ids)] ===
                           "email"
                         ? "you@example.com"
@@ -714,12 +724,12 @@ export function QuestionScreen({
                   problem={(w) =>
                     step.address
                       ? w === "Place"
-                        ? "Add the name of the place."
-                        : "Add the street address."
+                        ? t("question.placeProblem")
+                        : t("question.addressProblem")
                       : CONTACT_DETAILS[idOf(w, step.options, step.ids)] ===
                           "email"
-                        ? "That doesn’t look like an email address."
-                        : "Add the number with its country code, like +49 170 1234567."
+                        ? t("question.emailProblem")
+                        : t("question.phoneProblem")
                   }
                   reads={() => null}
                   className="mt-4 motion-safe:animate-[sf-pop_.6s_var(--sf-spring)_both]"
@@ -732,12 +742,16 @@ export function QuestionScreen({
                   value={prices}
                   onChange={(v) => onDraft((d) => ({ ...d, prices: v }))}
                   disabled={sending}
-                  placeholder={() => `${step.sign ?? ""} a month`}
+                  placeholder={() =>
+                    t("priceMonthly", { price: step.sign ?? "" })
+                  }
                   ok={(_t, raw) => priceOk(raw)}
-                  problem={() => "Add a monthly price, like 19."}
+                  problem={() => t("question.priceProblem")}
                   reads={(_t, raw) =>
                     priceOk(raw)
-                      ? `${step.sign ?? ""}${raw.trim()} a month`
+                      ? t("priceMonthly", {
+                          price: `${step.sign ?? ""}${raw.trim()}`,
+                        })
                       : null
                   }
                   className="mt-4 motion-safe:animate-[sf-pop_.6s_var(--sf-spring)_both]"
@@ -762,10 +776,10 @@ export function QuestionScreen({
                   <p className="flex items-center gap-2 text-[15px] text-[var(--sf-graphite)]">
                     <Spinner size="sm" className="text-[var(--sf-brass)]" />
                     {slow
-                      ? "Still thinking. Your site is being built at the same time, so this can take a little longer."
+                      ? t("question.stillThinking")
                       : review && changing
-                        ? "Reading your changes…"
-                        : "Thinking…"}
+                        ? t("draft.reading")
+                        : t("question.thinking")}
                   </p>
                 ) : (
                   <>
@@ -782,25 +796,27 @@ export function QuestionScreen({
                       >
                         {review
                           ? note
-                            ? "Send changes"
+                            ? t("question.sendChanges")
                             : review.status === "waiting"
-                              ? "Continue"
-                              : "Looks good, continue"
+                              ? t("question.continue")
+                              : t("question.looksGood")
                           : !canContinue
                             ? step.starter && ticked.length > 0
-                              ? "Finish your sentence"
+                              ? t("question.finishSentence")
                               : prices && ticked.length > 0
-                                ? "Add a price for each"
+                                ? t("question.addPrice")
                                 : multi
-                                  ? "Pick as many as fit"
-                                  : "Pick one to continue"
+                                  ? t("question.pickMany")
+                                  : t("question.pickOne")
                             : !live && !changed
-                              ? "Keep this answer"
+                              ? t("question.keepAnswer")
                               : note && (ticked.length > 0 || draft.card)
-                                ? "Continue with your note"
+                                ? t("question.continueNote")
                                 : multi && ticked.length > 1
-                                  ? `Continue with ${ticked.length}`
-                                  : "Continue"}
+                                  ? t("question.continueCount", {
+                                      count: ticked.length,
+                                    })
+                                  : t("question.continue")}
                       </Button>
                     )}
                     {/* The button waits for the rewrite: say what for. */}
@@ -811,7 +827,7 @@ export function QuestionScreen({
                           size="sm"
                           className="text-[var(--sf-brass)]"
                         />
-                        Rewriting your {NOUN[review.kind]}…
+                        {t("draft.rewritingShort", { kind: review.kind })}
                       </p>
                     )}
                     {/* On every question that takes several answers (starter
@@ -821,15 +837,15 @@ export function QuestionScreen({
                         variant="ghost"
                         size="lg"
                         onClick={() =>
-                          setTicked((t) =>
-                            every.every((o) => t.includes(o)) ? [] : every,
+                          setTicked((all) =>
+                            every.every((o) => all.includes(o)) ? [] : every,
                           )
                         }
                         className="rounded-full"
                       >
                         {every.every((o) => ticked.includes(o))
-                          ? "Deselect all"
-                          : "Select all"}
+                          ? t("question.deselectAll")
+                          : t("question.selectAll")}
                       </Button>
                     )}
                     {step.can_delegate && step.field && (
@@ -848,7 +864,7 @@ export function QuestionScreen({
                         aria-describedby="setup-pick-for-me"
                         className="rounded-full text-[var(--sf-graphite)]"
                       >
-                        Pick for me
+                        {t("question.pickForMe")}
                       </Button>
                     )}
                     {step.skip && step.field && (
@@ -877,7 +893,7 @@ export function QuestionScreen({
                   id="setup-pick-for-me"
                   className="mt-2 text-[13px] text-[var(--sf-faint)]"
                 >
-                  Not sure? I&rsquo;ll choose from your answers.
+                  {t("question.pickForMeHint")}
                 </p>
               )}
               <div style={{ viewTransitionName: "sf-answer" }} className="mt-6">
@@ -890,14 +906,12 @@ export function QuestionScreen({
                   sending={sending}
                   placeholder={
                     review
-                      ? `Or tell me what to change, like ${
-                          review.kind === "course"
-                            ? "“make it six weeks”"
-                            : "“make it an hour long”"
-                        } or “another photo”…`
+                      ? review.kind === "course"
+                        ? t("question.changeCourse")
+                        : t("question.changeEvent")
                       : live
-                        ? "Or type your own answer…"
-                        : "Or type a new answer…"
+                        ? t("question.typeOwn")
+                        : t("question.typeNew")
                   }
                   onSubmit={(text, spoken) =>
                     canContinue
@@ -907,8 +921,7 @@ export function QuestionScreen({
                 />
               </div>
               <p className="mt-4 text-[13px] text-[var(--sf-faint)]">
-                Nothing here is final. You can change all of it later from your
-                dashboard.
+                {t("question.notFinal")}
               </p>
             </div>
           </div>
@@ -929,7 +942,7 @@ export function QuestionScreen({
               onClick={() => proceed()}
               className="shrink-0 rounded-full px-4"
             >
-              Continue
+              {t("question.continue")}
               <ArrowRight className="size-4" aria-hidden />
             </Button>
           </div>

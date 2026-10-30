@@ -2940,5 +2940,611 @@
       "addItem": "{name} hinzufügen",
       "addDefault": "Element"
     }
+  },
+  "setupFlow": {
+    "answerBox": {
+      "label": "Deine Antwort",
+      "send": "Senden"
+    },
+    "frame": {
+      "reload": "Vorschau neu laden",
+      "title": "Website-Vorschau",
+      "thisSection": "diesen Abschnitt"
+    },
+    "builder": {
+      "coverError": "Dieses Titelbild konnte nicht verwendet werden. Probier ein anderes.",
+      "coverCurrent": "Aktuelles Titelbild",
+      "coverUse": "Dieses Titelbild verwenden",
+      "kicker": {
+        "course": "Dein erster Kurs",
+        "event": "Deine erste Live-Session",
+        "onsite": "Deine erste Präsenzveranstaltung"
+      },
+      "changingCover": "Titelbild wird geändert…",
+      "pickTime": "Wähle eine Uhrzeit",
+      "inPerson": "Vor Ort",
+      "onlineLive": "Online, live",
+      "descriptionDrafted": "Aus deinen Antworten wird eine kurze Beschreibung entworfen.",
+      "pickTopic": "Wähle ein Thema, und hier nimmt es Gestalt an.",
+      "badge": {
+        "free": "Kostenlos",
+        "members": "Nur für Mitglieder"
+      },
+      "tiersIntro": "Teilnehmer wählen die, die zu ihnen passt. Du kannst Mitgliedschaften jederzeit hinzufügen oder ändern.",
+      "tierKicker": "{brand}-Mitgliedschaft",
+      "tierKickerPlain": "Mitgliedschaft",
+      "tiersEmpty": "Deine Mitgliedschaften",
+      "tiersHint": "Wähle eine oder mehrere Mitgliedschaften aus, dann erscheinen sie hier.",
+      "billing": "Monatliche Abrechnung · Jederzeit kündbar"
+    },
+    "sketch": {
+      "preview": "Live-Vorschau des Kopfbereichs deiner Website",
+      "device": "Vorschaugerät",
+      "desktop": "Desktop",
+      "mobile": "Mobil + Menü",
+      "toggleMenu": "Vorschau des mobilen Menüs ein-/ausblenden",
+      "noLinks": "Keine Menülinks ausgewählt"
+    },
+    "demo": {
+      "caption": "Tippe auf einen Satz und vervollständige ihn dann mit deinen eigenen Worten.",
+      "starter": "Ich habe angefangen, als…",
+      "starterEnd": "mich ein Freund bat, ihn zu vertreten"
+    },
+    "ownOption": {
+      "label": "Eigene Option hinzufügen",
+      "placeholder": "Eigene hinzufügen…"
+    },
+    "help": {
+      "example": "z. B. {example}",
+      "look": {
+        "dark": "Dunkel",
+        "light": "Hell"
+      },
+      "pay": {
+        "anna": "Anna, vielbeschäftigte Mama, wenig Zeit",
+        "ben": "Ben, kommt jede Woche",
+        "cara": "Cara, schaut vorbei, wenn sie kann",
+        "course": "Kauft einen Kurs",
+        "membership": "Schließt eine Mitgliedschaft ab",
+        "session": "Zahlt pro Session",
+        "month": "Monat {n}"
+      },
+      "membership": {
+        "club": "Der Club",
+        "library": "Kursbibliothek",
+        "price": "{sign}{price} pro Monat",
+        "coversLive": "Umfasst: Jede Live-Session",
+        "coversCourses": "Umfasst: Jeden Kurs"
+      },
+      "access": {
+        "title": "Alles, was du erstellst",
+        "who": "Wer es öffnen kann",
+        "free": "Kostenlos",
+        "sold": "Einzeln verkauft",
+        "member": "In einer Mitgliedschaft",
+        "ticked": ", angehakt",
+        "notTicked": ", nicht angehakt"
+      },
+      "course": {
+        "label": "Kurs",
+        "title": "Das 6-Wochen-Programm",
+        "stats": "3 Module · 18 Lektionen",
+        "module": "<b>Modul</b> · {title}",
+        "week1": "Woche 1: Die Grundlagen",
+        "week2": "Woche 2: Die Gewohnheit aufbauen",
+        "week3": "Woche 3: Weiter vertiefen",
+        "lessons": "<b>Lektionen</b> sind die Videos in jedem Modul."
+      },
+      "live": {
+        "title": "Abendstunde am Dienstag",
+        "when": "Dienstags, 19 Uhr",
+        "join": "Teilnehmen"
+      },
+      "inbox": {
+        "name": "Anna",
+        "message": "Hi! Ist die Dienstagsstunde auch für absolute Anfänger okay?"
+      }
+    },
+    "starter": {
+      "takeOut": "Diesen entfernen",
+      "finishOrRemove": "Vervollständige den Satz oder entferne ihn, um fortzufahren.",
+      "finishLabel": "Vervollständige den Satz: {start}",
+      "finishPlaceholder": "Vervollständige den Satz mit deinen eigenen Worten"
+    },
+    "socials": {
+      "placeholder": "{site}deinname oder @deinname",
+      "problem": "Verwende deinen {network}-Nutzernamen, z. B. @mira.yoga, oder einen Link, der mit {site} beginnt"
+    },
+    "activity": {
+      "building": "{page, select, home {Deine Startseite wird erstellt: {stage}} about {Deine Über-uns-Seite wird erstellt: {stage}} courses {Deine Kursseite wird erstellt: {stage}} pricing {Deine Preisseite wird erstellt: {stage}} faq {Deine FAQ-Seite wird erstellt: {stage}} contact {Deine Kontaktseite wird erstellt: {stage}} events {Deine Veranstaltungsseite wird erstellt: {stage}} other {Deine {page}-Seite wird erstellt: {stage}}}",
+      "drafting": "Wir entwerfen {kind, select, course {deinen ersten Kurs} event {deine erste Live-Session} onsite {deine erste Präsenzveranstaltung} post {deinen ersten Artikel} other {{kind}}}",
+      "more": "{first} · {count} weitere folgen",
+      "stage": {
+        "planning": "Layout planen",
+        "copy": "Texte schreiben",
+        "photos": "Fotos auswählen"
+      }
+    },
+    "notes": {
+      "homeReady": "Deine Startseite ist fertig. Schau sie dir an und sag mir, was du gern ändern möchtest.",
+      "pageReady": "{page, select, home {Deine Startseite ist fertig. Schau sie dir an.} about {Deine Über-uns-Seite ist fertig. Schau sie dir an.} courses {Deine Kursseite ist fertig. Schau sie dir an.} pricing {Deine Preisseite ist fertig. Schau sie dir an.} faq {Deine FAQ-Seite ist fertig. Schau sie dir an.} contact {Deine Kontaktseite ist fertig. Schau sie dir an.} events {Deine Veranstaltungsseite ist fertig. Schau sie dir an.} other {Deine {page}-Seite ist fertig. Schau sie dir an.}}",
+      "pageFailed": "{page, select, home {Ich konnte deine Startseite nicht fertigstellen, daher behält sie vorerst ihre erste Version.} about {Ich konnte deine Über-uns-Seite nicht fertigstellen, daher behält sie vorerst ihre erste Version.} courses {Ich konnte deine Kursseite nicht fertigstellen, daher behält sie vorerst ihre erste Version.} pricing {Ich konnte deine Preisseite nicht fertigstellen, daher behält sie vorerst ihre erste Version.} faq {Ich konnte deine FAQ-Seite nicht fertigstellen, daher behält sie vorerst ihre erste Version.} contact {Ich konnte deine Kontaktseite nicht fertigstellen, daher behält sie vorerst ihre erste Version.} events {Ich konnte deine Veranstaltungsseite nicht fertigstellen, daher behält sie vorerst ihre erste Version.} other {Ich konnte deine {page}-Seite nicht fertigstellen, daher behält sie vorerst ihre erste Version.}}",
+      "draftDone": {
+        "course": "Der Entwurf für deinen ersten Kurs ist fertig. Ich füge ihn deiner Kursseite hinzu.",
+        "event": "Deine erste Live-Session steht im Kalender.",
+        "onsite": "Deine erste Präsenzveranstaltung steht im Kalender.",
+        "post": "Der Entwurf für deinen ersten Artikel ist fertig."
+      },
+      "draftFailed": "Ich konnte {kind, select, course {deinen ersten Kurs} event {deine erste Live-Session} onsite {deine erste Präsenzveranstaltung} post {deinen ersten Artikel} other {{kind}}} nicht entwerfen. Du kannst es später über dein Dashboard hinzufügen."
+    },
+    "section": {
+      "you": "Du",
+      "students": "Teilnehmer",
+      "offer": "Angebot",
+      "look": "Look & Story",
+      "pricing": "Preise & Inhalte",
+      "contact": "Kontakt",
+      "emails": "E-Mails",
+      "header": "Kopf- & Fußzeile"
+    },
+    "page": {
+      "name": {
+        "home": "Startseite",
+        "about": "Über uns",
+        "courses": "Kurse",
+        "pricing": "Preise",
+        "faq": "FAQ",
+        "contact": "Kontakt",
+        "events": "Veranstaltungen"
+      }
+    },
+    "schedule": {
+      "days": {
+        "sun": "Sonntags",
+        "mon": "Montags",
+        "tue": "Dienstags",
+        "wed": "Mittwochs",
+        "thu": "Donnerstags",
+        "fri": "Freitags",
+        "sat": "Samstags"
+      },
+      "once": "{weekday}, {date} um {time}",
+      "clause": "{days} um {times}",
+      "span": {
+        "range": "vom {start} bis {end}",
+        "open": "ab {start}"
+      },
+      "withSpan": "{when}, {span}",
+      "dateTime": "Datum und Uhrzeit",
+      "starts": "Beginn",
+      "ends": "Ende",
+      "endsHint": "Leer lassen für unbegrenzte Laufzeit",
+      "sessionTime": "Session-Zeit {n}",
+      "classTime": "Kurszeit {n}",
+      "removeDayTime": "Diesen Tag und diese Uhrzeit entfernen",
+      "removeTime": "Diese Uhrzeit entfernen",
+      "addTime": "Uhrzeit hinzufügen",
+      "addDayTime": "Weiteren Tag und weitere Uhrzeit hinzufügen",
+      "pickOnce": "Wähle Datum und Uhrzeit.",
+      "pickRecurring": "Wähle ein Startdatum, die Tage und eine Uhrzeit.",
+      "zone": "Die Uhrzeiten gelten in deiner Zeitzone, {zone}.",
+      "daysLabel": "Tage",
+      "timesLabel": "Uhrzeiten"
+    },
+    "blockers": {
+      "plan": "Starte deine kostenlose Testphase",
+      "first_course": "Veröffentliche deinen ersten Kurs",
+      "payouts": "Auszahlungen verbinden",
+      "first_event": "Plane deine erste Live-Session",
+      "first_blog_post": "Veröffentliche deinen ersten Artikel",
+      "look": "Stelle deine Startseite fertig"
+    },
+    "turnError": {
+      "brand_taken": "Dieser Name ist bereits vergeben. Versuch einen anderen.",
+      "brand_unusable": "Verwende Buchstaben oder Zahlen im Namen deiner Website.",
+      "invalid_handle": "Dieser Handle sieht nicht richtig aus. Verwende deinen Handle, z. B. @mira.yoga, oder füge den Link zu deinem Profil ein.",
+      "invalid_schedule": "Wähle mindestens einen Tag und eine Uhrzeit für die Session.",
+      "unknown_logo": "Dieses Logo ist nicht mehr verfügbar. Wähle ein anderes.",
+      "unknown_style": "Dieser Look ist nicht mehr verfügbar. Wähle einen anderen.",
+      "trial_unavailable": "Für eine kostenlose Testphase brauchst du einen wöchentlichen Kurs mit Preis und mindestens zwei Terminen.",
+      "other": "Das hat nicht geklappt. Deine Antwort ist noch da, versuch es also gleich noch einmal."
+    },
+    "editor": {
+      "saveError": "Deine letzte Änderung konnte nicht gespeichert werden. Versuch es noch einmal.",
+      "aria": "{page, select, home {Deine Startseite bearbeiten} about {Deine Über-uns-Seite bearbeiten} courses {Deine Kursseite bearbeiten} pricing {Deine Preisseite bearbeiten} faq {Deine FAQ-Seite bearbeiten} contact {Deine Kontaktseite bearbeiten} events {Deine Veranstaltungsseite bearbeiten} other {Deine {page}-Seite bearbeiten}}",
+      "title": "{page, select, home {Deine Startseite bearbeiten} about {Deine Über-uns-Seite bearbeiten} courses {Deine Kursseite bearbeiten} pricing {Deine Preisseite bearbeiten} faq {Deine FAQ-Seite bearbeiten} contact {Deine Kontaktseite bearbeiten} events {Deine Veranstaltungsseite bearbeiten} other {Deine {page}-Seite bearbeiten}}",
+      "hint": "Ändere alles auf der Seite. Deine Änderungen werden automatisch gespeichert.",
+      "saving": "Wird gespeichert…",
+      "done": "Bearbeitung beenden"
+    },
+    "launch": {
+      "live": "{brand} ist live",
+      "visit": "Jetzt kann jeder deine Website besuchen.",
+      "visitWithTeam": "Jetzt kann jeder deine Website besuchen. Hier siehst du, wer sich um was kümmert.",
+      "toAdmin": "Zu deinem Verwaltungsbereich",
+      "toSite": "Deine Website besuchen"
+    },
+    "payouts": {
+      "fact": {
+        "pay": "Teilnehmer zahlen per Karte oder Wallet über einen Checkout, den Stripe für dich betreibt.",
+        "bank": "Stripe überweist das Geld regelmäßig auf dein Bankkonto.",
+        "private": "Deine Bankdaten bleiben bei Stripe. Contentor sieht sie nie."
+      },
+      "lead": "So bekommst du dein Geld.",
+      "title": "Lass dich von deinen Teilnehmern bezahlen",
+      "body": "Zahlungen laufen über Stripe und gehen direkt auf dein Bankkonto. Du bestätigst, wer du bist und wohin das Geld gehen soll. Das dauert etwa fünf Minuten.",
+      "ownerOnly": "Nur der Inhaber des Studios kann Auszahlungen verbinden. Überspring diesen Schritt vorerst; der Inhaber kann Stripe später unter Auszahlungen verbinden.",
+      "connected": "Auszahlungen sind verbunden",
+      "needsDetails": "Stripe braucht noch ein paar Angaben, bevor du Zahlungen annehmen kannst.",
+      "opening": "Stripe wird geöffnet…",
+      "continue": "Weiter bei Stripe",
+      "connect": "Mit Stripe verbinden"
+    },
+    "panel": {
+      "aria": "Deine Einrichtungshilfe",
+      "making": "Änderung wird vorgenommen…",
+      "almostReady": "Fast fertig",
+      "seeSite": "Deine Website ansehen",
+      "askHint": "Möchtest du vorher noch etwas ändern? Sag es mir unten, zum Beispiel „mach die Überschrift herzlicher“ oder „nimm ein ruhigeres Foto“.",
+      "changing": "<b>{label}</b> wird geändert",
+      "changeWhole": "Stattdessen die ganze Seite ändern",
+      "placeholderPicked": "Was soll sich hier ändern? Zum Beispiel „kürzer“ oder „ein wärmeres Foto“…",
+      "placeholderPage": "{page, select, home {Ändere etwas auf deiner Startseite…} about {Ändere etwas auf deiner Über-uns-Seite…} courses {Ändere etwas auf deiner Kursseite…} pricing {Ändere etwas auf deiner Preisseite…} faq {Ändere etwas auf deiner FAQ-Seite…} contact {Ändere etwas auf deiner Kontaktseite…} events {Ändere etwas auf deiner Veranstaltungsseite…} other {Ändere etwas auf deiner {page}-Seite…}}",
+      "placeholderAsk": "Bitte um eine Änderung…",
+      "progress": "Bevor du live gehst · Seite {n} von {total}",
+      "happy": "{page, select, home {Zufrieden mit deiner Startseite?} about {Zufrieden mit deiner Über-uns-Seite?} courses {Zufrieden mit deiner Kursseite?} pricing {Zufrieden mit deiner Preisseite?} faq {Zufrieden mit deiner FAQ-Seite?} contact {Zufrieden mit deiner Kontaktseite?} events {Zufrieden mit deiner Veranstaltungsseite?} other {Zufrieden mit deiner {page}-Seite?}}",
+      "lookOver": "Sieh sie dir in Ruhe an. Tippe auf einen Teil, um nur diesen Teil zu ändern, oder sag mir unten, was auf der Seite geändert werden soll. Oder öffne den Editor und ändere selbst, was du möchtest. Gib sie frei, dann geht es mit der nächsten weiter.",
+      "showPage": "{page, select, home {Deine Startseite anzeigen} about {Deine Über-uns-Seite anzeigen} courses {Deine Kursseite anzeigen} pricing {Deine Preisseite anzeigen} faq {Deine FAQ-Seite anzeigen} contact {Deine Kontaktseite anzeigen} events {Deine Veranstaltungsseite anzeigen} other {Deine {page}-Seite anzeigen}}",
+      "approvedLeft": "Freigegeben. {count, plural, one {Noch # Seite.} other {Noch # Seiten.}}",
+      "saving": "Wird gespeichert…",
+      "approve": "Diese Seite passt so",
+      "editPage": "Diese Seite bearbeiten",
+      "stillBuilding": "Diese Seite wird noch erstellt…",
+      "pagesAria": "Deine Seiten",
+      "state": {
+        "approved": "Freigegeben",
+        "building": "Wird erstellt",
+        "toReview": "Zu prüfen"
+      }
+    },
+    "goLive": {
+      "paymentPending": "Deine Zahlung wird noch bestätigt. Wenn sie durchgegangen ist, lade diese Seite in einer Minute neu.",
+      "checkoutError": "Der Checkout konnte nicht geöffnet werden. Versuch es noch einmal.",
+      "cardError": "Deine Karte konnte noch nicht belastet werden. Kläre das mit deiner Bank und versuch es noch einmal.",
+      "startError": "Dein Tarif konnte nicht gestartet werden. Versuch es noch einmal.",
+      "holdError": "Deine kostenpflichtigen Angebote konnten nicht zurückgehalten werden. Versuch es noch einmal.",
+      "blockedToast": "Ein paar Dinge müssen noch erledigt werden, bevor du live gehst.",
+      "publishError": "Deine Website konnte nicht veröffentlicht werden. Versuch es noch einmal.",
+      "asideTitle": "Als Nächstes geht deine Website live",
+      "built": "Was ich erstellt habe",
+      "confirming": "Dein Tarif wird bestätigt…",
+      "finishing": "Deine Seiten werden fertiggestellt…",
+      "holding": "Sie werden zurückgehalten…",
+      "sellLater": "Jetzt live gehen, später verkaufen",
+      "sellLaterHint": "Wenn du jetzt live gehst, bleiben deine Preise erhalten: Kostenpflichtige Angebote warten als Entwürfe und gehen automatisch in den Verkauf, sobald du Zahlungen annehmen kannst.",
+      "trial": {
+        "title": "{days, plural, one {Starte deine #-tägige kostenlose Testphase} other {Starte deine #-tägige kostenlose Testphase}}",
+        "body": "{plan} ist bis {date} kostenlos. Hinterlege jetzt deine Karte: Wenn du vorher jederzeit kündigst, wird dir nichts berechnet. Du kommst direkt hierher zurück.",
+        "bodyPrice": "{plan} ist bis {date} kostenlos, danach {price} pro Monat. Hinterlege jetzt deine Karte: Wenn du vorher jederzeit kündigst, wird dir nichts berechnet. Du kommst direkt hierher zurück.",
+        "start": "Kostenlose Testphase starten"
+      },
+      "start": {
+        "title": "Der Verkauf startet, sobald dein Tarif beginnt",
+        "body": "In einer Testphase kannst du keine Zahlungen annehmen. Starte noch heute deinen Tarif {plan}, um sofort zu verkaufen, oder geh jetzt live und verkaufe, sobald deine Testphase endet.",
+        "bodyPrice": "In einer Testphase kannst du keine Zahlungen annehmen. Starte noch heute deinen Tarif {plan}, um sofort zu verkaufen ({price} pro Monat), oder geh jetzt live und verkaufe, sobald deine Testphase endet.",
+        "bodyEnd": "In einer Testphase kannst du keine Zahlungen annehmen. Starte noch heute deinen Tarif {plan}, um sofort zu verkaufen, oder geh jetzt live und verkaufe, sobald deine Testphase am {end} endet.",
+        "bodyPriceEnd": "In einer Testphase kannst du keine Zahlungen annehmen. Starte noch heute deinen Tarif {plan}, um sofort zu verkaufen ({price} pro Monat), oder geh jetzt live und verkaufe, sobald deine Testphase am {end} endet.",
+        "now": "Meinen Tarif jetzt starten",
+        "starting": "Dein Tarif wird gestartet…"
+      },
+      "plan": {
+        "title": "Wähle {name}, um auf deiner Website zu verkaufen",
+        "body": "Für kostenpflichtige Kurse und Live-Sessions brauchst du den Tarif {name}. Du kommst direkt hierher zurück.",
+        "bodyPrice": "Für kostenpflichtige Kurse und Live-Sessions brauchst du den Tarif {name} ({price} pro Monat). Du kommst direkt hierher zurück.",
+        "choose": "{name} wählen"
+      },
+      "ready": "Bereit, wenn du es bist",
+      "held": "Warten mit deinen Preisen, bis du verkaufst:",
+      "heldHint": "Wähle jederzeit in deinem Dashboard einen Tarif und richte Auszahlungen ein; dann gehen sie automatisch in den Verkauf.",
+      "goLive": "Live gehen",
+      "going": "Wird live geschaltet…",
+      "keepEditing": "Du kannst deine Website auch nach dem Livegang weiter bearbeiten.",
+      "qa": {
+        "checking": "Ein letzter Blick auf jede Seite",
+        "looked": "{count, plural, one {Ich habe mir deine Seite angesehen} other {Ich habe mir alle # Seiten angesehen}}",
+        "checkingBody": "Auf Desktop und Smartphone, im hellen und dunklen Modus, damit beim Livegang nichts merkwürdig aussieht. Du musst nicht auf mich warten.",
+        "fixedBody": "Auf Desktop und Smartphone, im hellen und dunklen Modus. Dabei habe ich einiges aufgeräumt:",
+        "plainBody": "Auf Desktop und Smartphone, im hellen und dunklen Modus."
+      },
+      "stepDone": "(erledigt)",
+      "stepMinutes": "etwa {minutes} Min."
+    },
+    "draft": {
+      "stuck": "{kind, select, course {Dein Kurs braucht viel länger als normal. Versuch es noch einmal oder überspring ihn vorerst und füge ihn später hinzu.} event {Deine Live-Session braucht viel länger als normal. Versuch es noch einmal oder überspring sie vorerst und füge sie später hinzu.} onsite {Deine Präsenzveranstaltung braucht viel länger als normal. Versuch es noch einmal oder überspring sie vorerst und füge sie später hinzu.} other {Dein Kurs braucht viel länger als normal. Versuch es noch einmal oder überspring ihn vorerst und füge ihn später hinzu.}}",
+      "retry": "Erneut versuchen",
+      "waiting": "Live-Sessions gibt es mit einem kostenpflichtigen Tarif. Wenn du live gehst, biete ich dir einen an, und deine erste Live-Session wird entworfen, sobald er aktiv ist.",
+      "failed": "{kind, select, course {Ich konnte deinen Kurs diesmal nicht entwerfen. Schreib mir unten, worum es gehen soll, dann versuche ich es noch einmal, oder überspring ihn vorerst.} event {Ich konnte deine Live-Session diesmal nicht entwerfen. Schreib mir unten, worum es gehen soll, dann versuche ich es noch einmal, oder überspring sie vorerst.} onsite {Ich konnte deine Präsenzveranstaltung diesmal nicht entwerfen. Schreib mir unten, worum es gehen soll, dann versuche ich es noch einmal, oder überspring sie vorerst.} other {Ich konnte deinen Kurs diesmal nicht entwerfen. Schreib mir unten, worum es gehen soll, dann versuche ich es noch einmal, oder überspring ihn vorerst.}}",
+      "drafting": "{kind, select, course {Dein erster Kurs wird entworfen…} event {Deine erste Live-Session wird entworfen…} onsite {Deine erste Präsenzveranstaltung wird entworfen…} other {Dein erster Kurs wird entworfen…}}",
+      "usually": "Meist in weniger als einer Minute fertig.",
+      "coverError": "Dieses Titelbild konnte nicht verwendet werden. Probier ein anderes.",
+      "price": {
+        "members": "Nur für Mitglieder",
+        "free": "Kostenlos"
+      },
+      "changingCover": "Titelbild wird geändert…",
+      "pickCover": "Titelbild auswählen",
+      "coverCurrent": "Aktuelles Titelbild",
+      "coverUse": "Dieses Titelbild verwenden",
+      "kicker": "{kind, select, course {Dein erster Kurs} event {Deine erste Live-Session} onsite {Deine erste Präsenzveranstaltung} other {Dein erster Kurs}}",
+      "repeats": "Wiederholung: {repeats}",
+      "trialChip": "Erste Session ist ein kostenloses Probetraining",
+      "inPerson": "Vor Ort",
+      "onlineLive": "Online, live",
+      "includedIn": "Enthalten in {name}",
+      "rewriting": "{kind, select, course {Dein Kurs wird mit deinen Änderungen neu geschrieben…} event {Deine Live-Session wird mit deinen Änderungen neu geschrieben…} onsite {Deine Präsenzveranstaltung wird mit deinen Änderungen neu geschrieben…} other {Dein Kurs wird mit deinen Änderungen neu geschrieben…}}",
+      "rewritingShort": "{kind, select, course {Dein Kurs wird neu geschrieben…} event {Deine Live-Session wird neu geschrieben…} onsite {Deine Präsenzveranstaltung wird neu geschrieben…} other {Dein Kurs wird neu geschrieben…}}",
+      "reading": "Deine Änderungen werden gelesen…",
+      "steps": {
+        "course": {
+          "0": "Module werden skizziert",
+          "1": "Lektionen werden geschrieben",
+          "2": "Titelbild wird ausgewählt"
+        },
+        "event": {
+          "0": "Session wird geplant",
+          "1": "Passender Termin wird gesucht",
+          "2": "Titelbild wird ausgewählt"
+        }
+      },
+      "trial": {
+        "title": "Erste Session als kostenloses Probetraining anbieten?",
+        "body": "Jeder kann kostenlos daran teilnehmen. Alle anderen Sessions behalten ihren Preis.",
+        "help": "Was ist ein kostenloses Probetraining?",
+        "tip": "Mit einem Probetraining können Interessierte ausprobieren, was du unterrichtest, bevor sie bezahlen. Nur deine erste Session ist kostenlos, und jeder kann daran teilnehmen. Alle folgenden Sessions werden zu deinem üblichen Preis verkauft. Du kannst es jederzeit ausschalten.",
+        "example": "Jede Session kostet {price}. Die erste ist ein kostenloses Probetraining, und alle anderen Sessions kosten weiterhin {price}."
+      }
+    },
+    "bio": {
+      "label": "Oder schreib über deine Arbeit",
+      "why": "Je mehr du uns erzählst, desto mehr klingt deine Website nach dir. Geh am besten auf Folgendes ein:",
+      "include": {
+        "0": "Was du unterrichtest und wen du unterrichtest",
+        "1": "Dein Werdegang und deine Zertifizierungen",
+        "2": "Dein Unterrichtsstil",
+        "3": "Wie viele Jahre du das schon machst",
+        "4": "Was dich von anderen unterscheidet"
+      },
+      "placeholder": "Ich unterrichte … für … Ich habe eine Ausbildung als … und unterrichte seit … Jahren. Meine Kurse fühlen sich … an, und was sie besonders macht, ist …",
+      "exampleLink": "Beispiel ansehen",
+      "example": "Ich unterrichte Vinyasa-Yoga und Atemarbeit für Anfänger und viel beschäftigte Büroangestellte, online und vor Ort in Brooklyn. Ich habe eine 500-Stunden-Ausbildung absolviert und unterrichte seit 10 Jahren, seit mich ein Burnout in einem Konzernjob zum Yoga gebracht hat. Meine Kurse sind ruhig, herzlich und praxisnah: kleine Gruppen, kein Angeben und immer eine leichtere Variante für jede Haltung. Meine Teilnehmer sagen, was mich auszeichnet, ist, dass ich ihnen beibringe, selbstständig zu üben.",
+      "nudge": "Das ist ein guter Anfang. Ein paar Zeilen mehr über deinen Werdegang und was dich von anderen unterscheidet, machen deine Website noch besser."
+    },
+    "answer": {
+      "youSaid": "Deine Antwort: <b>{answer}</b>"
+    },
+    "share": {
+      "fileType": "Ich kann PDF-, Text- und Markdown-Dateien lesen. Probier eine davon aus oder füge stattdessen den Text ein.",
+      "fileSize": "Diese Datei ist zu groß. Sie muss kleiner als 5 MB sein, oder du fügst stattdessen den Text ein.",
+      "unavailable": "Ich konnte die Datei gerade nicht lesen. Versuch es in einer Minute noch einmal.",
+      "finished": "Die Einrichtung ist abgeschlossen, daher kann ich das nicht mehr hinzufügen.",
+      "other": "Das hat nicht geklappt. Versuch es gleich noch einmal."
+    },
+    "opening": {
+      "chooseFile": "Datei auswählen",
+      "addAnother": "Andere Datei auswählen",
+      "addFile": "Datei hinzufügen",
+      "writeInstead": "Stattdessen selbst schreiben",
+      "fileHint": "PDF, Text oder Markdown, bis zu 5 MB. Oder schreib es unten.",
+      "reading": "Ich lese es…",
+      "continue": "Weiter",
+      "skip": "Vorerst überspringen",
+      "leave": "So lassen, wie es ist",
+      "readingShared": "Ich lese, was du geteilt hast…",
+      "readingHint": "Ich hake in den folgenden Fragen ab, was sich daraus beantworten lässt, sodass du sie nur noch prüfen musst. Das kann einen Moment dauern.",
+      "nameLabel": "Name deiner Website",
+      "namePlaceholder": "Mira Yoga House oder einfach dein Name",
+      "address": "Deine Webadresse: <b>{address}</b>. Sie ist kostenlos und gehört dauerhaft dir. Später kannst du in deinem Dashboard eine eigene Domain wie deinname.com bekommen, und deine Website zieht dorthin um.",
+      "addressName": "deinname",
+      "taken": "Dieser Name ist bereits vergeben.",
+      "didYouMean": "Meintest du <pick>{typo}</pick>?",
+      "orOneOf": "Oder einer von diesen:",
+      "pickOrKeep": "Wähle einen aus oder klicke auf Weiter, um deinen Namen so zu behalten, wie er ist.",
+      "checking": "Dein Name wird geprüft…",
+      "moving": "Deine Website zieht nach {address} um…",
+      "movingHint": "Deine Website öffnet sich gleich unter ihrer neuen Adresse, genau dort, wo du aufgehört hast.",
+      "needName": "Brauchst du einen Namen? Ideen holen",
+      "offer": "Was bietest du an?",
+      "offerPlaceholder": "Yoga für Läufer",
+      "firstName": "Dein Vorname (optional)",
+      "thinking": "Ich überlege mir Namen…",
+      "getIdeas": "Ideen holen",
+      "noIdeas": "Mir sind gerade keine Namen eingefallen. Versuch es gleich noch einmal.",
+      "tapOne": "Tippe auf einen, um ihn zu verwenden:"
+    },
+    "photos": {
+      "heic": "HEIC-Fotos lassen sich in den meisten Browsern nicht öffnen. Speichere es als JPEG und füge es erneut hinzu.",
+      "formats": "Hier sind nur Fotos im Format JPG, PNG, WebP und AVIF möglich.",
+      "tooBig": "Dieses Foto ist größer als 25 MB.",
+      "coverage": {
+        "optional": "Optional",
+        "shows": "Eine Startseite zeigt {used}",
+        "enough": "{have} hinzugefügt, genug für deine Startseite",
+        "some": "{have} von {used} hinzugefügt"
+      },
+      "status": {
+        "uploading": "Wird hochgeladen",
+        "pending": "Wird webtauglich gemacht",
+        "error": "Hochladen fehlgeschlagen",
+        "added": "Hinzugefügt"
+      },
+      "answer": "{count, plural, one {Mein eigenes Foto} other {Meine eigenen # Fotos}}",
+      "stockAnswer": "Wähl Fotos für mich aus",
+      "uploadFailed": "Das Hochladen hat nicht geklappt. Entferne das Foto und füge es erneut hinzu.",
+      "mostHere": "Mehr kann ich hier nicht annehmen: {max, plural, one {# Foto} other {# Fotos}}.",
+      "onlyFirst": "Nur die ersten {room} wurden hinzugefügt: Mehr als {max, plural, one {# Foto} other {# Fotos}} kann ich hier nicht annehmen.",
+      "fileProblem": "{name}: {problem}",
+      "removeError": "Das Foto konnte nicht entfernt werden. Versuch es erneut unter Medien.",
+      "addAria": "Fotos hinzufügen",
+      "addMore": "Weitere Fotos hinzufügen",
+      "addYour": "Füge deine Fotos hinzu",
+      "drop": "Zieh sie hierher oder wähle sie aus. JPG, PNG, WebP oder AVIF, jeweils bis zu 25 MB. Ich mache jedes Foto leicht genug fürs Web, also lade ruhig die Originalgröße hoch.",
+      "listAria": "Deine Fotos",
+      "removeAria": "{title} entfernen",
+      "small": "Klein: wirkt unscharf, wenn groß angezeigt",
+      "thinking": "Denke nach…",
+      "uploading": "Wird hochgeladen…",
+      "addToContinue": "Füge ein Foto hinzu, um fortzufahren",
+      "keep": "Diese Fotos behalten",
+      "continue": "{count, plural, one {Weiter mit meinem Foto} other {Weiter mit meinen # Fotos}}",
+      "private": "Deine Fotos gehören weiterhin dir und werden nur auf deiner Website verwendet. Unter Medien kannst du sie jederzeit hinzufügen, austauschen oder entfernen.",
+      "bringAria": "Was du mitbringen solltest",
+      "bring": "Was du mitbringen solltest",
+      "bringHow": "10 bis 20 Fotos reichen für eine ganze Website. Weniger ist auch okay: Den Rest fülle ich mit Fotos auf, die zu dem passen, was du machst.",
+      "sharp": "Scharf und mindestens 1600 px an der langen Seite. Halte Gesichter und Hände vom Rand fern: Jeder Abschnitt schneidet ein Foto auf sein eigenes Format zu."
+    },
+    "menu": {
+      "blocked": {
+        "paid_plan": "Diese Website hat einen kostenpflichtigen Tarif und kann daher hier nicht gelöscht werden.",
+        "payments_connected": "Diese Website hat ein verbundenes Zahlungskonto. Wende dich an den Support, um es zu entfernen.",
+        "custom_domain": "Entferne zuerst die eigene Domain.",
+        "provisioning": "Deine Website wird noch erstellt. Versuch es in ein paar Minuten erneut.",
+        "setup_finished": "Die Einrichtung ist bereits abgeschlossen. Lösche die Website über dein Dashboard."
+      },
+      "cancelError": "Die Einrichtung konnte nicht abgebrochen werden. Versuch es erneut.",
+      "savedLogout": "Alles ist gespeichert. Wir haben dir einen Link per E-Mail geschickt, damit du dort weitermachen kannst, wo du aufgehört hast.",
+      "linkError": "Dein Link konnte nicht gesendet werden. Versuch es erneut.",
+      "savedLogin": "Alles ist gespeichert. Melde dich jederzeit an, um weiterzumachen.",
+      "label": "Einrichtungsmenü",
+      "saved": "Automatisch gespeichert",
+      "finishLater": "Später abschließen (Link per E-Mail senden)",
+      "help": "Hilfe holen",
+      "signOut": "Abmelden",
+      "cancel": "Einrichtung abbrechen und diese Website löschen",
+      "savingPlace": "Dein Fortschritt wird gespeichert…",
+      "signingOut": "Du wirst abgemeldet…",
+      "emailing": "Wir schicken dir per E-Mail einen Link, mit dem du dort weitermachen kannst, wo du aufgehört hast.",
+      "keep": "Meine Website behalten",
+      "cancelAria": "Einrichtung abbrechen",
+      "cancelTitle": "Einrichtung abbrechen?",
+      "cancelBody": "Dadurch werden deine unfertige Website und alle deine bisherigen Antworten gelöscht und <b>{slug}</b> wird wieder freigegeben. Du kannst jederzeit neu beginnen, aber das lässt sich nicht rückgängig machen.",
+      "deleting": "Wird gelöscht…",
+      "delete": "Website löschen",
+      "helpTitle": "Hilfe",
+      "closeHelp": "Hilfe schließen"
+    },
+    "flow": {
+      "unavailable": "Die geführte Einrichtung ist für diese Website noch nicht verfügbar.",
+      "undone": "Änderung rückgängig gemacht",
+      "undoError": "Das konnte nicht rückgängig gemacht werden. Versuch es noch einmal.",
+      "undo": "Rückgängig",
+      "editPartial": "Geändert: {titles}. Der Rest hat nicht geklappt. Frag noch einmal, um es abzuschließen.",
+      "editDone": "Erledigt: {titles}.",
+      "saveError": "Das konnte nicht gespeichert werden. Versuch es noch einmal.",
+      "undoing": "Änderung wird rückgängig gemacht…",
+      "prev": "Vorherige Frage",
+      "next": "Nächste Frage",
+      "step": "Deine Website, Schritt 2 von 3",
+      "part": "{section} · Teil {n} von {total}",
+      "progress": "Fortschritt der Einrichtung",
+      "peekFull": "Wirf einen Blick auf deine Startseite",
+      "peek": "Vorschau",
+      "peekTitle": "Deine Startseite bisher",
+      "peekSub": "Sie wird mit jeder Antwort besser.",
+      "backToQuestions": "Zurück zu den Fragen",
+      "seeSite": "Deine Website ansehen",
+      "backToGoLive": "Zurück zur Veröffentlichung",
+      "previewSize": "Vorschaugröße",
+      "desktop": "Desktop",
+      "phone": "Smartphone"
+    },
+    "compose": {
+      "stage": {
+        "0": "Layout wird ausgewählt",
+        "1": "Deine Texte werden geschrieben",
+        "2": "Deine Fotos werden gesucht"
+      },
+      "title": "{page, select, home {Deine Startseite wird erstellt} about {Deine Über-uns-Seite wird erstellt} courses {Deine Kursseite wird erstellt} pricing {Deine Preisseite wird erstellt} faq {Deine FAQ-Seite wird erstellt} contact {Deine Kontaktseite wird erstellt} events {Deine Veranstaltungsseite wird erstellt} other {Deine {page}-Seite wird erstellt}}"
+    },
+    "priceMonthly": "{price} pro Monat",
+    "question": {
+      "noted": "Notiert: {items}",
+      "delegateSaid": "Entscheide du für mich.",
+      "picked": "{count} ausgewählt",
+      "applying": "{label} wird übernommen…",
+      "applyingPick": "Deine Auswahl wird übernommen…",
+      "stillWorking": "Ich arbeite noch daran. Deine Website wird gleichzeitig erstellt, daher kann das etwas länger dauern.",
+      "siteUpdates": "Deine Website wird aktualisiert, während ich die nächste Frage vorbereite.",
+      "nameOwn": "Eigenen Namen eingeben…",
+      "timeZone": "Zeitzone",
+      "place": "Ort",
+      "address": "Adresse",
+      "placePlaceholder": "Studio Lumen, Kreuzberg",
+      "addressPlaceholder": "Hauptstraße 12, 10827 Berlin",
+      "placeProblem": "Gib den Namen des Ortes an.",
+      "addressProblem": "Gib Straße und Hausnummer an.",
+      "emailProblem": "Das sieht nicht nach einer E-Mail-Adresse aus.",
+      "phoneProblem": "Gib die Nummer mit Ländervorwahl an, z. B. +49 170 1234567.",
+      "priceProblem": "Gib einen Monatspreis an, z. B. 19.",
+      "stillThinking": "Ich denke noch nach. Deine Website wird gleichzeitig erstellt, daher kann das etwas länger dauern.",
+      "thinking": "Denke nach…",
+      "sendChanges": "Änderungen senden",
+      "continue": "Weiter",
+      "looksGood": "Sieht gut aus, weiter",
+      "finishSentence": "Vervollständige deinen Satz",
+      "addPrice": "Gib für jedes einen Preis an",
+      "pickMany": "Wähle alle passenden aus",
+      "pickOne": "Wähle eine Option, um fortzufahren",
+      "keepAnswer": "Diese Antwort behalten",
+      "continueNote": "Mit deiner Notiz fortfahren",
+      "continueCount": "Mit {count} fortfahren",
+      "selectAll": "Alle auswählen",
+      "deselectAll": "Alle abwählen",
+      "pickForMe": "Wähl für mich",
+      "pickForMeHint": "Unsicher? Ich wähle anhand deiner Antworten aus.",
+      "changeCourse": "Oder sag mir, was ich ändern soll, z. B. „mach es sechs Wochen lang“ oder „ein anderes Foto“…",
+      "changeEvent": "Oder sag mir, was ich ändern soll, z. B. „mach es eine Stunde lang“ oder „ein anderes Foto“…",
+      "typeOwn": "Oder gib deine eigene Antwort ein…",
+      "typeNew": "Oder gib eine neue Antwort ein…",
+      "notFinal": "Nichts hier ist endgültig. Du kannst später alles in deinem Dashboard ändern."
+    },
+    "look": {
+      "original": "Original",
+      "colours": "{label}-Farben",
+      "logoLoadError": "Weitere Logos konnten nicht geladen werden. Versuch es noch einmal.",
+      "suggested": "Empfohlen",
+      "pick": "<b>{label}</b> ist unsere Empfehlung. {reason}",
+      "filter": "Looks filtern",
+      "all": "Alle",
+      "tag": {
+        "selling": "Zum Verkaufen gemacht",
+        "expertise": "Zeigt Expertise",
+        "short": "Kurze Seite",
+        "long": "Lange Seite",
+        "sensual": "Sanft und stimmungsvoll",
+        "confident": "Selbstbewusst",
+        "sexy": "Sexy",
+        "playful": "Verspielt"
+      },
+      "moreLooks": "Weitere Looks: {group}",
+      "moreCount": "Weitere Looks ({count})",
+      "logoSits": "So sitzt dein Logo",
+      "menuPages": "Seiten im Menü deiner Kopfzeile",
+      "tapToggle": "Tippe zum Hinzufügen oder Entfernen",
+      "headerElements": "Elemente der Kopfzeile",
+      "ctaButton": "Schaltfläche „{label}“",
+      "transparent": "Transparent über dem Titelbild",
+      "wordmarkAnswer": "Nur mein Name, als Text",
+      "wordmark": "Nur mein Name",
+      "uploadedAnswer": "Mein eigenes Logo",
+      "upload": "Eigenes hochladen",
+      "showOthers": "Zeig mir andere",
+      "uploadError": "Dein Logo konnte nicht hochgeladen werden. Versuch es noch einmal.",
+      "emailTitle": "{label}-E-Mail",
+      "asPage": "{label}, als Seite",
+      "seeOthers": "Andere Looks ansehen",
+      "close": "Schließen",
+      "keep": "Diesen Look behalten"
+    },
+    "pageTitle": "Richte deine Website ein"
   }
 }

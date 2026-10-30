@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { Check, Lock, RotateCw } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Skeleton } from "@/components/ui/skeleton";
 import { buildSelectionPayload } from "@/lib/copilot/selection";
 import type { SelectionPayload } from "@/lib/copilot/types";
@@ -50,6 +51,7 @@ export function BrowserFrame({
   /** A change is being made to the site: said over the page, which stays put. */
   busy?: string | null;
 }) {
+  const t = useTranslations("admin.setupFlow");
   const boxRef = useRef<HTMLDivElement | null>(null);
   const [box, setBox] = useState({ w: 0, h: 0 });
   useEffect(() => {
@@ -104,8 +106,8 @@ export function BrowserFrame({
             <button
               type="button"
               onClick={onReload}
-              aria-label="Reload preview"
-              title="Reload preview"
+              aria-label={t("frame.reload")}
+              title={t("frame.reload")}
               className="rounded-md p-1 text-[var(--sf-faint)] transition-colors hover:bg-white hover:text-[var(--sf-ink)]"
             >
               <RotateCw className="size-3.5" aria-hidden />
@@ -158,18 +160,14 @@ const flashCss = (id: string) =>
   `[data-block-id="${CSS.escape(id)}"] { outline: 3px solid transparent; outline-offset: -3px; animation: sf-flash 2.4s ease-out both; }`;
 
 /** The clicked section's name for the chip: its first heading, else the
- * tapped words, else just "this section". */
-function labelOf(block: Element, target: Element): string {
+ * tapped words, else ``fallback`` ("this section"). */
+function labelOf(block: Element, target: Element, fallback: string): string {
   const text = (
     block.querySelector("h1, h2, h3")?.textContent ??
     target.textContent ??
     ""
   ).trim();
-  return text
-    ? text.length > 40
-      ? `${text.slice(0, 39)}…`
-      : text
-    : "this section";
+  return text ? (text.length > 40 ? `${text.slice(0, 39)}…` : text) : fallback;
 }
 
 function LivePage({
@@ -191,6 +189,7 @@ function LivePage({
   pickedBlock?: string | null;
   flashBlock?: string | null;
 }) {
+  const t = useTranslations("admin.setupFlow");
   const [loaded, setLoaded] = useState(false);
   const frameRef = useRef<HTMLIFrameElement | null>(null);
   // The click handler is set once per load; picking follows the live prop.
@@ -220,7 +219,7 @@ function LivePage({
       <iframe
         ref={frameRef}
         src={src}
-        title="Site preview"
+        title={t("frame.title")}
         onLoad={(e) => {
           // Links to the coach's own pages open in the preview (re-framed
           // with ?embed=1, which in-frame navigation would drop); in-page
@@ -254,7 +253,7 @@ function LivePage({
                     target,
                     frame.contentWindow?.location.pathname ?? "/",
                   ),
-                  labelOf(block, target),
+                  labelOf(block, target, t("frame.thisSection")),
                 );
                 return;
               }

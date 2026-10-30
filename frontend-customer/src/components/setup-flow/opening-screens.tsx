@@ -4,7 +4,7 @@ import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { FileText, Globe } from "lucide-react";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
-import { BIO_GUIDE } from "@shared/lib/bio-guide";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { ModalPortal } from "@/components/ui/modal-portal";
 import type { QuestionStep } from "@/lib/interview";
@@ -48,6 +48,7 @@ interface ScreenProps {
 /** The question's words landing one by one, under the guide's ack (or her
  * earlier answer), with why it matters and its ⓘ. */
 function Heading({ step, live }: { step: QuestionStep; live: boolean }) {
+  const t = useTranslations("admin.setupFlow");
   const words = step.question.split(/\s+/).filter(Boolean);
   return (
     <>
@@ -58,7 +59,12 @@ function Heading({ step, live }: { step: QuestionStep; live: boolean }) {
       )}
       {!live && step.answer && (
         <p className="max-w-[72ch] text-[15px] text-[var(--sf-graphite)]">
-          You said: <span className="text-[var(--sf-ink)]">{step.answer}</span>
+          {t.rich("answer.youSaid", {
+            answer: step.answer,
+            b: (chunks) => (
+              <span className="text-[var(--sf-ink)]">{chunks}</span>
+            ),
+          })}
         </p>
       )}
       <h1 className="mt-3 max-w-[32ch] text-[30px] font-semibold leading-[1.12] tracking-[-0.025em] sm:text-[42px]">
@@ -118,6 +124,7 @@ export function BioScreen({
   ...props
 }: ScreenProps & { onShare: (doc: ShareDoc) => Promise<void> }) {
   const { step, live, sending, onSend, onNext, dir } = props;
+  const t = useTranslations("admin.setupFlow");
   const [file, setFile] = useState<File | null>(null);
   const [text, setText] = useState("");
   const [error, setError] = useState("");
@@ -128,10 +135,10 @@ export function BioScreen({
       setError("");
       await onShare(file ? { file } : { text });
     },
-    { onError: (err) => setError(shareErrorText(err)) },
+    { onError: (err) => setError(shareErrorText(err, t)) },
   );
   const pick = (picked: File | null) => {
-    const problem = picked ? fileProblem(picked) : null;
+    const problem = picked ? fileProblem(picked, t) : null;
     setError(problem ?? "");
     setFile(problem ? null : picked);
     if (problem && input.current) input.current.value = "";
@@ -156,7 +163,7 @@ export function BioScreen({
             id="setup-bio-file"
             type="file"
             accept={SHARE_ACCEPT}
-            aria-label="Choose a file"
+            aria-label={t("opening.chooseFile")}
             disabled={busy}
             onChange={(e) => pick(e.target.files?.[0] ?? null)}
             className="sr-only"
@@ -169,7 +176,7 @@ export function BioScreen({
             className="rounded-full"
           >
             <FileText className="size-4" aria-hidden />
-            {file ? "Choose another file" : "Add a file"}
+            {file ? t("opening.addAnother") : t("opening.addFile")}
           </Button>
           {file ? (
             <>
@@ -182,12 +189,12 @@ export function BioScreen({
                 onClick={() => pick(null)}
                 className="text-[13.5px] font-medium text-[var(--sf-graphite)] underline underline-offset-2 hover:text-[var(--sf-ink)] disabled:opacity-50"
               >
-                Write it instead
+                {t("opening.writeInstead")}
               </button>
             </>
           ) : (
             <span className="text-[13.5px] text-[var(--sf-graphite)]">
-              PDF, text or Markdown, up to 5 MB. Or write it below.
+              {t("opening.fileHint")}
             </span>
           )}
         </div>
@@ -197,7 +204,7 @@ export function BioScreen({
               htmlFor="setup-bio-text"
               className="text-[15px] font-medium text-[var(--sf-ink)]"
             >
-              {BIO_GUIDE.label}
+              {t("bio.label")}
             </label>
             <BioHints />
             <textarea
@@ -210,7 +217,7 @@ export function BioScreen({
               disabled={busy}
               rows={8}
               maxLength={BIO_MAX}
-              placeholder={BIO_GUIDE.placeholder}
+              placeholder={t("bio.placeholder")}
               className="mt-1 block min-h-[200px] w-full resize-y rounded-xl border border-[var(--sf-line-strong)] bg-white px-3 py-2.5 text-[15px] leading-relaxed outline-none transition-[border-color,box-shadow] focus:border-[var(--sf-ink)] focus:shadow-[0_0_0_3px_var(--sf-brass-soft)] disabled:opacity-50"
             />
             <div className="flex items-start gap-3">
@@ -231,11 +238,11 @@ export function BioScreen({
             type="submit"
             size="lg"
             loading={loading}
-            loadingText="Reading it…"
+            loadingText={t("opening.reading")}
             disabled={busy || (!file && !text.trim())}
             className="rounded-full px-6"
           >
-            Continue
+            {t("opening.continue")}
           </Button>
           <Button
             type="button"
@@ -252,7 +259,7 @@ export function BioScreen({
             }
             className="rounded-full text-[var(--sf-graphite)]"
           >
-            {live || !step.answer ? "Skip for now" : "Leave it as it is"}
+            {live || !step.answer ? t("opening.skip") : t("opening.leave")}
           </Button>
         </div>
       </form>
@@ -261,8 +268,8 @@ export function BioScreen({
         <ModalPortal>
           <BusyOverlay
             variant="screen"
-            message="Reading what you shared…"
-            hint="I tick what it answers in the questions ahead, so you only check them. This can take a little while."
+            message={t("opening.readingShared")}
+            hint={t("opening.readingHint")}
           />
         </ModalPortal>
       )}
@@ -284,6 +291,7 @@ export function NameScreen({
   host: string;
 }) {
   const { step, live, sending, onSend, onNext, dir } = props;
+  const t = useTranslations("admin.setupFlow");
   const dot = host.indexOf(".");
   const here = host.slice(0, dot);
   const domain = host.slice(dot + 1);
@@ -308,15 +316,15 @@ export function NameScreen({
     const n = name.trim();
     if (n.length < REVIEW_MIN_CHARS || unchanged) return;
     if (checks.current.size >= MAX_REVIEWS) return;
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       check(n)
         .then((r) => {
-          if (!r.available) setError(r.detail ?? "That name is taken.");
+          if (!r.available) setError(r.detail ?? t("opening.taken"));
         })
         .catch(() => undefined);
     }, REVIEW_DEBOUNCE_MS);
-    return () => clearTimeout(t);
-  }, [name, unchanged, check]);
+    return () => clearTimeout(timer);
+  }, [name, unchanged, check, t]);
 
   const send = (n: string) =>
     onSend({
@@ -330,7 +338,7 @@ export function NameScreen({
       if (!live && n === step.answer) return onNext();
       if (unchanged || kept) return send(n);
       const r = await check(n);
-      if (!r.available) return setError(r.detail ?? "That name is taken.");
+      if (!r.available) return setError(r.detail ?? t("opening.taken"));
       const typo = r.typo_fix ?? "";
       const suggestions = r.suggestions ?? [];
       if (typo || suggestions.length) {
@@ -366,7 +374,7 @@ export function NameScreen({
           htmlFor="setup-site-name"
           className="text-[15px] font-medium text-[var(--sf-ink)]"
         >
-          Your site&rsquo;s name
+          {t("opening.nameLabel")}
         </label>
         <input
           id="setup-site-name"
@@ -374,7 +382,7 @@ export function NameScreen({
           onChange={(e) => use(e.target.value)}
           disabled={busy}
           maxLength={100}
-          placeholder="Mira Yoga House, or just your name"
+          placeholder={t("opening.namePlaceholder")}
           autoComplete="off"
           data-1p-ignore
           data-lpignore="true"
@@ -388,13 +396,14 @@ export function NameScreen({
             className="mt-0.5 size-4 shrink-0 text-[var(--sf-brass)]"
           />
           <p>
-            Your web address:{" "}
-            <span className="font-medium text-[var(--sf-ink)]">
-              {slug || "yourname"}.{domain}
-            </span>
-            . It&rsquo;s free and yours to keep. Later, you can get your own
-            domain, like yourname.com, from your dashboard, and your site moves
-            to it.
+            {t.rich("opening.address", {
+              address: `${slug || t("opening.addressName")}.${domain}`,
+              b: (chunks) => (
+                <span className="font-medium text-[var(--sf-ink)]">
+                  {chunks}
+                </span>
+              ),
+            })}
           </p>
         </div>
         {error && (
@@ -406,26 +415,29 @@ export function NameScreen({
           <div className="mt-4 space-y-3 text-[14px] motion-safe:animate-fade-in">
             {review.typo && (
               <p className="text-[var(--sf-graphite)]">
-                Did you mean{" "}
-                <button
-                  type="button"
-                  onClick={() => use(review.typo)}
-                  className="font-semibold text-[var(--sf-ink)] underline underline-offset-2"
-                >
-                  {review.typo}
-                </button>
-                ?
+                {t.rich("opening.didYouMean", {
+                  typo: review.typo,
+                  pick: (chunks) => (
+                    <button
+                      type="button"
+                      onClick={() => use(review.typo)}
+                      className="font-semibold text-[var(--sf-ink)] underline underline-offset-2"
+                    >
+                      {chunks}
+                    </button>
+                  ),
+                })}
               </p>
             )}
             {review.suggestions.length > 0 && (
               <NameChips
-                label="Or one of these:"
+                label={t("opening.orOneOf")}
                 names={review.suggestions}
                 onPick={use}
               />
             )}
             <p className="text-[13.5px] text-[var(--sf-graphite)]">
-              Pick one, or press Continue to keep your name as it is.
+              {t("opening.pickOrKeep")}
             </p>
           </div>
         )}
@@ -434,11 +446,11 @@ export function NameScreen({
             type="submit"
             size="lg"
             loading={checking}
-            loadingText="Checking your name…"
+            loadingText={t("opening.checking")}
             disabled={busy || !slug}
             className="rounded-full px-6"
           >
-            Continue
+            {t("opening.continue")}
           </Button>
         </div>
       </form>
@@ -447,8 +459,8 @@ export function NameScreen({
         <ModalPortal>
           <BusyOverlay
             variant="screen"
-            message={`Moving your site to ${slug}.${domain}…`}
-            hint="Your site opens at its new address in a moment, right where you left off."
+            message={t("opening.moving", { address: `${slug}.${domain}` })}
+            hint={t("opening.movingHint")}
           />
         </ModalPortal>
       )}
@@ -492,6 +504,7 @@ function NameIdeas({
   disabled: boolean;
   onPick: (name: string) => void;
 }) {
+  const t = useTranslations("admin.setupFlow");
   const [open, setOpen] = useState(false);
   const [topic, setTopic] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -511,7 +524,7 @@ function NameIdeas({
         onClick={() => setOpen(true)}
         className="mt-5 text-[14px] font-medium text-[var(--sf-graphite)] underline underline-offset-2 hover:text-[var(--sf-ink)] disabled:opacity-50"
       >
-        Need a name? Get ideas
+        {t("opening.needName")}
       </button>
     );
   return (
@@ -524,21 +537,21 @@ function NameIdeas({
     >
       <div>
         <label htmlFor="setup-name-topic" className="text-[14px] font-medium">
-          What do you offer?
+          {t("opening.offer")}
         </label>
         <input
           id="setup-name-topic"
           value={topic}
           maxLength={120}
           onChange={(e) => setTopic(e.target.value)}
-          placeholder="Yoga for runners"
+          placeholder={t("opening.offerPlaceholder")}
           autoComplete="off"
           className={box}
         />
       </div>
       <div>
         <label htmlFor="setup-name-first" className="text-[14px] font-medium">
-          Your first name (optional)
+          {t("opening.firstName")}
         </label>
         <input
           id="setup-name-first"
@@ -553,19 +566,19 @@ function NameIdeas({
         type="submit"
         variant="outline"
         loading={loading}
-        loadingText="Thinking of names…"
+        loadingText={t("opening.thinking")}
         disabled={disabled || !topic.trim()}
         className="rounded-full"
       >
-        Get ideas
+        {t("opening.getIdeas")}
       </Button>
       {ideas?.length === 0 && (
         <p className="text-[13.5px] text-[var(--sf-graphite)]">
-          I couldn&rsquo;t think of names just now. Try again in a moment.
+          {t("opening.noIdeas")}
         </p>
       )}
       {ideas && ideas.length > 0 && (
-        <NameChips label="Tap one to use it:" names={ideas} onPick={onPick} />
+        <NameChips label={t("opening.tapOne")} names={ideas} onPick={onPick} />
       )}
     </form>
   );

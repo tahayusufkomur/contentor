@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { AlertTriangle, Check } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { starterStart } from "@/lib/interview";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +32,7 @@ export function StarterCard({
   onToggle: () => void;
   onEdit: (text: string) => void;
 }) {
+  const t = useTranslations("admin.setupFlow");
   const style = { animationDelay: `${delay}ms` };
   if (!selected)
     return (
@@ -62,7 +64,7 @@ export function StarterCard({
         />
         <button
           type="button"
-          aria-label="Take this one out"
+          aria-label={t("starter.takeOut")}
           disabled={disabled}
           onClick={onToggle}
           className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border border-[var(--sf-paper)] bg-[var(--sf-paper)] text-[var(--sf-ink)]"
@@ -73,7 +75,7 @@ export function StarterCard({
       {!finished && (
         <p className="flex items-center gap-1.5 text-[13px] font-normal text-amber-300">
           <AlertTriangle className="size-3.5 shrink-0" aria-hidden />
-          Finish the sentence, or take it out to continue.
+          {t("starter.finishOrRemove")}
         </p>
       )}
     </div>
@@ -92,6 +94,7 @@ function OpenStarter({
   disabled: boolean;
   onEdit: (text: string) => void;
 }) {
+  const t = useTranslations("admin.setupFlow");
   const box = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
     const el = box.current;
@@ -106,8 +109,8 @@ function OpenStarter({
       value={text}
       disabled={disabled}
       maxLength={200}
-      aria-label={`Finish the sentence: ${starterStart(starter)}`}
-      placeholder="Finish the sentence in your own words"
+      aria-label={t("starter.finishLabel", { start: starterStart(starter) })}
+      placeholder={t("starter.finishPlaceholder")}
       onChange={(e) => onEdit(e.target.value)}
       onKeyDown={(e) => {
         if (e.key !== "Enter" || e.shiftKey) return;

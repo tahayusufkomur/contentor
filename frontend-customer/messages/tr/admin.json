@@ -2940,5 +2940,611 @@
       "addItem": "{name} ekle",
       "addDefault": "öğe"
     }
+  },
+  "setupFlow": {
+    "answerBox": {
+      "label": "Yanıtın",
+      "send": "Gönder"
+    },
+    "frame": {
+      "reload": "Önizlemeyi yeniden yükle",
+      "title": "Site önizlemesi",
+      "thisSection": "bu bölüm"
+    },
+    "builder": {
+      "coverError": "Bu kapak kullanılamadı. Başka birini dene.",
+      "coverCurrent": "Mevcut kapak",
+      "coverUse": "Bu kapağı kullan",
+      "kicker": {
+        "course": "İlk kursun",
+        "event": "İlk canlı oturumun",
+        "onsite": "İlk yüz yüze etkinliğin"
+      },
+      "changingCover": "Kapak değiştiriliyor…",
+      "pickTime": "Bir zaman seç",
+      "inPerson": "Yüz yüze",
+      "onlineLive": "Çevrim içi, canlı",
+      "descriptionDrafted": "Yanıtlarından kısa bir açıklama taslağı oluşturulur.",
+      "pickTopic": "Bir konu seç, burada şekillenmeye başlasın.",
+      "badge": {
+        "free": "Ücretsiz",
+        "members": "Yalnızca üyeler"
+      },
+      "tiersIntro": "Öğrenciler kendilerine uygun olanı seçer. İstediğin zaman üyelik ekleyebilir veya değiştirebilirsin.",
+      "tierKicker": "{brand} üyeliği",
+      "tierKickerPlain": "Üyelik",
+      "tiersEmpty": "Üyeliklerin",
+      "tiersHint": "Bir veya daha fazla üyelik seç, burada görünsünler.",
+      "billing": "Aylık faturalandırılır · İstediğin zaman iptal et"
+    },
+    "sketch": {
+      "preview": "Sitende canlı üst bilgi önizlemesi",
+      "device": "Önizleme cihazı",
+      "desktop": "Masaüstü",
+      "mobile": "Mobil + Menü",
+      "toggleMenu": "Mobil menü önizlemesini aç/kapat",
+      "noLinks": "Seçili menü bağlantısı yok"
+    },
+    "demo": {
+      "caption": "Bir cümleye dokun, ardından kendi kelimelerinle tamamla.",
+      "starter": "Şöyle başladım…",
+      "starterEnd": "bir arkadaşım yerine bakmamı istedi"
+    },
+    "ownOption": {
+      "label": "Kendi seçeneğini ekle",
+      "placeholder": "Kendi seçeneğini ekle…"
+    },
+    "help": {
+      "example": "ör. {example}",
+      "look": {
+        "dark": "Koyu",
+        "light": "Açık"
+      },
+      "pay": {
+        "anna": "Anna, yoğun bir anne, vakti kısıtlı",
+        "ben": "Ben, her hafta gelir",
+        "cara": "Cara, fırsat buldukça uğrar",
+        "course": "Bir kurs satın alır",
+        "membership": "Bir üyeliğe katılır",
+        "session": "Oturum başına öder",
+        "month": "{n}. Ay"
+      },
+      "membership": {
+        "club": "Kulüp",
+        "library": "Kurs kütüphanesi",
+        "price": "Ayda {sign}{price}",
+        "coversLive": "Kapsar: Her canlı oturum",
+        "coversCourses": "Kapsar: Her kurs"
+      },
+      "access": {
+        "title": "Ürettiğin her şey",
+        "who": "Kimler açabilir",
+        "free": "Ücretsiz",
+        "sold": "Tek başına satılır",
+        "member": "Bir üyelik kapsamında",
+        "ticked": ", işaretli",
+        "notTicked": ", işaretli değil"
+      },
+      "course": {
+        "label": "Kurs",
+        "title": "6 haftalık program",
+        "stats": "3 modül · 18 ders",
+        "module": "<b>Modül</b> · {title}",
+        "week1": "1. Hafta: Temel bilgiler",
+        "week2": "2. Hafta: Alışkanlık oluşturma",
+        "week3": "3. Hafta: Daha ileriye",
+        "lessons": "<b>Dersler</b>, her modülün içindeki videolardır."
+      },
+      "live": {
+        "title": "Salı akşamı dersi",
+        "when": "Salı günleri, 19:00",
+        "join": "Katıl"
+      },
+      "inbox": {
+        "name": "Anna",
+        "message": "Selam! Salı günkü ders tamamen yeni başlayanlar için uygun mu?"
+      }
+    },
+    "starter": {
+      "takeOut": "Bunu çıkar",
+      "finishOrRemove": "Cümleyi tamamla veya devam etmek için bunu çıkar.",
+      "finishLabel": "Cümleyi tamamla: {start}",
+      "finishPlaceholder": "Cümleyi kendi kelimelerinle tamamla"
+    },
+    "socials": {
+      "placeholder": "{site}adın veya @adın",
+      "problem": "@mira.yoga gibi {network} kullanıcı adını veya {site} ile başlayan bir bağlantı kullan"
+    },
+    "activity": {
+      "building": "{page, select, home {Ana sayfan oluşturuluyor: {stage}} about {Hakkında sayfan oluşturuluyor: {stage}} courses {Kurslar sayfan oluşturuluyor: {stage}} pricing {Fiyatlandırma sayfan oluşturuluyor: {stage}} faq {SSS sayfan oluşturuluyor: {stage}} contact {İletişim sayfan oluşturuluyor: {stage}} events {Etkinlikler sayfan oluşturuluyor: {stage}} other {{page} sayfan oluşturuluyor: {stage}}}",
+      "drafting": "{kind, select, course {İlk kursunun} event {İlk canlı oturumunun} onsite {İlk yüz yüze etkinliğinin} post {İlk makalenin} other {{kind}}} taslağı hazırlanıyor",
+      "more": "{first} · {count} tane daha yolda",
+      "stage": {
+        "planning": "yerleşim planlanıyor",
+        "copy": "metinler yazılıyor",
+        "photos": "fotoğraflar seçiliyor"
+      }
+    },
+    "notes": {
+      "homeReady": "Ana sayfan hazır. Bir göz at ve değiştirmek istediğin bir şey olursa bana söyle.",
+      "pageReady": "{page, select, home {Ana sayfan hazır. Bir göz at.} about {Hakkında sayfan hazır. Bir göz at.} courses {Kurslar sayfan hazır. Bir göz at.} pricing {Fiyatlandırma sayfan hazır. Bir göz at.} faq {SSS sayfan hazır. Bir göz at.} contact {İletişim sayfan hazır. Bir göz at.} events {Etkinlikler sayfan hazır. Bir göz at.} other {{page} sayfan hazır. Bir göz at.}}",
+      "pageFailed": "{page, select, home {Ana sayfanı bitiremedim, bu yüzden şimdilik ilk sürümüyle kalıyor.} about {Hakkında sayfanı bitiremedim, bu yüzden şimdilik ilk sürümüyle kalıyor.} courses {Kurslar sayfanı bitiremedim, bu yüzden şimdilik ilk sürümüyle kalıyor.} pricing {Fiyatlandırma sayfanı bitiremedim, bu yüzden şimdilik ilk sürümüyle kalıyor.} faq {SSS sayfanı bitiremedim, bu yüzden şimdilik ilk sürümüyle kalıyor.} contact {İletişim sayfanı bitiremedim, bu yüzden şimdilik ilk sürümüyle kalıyor.} events {Etkinlikler sayfanı bitiremedim, bu yüzden şimdilik ilk sürümüyle kalıyor.} other {{page} sayfanı bitiremedim, bu yüzden şimdilik ilk sürümüyle kalıyor.}}",
+      "draftDone": {
+        "course": "İlk kursunun taslağı hazırlandı. Onu Kurslar sayfana ekliyorum.",
+        "event": "İlk canlı oturumun takvimde.",
+        "onsite": "İlk yüz yüze etkinliğin takvimde.",
+        "post": "İlk makalenin taslağı hazırlandı."
+      },
+      "draftFailed": "{kind, select, course {İlk kursunun taslağını} event {İlk canlı oturumunun taslağını} onsite {İlk yüz yüze etkinliğinin taslağını} post {İlk makalenin taslağını} other {{kind} taslağını}} hazırlayamadım. Daha sonra kontrol panelinden ekleyebilirsin."
+    },
+    "section": {
+      "you": "Sen",
+      "students": "Öğrenciler",
+      "offer": "Teklif",
+      "look": "Görünüm & hikâye",
+      "pricing": "Fiyatlandırma & içerik",
+      "contact": "İletişim",
+      "emails": "E-postalar",
+      "header": "Üst bilgi & alt bilgi"
+    },
+    "page": {
+      "name": {
+        "home": "Ana Sayfa",
+        "about": "Hakkında",
+        "courses": "Kurslar",
+        "pricing": "Fiyatlandırma",
+        "faq": "SSS",
+        "contact": "İletişim",
+        "events": "Etkinlikler"
+      }
+    },
+    "schedule": {
+      "days": {
+        "sun": "Pazar günleri",
+        "mon": "Pazartesi günleri",
+        "tue": "Salı günleri",
+        "wed": "Çarşamba günleri",
+        "thu": "Perşembe günleri",
+        "fri": "Cuma günleri",
+        "sat": "Cumartesi günleri"
+      },
+      "once": "{weekday} {date} saat {time}",
+      "clause": "{days} saat {times}",
+      "span": {
+        "range": "{start} ile {end} arası",
+        "open": "{start} tarihinden itibaren"
+      },
+      "withSpan": "{when}, {span}",
+      "dateTime": "Tarih ve saat",
+      "starts": "Başlangıç",
+      "ends": "Bitiş",
+      "endsHint": "Devam etmesi için boş bırak",
+      "sessionTime": "Oturum saati {n}",
+      "classTime": "Ders saati {n}",
+      "removeDayTime": "Bu günü ve saati kaldır",
+      "removeTime": "Bu saati kaldır",
+      "addTime": "Saat ekle",
+      "addDayTime": "Başka bir gün ve saat ekle",
+      "pickOnce": "Tarih ve saati seç.",
+      "pickRecurring": "Bir başlangıç tarihi, günleri ve bir saat seç.",
+      "zone": "Saatler senin saat dilimindedir, {zone}.",
+      "daysLabel": "Günler",
+      "timesLabel": "Saatler"
+    },
+    "blockers": {
+      "plan": "Ücretsiz denemeni başlat",
+      "first_course": "İlk kursunu yayınla",
+      "payouts": "Ödemeleri bağla",
+      "first_event": "İlk canlı oturumunu planla",
+      "first_blog_post": "İlk makaleni yayınla",
+      "look": "Ana sayfanı tamamla"
+    },
+    "turnError": {
+      "brand_taken": "Bu ad alınmış. Başka bir tane dene.",
+      "brand_unusable": "Sitenin adında harf veya rakam kullan.",
+      "invalid_handle": "Bu kullanıcı adı doğru görünmüyor. @mira.yoga gibi kullanıcı adını kullan veya profilinin bağlantısını yapıştır.",
+      "invalid_schedule": "Oturum için en az bir gün ve bir saat seç.",
+      "unknown_logo": "Bu logo artık mevcut değil. Başka bir tane seç.",
+      "unknown_style": "Bu görünüm artık mevcut değil. Başka bir tane seç.",
+      "trial_unavailable": "Ücretsiz deneme için fiyatı ve en az iki oturumu olan haftalık bir ders gerekir.",
+      "other": "Bu işlem gerçekleşmedi. Yanıtın hâlâ burada, bu yüzden birazdan tekrar dene."
+    },
+    "editor": {
+      "saveError": "Son değişikliğin kaydedilemedi. Tekrar dene.",
+      "aria": "{page, select, home {Ana sayfanı düzenle} about {Hakkında sayfanı düzenle} courses {Kurslar sayfanı düzenle} pricing {Fiyatlandırma sayfanı düzenle} faq {SSS sayfanı düzenle} contact {İletişim sayfanı düzenle} events {Etkinlikler sayfanı düzenle} other {{page} sayfanı düzenle}}",
+      "title": "{page, select, home {Ana sayfan düzenleniyor} about {Hakkında sayfan düzenleniyor} courses {Kurslar sayfan düzenleniyor} pricing {Fiyatlandırma sayfan düzenleniyor} faq {SSS sayfan düzenleniyor} contact {İletişim sayfan düzenleniyor} events {Etkinlikler sayfan düzenleniyor} other {{page} sayfan düzenleniyor}}",
+      "hint": "Sayfadaki her şeyi değiştirebilirsin. Değişikliklerin sen ilerledikçe kaydedilir.",
+      "saving": "Kaydediliyor…",
+      "done": "Düzenlemeyi bitir"
+    },
+    "launch": {
+      "live": "{brand} yayında",
+      "visit": "Artık herkes siteni ziyaret edebilir.",
+      "visitWithTeam": "Artık herkes siteni ziyaret edebilir. İşte kimin neyle ilgilendiği.",
+      "toAdmin": "Kontrol paneline git",
+      "toSite": "Siteni ziyaret et"
+    },
+    "payouts": {
+      "fact": {
+        "pay": "Öğrenciler, Stripe'ın senin için yönettiği ödeme sayfasında kartla veya cüzdanla ödeme yapar.",
+        "bank": "Stripe, parayı düzenli bir takvime göre banka hesabına gönderir.",
+        "private": "Banka bilgilerin Stripe'ta kalır. Contentor bunları asla görmez."
+      },
+      "lead": "İşte nasıl ödeme alacağın.",
+      "title": "Öğrencilerinden ödeme al",
+      "body": "Ödemeler Stripe üzerinden yürütülür ve doğrudan bankana aktarılır. Kim olduğunu ve paranın nereye gitmesi gerektiğini onaylayacaksın. Yaklaşık beş dakika sürer.",
+      "ownerOnly": "Yalnızca stüdyo sahibi ödemeleri bağlayabilir. Şimdilik bu adımı atla; stüdyo sahibi daha sonra Ödemeler bölümünden Stripe'ı bağlayabilir.",
+      "connected": "Ödemeler bağlandı",
+      "needsDetails": "Ödeme alabilmen için Stripe'ın hâlâ birkaç ayrıntıya ihtiyacı var.",
+      "opening": "Stripe açılıyor…",
+      "continue": "Stripe'ta devam et",
+      "connect": "Stripe ile bağlan"
+    },
+    "panel": {
+      "aria": "Kurulum rehberin",
+      "making": "Değişiklik yapılıyor…",
+      "almostReady": "Neredeyse hazır",
+      "seeSite": "Siteni gör",
+      "askHint": "Önce bir şeyin değiştirilmesini ister misin? “başlığı daha sıcak yap” veya “daha sakin bir fotoğraf kullan” gibi, aşağıda bana söyle.",
+      "changing": "<b>{label}</b> değiştiriliyor",
+      "changeWhole": "Bunun yerine tüm sayfayı değiştir",
+      "placeholderPicked": "Burada ne değişmeli? “daha kısa” veya “daha sıcak bir fotoğraf” gibi…",
+      "placeholderPage": "{page, select, home {Ana sayfanda bir şeyi değiştir…} about {Hakkında sayfanda bir şeyi değiştir…} courses {Kurslar sayfanda bir şeyi değiştir…} pricing {Fiyatlandırma sayfanda bir şeyi değiştir…} faq {SSS sayfanda bir şeyi değiştir…} contact {İletişim sayfanda bir şeyi değiştir…} events {Etkinlikler sayfanda bir şeyi değiştir…} other {{page} sayfanda bir şeyi değiştir…}}",
+      "placeholderAsk": "Bir değişiklik iste…",
+      "progress": "Yayına geçmeden önce · {total} sayfadan {n}. sayfa",
+      "happy": "{page, select, home {Ana sayfandan memnun musun?} about {Hakkında sayfandan memnun musun?} courses {Kurslar sayfandan memnun musun?} pricing {Fiyatlandırma sayfandan memnun musun?} faq {SSS sayfandan memnun musun?} contact {İletişim sayfandan memnun musun?} events {Etkinlikler sayfandan memnun musun?} other {{page} sayfandan memnun musun?}}",
+      "lookOver": "Gözden geçir. Yalnızca o kısmı değiştirmek için herhangi bir yerine dokun veya sayfada neyi değiştirmek istediğini aşağıda bana söyle. Ya da düzenleyiciyi açıp her şeyi kendin değiştir. Onayla, bir sonrakine geçelim.",
+      "showPage": "{page, select, home {Ana sayfanı göster} about {Hakkında sayfanı göster} courses {Kurslar sayfanı göster} pricing {Fiyatlandırma sayfanı göster} faq {SSS sayfanı göster} contact {İletişim sayfanı göster} events {Etkinlikler sayfanı göster} other {{page} sayfanı göster}}",
+      "approvedLeft": "Onaylandı. {count, plural, one {# sayfa kaldı.} other {# sayfa kaldı.}}",
+      "saving": "Kaydediliyor…",
+      "approve": "Bu sayfa iyi görünüyor",
+      "editPage": "Bu sayfayı düzenle",
+      "stillBuilding": "Bu sayfa hâlâ oluşturuluyor…",
+      "pagesAria": "Sayfaların",
+      "state": {
+        "approved": "Onaylandı",
+        "building": "Oluşturuluyor",
+        "toReview": "İncelenecek"
+      }
+    },
+    "goLive": {
+      "paymentPending": "Ödemen hâlâ onaylanıyor. Ödeme gerçekleştiyse bir dakika içinde bu sayfayı yenile.",
+      "checkoutError": "Ödeme sayfası açılamadı. Tekrar dene.",
+      "cardError": "Kartından henüz çekim yapılamadı. Bankanla kontrol et ve tekrar dene.",
+      "startError": "Planın başlatılamadı. Tekrar dene.",
+      "holdError": "Ücretli öğelerin bekletilemedi. Tekrar dene.",
+      "blockedToast": "Yayına geçmeden önce tamamlanması gereken birkaç şey var.",
+      "publishError": "Siten yayınlanamadı. Tekrar dene.",
+      "asideTitle": "Sırada sitenin yayına geçmesi var",
+      "built": "Oluşturduklarım",
+      "confirming": "Planın onaylanıyor…",
+      "finishing": "Sayfaların tamamlanıyor…",
+      "holding": "Onlar bekletiliyor…",
+      "sellLater": "Şimdi yayına geç, sonra sat",
+      "sellLaterHint": "Şimdi yayına geçmek fiyatlarını korur: ücretli ögeler taslak olarak bekler ve ödeme alabildiğinde kendiliğinden satışa çıkar.",
+      "trial": {
+        "title": "{days, plural, one {# günlük ücretsiz denemeni başlat} other {# günlük ücretsiz denemeni başlat}}",
+        "body": "{plan}, {date} tarihine kadar ücretsiz. Kartını şimdi ekle: bu tarihten önce istediğin zaman iptal edebilirsin ve senden ücret alınmaz. Doğrudan buraya geri döneceksin.",
+        "bodyPrice": "{plan}, {date} tarihine kadar ücretsiz, ardından ayda {price}. Kartını şimdi ekle: bu tarihten önce istediğin zaman iptal edebilirsin ve senden ücret alınmaz. Doğrudan buraya geri döneceksin.",
+        "start": "Ücretsiz denemeyi başlat"
+      },
+      "start": {
+        "title": "Planın başladığında satışlar açılır",
+        "body": "Deneme süresinde ödeme alınamaz. Hemen satış yapmak için {plan} planını bugün başlat veya şimdi yayına geçip deneme süren sona erdiğinde satış yap.",
+        "bodyPrice": "Deneme süresinde ödeme alınamaz. Hemen satış yapmak için {plan} planını bugün başlat (ayda {price}) veya şimdi yayına geçip deneme süren sona erdiğinde satış yap.",
+        "bodyEnd": "Deneme süresinde ödeme alınamaz. Hemen satış yapmak için {plan} planını bugün başlat veya şimdi yayına geçip deneme süren {end} tarihinde sona erdiğinde satış yap.",
+        "bodyPriceEnd": "Deneme süresinde ödeme alınamaz. Hemen satış yapmak için {plan} planını bugün başlat (ayda {price}) veya şimdi yayına geçip deneme süren {end} tarihinde sona erdiğinde satış yap.",
+        "now": "Planımı şimdi başlat",
+        "starting": "Planın başlatılıyor…"
+      },
+      "plan": {
+        "title": "Sitende satış yapmak için {name} planını seç",
+        "body": "Ücretli kurslar ve canlı oturumlar için {name} planı gerekir. Doğrudan buraya geri döneceksin.",
+        "bodyPrice": "Ücretli kurslar ve canlı oturumlar için {name} planı gerekir (ayda {price}). Doğrudan buraya geri döneceksin.",
+        "choose": "{name} planını seç"
+      },
+      "ready": "Sen hazır olduğunda hazır",
+      "held": "Sen satış yapana kadar, fiyatlarınla bekliyor:",
+      "heldHint": "Kontrol panelinden istediğin zaman bir plan seç ve ödemeleri ayarla; kendiliğinden satışa çıkarlar.",
+      "goLive": "Yayına geç",
+      "going": "Yayına geçiliyor…",
+      "keepEditing": "Siten yayına geçtikten sonra da düzenlemeye devam edebilirsin.",
+      "qa": {
+        "checking": "Her sayfa son bir kez gözden geçiriliyor",
+        "looked": "{count, plural, one {Sayfanı gözden geçirdim} other {Tüm # sayfayı gözden geçirdim}}",
+        "checkingBody": "Masaüstünde ve telefonda, açık ve koyu modda; böylece yayına geçtiğinde hiçbir şey göze tuhaf görünmez. Beni beklemek zorunda değilsin.",
+        "fixedBody": "Masaüstünde ve telefonda, açık ve koyu modda. Bu sırada toparladım:",
+        "plainBody": "Masaüstünde ve telefonda, açık ve koyu modda."
+      },
+      "stepDone": "(tamamlandı)",
+      "stepMinutes": "yaklaşık {minutes} dk"
+    },
+    "draft": {
+      "stuck": "{kind, select, course {Kursun olması gerekenden çok daha uzun sürüyor. Tekrar dene veya şimdilik atlayıp daha sonra ekle.} event {Canlı oturumun olması gerekenden çok daha uzun sürüyor. Tekrar dene veya şimdilik atlayıp daha sonra ekle.} onsite {Yüz yüze etkinliğin olması gerekenden çok daha uzun sürüyor. Tekrar dene veya şimdilik atlayıp daha sonra ekle.} other {Kursun olması gerekenden çok daha uzun sürüyor. Tekrar dene veya şimdilik atlayıp daha sonra ekle.}}",
+      "retry": "Tekrar dene",
+      "waiting": "Canlı oturumlar ücretli bir planla gelir. Yayına geçtiğinde sana bir plan önereceğim ve plan aktifleştiği anda ilk oturumunun taslağı oluşturulacak.",
+      "failed": "{kind, select, course {Bu kez kursunun taslağını oluşturamadım. Aşağıda ne hakkında olması gerektiğini söyle, tekrar deneyeyim veya şimdilik atla.} event {Bu kez canlı oturumunun taslağını oluşturamadım. Aşağıda ne hakkında olması gerektiğini söyle, tekrar deneyeyim veya şimdilik atla.} onsite {Bu kez yüz yüze etkinliğinin taslağını oluşturamadım. Aşağıda ne hakkında olması gerektiğini söyle, tekrar deneyeyim veya şimdilik atla.} other {Bu kez kursunun taslağını oluşturamadım. Aşağıda ne hakkında olması gerektiğini söyle, tekrar deneyeyim veya şimdilik atla.}}",
+      "drafting": "{kind, select, course {İlk kursunun taslağı oluşturuluyor…} event {İlk canlı oturumunun taslağı oluşturuluyor…} onsite {İlk yüz yüze etkinliğinin taslağı oluşturuluyor…} other {İlk kursunun taslağı oluşturuluyor…}}",
+      "usually": "Genellikle bir dakikadan kısa sürede hazır.",
+      "coverError": "Bu kapak kullanılamadı. Başka bir tane dene.",
+      "price": {
+        "members": "Yalnızca üyelere özel",
+        "free": "Ücretsiz"
+      },
+      "changingCover": "Kapak değiştiriliyor…",
+      "pickCover": "Bir kapak seç",
+      "coverCurrent": "Mevcut kapak",
+      "coverUse": "Bu kapağı kullan",
+      "kicker": "{kind, select, course {İlk kursun} event {İlk canlı oturumun} onsite {İlk yüz yüze etkinliğin} other {İlk kursun}}",
+      "repeats": "Tekrarlar: {repeats}",
+      "trialChip": "İlk oturum ücretsiz denemedir",
+      "inPerson": "Yüz yüze",
+      "onlineLive": "Çevrim içi, canlı",
+      "includedIn": "{name} kapsamına dahil",
+      "rewriting": "{kind, select, course {Kursun yaptığın değişikliklerle yeniden yazılıyor…} event {Canlı oturumun yaptığın değişikliklerle yeniden yazılıyor…} onsite {Yüz yüze etkinliğin yaptığın değişikliklerle yeniden yazılıyor…} other {Kursun yaptığın değişikliklerle yeniden yazılıyor…}}",
+      "rewritingShort": "{kind, select, course {Kursun yeniden yazılıyor…} event {Canlı oturumun yeniden yazılıyor…} onsite {Yüz yüze etkinliğin yeniden yazılıyor…} other {Kursun yeniden yazılıyor…}}",
+      "reading": "Değişikliklerin okunuyor…",
+      "steps": {
+        "course": {
+          "0": "Modüllerin ana hatları çıkarılıyor",
+          "1": "Dersler yazılıyor",
+          "2": "Bir kapak seçiliyor"
+        },
+        "event": {
+          "0": "Oturum planlanıyor",
+          "1": "Uygun bir zaman bulunuyor",
+          "2": "Bir kapak seçiliyor"
+        }
+      },
+      "trial": {
+        "title": "İlk oturum ücretsiz bir deneme olsun mu?",
+        "body": "Herkes buna ücretsiz katılabilir. Diğer tüm oturumlar normal fiyatını korur.",
+        "help": "Ücretsiz deneme dersi nedir?",
+        "tip": "Deneme dersi, birinin ödeme yapmadan önce öğrettiklerini denemesini sağlar. Yalnızca ilk oturumun ücretsizdir ve herkes buna katılabilir. Ondan sonraki her oturum normal fiyatından satılır. Bunu istediğin zaman kapatabilirsin.",
+        "example": "Her oturum {price} tutarındadır. İlki ücretsiz bir denemedir ve diğer tüm oturumlar yine {price} tutarındadır."
+      }
+    },
+    "bio": {
+      "label": "Veya çalışmalarından bahset",
+      "why": "Bize ne kadar çok şey anlatırsan, siten o kadar seni yansıtır. Şunlara değinmeye çalış:",
+      "include": {
+        "0": "Ne öğrettiğin ve kime öğrettiğin",
+        "1": "Geçmişin ve sertifikaların",
+        "2": "Öğretme tarzın",
+        "3": "Bu işi kaç yıldır yaptığın",
+        "4": "Seni neyin farklı kıldığı"
+      },
+      "placeholder": "… kişilere … öğretiyorum. … eğitimi aldım ve … yıldır ders veriyorum. Derslerim … hissettirir ve onları farklı kılan şey …",
+      "exampleLink": "Bir örnek gör",
+      "example": "Brooklyn'de çevrim içi ve yüz yüze olarak yeni başlayanlara ve yoğun masa başı çalışanlarına vinyasa yoga ve nefes çalışmaları öğretiyorum. 500 saatlik bir programda eğitim aldım ve kurumsal bir işteki tükenmişliğin beni yogaya yönlendirmesinden bu yana 10 yıldır ders veriyorum. Derslerim yavaş, samimi ve pratiktir: küçük gruplar, gösteriş yok ve her poza girmek için her zaman daha kolay bir yol. Öğrenciler beni farklı kılan şeyin, onlara kendi başlarına pratik yapmayı öğretmem olduğunu söylüyor.",
+      "nudge": "Bu iyi bir başlangıç. Geçmişin ve seni neyin farklı kıldığı hakkında birkaç satır daha, daha iyi bir siten olmasını sağlar."
+    },
+    "answer": {
+      "youSaid": "Şunu söyledin: <b>{answer}</b>"
+    },
+    "share": {
+      "fileType": "PDF, metin ve Markdown dosyalarını okuyabilirim. Bunlardan birini dene veya bunun yerine metni yapıştır.",
+      "fileSize": "Bu dosya çok büyük. 5 MB'ın altında tut veya bunun yerine metni yapıştır.",
+      "unavailable": "Az önce okuyamadım. Bir dakika sonra tekrar dene.",
+      "finished": "Kurulum tamamlandı, bu yüzden bunu artık ekleyemem.",
+      "other": "Bu işlem gerçekleşmedi. Birazdan tekrar dene."
+    },
+    "opening": {
+      "chooseFile": "Bir dosya seç",
+      "addAnother": "Başka bir dosya seç",
+      "addFile": "Bir dosya ekle",
+      "writeInstead": "Bunun yerine yaz",
+      "fileHint": "PDF, metin veya Markdown, en fazla 5 MB. Ya da aşağıya yaz.",
+      "reading": "Okunuyor…",
+      "continue": "Devam et",
+      "skip": "Şimdilik atla",
+      "leave": "Olduğu gibi bırak",
+      "readingShared": "Paylaştıkların okunuyor…",
+      "readingHint": "İlerideki sorularda yanıtladığı kısımları işaretliyorum, böylece sen yalnızca kontrol edersin. Bu biraz zaman alabilir.",
+      "nameLabel": "Sitenin adı",
+      "namePlaceholder": "Mira Yoga House veya sadece adın",
+      "address": "Web adresin: <b>{address}</b>. Ücretsizdir ve hep sende kalır. Daha sonra kontrol panelinden adın.com gibi kendi alan adını alabilirsin ve siten oraya taşınır.",
+      "addressName": "adın",
+      "taken": "Bu ad alınmış.",
+      "didYouMean": "<pick>{typo}</pick> mu demek istedin?",
+      "orOneOf": "Ya da bunlardan biri:",
+      "pickOrKeep": "Birini seç veya adını olduğu gibi bırakmak için Devam et'e bas.",
+      "checking": "Adın kontrol ediliyor…",
+      "moving": "Siten {address} adresine taşınıyor…",
+      "movingHint": "Siten birazdan yeni adresinde, tam kaldığın yerden açılacak.",
+      "needName": "Bir isme mi ihtiyacın var? Fikir al",
+      "offer": "Ne sunuyorsun?",
+      "offerPlaceholder": "Koşucular için yoga",
+      "firstName": "Adın (isteğe bağlı)",
+      "thinking": "İsimler düşünülüyor…",
+      "getIdeas": "Fikir al",
+      "noIdeas": "Şu anda aklıma bir isim gelmedi. Birazdan tekrar dene.",
+      "tapOne": "Kullanmak için birine dokun:"
+    },
+    "photos": {
+      "heic": "HEIC fotoğraflar çoğu tarayıcıda açılmaz. JPEG olarak kaydet ve tekrar ekle.",
+      "formats": "Buraya yalnızca JPG, PNG, WebP ve AVIF fotoğraflar eklenebilir.",
+      "tooBig": "Bu fotoğraf 25 MB'tan büyük.",
+      "coverage": {
+        "optional": "İsteğe bağlı",
+        "shows": "Bir ana sayfa {used} gösterir",
+        "enough": "{have} eklendi, ana sayfan için yeterli",
+        "some": "{used} üzerinden {have} eklendi"
+      },
+      "status": {
+        "uploading": "Yükleniyor",
+        "pending": "Web için hazır hale getiriliyor",
+        "error": "Yüklenemedi",
+        "added": "Eklendi"
+      },
+      "answer": "{count, plural, one {Kendi fotoğrafım} other {Kendi # fotoğrafım}}",
+      "stockAnswer": "Fotoğrafları benim için seç",
+      "uploadFailed": "Yüklenemedi. Kaldır ve tekrar ekle.",
+      "mostHere": "Buraya en fazla bu kadar alabilirim: {max, plural, one {# fotoğraf} other {# fotoğraf}}.",
+      "onlyFirst": "Yalnızca ilk {room} eklendi: buraya en fazla {max, plural, one {# fotoğraf} other {# fotoğraf}} alabilirim.",
+      "fileProblem": "{name}: {problem}",
+      "removeError": "Bu fotoğraf kaldırılamadı. Medya bölümünden tekrar dene.",
+      "addAria": "Fotoğraf ekle",
+      "addMore": "Daha fazla fotoğraf ekle",
+      "addYour": "Fotoğraflarını ekle",
+      "drop": "Buraya bırak veya seç. JPG, PNG, WebP veya AVIF, her biri en fazla 25 MB. Her fotoğrafı web için yeterince hafif hale getiriyorum, bu yüzden tam boyutlu olanları getir.",
+      "listAria": "Fotoğrafların",
+      "removeAria": "{title} öğesini kaldır",
+      "small": "Küçük: büyük gösterildiğinde net görünmez",
+      "thinking": "Düşünülüyor…",
+      "uploading": "Yükleniyor…",
+      "addToContinue": "Devam etmek için bir fotoğraf ekle",
+      "keep": "Bu fotoğrafları sakla",
+      "continue": "{count, plural, one {Fotoğrafımla devam et} other {# fotoğrafımla devam et}}",
+      "private": "Fotoğrafların sana ait kalır ve yalnızca sitende kullanılır. Bunları dilediğin zaman Medya altından ekleyebilir, değiştirebilir veya kaldırabilirsin.",
+      "bringAria": "Neler getirmelisin",
+      "bring": "Neler getirmelisin",
+      "bringHow": "10 ila 20 fotoğraf tüm site için yeterlidir. Daha azı da sorun değil: geri kalanını yaptığın işe uygun fotoğraflarla ben doldururum.",
+      "sharp": "Net ve uzun kenarı en az 1600 px. Yüzleri ve elleri kenarlardan uzak tut: her bölüm fotoğrafı kendi şekline göre kırpar."
+    },
+    "menu": {
+      "blocked": {
+        "paid_plan": "Bu sitenin ücretli bir planı var, bu yüzden buradan silinemez.",
+        "payments_connected": "Bu siteye bağlı bir ödeme hesabı var. Kaldırmak için destek ekibiyle iletişime geç.",
+        "custom_domain": "Önce özel alan adını kaldır.",
+        "provisioning": "Siten hâlâ oluşturuluyor. Birkaç dakika sonra tekrar dene.",
+        "setup_finished": "Kurulum zaten tamamlandı. Siteyi kontrol panelinden sil."
+      },
+      "cancelError": "Kurulum iptal edilemedi. Tekrar dene.",
+      "savedLogout": "Her şey kaydedildi. Kaldığın yerden devam etmen için sana e-postayla bir bağlantı gönderdik.",
+      "linkError": "Bağlantın gönderilemedi. Tekrar dene.",
+      "savedLogin": "Her şey kaydedildi. Devam etmek için dilediğin zaman giriş yap.",
+      "label": "Kurulum menüsü",
+      "saved": "Otomatik olarak kaydedildi",
+      "finishLater": "Daha sonra tamamla (bana e-postayla bağlantı gönder)",
+      "help": "Yardım al",
+      "signOut": "Çıkış yap",
+      "cancel": "Kurulumu iptal et ve bu siteyi sil",
+      "savingPlace": "Kaldığın yer kaydediliyor…",
+      "signingOut": "Çıkışın yapılıyor…",
+      "emailing": "Kaldığın yerden devam etmen için sana bir bağlantı e-postayla gönderiliyor.",
+      "keep": "Sitemi koru",
+      "cancelAria": "Kurulumu iptal et",
+      "cancelTitle": "Kurulum iptal edilsin mi?",
+      "cancelBody": "Bu işlem tamamlanmamış siteni ve şu ana kadar yanıtladığın her şeyi siler ve <b>{slug}</b> boşa çıkar. İstediğin zaman tekrar başlayabilirsin ancak bu işlem geri alınamaz.",
+      "deleting": "Siliniyor…",
+      "delete": "Siteyi sil",
+      "helpTitle": "Yardım",
+      "closeHelp": "Yardımı kapat"
+    },
+    "flow": {
+      "unavailable": "Rehberli kurulum bu site için henüz kullanılamıyor.",
+      "undone": "Değişiklik geri alındı",
+      "undoError": "Bu geri alınamadı. Tekrar dene.",
+      "undo": "Geri al",
+      "editPartial": "Değiştirildi: {titles}. Geri kalanı uygulanamadı. Tamamlamak için tekrar sor.",
+      "editDone": "Tamamlandı: {titles}.",
+      "saveError": "Bu kaydedilemedi. Tekrar dene.",
+      "undoing": "Bu değişiklik geri alınıyor…",
+      "prev": "Önceki soru",
+      "next": "Sonraki soru",
+      "step": "Siten, 3 adımdan 2. adım",
+      "part": "{section} · {total} bölümden {n}. bölüm",
+      "progress": "Kurulum ilerlemesi",
+      "peekFull": "Ana sayfana göz at",
+      "peek": "Göz at",
+      "peekTitle": "Şu ana kadarki ana sayfan",
+      "peekSub": "Sen yanıtladıkça daha da güzelleşiyor.",
+      "backToQuestions": "Sorulara geri dön",
+      "seeSite": "Siteni gör",
+      "backToGoLive": "Yayına geçişe geri dön",
+      "previewSize": "Önizleme boyutu",
+      "desktop": "Masaüstü",
+      "phone": "Telefon"
+    },
+    "compose": {
+      "stage": {
+        "0": "Düzen seçiliyor",
+        "1": "Metinlerin yazılıyor",
+        "2": "Fotoğrafların bulunuyor"
+      },
+      "title": "{page, select, home {Ana sayfan oluşturuluyor} about {Hakkında sayfan oluşturuluyor} courses {Kurslar sayfan oluşturuluyor} pricing {Fiyatlandırma sayfan oluşturuluyor} faq {SSS sayfan oluşturuluyor} contact {İletişim sayfan oluşturuluyor} events {Etkinlikler sayfan oluşturuluyor} other {{page} sayfan oluşturuluyor}}"
+    },
+    "priceMonthly": "Ayda {price}",
+    "question": {
+      "noted": "Not edildi: {items}",
+      "delegateSaid": "Benim yerime sen karar ver.",
+      "picked": "{count} seçildi",
+      "applying": "{label} uygulanıyor…",
+      "applyingPick": "Seçimin uygulanıyor…",
+      "stillWorking": "Hâlâ çalışıyorum. Siten aynı anda oluşturuluyor, bu yüzden biraz daha uzun sürebilir.",
+      "siteUpdates": "Ben bir sonraki soruyu hazırlarken siten güncelleniyor.",
+      "nameOwn": "Kendin adlandır…",
+      "timeZone": "Saat dilimi",
+      "place": "Mekân",
+      "address": "Adres",
+      "placePlaceholder": "Studio Lumen, Kreuzberg",
+      "addressPlaceholder": "Hauptstraße 12, 10827 Berlin",
+      "placeProblem": "Mekânın adını ekle.",
+      "addressProblem": "Sokak adresini ekle.",
+      "emailProblem": "Bu bir e-posta adresine benzemiyor.",
+      "phoneProblem": "Numarayı +49 170 1234567 gibi ülke koduyla birlikte ekle.",
+      "priceProblem": "19 gibi aylık bir fiyat ekle.",
+      "stillThinking": "Hâlâ düşünüyorum. Siten aynı anda oluşturuluyor, bu yüzden biraz daha uzun sürebilir.",
+      "thinking": "Düşünüyorum…",
+      "sendChanges": "Değişiklikleri gönder",
+      "continue": "Devam et",
+      "looksGood": "İyi görünüyor, devam et",
+      "finishSentence": "Cümleni tamamla",
+      "addPrice": "Her biri için bir fiyat ekle",
+      "pickMany": "Uygun olanların tümünü seç",
+      "pickOne": "Devam etmek için birini seç",
+      "keepAnswer": "Bu yanıtı koru",
+      "continueNote": "Notunla devam et",
+      "continueCount": "{count} ile devam et",
+      "selectAll": "Tümünü seç",
+      "deselectAll": "Tüm seçimi kaldır",
+      "pickForMe": "Benim için seç",
+      "pickForMeHint": "Emin değil misin? Yanıtlarından ben seçerim.",
+      "changeCourse": "Veya neyi değiştireceğimi söyle; “altı hafta yap” ya da “başka bir fotoğraf” gibi…",
+      "changeEvent": "Veya neyi değiştireceğimi söyle; “bir saatlik yap” ya da “başka bir fotoğraf” gibi…",
+      "typeOwn": "Veya kendi yanıtını yaz…",
+      "typeNew": "Veya yeni bir yanıt yaz…",
+      "notFinal": "Buradaki hiçbir şey kesin değil. Hepsini daha sonra kontrol panelinden değiştirebilirsin."
+    },
+    "look": {
+      "original": "Orijinal",
+      "colours": "{label} renkleri",
+      "logoLoadError": "Daha fazla logo yüklenemedi. Tekrar dene.",
+      "suggested": "Önerilen",
+      "pick": "<b>{label}</b> bizim seçimimiz. {reason}",
+      "filter": "Görünümleri filtrele",
+      "all": "Tümü",
+      "tag": {
+        "selling": "Satış için tasarlandı",
+        "expertise": "Uzmanlığı gösterir",
+        "short": "Kısa sayfa",
+        "long": "Uzun sayfa",
+        "sensual": "Yumuşak ve atmosferik",
+        "confident": "Kendinden emin",
+        "sexy": "Seksi",
+        "playful": "Eğlenceli"
+      },
+      "moreLooks": "Daha fazla görünüm: {group}",
+      "moreCount": "Daha fazla görünüm ({count})",
+      "logoSits": "Logonun duruşu",
+      "menuPages": "Üst bilgi menündeki sayfalar",
+      "tapToggle": "Eklemek veya kaldırmak için dokun",
+      "headerElements": "Üst bilgi ögeleri",
+      "ctaButton": "“{label}” butonu",
+      "transparent": "Hero üzerinde şeffaf",
+      "wordmarkAnswer": "Sadece adım, metin olarak",
+      "wordmark": "Sadece adım",
+      "uploadedAnswer": "Kendi logom",
+      "upload": "Kendiminkini yükle",
+      "showOthers": "Bana diğerlerini göster",
+      "uploadError": "Logon yüklenemedi. Tekrar dene.",
+      "emailTitle": "{label} e-postası",
+      "asPage": "{label}, sayfa olarak",
+      "seeOthers": "Diğer görünümleri gör",
+      "close": "Kapat",
+      "keep": "Bu görünümü koru"
+    },
+    "pageTitle": "Siteni kur"
   }
 }

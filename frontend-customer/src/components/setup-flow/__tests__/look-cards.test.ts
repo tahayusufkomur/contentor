@@ -1,8 +1,8 @@
 import { createElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { LookCards } from "@/lib/setup-flow";
 import { LookCardsView } from "../look-cards";
+import { renderToStaticMarkup } from "./intl";
 
 const look = (value: string, group: string, recommended = false) => ({
   value,

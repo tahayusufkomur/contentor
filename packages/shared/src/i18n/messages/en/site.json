@@ -732,5 +732,13 @@
     "title": "Your title",
     "body": "Your message",
     "now": "now"
+  },
+  "setupSketch": {
+    "studioName": "Your Studio",
+    "yourName": "Your name",
+    "welcome": "Welcome to {brand}",
+    "welcomeFallback": "Welcome to your new site",
+    "yourSite": "Your site",
+    "explore": "Explore"
   }
 }

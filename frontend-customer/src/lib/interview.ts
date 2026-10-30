@@ -6,6 +6,7 @@ import type {
   Schedule,
   ScheduleMode,
   ScheduleSlot,
+  T,
 } from "@/lib/setup-flow";
 
 /** Append a dictated phrase to what is already in the box. */
@@ -28,16 +29,9 @@ export function landedPage(prev: Builds, next: Builds): string | null {
   );
 }
 
-const PAGE_LABELS: Record<string, string> = {
-  home: "home page",
-  about: "About page",
-  courses: "Courses page",
-  pricing: "Pricing page",
-  faq: "FAQ page",
-  contact: "Contact page",
-  events: "Events page",
-};
-export const pageLabel = (key: string) => PAGE_LABELS[key] ?? `${key} page`;
+// The helpers below stay pure by taking the setup flow's translator (`T`) as
+// an argument. Each message names a page or a draft by its key and owns the
+// noun, so no language glues a nominative label into a sentence.
 
 /** A built page of the site, looked over with the coach before going live. */
 export interface ReviewPage {
@@ -80,55 +74,46 @@ export function nextToReview(
   return [...pages.slice(at + 1), ...pages.slice(0, at + 1)].find((p) => !p.ok);
 }
 
-const DRAFT_LABELS: Record<string, string> = {
-  course: "your first course",
-  event: "your first live session",
-  onsite: "your first in-person event",
-  post: "your first article",
-};
-
 /** A running build's server-reported stage → its index in the overlay's
  * three steps (no stage yet = still planning). */
 export function stageIndex(stage?: string): number {
   return stage === "photos" ? 2 : stage === "copy" ? 1 : 0;
 }
 
-const STAGE_NOW = [
-  "planning the layout",
-  "writing the words",
-  "picking photos",
-];
-
 /** What the guide is working on right now, or null when nothing is. */
-export function activityLine(builds: Builds, drafts: Drafts): string | null {
+export function activityLine(
+  builds: Builds,
+  drafts: Drafts,
+  t: T,
+): string | null {
   const items = [
     ...Object.keys(builds)
       .filter((k) => builds[k]?.status === "building")
-      .map(
-        (k) =>
-          `Building your ${pageLabel(k)}: ${STAGE_NOW[stageIndex(builds[k]?.stage)]}`,
+      .map((k) =>
+        t("activity.building", {
+          page: k,
+          stage: t(
+            `activity.stage.${["planning", "copy", "photos"][stageIndex(builds[k]?.stage)]}`,
+          ),
+        }),
       ),
     ...Object.keys(drafts)
       .filter((k) => drafts[k] === "building")
-      .map((k) => `Drafting ${DRAFT_LABELS[k] ?? k}`),
+      .map((k) => t("activity.drafting", { kind: k })),
   ];
   if (!items.length) return null;
   return items.length > 1
-    ? `${items[0]} · ${items.length - 1} more on the way`
+    ? t("activity.more", { first: items[0], count: items.length - 1 })
     : items[0];
 }
 
-const DRAFT_DONE: Record<string, string> = {
-  course: "Your first course is drafted. I’m adding it to your Courses page.",
-  event: "Your first live session is on the calendar.",
-  onsite: "Your first in-person event is on the calendar.",
-  post: "Your first article is drafted.",
-};
+const DRAFT_DONE = ["course", "event", "onsite", "post"];
 
 /** What the guide says about work that finished between two polls. */
 export function finishedNotes(
   prev: { builds: Builds; drafts: Drafts },
   next: { builds: Builds; drafts: Drafts },
+  t: T,
 ): string[] {
   const notes: string[] = [];
   for (const k of Object.keys(next.builds)) {
@@ -136,25 +121,19 @@ export function finishedNotes(
     const now = next.builds[k]?.status;
     if (now === "ready" && was !== "ready") {
       notes.push(
-        k === "home"
-          ? "Your home page is ready. Have a look, and tell me anything you’d like changed."
-          : `Your ${pageLabel(k)} is ready. Have a look.`,
+        k === "home" ? t("notes.homeReady") : t("notes.pageReady", { page: k }),
       );
     } else if (now === "failed" && was === "building") {
-      notes.push(
-        `I couldn’t finish your ${pageLabel(k)}, so it keeps its first version for now.`,
-      );
+      notes.push(t("notes.pageFailed", { page: k }));
     }
   }
   for (const k of Object.keys(next.drafts)) {
     const was = prev.drafts[k];
     const now = next.drafts[k];
-    if (now === "ready" && was !== "ready" && DRAFT_DONE[k]) {
-      notes.push(DRAFT_DONE[k]);
+    if (now === "ready" && was !== "ready" && DRAFT_DONE.includes(k)) {
+      notes.push(t(`notes.draftDone.${k}`));
     } else if (now === "failed" && was === "building") {
-      notes.push(
-        `I couldn’t draft ${DRAFT_LABELS[k] ?? k}. You can add it from your dashboard later.`,
-      );
+      notes.push(t("notes.draftFailed", { kind: k }));
     }
   }
   return notes;
@@ -267,10 +246,10 @@ export const addressOk = (raw: string): boolean => raw.trim().length >= 3;
 export function waysIn(answer: string | undefined): string[] {
   return (answer ?? "").split("\n")[0].split(", ").filter(Boolean);
 }
-export function accessBadge(ways: string[]): string | null {
+export function accessBadge(ways: string[]): "free" | "members" | null {
   if (!ways.length || ways.some((w) => w.startsWith("Anyone who ")))
     return null;
-  return ways.includes("Free for everyone") ? "Free" : "Members only";
+  return ways.includes("Free for everyone") ? "free" : "members";
 }
 
 export function priceOk(raw: string): boolean {
@@ -385,20 +364,21 @@ export function questionSteps(
 }
 
 /** The interview in sections, in the order it asks them: progress reads by
- * section, so it never jumps the way a question count did. */
-export const SECTIONS: { label: string; fields: string[] }[] = [
+ * section, so it never jumps the way a question count did. `key` names the
+ * section's label in the messages (`section.<key>`). */
+export const SECTIONS: { key: string; fields: string[] }[] = [
   {
-    label: "You",
+    key: "you",
     fields: ["bio", "site_name", "teaches", "specialty", "discipline_focus"],
   },
-  { label: "Students", fields: ["audience", "outcome"] },
-  { label: "Offer", fields: ["offers", "teachers", "pitch", "difference"] },
+  { key: "students", fields: ["audience", "outcome"] },
+  { key: "offer", fields: ["offers", "teachers", "pitch", "difference"] },
   {
-    label: "Look & story",
+    key: "look",
     fields: ["tone", "site_style", "story", "credentials", "site_logo"],
   },
   {
-    label: "Pricing & content",
+    key: "pricing",
     fields: [
       "timezone",
       "currency",
@@ -423,9 +403,9 @@ export const SECTIONS: { label: string; fields: string[] }[] = [
       "article_topic",
     ],
   },
-  { label: "Contact", fields: ["socials", "contact"] },
-  { label: "Emails", fields: ["email_style"] },
-  { label: "Header & footer", fields: ["navbar_layout", "footer_layout"] },
+  { key: "contact", fields: ["socials", "contact"] },
+  { key: "emails", fields: ["email_style"] },
+  { key: "header", fields: ["navbar_layout", "footer_layout"] },
 ];
 
 /** A question's section (SECTIONS.length once nothing is left to ask). */
@@ -506,27 +486,24 @@ export function prefilledPicks(step: QuestionStep): {
 
 // ---- Class schedules -------------------------------------------------------
 
-const DAY_NAMES = [
-  "Sundays",
-  "Mondays",
-  "Tuesdays",
-  "Wednesdays",
-  "Thursdays",
-  "Fridays",
-  "Saturdays",
-];
+// By weekday number (Sunday = 0): the key of its plural, as a timetable says it.
+const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 const mondayFirst = (d: number) => (d + 6) % 7;
-const list = (xs: string[]) =>
-  xs.length > 1
-    ? `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`
-    : (xs[0] ?? "");
+// "Mondays, Wednesdays and Fridays": English without the Oxford comma, as it always read.
+const list = (xs: string[], locale: string) =>
+  new Intl.ListFormat(locale === "en" ? "en-GB" : locale, {
+    type: "conjunction",
+  }).format(xs);
 /** Local time from "YYYY-MM-DD" (midnight) or "YYYY-MM-DDTHH:MM". */
 const local = (s: string) => new Date(s.length === 10 ? `${s}T00:00` : s);
 const fmtDate = (s: string, year: boolean, locale: string) =>
   formatDayMonth(local(s), locale, year);
-const fmtTime = (t: string) => {
+/** "18:30" as the locale writes a time ("6:30 PM", "18:30"). */
+const fmtTime = (t: string, locale: string) => {
   const [h, m] = t.split(":").map(Number);
-  return `${((h + 11) % 12) + 1}:${String(m).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
+  return new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit" })
+    .format(new Date(2000, 0, 1, h, m))
+    .replace(/\u202f/g, " ");
 };
 
 /** A slot is ready once it has a weekday and a time. */
@@ -571,20 +548,27 @@ export function timeZones(current: string): string[] {
   return all.includes(current) ? all : [current, ...all];
 }
 
-/** The schedule as the coach would say it: "Tuesdays and Thursdays at
- * 6:30 PM, from 12 Oct to 7 Dec 2026", or "Tuesday 13 Oct 2026 at 6:30 PM".
- * Each slot reads as its own clause: "Mondays at 9:00 AM; Fridays at 6:00 PM". */
+/** The schedule as the creator reads it (a display line, in her language):
+ * "Tuesdays and Thursdays at 6:30 PM, from 12 Oct to 7 Dec 2026", or
+ * "Tuesday 13 Oct 2026 at 6:30 PM". Each slot reads as its own clause:
+ * "Mondays at 9:00 AM; Fridays at 6:00 PM". What the server stores comes from
+ * the structured pick (`choice.value`), never from this text. */
 export function scheduleSummary(
   mode: ScheduleMode,
   s: Schedule,
   locale: string,
+  t: T,
 ): string {
   if (mode === "once") {
     if (!s.at) return "";
-    const day = new Intl.DateTimeFormat(locale, { weekday: "long" }).format(
-      local(s.at),
-    );
-    return `${day} ${fmtDate(s.at, true, locale)} at ${fmtTime(s.at.slice(11, 16))}`;
+    const weekday = new Intl.DateTimeFormat(locale, {
+      weekday: "long",
+    }).format(local(s.at));
+    return t("schedule.once", {
+      weekday,
+      date: fmtDate(s.at, true, locale),
+      time: fmtTime(s.at.slice(11, 16), locale),
+    });
   }
   const when = (s.slots ?? [])
     .filter(slotReady)
@@ -592,18 +576,28 @@ export function scheduleSummary(
       const days = list(
         [...sl.days]
           .sort((a, b) => mondayFirst(a) - mondayFirst(b))
-          .map((d) => DAY_NAMES[d]),
+          .map((d) => t(`schedule.days.${DAY_KEYS[d]}`)),
+        locale,
       );
-      const times = list(sl.times.filter(Boolean).sort().map(fmtTime));
-      return `${days} at ${times}`;
+      const times = list(
+        sl.times
+          .filter(Boolean)
+          .sort()
+          .map((x) => fmtTime(x, locale)),
+        locale,
+      );
+      return t("schedule.clause", { days, times });
     })
     .join("; ");
   const span = !s.start
     ? ""
     : s.end
-      ? `from ${fmtDate(s.start, false, locale)} to ${fmtDate(s.end, true, locale)}`
-      : `from ${fmtDate(s.start, true, locale)}`;
-  return [when, span].filter(Boolean).join(", ");
+      ? t("schedule.span.range", {
+          start: fmtDate(s.start, false, locale),
+          end: fmtDate(s.end, true, locale),
+        })
+      : t("schedule.span.open", { start: fmtDate(s.start, true, locale) });
+  return when && span ? t("schedule.withSpan", { when, span }) : when || span;
 }
 
 /** The first class, as an ISO instant: the one date, or the earliest slot's

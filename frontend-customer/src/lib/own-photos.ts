@@ -1,5 +1,6 @@
 // Pure helpers for the setup interview's photos question (no runtime
 // imports: unit-tested in isolation).
+import type { T } from "@/lib/setup-flow";
 
 export type Shape = "portrait" | "landscape" | "square";
 
@@ -26,16 +27,18 @@ const typeOf = (file: { name: string; type: string }) =>
   "";
 
 /** Why a file cannot be added, in words for the coach; null when it can. */
-export function photoProblem(file: {
-  name: string;
-  type: string;
-  size: number;
-}): string | null {
+export function photoProblem(
+  file: {
+    name: string;
+    type: string;
+    size: number;
+  },
+  t: T,
+): string | null {
   const type = typeOf(file);
-  if (/^image\/hei[cf]/.test(type))
-    return "HEIC photos don’t open in most browsers. Save it as a JPEG and add it again.";
-  if (!TAKEN.has(type)) return "Only JPG, PNG, WebP and AVIF photos go here.";
-  if (file.size > OWN_PHOTO_MAX_BYTES) return "That photo is over 25 MB.";
+  if (/^image\/hei[cf]/.test(type)) return t("photos.heic");
+  if (!TAKEN.has(type)) return t("photos.formats");
+  if (file.size > OWN_PHOTO_MAX_BYTES) return t("photos.tooBig");
   return null;
 }
 
@@ -71,21 +74,20 @@ export const isSmall = (width?: number | null, height?: number | null) =>
 
 /** One line under a guide row: how far her photos cover what a home page
  * shows of that shape. */
-export function coverage(have: number, used: number): string {
-  if (have === 0) return used ? `A home page shows ${used}` : "Optional";
-  if (have >= used) return `${have} added, enough for your home page`;
-  return `${have} of ${used} added`;
+export function coverage(have: number, used: number, t: T): string {
+  if (have === 0)
+    return used
+      ? t("photos.coverage.shows", { used })
+      : t("photos.coverage.optional");
+  if (have >= used) return t("photos.coverage.enough", { have });
+  return t("photos.coverage.some", { have, used });
 }
 
 /** What the caption under a photo says about where it stands. */
-export function statusLine(status: string): string {
-  if (status === "uploading") return "Uploading";
-  if (status === "pending") return "Making it web-ready";
-  if (status === "error") return "Couldn’t upload";
-  return "Added";
+export function statusLine(status: string, t: T): string {
+  return t(
+    ["uploading", "pending", "error"].includes(status)
+      ? `photos.status.${status}`
+      : "photos.status.added",
+  );
 }
-
-/** The answer as the transcript shows it. */
-export const ownPhotosAnswer = (count: number) =>
-  count === 1 ? "My own photo" : `My own ${count} photos`;
-export const STOCK_ANSWER = "Choose photos for me";

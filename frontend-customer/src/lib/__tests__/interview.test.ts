@@ -5,6 +5,7 @@ import {
   type InterviewEntry,
 } from "@/lib/setup-flow";
 import { ApiError } from "@/types/api";
+import { tEn } from "./setup-t";
 import {
   accessBadge,
   waysIn,
@@ -117,7 +118,7 @@ describe("questionSteps", () => {
       accessBadge(
         idsOfText(steps[0].answer ?? "", steps[0].options, steps[0].ids),
       ),
-    ).toBe("Free");
+    ).toBe("free");
   });
 
   it("reads a one-time schedule and a contact question gone back to from their ids", () => {
@@ -236,14 +237,14 @@ describe("pickedOptions", () => {
 
 describe("activityLine", () => {
   it("is null when nothing is building", () => {
-    expect(activityLine({ home: { status: "ready" } }, {})).toBeNull();
+    expect(activityLine({ home: { status: "ready" } }, {}, tEn)).toBeNull();
   });
   it("names the page and its stage", () => {
-    expect(activityLine({ about: { status: "building" } }, {})).toBe(
+    expect(activityLine({ about: { status: "building" } }, {}, tEn)).toBe(
       "Building your About page: planning the layout",
     );
     expect(
-      activityLine({ home: { status: "building", stage: "photos" } }, {}),
+      activityLine({ home: { status: "building", stage: "photos" } }, {}, tEn),
     ).toBe("Building your home page: picking photos");
     expect(stageIndex("copy")).toBe(1);
   });
@@ -252,9 +253,10 @@ describe("activityLine", () => {
       activityLine(
         { home: { status: "building", stage: "copy" } },
         { course: "building", post: "ready" },
+        tEn,
       ),
     ).toBe("Building your home page: writing the words · 1 more on the way");
-    expect(activityLine({}, { course: "building" })).toBe(
+    expect(activityLine({}, { course: "building" }, tEn)).toBe(
       "Drafting your first course",
     );
   });
@@ -273,6 +275,7 @@ describe("finishedNotes", () => {
           drafts: { course: "building" },
         },
         { builds: builds("ready", "failed"), drafts: { course: "ready" } },
+        tEn,
       ),
     ).toEqual([
       "Your home page is ready. Have a look, and tell me anything you’d like changed.",
@@ -282,7 +285,7 @@ describe("finishedNotes", () => {
   });
   it("says nothing when nothing changed", () => {
     const same = { builds: builds("ready"), drafts: { course: "ready" } };
-    expect(finishedNotes(same, same)).toEqual([]);
+    expect(finishedNotes(same, same, tEn)).toEqual([]);
   });
 });
 
@@ -357,9 +360,11 @@ describe("socialOk mirrors the server", () => {
 describe("turnErrorText", () => {
   it("names a refused handle and falls back for anything else", () => {
     expect(
-      turnErrorText(new ApiError(400, { detail: "invalid_handle" })),
+      turnErrorText(new ApiError(400, { detail: "invalid_handle" }), tEn),
     ).toMatch(/handle/);
-    expect(turnErrorText(new Error("offline"))).toMatch(/didn’t go through/);
+    expect(turnErrorText(new Error("offline"), tEn)).toMatch(
+      /didn’t go through/,
+    );
   });
 });
 
@@ -505,9 +510,9 @@ describe("who can open it: the badge follows the ways in ticked", () => {
   // interview_brief.access_options: buying it, each membership, or free.
   it.each([
     ["Anyone who buys the course, Digital membership", null],
-    ["Digital membership, All-access", "Members only"],
-    ["Free for everyone", "Free"],
-    ["Weekly face yoga classes\nonly my regulars", "Members only"],
+    ["Digital membership, All-access", "members"],
+    ["Free for everyone", "free"],
+    ["Weekly face yoga classes\nonly my regulars", "members"],
     [undefined, null],
   ] as const)("%s → %s", (answer, badge) =>
     expect(accessBadge(waysIn(answer))).toBe(badge),
@@ -578,10 +583,10 @@ describe("tiles in the creator's language keep their meaning", () => {
 
   it("gives the access badge from identities, never from the words shown", () => {
     const free = idsOfText("Kostenlos für alle", options, ids);
-    expect(accessBadge(free)).toBe("Free");
+    expect(accessBadge(free)).toBe("free");
     expect(
       accessBadge(idsOfText("Digitale Mitgliedschaft", options, ids)),
-    ).toBe("Members only");
+    ).toBe("members");
     expect(accessBadge(idsOfText(options[0], options, ids))).toBeNull();
   });
 

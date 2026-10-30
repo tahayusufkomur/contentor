@@ -732,5 +732,13 @@
     "title": "Başlığın",
     "body": "Mesajın",
     "now": "şimdi"
+  },
+  "setupSketch": {
+    "studioName": "Stüdyon",
+    "yourName": "Adın",
+    "welcome": "{brand} sitesine hoş geldin",
+    "welcomeFallback": "Yeni sitene hoş geldin",
+    "yourSite": "Siten",
+    "explore": "Keşfet"
   }
 }

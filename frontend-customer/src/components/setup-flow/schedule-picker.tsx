@@ -5,20 +5,17 @@ import { Button } from "@/components/ui/button";
 import { scheduleSummary } from "@/lib/interview";
 import type { Schedule, ScheduleMode, ScheduleSlot } from "@/lib/setup-flow";
 import { cn } from "@/lib/utils";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
-// Monday first, as a weekly timetable reads.
-const DAYS: [number, string][] = [
-  [1, "Mon"],
-  [2, "Tue"],
-  [3, "Wed"],
-  [4, "Thu"],
-  [5, "Fri"],
-  [6, "Sat"],
-  [0, "Sun"],
-];
+// Monday first, as a weekly timetable reads (the weekday numbers of Date.getDay).
+const DAYS = [1, 2, 3, 4, 5, 6, 0];
 const INPUT =
   "h-10 rounded-xl border border-[var(--sf-line-strong)] bg-white px-3 text-[14px] text-[var(--sf-ink)] outline-none transition-[border-color,box-shadow] focus:border-[var(--sf-ink)] focus:shadow-[0_0_0_3px_var(--sf-brass-soft)] disabled:opacity-50";
+/** A weekday's short name, as a button says it (1 Jan 2024 was a Monday). */
+const weekdayShort = (day: number, locale: string) =>
+  new Intl.DateTimeFormat(locale, { weekday: "short" }).format(
+    new Date(2024, 0, day || 7),
+  );
 const NEW_SLOT: ScheduleSlot = { days: [], times: [""] };
 
 /** When a class runs, with the browser's own pickers: a single date and time,
@@ -42,11 +39,12 @@ export function SchedulePicker({
   className?: string;
 }) {
   const locale = useLocale();
+  const t = useTranslations("admin.setupFlow");
   const set = (patch: Partial<Schedule>) => onChange({ ...value, ...patch });
   const slots = value.slots?.length ? value.slots : [NEW_SLOT];
   const setSlot = (i: number, patch: Partial<ScheduleSlot>) =>
     set({ slots: slots.map((sl, j) => (j === i ? { ...sl, ...patch } : sl)) });
-  const summary = scheduleSummary(mode, value, locale);
+  const summary = scheduleSummary(mode, value, locale, t);
   const ready = slots.every(
     (sl) => sl.days.length > 0 && sl.times.some(Boolean),
   );
@@ -59,7 +57,7 @@ export function SchedulePicker({
     >
       <div className="grid gap-4 sm:grid-cols-2">
         {mode === "once" ? (
-          <Field label="Date and time" className="sm:col-span-2">
+          <Field label={t("schedule.dateTime")} className="sm:col-span-2">
             <input
               type="datetime-local"
               value={value.at ?? ""}
@@ -70,7 +68,7 @@ export function SchedulePicker({
           </Field>
         ) : (
           <>
-            <Field label="Starts">
+            <Field label={t("schedule.starts")}>
               <input
                 type="date"
                 value={value.start ?? ""}
@@ -79,7 +77,7 @@ export function SchedulePicker({
                 className={INPUT}
               />
             </Field>
-            <Field label="Ends" hint="Leave empty to keep going">
+            <Field label={t("schedule.ends")} hint={t("schedule.endsHint")}>
               <input
                 type="date"
                 value={value.end ?? ""}
@@ -98,17 +96,17 @@ export function SchedulePicker({
               return (
                 <section
                   key={i}
-                  aria-label={`Session time ${i + 1}`}
+                  aria-label={t("schedule.sessionTime", { n: i + 1 })}
                   className="grid gap-4 rounded-xl bg-[var(--sf-tint)] p-4 sm:col-span-2"
                 >
                   {slots.length > 1 && (
                     <div className="flex items-center justify-between">
                       <p className="text-[13px] font-semibold">
-                        Class time {i + 1}
+                        {t("schedule.classTime", { n: i + 1 })}
                       </p>
                       <button
                         type="button"
-                        aria-label="Remove this day and time"
+                        aria-label={t("schedule.removeDayTime")}
                         disabled={disabled}
                         onClick={() =>
                           set({ slots: slots.filter((_, j) => j !== i) })
@@ -119,9 +117,9 @@ export function SchedulePicker({
                       </button>
                     </div>
                   )}
-                  <Field label="Days">
+                  <Field label={t("schedule.daysLabel")}>
                     <div className="flex flex-wrap gap-1.5">
-                      {DAYS.map(([d, label]) => {
+                      {DAYS.map((d) => {
                         const on = sl.days.includes(d);
                         return (
                           <button
@@ -143,19 +141,19 @@ export function SchedulePicker({
                                 : "border-[var(--sf-line-strong)] hover:border-[var(--sf-ink)]",
                             )}
                           >
-                            {label}
+                            {weekdayShort(d, locale)}
                           </button>
                         );
                       })}
                     </div>
                   </Field>
-                  <Field label="Times">
+                  <Field label={t("schedule.timesLabel")}>
                     <div className="flex flex-wrap items-center gap-2">
-                      {times.map((t, k) => (
+                      {times.map((time, k) => (
                         <span key={k} className="flex items-center gap-1">
                           <input
                             type="time"
-                            value={t}
+                            value={time}
                             disabled={disabled}
                             onChange={(e) =>
                               setSlot(i, {
@@ -169,7 +167,7 @@ export function SchedulePicker({
                           {times.length > 1 && (
                             <button
                               type="button"
-                              aria-label="Remove this time"
+                              aria-label={t("schedule.removeTime")}
                               disabled={disabled}
                               onClick={() =>
                                 setSlot(i, {
@@ -186,12 +184,12 @@ export function SchedulePicker({
                       <Button
                         variant="ghost"
                         size="sm"
-                        disabled={disabled || times.some((t) => !t)}
+                        disabled={disabled || times.some((x) => !x)}
                         onClick={() => setSlot(i, { times: [...times, ""] })}
                         className="rounded-full"
                       >
                         <Plus className="size-3.5" aria-hidden />
-                        Add a time
+                        {t("schedule.addTime")}
                       </Button>
                     </div>
                   </Field>
@@ -207,7 +205,7 @@ export function SchedulePicker({
                 className="rounded-full"
               >
                 <Plus className="size-3.5" aria-hidden />
-                Add another day and time
+                {t("schedule.addDayTime")}
               </Button>
             </div>
           </>
@@ -222,11 +220,11 @@ export function SchedulePicker({
       >
         {summary ||
           (mode === "once"
-            ? "Pick the date and time."
-            : "Pick a start date, the days and a time.")}
+            ? t("schedule.pickOnce")
+            : t("schedule.pickRecurring"))}
         {zone && (
           <span className="block text-[12.5px] text-[var(--sf-faint)]">
-            Times are in your time zone, {zone.replaceAll("_", " ")}.
+            {t("schedule.zone", { zone: zone.replaceAll("_", " ") })}
           </span>
         )}
       </p>

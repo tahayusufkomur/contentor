@@ -21,6 +21,7 @@ import { formatPrice } from "@/lib/interview";
 import {
   turnErrorText,
   type ReviewCard,
+  type T,
   type ReviewItem,
   type ReviewKind,
 } from "@/lib/setup-flow";
@@ -28,18 +29,13 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { BusyOverlay, WorkSteps } from "./busy-overlay";
 import { QuestionHelp } from "./question-help";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
-export const NOUN: Record<ReviewKind, string> = {
-  course: "course",
-  event: "live session",
-  onsite: "in-person event",
-};
-const DRAFTING: Record<ReviewKind, string[]> = {
-  course: ["Outlining the modules", "Writing the lessons", "Choosing a cover"],
-  event: ["Planning the session", "Finding a good time", "Choosing a cover"],
-  onsite: ["Planning the session", "Finding a good time", "Choosing a cover"],
-};
+/** The three steps a draft goes through, by kind (a live session and an in-person event share theirs). */
+const drafting = (t: T, kind: ReviewKind): string[] =>
+  [0, 1, 2].map((i) =>
+    t(`draft.steps.${kind === "course" ? "course" : "event"}.${i}`),
+  );
 
 /** The interview's first course or class, shown as it was drafted: cover
  * (with a few others to choose from), title, description, price, and the
@@ -68,6 +64,7 @@ export function DraftReview({
   /** Start a draft over that has been building for far too long. */
   onRetry: () => void;
 }) {
+  const t = useTranslations("admin.setupFlow");
   // The parts spring in one by one the first time a draft shows. After that
   // a change only replays on the parts it touched (each is keyed by its
   // value), so they arrive at once.
@@ -84,8 +81,8 @@ export function DraftReview({
   useEffect(() => {
     setStuck(false);
     if (card.status !== "building") return;
-    const t = setTimeout(() => setStuck(true), 120_000);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setStuck(true), 120_000);
+    return () => clearTimeout(timer);
   }, [card.status]);
   if (stuck)
     return (
@@ -93,10 +90,7 @@ export function DraftReview({
         role="status"
         className="mt-8 max-w-[60ch] rounded-2xl border border-[var(--sf-line)] bg-white px-5 py-4 text-[15px] leading-relaxed text-[var(--sf-graphite)] motion-safe:animate-[sf-pop_.7s_var(--sf-spring)_both]"
       >
-        <p>
-          Your {NOUN[card.kind]} is taking much longer than it should. Try
-          again, or skip it for now and add it later.
-        </p>
+        <p>{t("draft.stuck", { kind: card.kind })}</p>
         <Button
           variant="outline"
           size="sm"
@@ -104,7 +98,7 @@ export function DraftReview({
           onClick={onRetry}
           className="mt-3 rounded-full"
         >
-          Try again
+          {t("draft.retry")}
         </Button>
       </div>
     );
@@ -114,8 +108,7 @@ export function DraftReview({
         style={enter(0)}
         className="mt-8 max-w-[60ch] rounded-2xl border border-[var(--sf-line)] bg-white px-5 py-4 text-[15px] leading-relaxed text-[var(--sf-graphite)] motion-safe:animate-[sf-pop_.7s_var(--sf-spring)_both]"
       >
-        Live sessions come with a paid plan. When you go live I’ll offer you
-        one, and your first session will be drafted the moment it’s active.
+        {t("draft.waiting")}
       </p>
     );
   if (!card.item) {
@@ -124,8 +117,7 @@ export function DraftReview({
         style={enter(0)}
         className="mt-8 max-w-[60ch] rounded-2xl border border-[var(--sf-line)] bg-white px-5 py-4 text-[15px] text-[var(--sf-graphite)] motion-safe:animate-[sf-pop_.7s_var(--sf-spring)_both]"
       >
-        I couldn’t draft your {NOUN[card.kind]} this time. Tell me what it
-        should be about below and I’ll try again, or skip it for now.
+        {t("draft.failed", { kind: card.kind })}
       </p>
     ) : (
       <Drafting kind={card.kind} style={enter(0)} />
@@ -146,6 +138,7 @@ export function DraftReview({
 }
 
 function Drafting({ kind, style }: { kind: ReviewKind; style: CSSProperties }) {
+  const t = useTranslations("admin.setupFlow");
   return (
     <div
       role="status"
@@ -156,14 +149,14 @@ function Drafting({ kind, style }: { kind: ReviewKind; style: CSSProperties }) {
       <div className="flex flex-col gap-3">
         <p className="flex items-center gap-2 text-[15px] font-medium">
           <Spinner size="sm" className="text-[var(--sf-brass)]" />
-          Drafting your first {NOUN[kind]}…
+          {t("draft.drafting", { kind })}
         </p>
-        <WorkSteps steps={DRAFTING[kind]} />
+        <WorkSteps steps={drafting(t, kind)} />
         <Skeleton className="mt-2 h-7 w-4/5" />
         <Skeleton className="h-4 w-full" />
         <Skeleton className="h-4 w-11/12" />
         <p className="mt-auto text-[13px] text-[var(--sf-faint)]">
-          Usually ready in under a minute.
+          {t("draft.usually")}
         </p>
       </div>
     </div>
@@ -190,6 +183,7 @@ function Drafted({
   onTrial?: (kind: ReviewKind, on: boolean) => Promise<unknown>;
 }) {
   const locale = useLocale();
+  const t = useTranslations("admin.setupFlow");
   const working = redrafting || changing;
   // A change on its way: bring the card into view so the cover over it is
   // seen, even when she sent it from the box far below.
@@ -212,7 +206,7 @@ function Drafted({
         setPicking(null);
       }
     },
-    { errorToast: "Couldn’t use that cover. Try another." },
+    { errorToast: t("draft.coverError") },
   );
   const price = item.price
     ? formatPrice(
@@ -221,8 +215,8 @@ function Drafted({
         locale,
       ).replace(/[.,]00$/, "")
     : item.members?.length
-      ? "Members only"
-      : "Free";
+      ? t("draft.price.members")
+      : t("draft.price.free");
   // The signed URL can change between polls; the cover's own id does not.
   const coverKey = item.covers.find((c) => c.current)?.value || item.cover_url;
   return (
@@ -254,13 +248,13 @@ function Drafted({
             {price}
           </span>
           {picking && (
-            <BusyOverlay variant="compact" message="Changing the cover…" />
+            <BusyOverlay variant="compact" message={t("draft.changingCover")} />
           )}
         </div>
         {item.covers.length > 1 && (
           <div className="mt-3">
             <p className="text-[12.5px] text-[var(--sf-graphite)]">
-              Pick a cover
+              {t("draft.pickCover")}
             </p>
             <div className="mt-1.5 grid grid-cols-4 gap-2">
               {item.covers.map((c) => (
@@ -268,7 +262,9 @@ function Drafted({
                   key={c.value}
                   type="button"
                   aria-pressed={c.current}
-                  aria-label={c.current ? "Current cover" : "Use this cover"}
+                  aria-label={
+                    c.current ? t("draft.coverCurrent") : t("draft.coverUse")
+                  }
                   disabled={
                     disabled || working || c.current || picking !== null
                   }
@@ -303,7 +299,7 @@ function Drafted({
           style={enter(1)}
           className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[var(--sf-brass)] motion-safe:animate-[sf-rise_.5s_ease-out_both]"
         >
-          Your first {NOUN[kind]}
+          {t("draft.kicker", { kind })}
         </p>
         <h2
           key={item.title}
@@ -331,13 +327,13 @@ function Drafted({
             {item.repeats && (
               <Chip>
                 <Repeat className="size-4" aria-hidden />
-                Repeats: {item.repeats}
+                {t("draft.repeats", { repeats: item.repeats })}
               </Chip>
             )}
             {item.trial?.on && (
               <Chip>
                 <Gift className="size-4" aria-hidden />
-                First session is a free trial
+                {t("draft.trialChip")}
               </Chip>
             )}
             <Chip>
@@ -348,8 +344,8 @@ function Drafted({
               )}
               {item.event_kind === "onsite"
                 ? [item.location, item.address].filter(Boolean).join(" · ") ||
-                  "In person"
-                : "Online, live"}
+                  t("draft.inPerson")
+                : t("draft.onlineLive")}
             </Chip>
           </div>
         )}
@@ -362,7 +358,7 @@ function Drafted({
             {item.members.map((m) => (
               <Chip key={m}>
                 <Users className="size-4" aria-hidden />
-                Included in {m}
+                {t("draft.includedIn", { name: m })}
               </Chip>
             ))}
           </div>
@@ -410,12 +406,10 @@ function Drafted({
       {working && (
         <BusyOverlay
           message={
-            redrafting
-              ? `Rewriting your ${NOUN[kind]} with your changes…`
-              : "Reading your changes…"
+            redrafting ? t("draft.rewriting", { kind }) : t("draft.reading")
           }
-          steps={redrafting ? DRAFTING[kind].slice(0, -1) : undefined}
-          hint={redrafting ? "Usually ready in under a minute." : undefined}
+          steps={redrafting ? drafting(t, kind).slice(0, -1) : undefined}
+          hint={redrafting ? t("draft.usually") : undefined}
         />
       )}
     </div>
@@ -446,6 +440,7 @@ function FreeTrial({
   onTrial: (kind: ReviewKind, on: boolean) => Promise<unknown>;
 }) {
   const locale = useLocale();
+  const t = useTranslations("admin.setupFlow");
   // The switch follows her tap at once; the card catches up when it reloads.
   const [asked, setAsked] = useState<boolean | null>(null);
   const on = asked ?? !!item.trial?.on;
@@ -458,7 +453,7 @@ function FreeTrial({
         setAsked(null);
       }
     },
-    { onError: (err) => toast.error(turnErrorText(err)) },
+    { onError: (err) => toast.error(turnErrorText(err, t)) },
   );
   const price = item.price
     ? formatPrice(
@@ -478,10 +473,10 @@ function FreeTrial({
             id="free-trial-label"
             className="text-[15px] font-medium text-[var(--sf-ink)]"
           >
-            Make the first session a free trial?
+            {t("draft.trial.title")}
           </p>
           <p className="mt-0.5 text-[13.5px] leading-snug text-[var(--sf-graphite)]">
-            Anyone can join it for free. Every other session keeps its price.
+            {t("draft.trial.body")}
           </p>
         </div>
         <Switch
@@ -494,11 +489,9 @@ function FreeTrial({
       </div>
       <QuestionHelp
         help={{
-          term: "What is a free trial class?",
-          tip: "A trial class lets someone try what you teach before they pay. Only your first session is free, and anyone can join it. Every session after it is sold at your usual price. You can turn it off any time.",
-          example: price
-            ? `Each session costs ${price}. The first one is a free trial, and every other session is still ${price}.`
-            : "",
+          term: t("draft.trial.help"),
+          tip: t("draft.trial.tip"),
+          example: price ? t("draft.trial.example", { price }) : "",
           picture: "",
           sign: "",
         }}

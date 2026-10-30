@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
+import { tEn } from "./setup-t";
 import {
   coverage,
   isSmall,
   OWN_PHOTO_MAX_BYTES,
-  ownPhotosAnswer,
   photoProblem,
   shapeOf,
   statusLine,
@@ -24,29 +24,34 @@ describe("photoProblem", () => {
       ["a.webp", "image/webp"],
       ["a.avif", "image/avif"],
     ])
-      expect(photoProblem(file(name, type))).toBeNull();
+      expect(photoProblem(file(name, type), tEn)).toBeNull();
   });
 
   it("reads the type from the name when the browser gives none", () => {
-    expect(photoProblem(file("IMG_2231.JPG", ""))).toBeNull();
-    expect(photoProblem(file("notes.pdf", ""))).toMatch(/Only JPG/);
+    expect(photoProblem(file("IMG_2231.JPG", ""), tEn)).toBeNull();
+    expect(photoProblem(file("notes.pdf", ""), tEn)).toMatch(/Only JPG/);
   });
 
   it("says what to do with an iPhone HEIC instead of failing later", () => {
-    expect(photoProblem(file("IMG_0001.HEIC", "image/heic"))).toMatch(
+    expect(photoProblem(file("IMG_0001.HEIC", "image/heic"), tEn)).toMatch(
       /Save it as a JPEG/,
     );
-    expect(photoProblem(file("IMG_0001.heic", ""))).toMatch(/HEIC/);
+    expect(photoProblem(file("IMG_0001.heic", ""), tEn)).toMatch(/HEIC/);
   });
 
   it("refuses videos, GIFs and files over 25 MB", () => {
-    expect(photoProblem(file("clip.mp4", "video/mp4"))).toMatch(/Only JPG/);
-    expect(photoProblem(file("fun.gif", "image/gif"))).toMatch(/Only JPG/);
+    expect(photoProblem(file("clip.mp4", "video/mp4"), tEn)).toMatch(
+      /Only JPG/,
+    );
+    expect(photoProblem(file("fun.gif", "image/gif"), tEn)).toMatch(/Only JPG/);
     expect(
-      photoProblem(file("huge.jpg", "image/jpeg", OWN_PHOTO_MAX_BYTES + 1)),
+      photoProblem(
+        file("huge.jpg", "image/jpeg", OWN_PHOTO_MAX_BYTES + 1),
+        tEn,
+      ),
     ).toMatch(/25 MB/);
     expect(
-      photoProblem(file("edge.jpg", "image/jpeg", OWN_PHOTO_MAX_BYTES)),
+      photoProblem(file("edge.jpg", "image/jpeg", OWN_PHOTO_MAX_BYTES), tEn),
     ).toBeNull();
   });
 });
@@ -83,21 +88,21 @@ describe("tally and coverage", () => {
   });
 
   it("says how far her photos go for a home page", () => {
-    expect(coverage(0, 10)).toBe("A home page shows 10");
-    expect(coverage(0, 0)).toBe("Optional");
-    expect(coverage(6, 10)).toBe("6 of 10 added");
-    expect(coverage(10, 10)).toBe("10 added, enough for your home page");
-    expect(coverage(12, 3)).toBe("12 added, enough for your home page");
+    expect(coverage(0, 10, tEn)).toBe("A home page shows 10");
+    expect(coverage(0, 0, tEn)).toBe("Optional");
+    expect(coverage(6, 10, tEn)).toBe("6 of 10 added");
+    expect(coverage(10, 10, tEn)).toBe("10 added, enough for your home page");
+    expect(coverage(12, 3, tEn)).toBe("12 added, enough for your home page");
   });
 });
 
 describe("what a photo's caption says", () => {
   it("only waits on the upload and the web-ready copy, never on the index", () => {
-    expect(statusLine("uploading")).toBe("Uploading");
-    expect(statusLine("pending")).toBe("Making it web-ready");
+    expect(statusLine("uploading", tEn)).toBe("Uploading");
+    expect(statusLine("pending", tEn)).toBe("Making it web-ready");
     for (const status of ["queued", "indexing", "ready", "failed"])
-      expect(statusLine(status)).toBe("Added");
-    expect(statusLine("error")).toMatch(/upload/);
+      expect(statusLine(status, tEn)).toBe("Added");
+    expect(statusLine("error", tEn)).toMatch(/upload/);
   });
 
   it("flags a photo that is too small to show large", () => {
@@ -107,7 +112,7 @@ describe("what a photo's caption says", () => {
   });
 
   it("writes the answer the transcript keeps", () => {
-    expect(ownPhotosAnswer(1)).toBe("My own photo");
-    expect(ownPhotosAnswer(14)).toBe("My own 14 photos");
+    expect(tEn("photos.answer", { count: 1 })).toBe("My own photo");
+    expect(tEn("photos.answer", { count: 14 })).toBe("My own 14 photos");
   });
 });

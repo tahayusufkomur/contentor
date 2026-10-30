@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Check, Plus, Type, Upload } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { ModalPortal } from "@/components/ui/modal-portal";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
@@ -31,21 +32,20 @@ import {
 import { LookTile } from "./look-tile";
 import { SHELL_TOKENS } from "./tokens";
 
-const WORDMARK = "Just my name, as text";
-const UPLOADED = "My own logo";
 const GRID = "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-4";
 
 /** The look a style card stands for in a colourway: "journal:sage". */
 const lookValue = (o: LookOption, palette: string) =>
   palette ? `${o.value}:${palette}` : o.value;
 /** ...and its name, "Quiet Journal · Sage". */
-const lookLabel = (o: LookOption, palette: string) =>
-  `${o.label} · ${o.palettes?.find((p) => p.id === palette)?.label ?? "Original"}`;
+const lookLabel = (o: LookOption, palette: string, original: string) =>
+  `${o.label} · ${o.palettes?.find((p) => p.id === palette)?.label ?? original}`;
 
 /** The colourway of a style card the coach already picked, from the value
  * picked on this screen or the label of the answer they gave before. */
 function pickedPalette(
   o: LookOption,
+  original: string,
   chosen?: string,
   selected?: string,
 ): string | undefined {
@@ -53,7 +53,8 @@ function pickedPalette(
     chosen
       ? chosen === lookValue(o, p.id)
       : !!selected &&
-        selected.trim().toLowerCase() === lookLabel(o, p.id).toLowerCase(),
+        selected.trim().toLowerCase() ===
+          lookLabel(o, p.id, original).toLowerCase(),
   );
   return hit?.id;
 }
@@ -72,12 +73,13 @@ function Swatches({
   onPick: (palette: string) => void;
   className?: string;
 }) {
+  const t = useTranslations("admin.setupFlow");
   const style = getSiteStyle(option.style ?? option.value);
   if (!style || (option.palettes?.length ?? 0) < 2) return null;
   return (
     <span
       role="radiogroup"
-      aria-label={`${option.label} colours`}
+      aria-label={t("look.colours", { label: option.label })}
       className={cn("flex items-center gap-1.5", className)}
     >
       {option.palettes?.map((p) => {
@@ -135,6 +137,10 @@ export function LookCardsView({
   /** "Keep this look" in the preview: the picked look is the answer. */
   onKeep: () => void;
 }) {
+  const locale = useLocale();
+  const t = useTranslations("admin.setupFlow");
+  const site = useTranslations("site");
+  const original = t("look.original");
   const [shown, setShown] = useState<LookCards>(cards);
   // A look with a page behind it opens as that page on pick.
   const [preview, setPreview] = useState<LookOption | null>(null);
@@ -174,7 +180,7 @@ export function LookCardsView({
     return chosen;
   })();
   const paletteFor = (o: LookOption) =>
-    palettes[o.value] ?? pickedPalette(o, chosen, selected) ?? "";
+    palettes[o.value] ?? pickedPalette(o, original, chosen, selected) ?? "";
   // The guide's pick is selected the first time the coach lands on the
   // question (a look, the header, the footer); tapping any look opens it as
   // a page.
@@ -187,12 +193,12 @@ export function LookCardsView({
     picked.current = true;
     onPick(
       pick.value,
-      shown.kind === "style" ? lookLabel(pick, "") : pick.label,
+      shown.kind === "style" ? lookLabel(pick, "", original) : pick.label,
     );
-  }, [shown, selected, chosen, onPick]);
+  }, [shown, selected, chosen, onPick, original]);
   const { run: more, loading } = useAsyncAction(
     async () => setShown(await onMore((shown.page ?? 0) + 1)),
-    { errorToast: "Couldn’t load more logos. Try again." },
+    { errorToast: t("look.logoLoadError") },
   );
   const isPicked = (value: string, label: string) =>
     chosenLayout
@@ -207,7 +213,7 @@ export function LookCardsView({
         selected.trim().toLowerCase().startsWith(o.label.toLowerCase());
   const pickLook = (o: LookOption, palette: string) => {
     setPalettes((m) => ({ ...m, [o.value]: palette }));
-    onPick(lookValue(o, palette), lookLabel(o, palette));
+    onPick(lookValue(o, palette), lookLabel(o, palette, original));
     if (preview?.value === o.value) setPreview({ ...o, palette });
   };
   const enter = (i: number) => ({
@@ -223,8 +229,10 @@ export function LookCardsView({
     // desk-yoga coach is never offered "Sexy".
     const fits = shown.options.slice(0, 8);
     const chips: [string, string][] = [
-      ["", "All"],
-      ...STYLE_TAGS.filter(([t]) => fits.some((o) => o.tags?.includes(t))),
+      ["", t("look.all")],
+      ...STYLE_TAGS.filter((tg) => fits.some((o) => o.tags?.includes(tg))).map(
+        (tg): [string, string] => [tg, t(`look.tag.${tg}`)],
+      ),
     ];
     const options = tag
       ? shown.options.filter((o) => o.tags?.includes(tag))
@@ -277,7 +285,7 @@ export function LookCardsView({
                   </span>
                   {o.recommended && (
                     <span className="shrink-0 rounded-full bg-[var(--sf-brass-soft)] px-2 py-0.5 text-[11px] font-medium text-[var(--sf-brass)]">
-                      Suggested
+                      {t("look.suggested")}
                     </span>
                   )}
                 </span>
@@ -311,16 +319,21 @@ export function LookCardsView({
       <div className="mt-8">
         {suggested?.reason && (
           <p className="mb-4 text-[14px] text-[var(--sf-graphite)]">
-            <span className="font-semibold text-[var(--sf-ink)]">
-              {suggested.label}
-            </span>{" "}
-            is our pick. {suggested.reason}
+            {t.rich("look.pick", {
+              label: suggested.label,
+              reason: suggested.reason,
+              b: (chunks) => (
+                <span className="font-semibold text-[var(--sf-ink)]">
+                  {chunks}
+                </span>
+              ),
+            })}
           </p>
         )}
         {chips.length > 1 && (
           <div
             role="group"
-            aria-label="Filter looks"
+            aria-label={t("look.filter")}
             className="mb-5 flex flex-wrap gap-1.5"
           >
             {chips.map(([id, label]) => (
@@ -350,7 +363,10 @@ export function LookCardsView({
             groups.map(([group, list]) => (
               <section key={group} className="mt-8">
                 <h3 className="mb-3 text-[14px] font-semibold">
-                  More looks: {group.toLowerCase()}
+                  {t("look.moreLooks", {
+                    group:
+                      locale === "de" ? group : group.toLocaleLowerCase(locale),
+                  })}
                 </h3>
                 <div className={GRID}>
                   {list.map((o, i) => card(o, leads.length + i))}
@@ -365,7 +381,9 @@ export function LookCardsView({
               onClick={() => setOthers(true)}
               className="mt-3 rounded-full"
             >
-              More looks ({groups.reduce((n, [, l]) => n + l.length, 0)})
+              {t("look.moreCount", {
+                count: groups.reduce((n, [, l]) => n + l.length, 0),
+              })}
             </Button>
           ))}
         {preview && shown.preview && (
@@ -397,7 +415,7 @@ export function LookCardsView({
     const activeLinks = availableNavLinks.filter((l) =>
       navHrefs.includes(l.href),
     );
-    const activeCta = showCta ? shown.cta || "Get Started" : "";
+    const activeCta = showCta ? shown.cta || site("nav.getStarted") : "";
     // Only a coach with a mark is asked how it sits.
     const logo: SketchLogo | undefined = shown.logo_layouts
       ? { mark: shown.logo_mark, url: shown.logo_url }
@@ -435,10 +453,15 @@ export function LookCardsView({
       <div className="mt-8 space-y-6">
         {suggested?.reason && (
           <p className="text-[14px] text-[var(--sf-graphite)]">
-            <span className="font-semibold text-[var(--sf-ink)]">
-              {suggested.label}
-            </span>{" "}
-            is our pick. {suggested.reason}
+            {t.rich("look.pick", {
+              label: suggested.label,
+              reason: suggested.reason,
+              b: (chunks) => (
+                <span className="font-semibold text-[var(--sf-ink)]">
+                  {chunks}
+                </span>
+              ),
+            })}
           </p>
         )}
         <div className="grid max-w-3xl grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
@@ -482,7 +505,7 @@ export function LookCardsView({
                   <span className="text-[14px] font-semibold">{o.label}</span>
                   {o.recommended && (
                     <span className="shrink-0 rounded-full bg-[var(--sf-brass-soft)] px-2 py-0.5 text-[11px] font-medium text-[var(--sf-brass)]">
-                      Suggested
+                      {t("look.suggested")}
                     </span>
                   )}
                 </span>
@@ -501,11 +524,11 @@ export function LookCardsView({
             {logo && (
               <div className="rounded-2xl border border-[var(--sf-line)] bg-white p-4">
                 <span className="mb-2.5 block text-[13.5px] font-semibold text-[var(--sf-ink)]">
-                  How your logo sits
+                  {t("look.logoSits")}
                 </span>
                 <div
                   role="group"
-                  aria-label="How your logo sits"
+                  aria-label={t("look.logoSits")}
                   className="grid grid-cols-2 gap-2.5 sm:grid-cols-4"
                 >
                   {(shown.logo_layouts ?? []).map((o) => (
@@ -540,7 +563,7 @@ export function LookCardsView({
                             className="line-clamp-2 text-[13px] font-bold leading-tight"
                             style={{ color: colors?.foreground }}
                           >
-                            {brand || "Your name"}
+                            {brand || site("setupSketch.yourName")}
                           </span>
                         </Lockup>
                       </span>
@@ -557,15 +580,15 @@ export function LookCardsView({
               <div className="rounded-2xl border border-[var(--sf-line)] bg-white p-4">
                 <div className="mb-2.5 flex items-baseline justify-between gap-2">
                   <span className="text-[13.5px] font-semibold text-[var(--sf-ink)]">
-                    Pages in your header menu
+                    {t("look.menuPages")}
                   </span>
                   <span className="text-[12px] text-[var(--sf-graphite)]">
-                    Tap to add or remove
+                    {t("look.tapToggle")}
                   </span>
                 </div>
                 <div
                   role="group"
-                  aria-label="Pages in your header menu"
+                  aria-label={t("look.menuPages")}
                   className="flex flex-wrap gap-2"
                 >
                   {availableNavLinks.map((link) => {
@@ -605,11 +628,11 @@ export function LookCardsView({
 
             <div className="rounded-2xl border border-[var(--sf-line)] bg-white p-4">
               <span className="mb-2.5 block text-[13.5px] font-semibold text-[var(--sf-ink)]">
-                Header elements
+                {t("look.headerElements")}
               </span>
               <div
                 role="group"
-                aria-label="Header elements"
+                aria-label={t("look.headerElements")}
                 className="flex flex-wrap gap-2"
               >
                 <button
@@ -633,7 +656,9 @@ export function LookCardsView({
                   ) : (
                     <Plus className="size-3.5" aria-hidden />
                   )}
-                  “{shown.cta || "Get Started"}” button
+                  {t("look.ctaButton", {
+                    label: shown.cta || site("nav.getStarted"),
+                  })}
                 </button>
                 {activeLayout !== "pill" && (
                   <button
@@ -657,7 +682,7 @@ export function LookCardsView({
                     ) : (
                       <Plus className="size-3.5" aria-hidden />
                     )}
-                    Transparent over hero
+                    {t("look.transparent")}
                   </button>
                 )}
               </div>
@@ -724,7 +749,7 @@ export function LookCardsView({
           >
             <span className="relative block h-[615px] overflow-hidden bg-white sm:h-[540px]">
               <iframe
-                title={`${o.label} email`}
+                title={t("look.emailTitle", { label: o.label })}
                 srcDoc={o.html}
                 sandbox=""
                 tabIndex={-1}
@@ -804,9 +829,9 @@ export function LookCardsView({
             </CardButton>
           ))}
           <CardButton
-            picked={isPicked("wordmark", WORDMARK)}
+            picked={isPicked("wordmark", t("look.wordmarkAnswer"))}
             disabled={disabled}
-            onClick={() => onPick("wordmark", WORDMARK)}
+            onClick={() => onPick("wordmark", t("look.wordmarkAnswer"))}
             style={enter(shown.options.length)}
             className="p-3"
           >
@@ -814,12 +839,14 @@ export function LookCardsView({
               <Type className="size-8 text-[var(--sf-graphite)]" aria-hidden />
             </span>
             <span className="mt-2 block text-center text-[13px]">
-              Just my name
+              {t("look.wordmark")}
             </span>
           </CardButton>
           <UploadTile
             picked={
-              chosen ? chosen.startsWith("upload:") : isPicked("", UPLOADED)
+              chosen
+                ? chosen.startsWith("upload:")
+                : isPicked("", t("look.uploadedAnswer"))
             }
             disabled={disabled}
             onPick={onPick}
@@ -836,7 +863,7 @@ export function LookCardsView({
           onClick={() => more()}
           className="mt-3 rounded-full"
         >
-          Show me others
+          {t("look.showOthers")}
         </Button>
       )}
     </div>
@@ -856,6 +883,7 @@ function UploadTile({
   onPick: (value: string, label: string) => void;
   style?: React.CSSProperties;
 }) {
+  const t = useTranslations("admin.setupFlow");
   const input = useRef<HTMLInputElement>(null);
   const [src, setSrc] = useState<string | null>(null);
   const { run: upload, loading } = useAsyncAction(
@@ -863,12 +891,12 @@ function UploadTile({
       try {
         const { photo_id, signed_url } = await uploadImage(file);
         setSrc(signed_url);
-        onPick(`upload:${photo_id}`, UPLOADED);
+        onPick(`upload:${photo_id}`, t("look.uploadedAnswer"));
       } finally {
         if (input.current) input.current.value = "";
       }
     },
-    { errorToast: "Couldn’t upload your logo. Try again." },
+    { errorToast: t("look.uploadError") },
   );
   return (
     <>
@@ -898,7 +926,7 @@ function UploadTile({
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={src}
-              alt={UPLOADED}
+              alt={t("look.uploadedAnswer")}
               className="max-h-full w-full object-contain p-[12%]"
             />
           ) : (
@@ -906,7 +934,7 @@ function UploadTile({
           )}
         </span>
         <span className="mt-2 block text-center text-[13px]">
-          {loading ? "Uploading…" : "Upload my own"}
+          {loading ? t("photos.uploading") : t("look.upload")}
         </span>
       </CardButton>
     </>
@@ -934,6 +962,7 @@ function LookPreview({
   onClose: () => void;
   onKeep: () => void;
 }) {
+  const t = useTranslations("admin.setupFlow");
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
@@ -955,7 +984,7 @@ function LookPreview({
       <div
         role="dialog"
         aria-modal
-        aria-label={`${look.label}, as a page`}
+        aria-label={t("look.asPage", { label: look.label })}
         style={{ ...SHELL_TOKENS, backgroundColor: "rgb(34 33 31 / 0.6)" }}
         className="sf-shell fixed inset-0 z-[60] flex flex-col p-3 backdrop-blur-sm motion-safe:animate-fade-in sm:p-6"
         onClick={onClose}
@@ -986,13 +1015,13 @@ function LookPreview({
               onClick={onClose}
               className="rounded-full text-white hover:bg-white/10 hover:text-white"
             >
-              {look.recommended ? "See other looks" : "Close"}
+              {look.recommended ? t("look.seeOthers") : t("look.close")}
             </Button>
             <Button
               onClick={keep}
               className="rounded-full bg-white text-[var(--sf-ink)] hover:bg-white/90"
             >
-              Keep this look
+              {t("look.keep")}
             </Button>
           </div>
         </div>

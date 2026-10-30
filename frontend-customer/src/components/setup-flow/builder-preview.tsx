@@ -21,7 +21,7 @@ import type {
 } from "@/lib/setup-flow";
 import { cn } from "@/lib/utils";
 import { BusyOverlay } from "./busy-overlay";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 /** What the preview is built from: every answer so far (the live question's
  * unsent pick included), the drafted item once there is one, and a photo of
@@ -91,6 +91,7 @@ function ItemCard({
   onCover: (kind: ReviewKind, asset: string) => Promise<unknown>;
 }) {
   const locale = useLocale();
+  const t = useTranslations("admin.setupFlow");
   const item = data.review?.status === "ready" ? data.review.item : null;
   const a = data.answers;
   const topic =
@@ -111,11 +112,12 @@ function ItemCard({
     item?.cover_url || covers.find((c) => c.current)?.url || data.photo;
   // Who can open it, as ticked so far: the badge and the chips follow.
   const ways = waysIn(a[`${kind}_access`]);
+  const badge = accessBadge(data.wayIds?.[`${kind}_access`] ?? ways);
   const price =
-    accessBadge(data.wayIds?.[`${kind}_access`] ?? ways) ??
+    (badge ? t(`builder.badge.${badge}`) : null) ??
     (priceText
       ? /free/i.test(priceText)
-        ? "Free"
+        ? t("builder.badge.free")
         : priceText
       : item?.price
         ? formatPrice(
@@ -134,18 +136,10 @@ function ItemCard({
         setPicking(null);
       }
     },
-    { errorToast: "Couldn’t use that cover. Try another." },
+    { errorToast: t("builder.coverError") },
   );
   return (
-    <Card
-      kicker={
-        {
-          course: "Your first course",
-          event: "Your first live session",
-          onsite: "Your first in-person event",
-        }[kind]
-      }
-    >
+    <Card kicker={t(`builder.kicker.${kind}`)}>
       <div className="relative mt-3 aspect-video overflow-hidden rounded-2xl bg-[var(--sf-tint)]">
         {cover ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -169,7 +163,7 @@ function ItemCard({
           </span>
         )}
         {picking && (
-          <BusyOverlay variant="compact" message="Changing the cover…" />
+          <BusyOverlay variant="compact" message={t("builder.changingCover")} />
         )}
       </div>
       {covers.length > 1 && (
@@ -179,7 +173,9 @@ function ItemCard({
               key={c.value}
               type="button"
               aria-pressed={c.current}
-              aria-label={c.current ? "Current cover" : "Use this cover"}
+              aria-label={
+                c.current ? t("builder.coverCurrent") : t("builder.coverUse")
+              }
               disabled={disabled || c.current || picking !== null}
               onClick={() => pick(c.value)}
               className={cn(
@@ -225,7 +221,9 @@ function ItemCard({
                   minute: "2-digit",
                 }).format(new Date(item.when))
               : (a[kind === "onsite" ? "onsite_when" : "live_when"] ?? (
-                  <span className="text-[var(--sf-faint)]">Pick a time</span>
+                  <span className="text-[var(--sf-faint)]">
+                    {t("builder.pickTime")}
+                  </span>
                 ))}
           </Chip>
           <Chip>
@@ -236,8 +234,8 @@ function ItemCard({
             )}
             {kind === "onsite"
               ? [item?.location, item?.address].filter(Boolean).join(" · ") ||
-                "In person"
-              : "Online, live"}
+                t("builder.inPerson")
+              : t("builder.onlineLive")}
           </Chip>
         </div>
       )}
@@ -257,9 +255,7 @@ function ItemCard({
         </p>
       ) : (
         <p className="mt-2.5 text-[13.5px] leading-relaxed text-[var(--sf-faint)]">
-          {topic
-            ? "A short description is drafted from your answers."
-            : "Pick a topic and it starts taking shape here."}
+          {topic ? t("builder.descriptionDrafted") : t("builder.pickTopic")}
         </p>
       )}
       {kind === "course" &&
@@ -295,46 +291,50 @@ function MembershipCards({
   data: BuilderData;
   brandName: string;
 }) {
+  const t = useTranslations("admin.setupFlow");
   const tiers = data.tiers ?? [];
   return (
     <div className="space-y-3">
       <p className="px-1 text-[12.5px] leading-snug text-[var(--sf-graphite)]">
-        Students pick the one that fits them. You can add or change memberships
-        any time.
+        {t("builder.tiersIntro")}
       </p>
       {tiers.length ? (
-        tiers.map((t) => (
+        tiers.map((tier) => (
           <Card
-            key={t.label}
-            kicker={brandName ? `${brandName} membership` : "Membership"}
+            key={tier.label}
+            kicker={
+              brandName
+                ? t("builder.tierKicker", { brand: brandName })
+                : t("builder.tierKickerPlain")
+            }
           >
             <div className="mt-2 flex items-baseline justify-between gap-3">
               <h3 className="text-[18px] font-semibold leading-tight tracking-[-0.02em]">
-                {t.label}
+                {tier.label}
               </h3>
               <p
-                key={t.price}
+                key={tier.price}
                 className="shrink-0 text-[18px] font-semibold tracking-[-0.02em] motion-safe:animate-[sf-pop_.6s_var(--sf-spring)_both]"
               >
-                {t.price}
+                {tier.price}
               </p>
             </div>
-            {t.blurb && (
+            {tier.blurb && (
               <p className="mt-2 text-[13.5px] leading-relaxed text-[var(--sf-graphite)]">
-                {t.blurb}
+                {tier.blurb}
               </p>
             )}
           </Card>
         ))
       ) : (
-        <Card kicker="Your memberships">
+        <Card kicker={t("builder.tiersEmpty")}>
           <p className="mt-2 text-[14px] text-[var(--sf-faint)]">
-            Pick one or more memberships and they appear here.
+            {t("builder.tiersHint")}
           </p>
         </Card>
       )}
       <p className="px-1 text-[12.5px] text-[var(--sf-faint)]">
-        Billed monthly · Cancel any time
+        {t("builder.billing")}
       </p>
     </div>
   );

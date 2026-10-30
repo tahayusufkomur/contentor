@@ -71,10 +71,10 @@ function Team() {
           <SpecialistFace k={k} />
           <div className="min-w-0">
             <div className="text-[14.5px] font-semibold leading-tight">
-              {t(`team.specialists.${k}.name`)}
+              {t(`team.specialists.${k}.name` as never)}
             </div>
             <div className={cn(MUTED, "mt-1")}>
-              {t(`team.specialists.${k}.job`)}
+              {t(`team.specialists.${k}.job` as never)}
             </div>
           </div>
         </div>
@@ -84,12 +84,15 @@ function Team() {
 }
 
 function Site() {
+  const t = useTranslations("admin.setupFlow");
   return (
     <Grid cols="grid-cols-2 sm:grid-cols-4">
-      {["Home", "About", "Contact", "FAQ"].map((name, i) => (
+      {["home", "about", "contact", "faq"].map((name, i) => (
         <div key={name} style={beat(i)} className={cn(CARD, WAVE)}>
           <Sketch />
-          <div className="mt-2 text-[13.5px] font-semibold">{name}</div>
+          <div className="mt-2 text-[13.5px] font-semibold">
+            {t(`page.name.${name}` as never)}
+          </div>
         </div>
       ))}
     </Grid>
@@ -97,13 +100,14 @@ function Site() {
 }
 
 function Look() {
+  const t = useTranslations("admin.setupFlow");
   return (
     <Grid cols="sm:grid-cols-2">
       {[false, true].map((dark, i) => (
         <div key={String(dark)} style={beat(i * 2)} className={cn(CARD, WAVE)}>
           <Sketch dark={dark} />
           <div className="mt-2 text-[13.5px] font-semibold">
-            {dark ? "Dark" : "Light"}
+            {dark ? t("help.look.dark") : t("help.look.light")}
           </div>
         </div>
       ))}
@@ -112,43 +116,29 @@ function Look() {
 }
 
 const STUDENTS = [
-  {
-    name: "Anna",
-    about: "busy mum, short on time",
-    way: "Buys a course",
-    months: [49, null, null],
-  },
-  {
-    name: "Ben",
-    about: "comes every week",
-    way: "Joins a membership",
-    months: [19, 19, 19],
-  },
-  {
-    name: "Cara",
-    about: "drops in when she can",
-    way: "Pays per session",
-    months: [10, null, 10],
-  },
+  { key: "anna", way: "course", months: [49, null, null] },
+  { key: "ben", way: "membership", months: [19, 19, 19] },
+  { key: "cara", way: "session", months: [10, null, 10] },
 ];
 
 function Pay({ sign }: { sign: string }) {
+  const t = useTranslations("admin.setupFlow");
   return (
     <Grid cols="sm:grid-cols-3">
       {STUDENTS.map((s) => (
-        <div key={s.name} className={CARD}>
+        <div key={s.key} className={CARD}>
           <div className="flex items-center gap-2 text-[13px] text-[var(--sf-graphite)]">
             <span
               aria-hidden
               className="grid size-[26px] shrink-0 place-items-center rounded-full bg-[var(--sf-tint)] text-[12px] font-semibold text-[var(--sf-ink)]"
             >
-              {s.name.charAt(0)}
+              {t(`help.pay.${s.key}` as never).charAt(0)}
             </span>
-            <span className="min-w-0">
-              {s.name}, {s.about}
-            </span>
+            <span className="min-w-0">{t(`help.pay.${s.key}` as never)}</span>
           </div>
-          <div className="mt-2.5 text-[15.5px] font-semibold">{s.way}</div>
+          <div className="mt-2.5 text-[15.5px] font-semibold">
+            {t(`help.pay.${s.way}` as never)}
+          </div>
           <div className="mt-3 grid grid-cols-3 gap-1.5">
             {s.months.map((paid, i) => (
               <div
@@ -162,7 +152,7 @@ function Pay({ sign }: { sign: string }) {
                 )}
               >
                 <div className="text-[10.5px] uppercase tracking-wide text-[var(--sf-graphite)]">
-                  Month {i + 1}
+                  {t("help.pay.month", { n: i + 1 })}
                 </div>
                 <div className="text-[13px] font-semibold">
                   {paid ? `${sign}${paid}` : "–"}
@@ -177,35 +167,42 @@ function Pay({ sign }: { sign: string }) {
 }
 
 const PLANS = [
-  { name: "The Club", price: 19, covers: "Every live session" },
-  { name: "Course library", price: 12, covers: "Every course" },
+  { key: "club", price: 19, covers: "coversLive" },
+  { key: "library", price: 12, covers: "coversCourses" },
 ];
 
 function Membership({ sign }: { sign: string }) {
+  const t = useTranslations("admin.setupFlow");
   return (
     <Grid cols="sm:grid-cols-2">
       {PLANS.map((p, i) => (
-        <div key={p.name} style={beat(i)} className={cn(CARD, WAVE)}>
-          <div className="text-[15.5px] font-semibold">{p.name}</div>
-          <div className="mt-1 text-[14px] font-semibold text-[var(--sf-brass)]">
-            {sign}
-            {p.price} a month
+        <div key={p.key} style={beat(i)} className={cn(CARD, WAVE)}>
+          <div className="text-[15.5px] font-semibold">
+            {t(`help.membership.${p.key}` as never)}
           </div>
-          <div className={cn(MUTED, "mt-2")}>Covers: {p.covers}</div>
+          <div className="mt-1 text-[14px] font-semibold text-[var(--sf-brass)]">
+            {t("help.membership.price", { sign, price: p.price })}
+          </div>
+          <div className={cn(MUTED, "mt-2")}>
+            {t(`help.membership.${p.covers}` as never)}
+          </div>
         </div>
       ))}
     </Grid>
   );
 }
 
-const WAYS_IN = ["Free", "Sold on its own", "In a membership"];
-const TICKED = ["Sold on its own", "In a membership"];
+const WAYS_IN = ["free", "sold", "member"];
+const TICKED = ["sold", "member"];
 
 function Access() {
+  const t = useTranslations("admin.setupFlow");
   return (
     <div className={cn(CARD, "max-w-[420px]")}>
-      <div className="text-[15.5px] font-semibold">Anything you make</div>
-      <div className={cn(MUTED, "mt-0.5")}>Who can open it</div>
+      <div className="text-[15.5px] font-semibold">
+        {t("help.access.title")}
+      </div>
+      <div className={cn(MUTED, "mt-0.5")}>{t("help.access.who")}</div>
       <ul className="mt-3 space-y-2">
         {WAYS_IN.map((way, i) => {
           const on = TICKED.includes(way);
@@ -230,9 +227,9 @@ function Access() {
                 {on && <Check className="size-3" strokeWidth={3} />}
               </span>
               <span className={on ? "" : "text-[var(--sf-graphite)]"}>
-                {way}
+                {t(`help.access.${way}` as never)}
                 <span className="sr-only">
-                  {on ? ", ticked" : ", not ticked"}
+                  {on ? t("help.access.ticked") : t("help.access.notTicked")}
                 </span>
               </span>
             </li>
@@ -247,26 +244,23 @@ const COVER = {
   background:
     "linear-gradient(135deg, var(--sf-brass-soft), var(--sf-tint-strong))",
 };
-const MODULES = [
-  "Week 1: The basics",
-  "Week 2: Building the habit",
-  "Week 3: Going further",
-];
+const MODULES = ["week1", "week2", "week3"];
 
 function Course({ sign }: { sign: string }) {
+  const t = useTranslations("admin.setupFlow");
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
       <div className="overflow-hidden rounded-[14px] border border-[var(--sf-line)] bg-white">
         <div className="relative h-[110px]" style={COVER}>
           <span className="absolute bottom-2.5 left-3 rounded-md bg-white/90 px-2 py-0.5 text-[11.5px] font-semibold">
-            Course
+            {t("help.course.label")}
           </span>
         </div>
         <div className="px-3.5 py-3">
-          <div className="text-[16px] font-semibold">The 6-week program</div>
-          <div className={cn(MUTED, "mt-1")}>
-            {MODULES.length} modules · 18 lessons
+          <div className="text-[16px] font-semibold">
+            {t("help.course.title")}
           </div>
+          <div className={cn(MUTED, "mt-1")}>{t("help.course.stats")}</div>
           <div className="mt-2.5 text-[14px] font-semibold">{sign}49</div>
         </div>
       </div>
@@ -280,13 +274,18 @@ function Course({ sign }: { sign: string }) {
               WAVE,
             )}
           >
-            <b className="font-semibold">Module</b>
-            <span className="text-[var(--sf-graphite)]"> · {m}</span>
+            {t.rich("help.course.module", {
+              title: t(`help.course.${m}` as never),
+              b: (chunks) => <b className="font-semibold">{chunks}</b>,
+            })}
           </li>
         ))}
         <li className="rounded-xl bg-[var(--sf-tint)] px-3 py-2.5 text-[13.5px] leading-snug text-[var(--sf-graphite)]">
-          <b className="font-semibold text-[var(--sf-ink)]">Lessons</b> are the
-          videos inside each module.
+          {t.rich("help.course.lessons", {
+            b: (chunks) => (
+              <b className="font-semibold text-[var(--sf-ink)]">{chunks}</b>
+            ),
+          })}
         </li>
       </ul>
     </div>
@@ -294,38 +293,44 @@ function Course({ sign }: { sign: string }) {
 }
 
 function Live() {
+  const t = useTranslations("admin.setupFlow");
   return (
     <div className={cn(CARD, "flex max-w-[460px] items-center gap-3")}>
       <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[var(--sf-brass-soft)] text-[var(--sf-brass)]">
         <Video className="size-5" aria-hidden />
       </span>
       <div className="min-w-0 flex-1">
-        <div className="text-[15.5px] font-semibold">Tuesday evening class</div>
-        <div className={MUTED}>Tuesdays, 7 pm</div>
+        <div className="text-[15.5px] font-semibold">
+          {t("help.live.title")}
+        </div>
+        <div className={MUTED}>{t("help.live.when")}</div>
       </div>
       <span
         aria-hidden
         className="shrink-0 rounded-full bg-[var(--sf-ink)] px-3.5 py-1.5 text-[13px] font-medium text-[var(--sf-paper)] motion-safe:animate-[sf-glow_2.4s_ease-in-out_infinite]"
       >
-        Join
+        {t("help.live.join")}
       </span>
     </div>
   );
 }
 
 function Inbox() {
+  const t = useTranslations("admin.setupFlow");
   return (
     <div className={cn(CARD, "flex max-w-[560px] items-start gap-3", WAVE)}>
       <span
         aria-hidden
         className="grid size-9 shrink-0 place-items-center rounded-full bg-[var(--sf-tint)] text-[13px] font-semibold"
       >
-        A
+        {t("help.inbox.name").charAt(0)}
       </span>
       <div className="min-w-0">
-        <div className="text-[14.5px] font-semibold">Anna</div>
+        <div className="text-[14.5px] font-semibold">
+          {t("help.inbox.name")}
+        </div>
         <div className={cn(MUTED, "mt-0.5 text-[14px]")}>
-          Hi! Is the Tuesday class OK for complete beginners?
+          {t("help.inbox.message")}
         </div>
       </div>
     </div>

@@ -2287,6 +2287,30 @@
     "src": "c9bc849a",
     "reviewed": false
   },
+  "site.setupSketch.studioName": {
+    "src": "228fddbd",
+    "reviewed": false
+  },
+  "site.setupSketch.yourName": {
+    "src": "ab42293e",
+    "reviewed": false
+  },
+  "site.setupSketch.welcome": {
+    "src": "4c8dcf2c",
+    "reviewed": false
+  },
+  "site.setupSketch.welcomeFallback": {
+    "src": "3be14a7f",
+    "reviewed": false
+  },
+  "site.setupSketch.yourSite": {
+    "src": "6dacd5ef",
+    "reviewed": false
+  },
+  "site.setupSketch.explore": {
+    "src": "b965ae66",
+    "reviewed": false
+  },
   "studio.plan.perMonth": {
     "src": "e9e0ceb5",
     "reviewed": false

@@ -2,6 +2,7 @@
 
 import { Fragment, useEffect, useRef, useState } from "react";
 import { Check, ImagePlus, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -11,11 +12,9 @@ import {
   coverage,
   isSmall,
   OWN_PHOTO_ACCEPT,
-  ownPhotosAnswer,
   photoProblem,
   shapeOf,
   statusLine,
-  STOCK_ANSWER,
   tally,
 } from "@/lib/own-photos";
 import type {
@@ -64,6 +63,7 @@ export function PhotosScreen({
   onNext: () => void;
   dir: "next" | "back";
 }) {
+  const t = useTranslations("admin.setupFlow");
   const [items, setItems] = useState<Item[]>(() =>
     cards.photos.map(fromServer),
   );
@@ -106,7 +106,7 @@ export function PhotosScreen({
           patch(key, {
             status: "error",
             percent: undefined,
-            problem: "It didn’t upload. Remove it and add it again.",
+            problem: t("photos.uploadFailed"),
           });
         })
         .finally(() => {
@@ -119,15 +119,15 @@ export function PhotosScreen({
   const add = (files: File[]) => {
     const room = cards.max - items.length;
     if (room <= 0) {
-      setNote(`That is the most I can take here: ${cards.max} photos.`);
+      setNote(t("photos.mostHere", { max: cards.max }));
       return;
     }
     const taken: Item[] = [];
     const problems: string[] = [];
     for (const file of files.slice(0, room)) {
-      const problem = photoProblem(file);
+      const problem = photoProblem(file, t);
       if (problem) {
-        problems.push(`${file.name}: ${problem}`);
+        problems.push(t("photos.fileProblem", { name: file.name, problem }));
         continue;
       }
       const key = `${file.name}:${file.size}:${file.lastModified}:${Math.random()}`;
@@ -143,9 +143,7 @@ export function PhotosScreen({
       queue.current.push({ key, file });
     }
     if (files.length > room)
-      problems.push(
-        `Only the first ${room} were added: ${cards.max} photos is the most I can take here.`,
-      );
+      problems.push(t("photos.onlyFirst", { room, max: cards.max }));
     setNote(problems.join(" "));
     if (taken.length) {
       setItems((all) => [...all, ...taken]);
@@ -158,8 +156,7 @@ export function PhotosScreen({
     queue.current = queue.current.filter((q) => q.key !== item.key);
     if (item.id)
       clientFetch(`/api/v1/photos/${item.id}/`, { method: "DELETE" }).catch(
-        () =>
-          toast.error("That photo couldn’t be removed. Try again from Media."),
+        () => toast.error(t("photos.removeError")),
       );
   };
 
@@ -225,8 +222,12 @@ export function PhotosScreen({
           )}
           {!live && step.answer && (
             <p className="max-w-[72ch] text-[15px] text-[var(--sf-graphite)]">
-              You said:{" "}
-              <span className="text-[var(--sf-ink)]">{step.answer}</span>
+              {t.rich("answer.youSaid", {
+                answer: step.answer,
+                b: (chunks) => (
+                  <span className="text-[var(--sf-ink)]">{chunks}</span>
+                ),
+              })}
             </p>
           )}
           <h1 className="mt-3 max-w-[32ch] text-[30px] font-semibold leading-[1.12] tracking-[-0.025em] sm:text-[42px]">
@@ -259,7 +260,7 @@ export function PhotosScreen({
                 type="file"
                 multiple
                 accept={OWN_PHOTO_ACCEPT}
-                aria-label="Add photos"
+                aria-label={t("photos.addAria")}
                 disabled={sending}
                 className="sr-only"
                 onChange={(e) => {
@@ -293,12 +294,10 @@ export function PhotosScreen({
                   className="size-7 text-[var(--sf-brass)]"
                 />
                 <span className="text-[16.5px] font-semibold">
-                  {items.length ? "Add more photos" : "Add your photos"}
+                  {items.length ? t("photos.addMore") : t("photos.addYour")}
                 </span>
                 <span className="max-w-[46ch] text-[13.5px] leading-relaxed text-[var(--sf-graphite)]">
-                  Drop them here or choose them. JPG, PNG, WebP or AVIF, up to
-                  25 MB each. I make every photo light enough for the web, so
-                  bring the full-size ones.
+                  {t("photos.drop")}
                 </span>
               </button>
               {note && (
@@ -312,7 +311,7 @@ export function PhotosScreen({
 
               {items.length > 0 && (
                 <ul
-                  aria-label="Your photos"
+                  aria-label={t("photos.listAria")}
                   className="mt-5 grid grid-cols-3 gap-2.5 sm:grid-cols-4 sm:gap-3"
                 >
                   {items.map((item) => (
@@ -354,7 +353,9 @@ export function PhotosScreen({
                         )}
                         <button
                           type="button"
-                          aria-label={`Remove ${item.title}`}
+                          aria-label={t("photos.removeAria", {
+                            title: item.title,
+                          })}
                           disabled={sending}
                           onClick={() => remove(item)}
                           className="absolute right-1.5 top-1.5 flex size-7 items-center justify-center rounded-full bg-white/90 text-[var(--sf-ink)] transition-colors hover:bg-white disabled:opacity-50"
@@ -372,8 +373,8 @@ export function PhotosScreen({
                       >
                         {item.problem ??
                           (isSmall(item.width, item.height)
-                            ? "Small: soft when shown large"
-                            : statusLine(item.status))}
+                            ? t("photos.small")
+                            : statusLine(item.status, t))}
                       </p>
                     </li>
                   ))}
@@ -384,7 +385,7 @@ export function PhotosScreen({
                 {sending ? (
                   <p className="flex items-center gap-2 text-[15px] text-[var(--sf-graphite)]">
                     <Spinner size="sm" className="text-[var(--sf-brass)]" />
-                    Thinking…
+                    {t("photos.thinking")}
                   </p>
                 ) : (
                   <>
@@ -396,21 +397,21 @@ export function PhotosScreen({
                         unchanged
                           ? onNext()
                           : send({
-                              message: ownPhotosAnswer(added.length),
+                              message: t("photos.answer", {
+                                count: added.length,
+                              }),
                               choice: { field, value: "own" },
                             })
                       }
                       className="rounded-full px-6"
                     >
                       {uploading
-                        ? "Uploading…"
+                        ? t("photos.uploading")
                         : added.length === 0
-                          ? "Add a photo to continue"
+                          ? t("photos.addToContinue")
                           : unchanged
-                            ? "Keep these photos"
-                            : added.length === 1
-                              ? "Continue with my photo"
-                              : `Continue with my ${added.length} photos`}
+                            ? t("photos.keep")
+                            : t("photos.continue", { count: added.length })}
                     </Button>
                     <Button
                       variant="ghost"
@@ -418,31 +419,29 @@ export function PhotosScreen({
                       disabled={uploading}
                       onClick={() =>
                         send({
-                          message: STOCK_ANSWER,
+                          message: t("photos.stockAnswer"),
                           choice: { field, value: "stock" },
                         })
                       }
                       className="rounded-full text-[var(--sf-graphite)]"
                     >
-                      {STOCK_ANSWER}
+                      {t("photos.stockAnswer")}
                     </Button>
                   </>
                 )}
               </div>
               <p className="mt-3 max-w-[64ch] text-[13px] leading-relaxed text-[var(--sf-faint)]">
-                Your photos stay yours and are only used on your site. You can
-                add, swap or remove them any time under Media.
+                {t("photos.private")}
               </p>
             </div>
 
             <aside
-              aria-label="What to bring"
+              aria-label={t("photos.bringAria")}
               className="rounded-2xl border border-[var(--sf-line)] bg-[var(--sf-paper)] p-5"
             >
-              <h2 className="text-[15px] font-semibold">What to bring</h2>
+              <h2 className="text-[15px] font-semibold">{t("photos.bring")}</h2>
               <p className="mt-1 text-[13.5px] leading-relaxed text-[var(--sf-graphite)]">
-                10 to 20 photos cover a whole site. Fewer is fine: I fill the
-                rest with photos that fit what you do.
+                {t("photos.bringHow")}
               </p>
               <ul className="mt-4 flex flex-col gap-4">
                 {cards.guide.map((shot) => (
@@ -454,9 +453,7 @@ export function PhotosScreen({
                 ))}
               </ul>
               <p className="mt-4 border-t border-[var(--sf-line)] pt-3 text-[13px] leading-relaxed text-[var(--sf-graphite)]">
-                Sharp and at least 1600 px on the long side. Keep faces and
-                hands away from the edges: each section crops a photo to its own
-                shape.
+                {t("photos.sharp")}
               </p>
             </aside>
           </div>
@@ -473,6 +470,7 @@ const FRAMES: Record<PhotoShot["shape"], string> = {
 };
 
 function ShotRow({ shot, have }: { shot: PhotoShot; have: number }) {
+  const t = useTranslations("admin.setupFlow");
   const enough = have > 0 && have >= shot.count;
   return (
     <li className="flex gap-3.5">
@@ -506,7 +504,7 @@ function ShotRow({ shot, have }: { shot: PhotoShot; have: number }) {
           {shot.shoot}
         </p>
         <p className="mt-1 text-[12.5px] font-medium text-[var(--sf-ink)]">
-          {coverage(have, shot.count)}
+          {coverage(have, shot.count, t)}
         </p>
       </div>
     </li>

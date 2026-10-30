@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { ArrowLeft } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import { ModalPortal } from "@/components/ui/modal-portal";
@@ -18,15 +19,16 @@ import { SHELL_TOKENS } from "./tokens";
  * before it closes, so the preview she returns to has it. */
 export function PageEditor({
   path,
-  label,
+  page,
   onDone,
 }: {
   path: string;
-  /** The page's name, like "home page". */
-  label: string;
+  /** The page's key ("home", "about"): its name is said in each message. */
+  page: string;
   /** Closed, with the path of the page the editor ended on. */
   onDone: (path: string) => void;
 }) {
+  const t = useTranslations("admin.setupFlow");
   const frameRef = useRef<HTMLIFrameElement | null>(null);
   const [loaded, setLoaded] = useState(false);
   const { run: finish, loading } = useAsyncAction(
@@ -43,34 +45,34 @@ export function PageEditor({
       if (!done.ok) throw new Error("not saved");
       onDone(done.path);
     },
-    { errorToast: "Couldn’t save your last change. Try again." },
+    { errorToast: t("editor.saveError") },
   );
   return (
     <ModalPortal>
       <div
         role="dialog"
         aria-modal
-        aria-label={`Edit your ${label}`}
+        aria-label={t("editor.aria", { page })}
         style={SHELL_TOKENS}
         className="sf-shell fixed inset-0 z-50 flex flex-col motion-safe:animate-fade-in"
       >
         <div className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-[var(--sf-line)] bg-[var(--sf-paper)] px-3 sm:px-5">
           <div className="min-w-0">
             <p className="truncate text-[15px] font-semibold">
-              Editing your {label}
+              {t("editor.title", { page })}
             </p>
             <p className="hidden text-[13px] text-[var(--sf-graphite)] sm:block">
-              Change anything on the page. Your changes save as you go.
+              {t("editor.hint")}
             </p>
           </div>
           <Button
             onClick={() => void finish()}
             loading={loading}
-            loadingText="Saving…"
+            loadingText={t("editor.saving")}
             className="shrink-0 rounded-full px-5"
           >
             <ArrowLeft aria-hidden />
-            Done editing
+            {t("editor.done")}
           </Button>
         </div>
         <div className="relative min-h-0 flex-1 bg-white">
@@ -78,7 +80,7 @@ export function PageEditor({
           <iframe
             ref={frameRef}
             src={embedSrc(path, "edit")}
-            title={`Edit your ${label}`}
+            title={t("editor.aria", { page })}
             onLoad={() => setLoaded(true)}
             className={cn(
               "absolute inset-0 size-full border-0 bg-white transition-opacity duration-300 motion-reduce:transition-none",

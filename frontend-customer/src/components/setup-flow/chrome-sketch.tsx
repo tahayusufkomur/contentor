@@ -2,6 +2,7 @@
 
 import { useState, type CSSProperties, type ReactNode } from "react";
 import { Menu, Monitor, Smartphone, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { SiteStylePalette } from "@shared/sections/types";
 import { LogoMarkSvg } from "@/components/shared/logo-mark";
 import { headerNavLinks, visibleNavLinks } from "@/lib/navbar";
@@ -94,6 +95,7 @@ export function NavbarSketch({
   keepPicked?: boolean;
   colors?: SiteStylePalette;
 }) {
+  const site = useTranslations("site");
   const c = colors ?? PLAIN;
   const menu = headerNavLinks(links, true, undefined, false, keepPicked).slice(
     0,
@@ -111,7 +113,7 @@ export function NavbarSketch({
         className="truncate text-[9px] font-bold"
         style={{ color: c.foreground }}
       >
-        {brand || "Your name"}
+        {brand || site("setupSketch.yourName")}
       </span>
     </Lockup>
   );
@@ -138,7 +140,7 @@ export function NavbarSketch({
   ) : null;
   const signIn = (
     <span className="shrink-0 text-[7px]" style={{ color: c.mutedForeground }}>
-      Sign in
+      {site("nav.signIn")}
     </span>
   );
   const burger = (
@@ -262,6 +264,8 @@ export function NavbarStudioPreview({
   transparent?: boolean;
   colors?: SiteStylePalette;
 }) {
+  const t = useTranslations("admin.setupFlow");
+  const site = useTranslations("site");
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   const [drawerOpen, setDrawerOpen] = useState(true);
   const c = colors ?? PLAIN;
@@ -282,7 +286,7 @@ export function NavbarStudioPreview({
         className="truncate text-sm font-bold tracking-tight"
         style={{ color: c.foreground }}
       >
-        {brand || "Your Studio"}
+        {brand || site("setupSketch.studioName")}
       </span>
     </Lockup>
   );
@@ -312,7 +316,7 @@ export function NavbarStudioPreview({
       className="shrink-0 text-xs font-medium"
       style={{ color: c.mutedForeground }}
     >
-      Sign In
+      {site("nav.signIn")}
     </span>
   );
 
@@ -320,11 +324,11 @@ export function NavbarStudioPreview({
     <div className="overflow-hidden rounded-2xl border border-[var(--sf-line)] bg-white shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--sf-line)] bg-[var(--sf-tint)] px-4 py-2.5">
         <span className="text-[12.5px] font-medium text-[var(--sf-graphite)]">
-          Live header preview on your site
+          {t("sketch.preview")}
         </span>
         <div
           role="group"
-          aria-label="Preview device"
+          aria-label={t("sketch.device")}
           className="flex items-center gap-1 rounded-full border border-[var(--sf-line-strong)] bg-white p-0.5"
         >
           <button
@@ -339,7 +343,7 @@ export function NavbarStudioPreview({
             )}
           >
             <Monitor className="size-3.5" />
-            Desktop
+            {t("sketch.desktop")}
           </button>
           <button
             type="button"
@@ -353,7 +357,7 @@ export function NavbarStudioPreview({
             )}
           >
             <Smartphone className="size-3.5" />
-            Mobile + Menu
+            {t("sketch.mobile")}
           </button>
         </div>
       </div>
@@ -444,17 +448,20 @@ export function NavbarStudioPreview({
                 border: `1px solid ${c.border}`,
               }}
             >
-              {brand || "Your site"}
+              {brand || site("setupSketch.yourSite")}
             </span>
             <p className="max-w-lg text-lg font-semibold leading-snug">
-              {headline || `Welcome to ${brand || "your new site"}`}
+              {headline ||
+                (brand
+                  ? site("setupSketch.welcome", { brand })
+                  : site("setupSketch.welcomeFallback"))}
             </p>
             <div className="flex items-center gap-2 pt-1">
               <span
                 className="rounded-full px-3.5 py-1.5 text-xs font-semibold"
                 style={{ background: c.primary, color: c.primaryForeground }}
               >
-                {cta || "Explore"}
+                {cta || site("setupSketch.explore")}
               </span>
             </div>
           </div>
@@ -482,7 +489,7 @@ export function NavbarStudioPreview({
               <button
                 type="button"
                 onClick={() => setDrawerOpen((o) => !o)}
-                aria-label="Toggle mobile menu preview"
+                aria-label={t("sketch.toggleMenu")}
                 className="flex size-7 items-center justify-center rounded-md"
                 style={{ color: c.foreground }}
               >
@@ -513,7 +520,7 @@ export function NavbarStudioPreview({
                     className="text-xs italic"
                     style={{ color: c.mutedForeground }}
                   >
-                    No menu links selected
+                    {t("sketch.noLinks")}
                   </span>
                 )}
                 <div
@@ -524,7 +531,7 @@ export function NavbarStudioPreview({
                     className="py-1 text-center text-xs font-medium"
                     style={{ color: c.mutedForeground }}
                   >
-                    Sign In
+                    {site("nav.signIn")}
                   </span>
                   {cta && (
                     <span
@@ -542,7 +549,10 @@ export function NavbarStudioPreview({
             )}
             <div className="px-4 py-5">
               <p className="text-sm font-semibold leading-snug">
-                {headline || `Welcome to ${brand || "your new site"}`}
+                {headline ||
+                  (brand
+                    ? site("setupSketch.welcome", { brand })
+                    : site("setupSketch.welcomeFallback"))}
               </p>
             </div>
           </div>
@@ -567,6 +577,7 @@ export function FooterSketch({
   socials: string[];
   colors?: SiteStylePalette;
 }) {
+  const site = useTranslations("site");
   const c = colors ?? PLAIN;
   const menu = visibleNavLinks(links, true).slice(0, 5);
   const year = new Date().getFullYear();
@@ -575,7 +586,7 @@ export function FooterSketch({
       className="truncate text-[9px] font-bold"
       style={{ color: c.foreground }}
     >
-      {brand || "Your name"}
+      {brand || site("setupSketch.yourName")}
     </span>
   );
   const copyright = (
@@ -583,7 +594,7 @@ export function FooterSketch({
       className="truncate text-[6.5px]"
       style={{ color: c.mutedForeground }}
     >
-      © {year} {brand || "Your name"}
+      © {year} {brand || site("setupSketch.yourName")}
     </span>
   );
   const items = (list: string[], column = false, className = "") => (
@@ -625,11 +636,11 @@ export function FooterSketch({
             <Bar className="w-3/5" />
           </span>
           <span>
-            {heading("Pages")}
+            {heading(site("nav.pages"))}
             {items(labels, true)}
           </span>
           <span>
-            {heading("Follow")}
+            {heading(site("nav.follow"))}
             {items(socials.length ? socials : ["Instagram"], true)}
           </span>
         </span>

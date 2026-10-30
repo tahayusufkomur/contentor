@@ -2940,5 +2940,611 @@
       "addItem": "Add {name}",
       "addDefault": "item"
     }
+  },
+  "setupFlow": {
+    "answerBox": {
+      "label": "Your answer",
+      "send": "Send"
+    },
+    "frame": {
+      "reload": "Reload preview",
+      "title": "Site preview",
+      "thisSection": "this section"
+    },
+    "builder": {
+      "coverError": "Couldn’t use that cover. Try another.",
+      "coverCurrent": "Current cover",
+      "coverUse": "Use this cover",
+      "kicker": {
+        "course": "Your first course",
+        "event": "Your first live session",
+        "onsite": "Your first in-person event"
+      },
+      "changingCover": "Changing the cover…",
+      "pickTime": "Pick a time",
+      "inPerson": "In person",
+      "onlineLive": "Online, live",
+      "descriptionDrafted": "A short description is drafted from your answers.",
+      "pickTopic": "Pick a topic and it starts taking shape here.",
+      "badge": {
+        "free": "Free",
+        "members": "Members only"
+      },
+      "tiersIntro": "Students pick the one that fits them. You can add or change memberships any time.",
+      "tierKicker": "{brand} membership",
+      "tierKickerPlain": "Membership",
+      "tiersEmpty": "Your memberships",
+      "tiersHint": "Pick one or more memberships and they appear here.",
+      "billing": "Billed monthly · Cancel any time"
+    },
+    "sketch": {
+      "preview": "Live header preview on your site",
+      "device": "Preview device",
+      "desktop": "Desktop",
+      "mobile": "Mobile + Menu",
+      "toggleMenu": "Toggle mobile menu preview",
+      "noLinks": "No menu links selected"
+    },
+    "demo": {
+      "caption": "Tap a sentence, then finish it in your own words.",
+      "starter": "I started when…",
+      "starterEnd": "a friend asked me to cover"
+    },
+    "ownOption": {
+      "label": "Add your own option",
+      "placeholder": "Add your own…"
+    },
+    "help": {
+      "example": "e.g. {example}",
+      "look": {
+        "dark": "Dark",
+        "light": "Light"
+      },
+      "pay": {
+        "anna": "Anna, busy mum, short on time",
+        "ben": "Ben, comes every week",
+        "cara": "Cara, drops in when she can",
+        "course": "Buys a course",
+        "membership": "Joins a membership",
+        "session": "Pays per session",
+        "month": "Month {n}"
+      },
+      "membership": {
+        "club": "The Club",
+        "library": "Course library",
+        "price": "{sign}{price} a month",
+        "coversLive": "Covers: Every live session",
+        "coversCourses": "Covers: Every course"
+      },
+      "access": {
+        "title": "Anything you make",
+        "who": "Who can open it",
+        "free": "Free",
+        "sold": "Sold on its own",
+        "member": "In a membership",
+        "ticked": ", ticked",
+        "notTicked": ", not ticked"
+      },
+      "course": {
+        "label": "Course",
+        "title": "The 6-week program",
+        "stats": "3 modules · 18 lessons",
+        "module": "<b>Module</b> · {title}",
+        "week1": "Week 1: The basics",
+        "week2": "Week 2: Building the habit",
+        "week3": "Week 3: Going further",
+        "lessons": "<b>Lessons</b> are the videos inside each module."
+      },
+      "live": {
+        "title": "Tuesday evening class",
+        "when": "Tuesdays, 7 pm",
+        "join": "Join"
+      },
+      "inbox": {
+        "name": "Anna",
+        "message": "Hi! Is the Tuesday class OK for complete beginners?"
+      }
+    },
+    "starter": {
+      "takeOut": "Take this one out",
+      "finishOrRemove": "Finish the sentence, or take it out to continue.",
+      "finishLabel": "Finish the sentence: {start}",
+      "finishPlaceholder": "Finish the sentence in your own words"
+    },
+    "socials": {
+      "placeholder": "{site}yourname or @yourname",
+      "problem": "Use your {network} handle, like @mira.yoga, or a link that starts with {site}"
+    },
+    "activity": {
+      "building": "{page, select, home {Building your home page: {stage}} about {Building your About page: {stage}} courses {Building your Courses page: {stage}} pricing {Building your Pricing page: {stage}} faq {Building your FAQ page: {stage}} contact {Building your Contact page: {stage}} events {Building your Events page: {stage}} other {Building your {page} page: {stage}}}",
+      "drafting": "Drafting {kind, select, course {your first course} event {your first live session} onsite {your first in-person event} post {your first article} other {{kind}}}",
+      "more": "{first} · {count} more on the way",
+      "stage": {
+        "planning": "planning the layout",
+        "copy": "writing the words",
+        "photos": "picking photos"
+      }
+    },
+    "notes": {
+      "homeReady": "Your home page is ready. Have a look, and tell me anything you’d like changed.",
+      "pageReady": "{page, select, home {Your home page is ready. Have a look.} about {Your About page is ready. Have a look.} courses {Your Courses page is ready. Have a look.} pricing {Your Pricing page is ready. Have a look.} faq {Your FAQ page is ready. Have a look.} contact {Your Contact page is ready. Have a look.} events {Your Events page is ready. Have a look.} other {Your {page} page is ready. Have a look.}}",
+      "pageFailed": "{page, select, home {I couldn’t finish your home page, so it keeps its first version for now.} about {I couldn’t finish your About page, so it keeps its first version for now.} courses {I couldn’t finish your Courses page, so it keeps its first version for now.} pricing {I couldn’t finish your Pricing page, so it keeps its first version for now.} faq {I couldn’t finish your FAQ page, so it keeps its first version for now.} contact {I couldn’t finish your Contact page, so it keeps its first version for now.} events {I couldn’t finish your Events page, so it keeps its first version for now.} other {I couldn’t finish your {page} page, so it keeps its first version for now.}}",
+      "draftDone": {
+        "course": "Your first course is drafted. I’m adding it to your Courses page.",
+        "event": "Your first live session is on the calendar.",
+        "onsite": "Your first in-person event is on the calendar.",
+        "post": "Your first article is drafted."
+      },
+      "draftFailed": "I couldn’t draft {kind, select, course {your first course} event {your first live session} onsite {your first in-person event} post {your first article} other {{kind}}}. You can add it from your dashboard later."
+    },
+    "section": {
+      "you": "You",
+      "students": "Students",
+      "offer": "Offer",
+      "look": "Look & story",
+      "pricing": "Pricing & content",
+      "contact": "Contact",
+      "emails": "Emails",
+      "header": "Header & footer"
+    },
+    "page": {
+      "name": {
+        "home": "Home",
+        "about": "About",
+        "courses": "Courses",
+        "pricing": "Pricing",
+        "faq": "FAQ",
+        "contact": "Contact",
+        "events": "Events"
+      }
+    },
+    "schedule": {
+      "days": {
+        "sun": "Sundays",
+        "mon": "Mondays",
+        "tue": "Tuesdays",
+        "wed": "Wednesdays",
+        "thu": "Thursdays",
+        "fri": "Fridays",
+        "sat": "Saturdays"
+      },
+      "once": "{weekday} {date} at {time}",
+      "clause": "{days} at {times}",
+      "span": {
+        "range": "from {start} to {end}",
+        "open": "from {start}"
+      },
+      "withSpan": "{when}, {span}",
+      "dateTime": "Date and time",
+      "starts": "Starts",
+      "ends": "Ends",
+      "endsHint": "Leave empty to keep going",
+      "sessionTime": "Session time {n}",
+      "classTime": "Class time {n}",
+      "removeDayTime": "Remove this day and time",
+      "removeTime": "Remove this time",
+      "addTime": "Add a time",
+      "addDayTime": "Add another day and time",
+      "pickOnce": "Pick the date and time.",
+      "pickRecurring": "Pick a start date, the days and a time.",
+      "zone": "Times are in your time zone, {zone}.",
+      "daysLabel": "Days",
+      "timesLabel": "Times"
+    },
+    "blockers": {
+      "plan": "Start your free trial",
+      "first_course": "Publish your first course",
+      "payouts": "Connect payouts",
+      "first_event": "Schedule your first live session",
+      "first_blog_post": "Publish your first article",
+      "look": "Finish your home page"
+    },
+    "turnError": {
+      "brand_taken": "That name is taken. Try another one.",
+      "brand_unusable": "Use letters or numbers in your site’s name.",
+      "invalid_handle": "That handle doesn’t look right. Use your handle, like @mira.yoga, or paste the link to your profile.",
+      "invalid_schedule": "Pick at least one day and a time for the session.",
+      "unknown_logo": "That logo isn’t available any more. Pick another one.",
+      "unknown_style": "That look isn’t available any more. Pick another one.",
+      "trial_unavailable": "A free trial needs a weekly class with a price and at least two sessions.",
+      "other": "That didn’t go through. Your answer is still here, so try again in a moment."
+    },
+    "editor": {
+      "saveError": "Couldn’t save your last change. Try again.",
+      "aria": "{page, select, home {Edit your home page} about {Edit your About page} courses {Edit your Courses page} pricing {Edit your Pricing page} faq {Edit your FAQ page} contact {Edit your Contact page} events {Edit your Events page} other {Edit your {page} page}}",
+      "title": "{page, select, home {Editing your home page} about {Editing your About page} courses {Editing your Courses page} pricing {Editing your Pricing page} faq {Editing your FAQ page} contact {Editing your Contact page} events {Editing your Events page} other {Editing your {page} page}}",
+      "hint": "Change anything on the page. Your changes save as you go.",
+      "saving": "Saving…",
+      "done": "Done editing"
+    },
+    "launch": {
+      "live": "{brand} is live",
+      "visit": "Anyone can visit your site now.",
+      "visitWithTeam": "Anyone can visit your site now. Here’s who’s looking after what.",
+      "toAdmin": "Go to your control panel",
+      "toSite": "Visit your site"
+    },
+    "payouts": {
+      "fact": {
+        "pay": "Students pay by card or wallet at a checkout Stripe runs for you.",
+        "bank": "Stripe sends the money to your bank account on a regular schedule.",
+        "private": "Your bank details stay with Stripe. Contentor never sees them."
+      },
+      "lead": "Here’s how you get paid.",
+      "title": "Get paid by your students",
+      "body": "Payments run through Stripe and go straight to your bank. You’ll confirm who you are and where the money should go. It takes about five minutes.",
+      "ownerOnly": "Only the studio owner can connect payouts. Skip this step for now; the owner can connect Stripe later from Payouts.",
+      "connected": "Payouts are connected",
+      "needsDetails": "Stripe still needs a few details before you can take payments.",
+      "opening": "Opening Stripe…",
+      "continue": "Continue on Stripe",
+      "connect": "Connect with Stripe"
+    },
+    "panel": {
+      "aria": "Your setup guide",
+      "making": "Making that change…",
+      "almostReady": "Almost ready",
+      "seeSite": "See your site",
+      "askHint": "Want something changed first? Tell me below, like “make the headline warmer” or “use a calmer photo”.",
+      "changing": "Changing <b>{label}</b>",
+      "changeWhole": "Change the whole page instead",
+      "placeholderPicked": "What should change here? Like “shorter” or “a warmer photo”…",
+      "placeholderPage": "{page, select, home {Change something on your home page…} about {Change something on your About page…} courses {Change something on your Courses page…} pricing {Change something on your Pricing page…} faq {Change something on your FAQ page…} contact {Change something on your Contact page…} events {Change something on your Events page…} other {Change something on your {page} page…}}",
+      "placeholderAsk": "Ask for a change…",
+      "progress": "Before you go live · page {n} of {total}",
+      "happy": "{page, select, home {Happy with your home page?} about {Happy with your About page?} courses {Happy with your Courses page?} pricing {Happy with your Pricing page?} faq {Happy with your FAQ page?} contact {Happy with your Contact page?} events {Happy with your Events page?} other {Happy with your {page} page?}}",
+      "lookOver": "Look it over. Tap any part of it to change just that part, or tell me below what to change on the page. Or open the editor and change anything yourself. Approve it and we’ll go to the next one.",
+      "showPage": "{page, select, home {Show your home page} about {Show your About page} courses {Show your Courses page} pricing {Show your Pricing page} faq {Show your FAQ page} contact {Show your Contact page} events {Show your Events page} other {Show your {page} page}}",
+      "approvedLeft": "Approved. {count, plural, one {# page to go.} other {# pages to go.}}",
+      "saving": "Saving…",
+      "approve": "This page looks good",
+      "editPage": "Edit this page",
+      "stillBuilding": "Still building this page…",
+      "pagesAria": "Your pages",
+      "state": {
+        "approved": "Approved",
+        "building": "Building",
+        "toReview": "To review"
+      }
+    },
+    "goLive": {
+      "paymentPending": "Your payment is still being confirmed. If it went through, reload this page in a minute.",
+      "checkoutError": "Couldn’t open checkout. Try again.",
+      "cardError": "Your card couldn’t be charged yet. Check it with your bank and try again.",
+      "startError": "Couldn’t start your plan. Try again.",
+      "holdError": "Couldn’t hold your paid items back. Try again.",
+      "blockedToast": "A few things need finishing before you go live.",
+      "publishError": "Couldn’t publish your site. Try again.",
+      "asideTitle": "Your site goes live next",
+      "built": "What I built",
+      "confirming": "Confirming your plan…",
+      "finishing": "Finishing your pages…",
+      "holding": "Holding them back…",
+      "sellLater": "Go live now, sell later",
+      "sellLaterHint": "Going live now keeps your prices: paid items wait as drafts and go on sale on their own once you can take payments.",
+      "trial": {
+        "title": "{days, plural, one {Start your #-day free trial} other {Start your #-day free trial}}",
+        "body": "{plan} is free until {date}. Add your card now: cancel any time before then and you won’t be charged. You’ll come straight back here.",
+        "bodyPrice": "{plan} is free until {date}, then {price} a month. Add your card now: cancel any time before then and you won’t be charged. You’ll come straight back here.",
+        "start": "Start free trial"
+      },
+      "start": {
+        "title": "Selling opens when your plan starts",
+        "body": "A trial can’t take payments. Start your {plan} plan today to sell right away, or go live now and sell once your trial ends.",
+        "bodyPrice": "A trial can’t take payments. Start your {plan} plan today to sell right away ({price} a month), or go live now and sell once your trial ends.",
+        "bodyEnd": "A trial can’t take payments. Start your {plan} plan today to sell right away, or go live now and sell once your trial ends on {end}.",
+        "bodyPriceEnd": "A trial can’t take payments. Start your {plan} plan today to sell right away ({price} a month), or go live now and sell once your trial ends on {end}.",
+        "now": "Start my plan now",
+        "starting": "Starting your plan…"
+      },
+      "plan": {
+        "title": "To sell on your site, choose {name}",
+        "body": "Paid courses and live sessions need the {name} plan. You’ll come straight back here.",
+        "bodyPrice": "Paid courses and live sessions need the {name} plan ({price} a month). You’ll come straight back here.",
+        "choose": "Choose {name}"
+      },
+      "ready": "Ready when you are",
+      "held": "Waiting, with your prices, until you sell:",
+      "heldHint": "Choose a plan and set up payouts from your dashboard any time; they go on sale on their own.",
+      "goLive": "Go live",
+      "going": "Going live…",
+      "keepEditing": "You can keep editing your site after it goes live.",
+      "qa": {
+        "checking": "Giving every page a last look",
+        "looked": "{count, plural, one {I looked over your page} other {I looked over all # pages}}",
+        "checkingBody": "On desktop and phone, in light and dark, so nothing looks off when you go live. You don’t have to wait for me.",
+        "fixedBody": "On desktop and phone, in light and dark. I tidied up along the way:",
+        "plainBody": "On desktop and phone, in light and dark."
+      },
+      "stepDone": "(done)",
+      "stepMinutes": "about {minutes} min"
+    },
+    "draft": {
+      "stuck": "{kind, select, course {Your course is taking much longer than it should. Try again, or skip it for now and add it later.} event {Your live session is taking much longer than it should. Try again, or skip it for now and add it later.} onsite {Your in-person event is taking much longer than it should. Try again, or skip it for now and add it later.} other {Your course is taking much longer than it should. Try again, or skip it for now and add it later.}}",
+      "retry": "Try again",
+      "waiting": "Live sessions come with a paid plan. When you go live I’ll offer you one, and your first session will be drafted the moment it’s active.",
+      "failed": "{kind, select, course {I couldn’t draft your course this time. Tell me what it should be about below and I’ll try again, or skip it for now.} event {I couldn’t draft your live session this time. Tell me what it should be about below and I’ll try again, or skip it for now.} onsite {I couldn’t draft your in-person event this time. Tell me what it should be about below and I’ll try again, or skip it for now.} other {I couldn’t draft your course this time. Tell me what it should be about below and I’ll try again, or skip it for now.}}",
+      "drafting": "{kind, select, course {Drafting your first course…} event {Drafting your first live session…} onsite {Drafting your first in-person event…} other {Drafting your first course…}}",
+      "usually": "Usually ready in under a minute.",
+      "coverError": "Couldn’t use that cover. Try another.",
+      "price": {
+        "members": "Members only",
+        "free": "Free"
+      },
+      "changingCover": "Changing the cover…",
+      "pickCover": "Pick a cover",
+      "coverCurrent": "Current cover",
+      "coverUse": "Use this cover",
+      "kicker": "{kind, select, course {Your first course} event {Your first live session} onsite {Your first in-person event} other {Your first course}}",
+      "repeats": "Repeats: {repeats}",
+      "trialChip": "First session is a free trial",
+      "inPerson": "In person",
+      "onlineLive": "Online, live",
+      "includedIn": "Included in {name}",
+      "rewriting": "{kind, select, course {Rewriting your course with your changes…} event {Rewriting your live session with your changes…} onsite {Rewriting your in-person event with your changes…} other {Rewriting your course with your changes…}}",
+      "rewritingShort": "{kind, select, course {Rewriting your course…} event {Rewriting your live session…} onsite {Rewriting your in-person event…} other {Rewriting your course…}}",
+      "reading": "Reading your changes…",
+      "steps": {
+        "course": {
+          "0": "Outlining the modules",
+          "1": "Writing the lessons",
+          "2": "Choosing a cover"
+        },
+        "event": {
+          "0": "Planning the session",
+          "1": "Finding a good time",
+          "2": "Choosing a cover"
+        }
+      },
+      "trial": {
+        "title": "Make the first session a free trial?",
+        "body": "Anyone can join it for free. Every other session keeps its price.",
+        "help": "What is a free trial class?",
+        "tip": "A trial class lets someone try what you teach before they pay. Only your first session is free, and anyone can join it. Every session after it is sold at your usual price. You can turn it off any time.",
+        "example": "Each session costs {price}. The first one is a free trial, and every other session is still {price}."
+      }
+    },
+    "bio": {
+      "label": "Or write about your work",
+      "why": "The more you tell us, the more your site sounds like you. Try to cover:",
+      "include": {
+        "0": "What you teach, and who you teach",
+        "1": "Your background and certifications",
+        "2": "Your teaching style",
+        "3": "How many years you have been at it",
+        "4": "What makes you different"
+      },
+      "placeholder": "I teach … to … I trained as … and have been teaching for … years. My classes feel … and what makes them different is …",
+      "exampleLink": "See an example",
+      "example": "I teach vinyasa yoga and breathwork to beginners and busy desk workers, online and in person in Brooklyn. I trained in a 500-hour program and have taught for 10 years, ever since burnout in a corporate job led me to yoga. My classes are slow, warm and practical: small groups, no showing off, and always an easier way into every pose. Students say what sets me apart is that I teach them to practise on their own.",
+      "nudge": "That is a good start. A few more lines about your background and what makes you different give you a better site."
+    },
+    "answer": {
+      "youSaid": "You said: <b>{answer}</b>"
+    },
+    "share": {
+      "fileType": "I can read PDF, text and Markdown files. Try one of those, or paste the text instead.",
+      "fileSize": "That file is too big. Keep it under 5 MB, or paste the text instead.",
+      "unavailable": "I couldn’t read it just now. Try again in a minute.",
+      "finished": "Setup has finished, so I can’t add this any more.",
+      "other": "That didn’t go through. Try again in a moment."
+    },
+    "opening": {
+      "chooseFile": "Choose a file",
+      "addAnother": "Choose another file",
+      "addFile": "Add a file",
+      "writeInstead": "Write it instead",
+      "fileHint": "PDF, text or Markdown, up to 5 MB. Or write it below.",
+      "reading": "Reading it…",
+      "continue": "Continue",
+      "skip": "Skip for now",
+      "leave": "Leave it as it is",
+      "readingShared": "Reading what you shared…",
+      "readingHint": "I tick what it answers in the questions ahead, so you only check them. This can take a little while.",
+      "nameLabel": "Your site’s name",
+      "namePlaceholder": "Mira Yoga House, or just your name",
+      "address": "Your web address: <b>{address}</b>. It’s free and yours to keep. Later, you can get your own domain, like yourname.com, from your dashboard, and your site moves to it.",
+      "addressName": "yourname",
+      "taken": "That name is taken.",
+      "didYouMean": "Did you mean <pick>{typo}</pick>?",
+      "orOneOf": "Or one of these:",
+      "pickOrKeep": "Pick one, or press Continue to keep your name as it is.",
+      "checking": "Checking your name…",
+      "moving": "Moving your site to {address}…",
+      "movingHint": "Your site opens at its new address in a moment, right where you left off.",
+      "needName": "Need a name? Get ideas",
+      "offer": "What do you offer?",
+      "offerPlaceholder": "Yoga for runners",
+      "firstName": "Your first name (optional)",
+      "thinking": "Thinking of names…",
+      "getIdeas": "Get ideas",
+      "noIdeas": "I couldn’t think of names just now. Try again in a moment.",
+      "tapOne": "Tap one to use it:"
+    },
+    "photos": {
+      "heic": "HEIC photos don’t open in most browsers. Save it as a JPEG and add it again.",
+      "formats": "Only JPG, PNG, WebP and AVIF photos go here.",
+      "tooBig": "That photo is over 25 MB.",
+      "coverage": {
+        "optional": "Optional",
+        "shows": "A home page shows {used}",
+        "enough": "{have} added, enough for your home page",
+        "some": "{have} of {used} added"
+      },
+      "status": {
+        "uploading": "Uploading",
+        "pending": "Making it web-ready",
+        "error": "Couldn’t upload",
+        "added": "Added"
+      },
+      "answer": "{count, plural, one {My own photo} other {My own # photos}}",
+      "stockAnswer": "Choose photos for me",
+      "uploadFailed": "It didn’t upload. Remove it and add it again.",
+      "mostHere": "That is the most I can take here: {max, plural, one {# photo} other {# photos}}.",
+      "onlyFirst": "Only the first {room} were added: {max, plural, one {# photo is} other {# photos is}} the most I can take here.",
+      "fileProblem": "{name}: {problem}",
+      "removeError": "That photo couldn’t be removed. Try again from Media.",
+      "addAria": "Add photos",
+      "addMore": "Add more photos",
+      "addYour": "Add your photos",
+      "drop": "Drop them here or choose them. JPG, PNG, WebP or AVIF, up to 25 MB each. I make every photo light enough for the web, so bring the full-size ones.",
+      "listAria": "Your photos",
+      "removeAria": "Remove {title}",
+      "small": "Small: soft when shown large",
+      "thinking": "Thinking…",
+      "uploading": "Uploading…",
+      "addToContinue": "Add a photo to continue",
+      "keep": "Keep these photos",
+      "continue": "{count, plural, one {Continue with my photo} other {Continue with my # photos}}",
+      "private": "Your photos stay yours and are only used on your site. You can add, swap or remove them any time under Media.",
+      "bringAria": "What to bring",
+      "bring": "What to bring",
+      "bringHow": "10 to 20 photos cover a whole site. Fewer is fine: I fill the rest with photos that fit what you do.",
+      "sharp": "Sharp and at least 1600 px on the long side. Keep faces and hands away from the edges: each section crops a photo to its own shape."
+    },
+    "menu": {
+      "blocked": {
+        "paid_plan": "This site has a paid plan, so it can’t be deleted here.",
+        "payments_connected": "This site has a connected payments account. Contact support to remove it.",
+        "custom_domain": "Remove the custom domain first.",
+        "provisioning": "Your site is still being created. Try again in a few minutes.",
+        "setup_finished": "Setup is already finished. Delete the site from your dashboard."
+      },
+      "cancelError": "Couldn’t cancel setup. Try again.",
+      "savedLogout": "Everything is saved. We emailed you a link to pick up where you left off.",
+      "linkError": "Couldn’t send your link. Try again.",
+      "savedLogin": "Everything is saved. Log in any time to continue.",
+      "label": "Setup menu",
+      "saved": "Saved automatically",
+      "finishLater": "Finish later (email me a link)",
+      "help": "Get help",
+      "signOut": "Sign out",
+      "cancel": "Cancel setup and delete this site",
+      "savingPlace": "Saving your place…",
+      "signingOut": "Signing you out…",
+      "emailing": "Emailing you a link to pick up where you left off.",
+      "keep": "Keep my site",
+      "cancelAria": "Cancel setup",
+      "cancelTitle": "Cancel setup?",
+      "cancelBody": "This deletes your unfinished site and everything you’ve answered so far, and frees up <b>{slug}</b>. You can start again any time, but this can’t be undone.",
+      "deleting": "Deleting…",
+      "delete": "Delete site",
+      "helpTitle": "Help",
+      "closeHelp": "Close help"
+    },
+    "flow": {
+      "unavailable": "Guided setup isn’t available for this site yet.",
+      "undone": "Change undone",
+      "undoError": "Couldn’t undo that. Try again.",
+      "undo": "Undo",
+      "editPartial": "Changed: {titles}. The rest didn’t go through. Ask again to finish.",
+      "editDone": "Done: {titles}.",
+      "saveError": "Couldn’t save that. Try again.",
+      "undoing": "Undoing that change…",
+      "prev": "Previous question",
+      "next": "Next question",
+      "step": "Your site, step 2 of 3",
+      "part": "{section} · part {n} of {total}",
+      "progress": "Setup progress",
+      "peekFull": "Peek at your home page",
+      "peek": "Peek",
+      "peekTitle": "Your home page so far",
+      "peekSub": "It keeps getting better as you answer.",
+      "backToQuestions": "Back to the questions",
+      "seeSite": "See your site",
+      "backToGoLive": "Back to go-live",
+      "previewSize": "Preview size",
+      "desktop": "Desktop",
+      "phone": "Phone"
+    },
+    "compose": {
+      "stage": {
+        "0": "Choosing the layout",
+        "1": "Writing your copy",
+        "2": "Finding your photos"
+      },
+      "title": "{page, select, home {Building your home page} about {Building your About page} courses {Building your Courses page} pricing {Building your Pricing page} faq {Building your FAQ page} contact {Building your Contact page} events {Building your Events page} other {Building your {page} page}}"
+    },
+    "priceMonthly": "{price} a month",
+    "question": {
+      "noted": "Noted: {items}",
+      "delegateSaid": "You decide for me.",
+      "picked": "{count} picked",
+      "applying": "Applying {label}…",
+      "applyingPick": "Applying your pick…",
+      "stillWorking": "Still working. Your site is being built at the same time, so this can take a little longer.",
+      "siteUpdates": "Your site updates while I get the next question ready.",
+      "nameOwn": "Name your own…",
+      "timeZone": "Time zone",
+      "place": "Place",
+      "address": "Address",
+      "placePlaceholder": "Studio Lumen, Kreuzberg",
+      "addressPlaceholder": "Hauptstraße 12, 10827 Berlin",
+      "placeProblem": "Add the name of the place.",
+      "addressProblem": "Add the street address.",
+      "emailProblem": "That doesn’t look like an email address.",
+      "phoneProblem": "Add the number with its country code, like +49 170 1234567.",
+      "priceProblem": "Add a monthly price, like 19.",
+      "stillThinking": "Still thinking. Your site is being built at the same time, so this can take a little longer.",
+      "thinking": "Thinking…",
+      "sendChanges": "Send changes",
+      "continue": "Continue",
+      "looksGood": "Looks good, continue",
+      "finishSentence": "Finish your sentence",
+      "addPrice": "Add a price for each",
+      "pickMany": "Pick as many as fit",
+      "pickOne": "Pick one to continue",
+      "keepAnswer": "Keep this answer",
+      "continueNote": "Continue with your note",
+      "continueCount": "Continue with {count}",
+      "selectAll": "Select all",
+      "deselectAll": "Deselect all",
+      "pickForMe": "Pick for me",
+      "pickForMeHint": "Not sure? I’ll choose from your answers.",
+      "changeCourse": "Or tell me what to change, like “make it six weeks” or “another photo”…",
+      "changeEvent": "Or tell me what to change, like “make it an hour long” or “another photo”…",
+      "typeOwn": "Or type your own answer…",
+      "typeNew": "Or type a new answer…",
+      "notFinal": "Nothing here is final. You can change all of it later from your dashboard."
+    },
+    "look": {
+      "original": "Original",
+      "colours": "{label} colours",
+      "logoLoadError": "Couldn’t load more logos. Try again.",
+      "suggested": "Suggested",
+      "pick": "<b>{label}</b> is our pick. {reason}",
+      "filter": "Filter looks",
+      "all": "All",
+      "tag": {
+        "selling": "Made to sell",
+        "expertise": "Shows expertise",
+        "short": "Short page",
+        "long": "Long page",
+        "sensual": "Soft and moody",
+        "confident": "Confident",
+        "sexy": "Sexy",
+        "playful": "Playful"
+      },
+      "moreLooks": "More looks: {group}",
+      "moreCount": "More looks ({count})",
+      "logoSits": "How your logo sits",
+      "menuPages": "Pages in your header menu",
+      "tapToggle": "Tap to add or remove",
+      "headerElements": "Header elements",
+      "ctaButton": "“{label}” button",
+      "transparent": "Transparent over hero",
+      "wordmarkAnswer": "Just my name, as text",
+      "wordmark": "Just my name",
+      "uploadedAnswer": "My own logo",
+      "upload": "Upload my own",
+      "showOthers": "Show me others",
+      "uploadError": "Couldn’t upload your logo. Try again.",
+      "emailTitle": "{label} email",
+      "asPage": "{label}, as a page",
+      "seeOthers": "See other looks",
+      "close": "Close",
+      "keep": "Keep this look"
+    },
+    "pageTitle": "Set up your site"
   }
 }

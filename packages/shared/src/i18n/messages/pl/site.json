@@ -732,5 +732,13 @@
     "title": "Twój tytuł",
     "body": "Twoja wiadomość",
     "now": "teraz"
+  },
+  "setupSketch": {
+    "studioName": "Twoje Studio",
+    "yourName": "Twoje imię",
+    "welcome": "Witaj w {brand}",
+    "welcomeFallback": "Witaj w swojej nowej witrynie",
+    "yourSite": "Twoja witryna",
+    "explore": "Odkrywaj"
   }
 }

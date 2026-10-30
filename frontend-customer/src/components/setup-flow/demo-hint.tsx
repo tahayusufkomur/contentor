@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 /** A small, calm "here is what to do" demo: a looping picture of the gesture
@@ -44,12 +45,13 @@ export function DemoHint({
  * card turns ink like a picked one, and a few words type in after the
  * starter. The still state (no motion) is the finished sentence. */
 export function StarterDemo() {
+  const t = useTranslations("admin.setupFlow");
   return (
     <div className="relative">
       <div className="flex h-[76px] flex-col rounded-2xl border border-[var(--sf-ink)] bg-[var(--sf-ink)] px-3.5 py-3 text-[13.5px] font-medium leading-snug text-[var(--sf-paper)] motion-safe:animate-[sf-demo-card_7s_ease-in-out_infinite]">
-        <span>I started when…</span>
+        <span>{t("demo.starter")}</span>
         <span className="block max-w-[26ch] overflow-hidden whitespace-nowrap font-normal motion-safe:animate-[sf-demo-type_7s_steps(26,end)_infinite]">
-          a friend asked me to cover
+          {t("demo.starterEnd")}
         </span>
       </div>
       <span className="absolute left-[46%] top-[42%] size-5 rounded-full border-2 border-[var(--sf-paper)] bg-[var(--sf-brass)] opacity-0 shadow-[0_0_0_4px_var(--sf-brass-soft)] motion-safe:animate-[sf-demo-tap_7s_ease-in-out_infinite]" />

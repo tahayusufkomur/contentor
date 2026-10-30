@@ -1,3 +1,4 @@
+import type { T } from "@/lib/setup-flow";
 import { ApiError } from "@/types/api";
 
 /** A bio, CV or old About page shared on /setup's first screen: a file or pasted text. */
@@ -11,26 +12,22 @@ export const SHARE_MAX_BYTES = 5 * 1024 * 1024;
 
 /** Why a picked file can't be sent, in the coach's words (null: fine). The
  * server checks again; this only saves a round trip. */
-export function fileProblem(file: {
-  name: string;
-  size: number;
-}): string | null {
-  if (!/\.(pdf|txt|md)$/i.test(file.name))
-    return "I can read PDF, text and Markdown files. Try one of those, or paste the text instead.";
-  if (file.size > SHARE_MAX_BYTES)
-    return "That file is too big. Keep it under 5 MB, or paste the text instead.";
+export function fileProblem(
+  file: { name: string; size: number },
+  t: T,
+): string | null {
+  if (!/\.(pdf|txt|md)$/i.test(file.name)) return t("share.fileType");
+  if (file.size > SHARE_MAX_BYTES) return t("share.fileSize");
   return null;
 }
 
 /** A refused or failed share, in the coach's words. */
-export function shareErrorText(err: unknown): string {
+export function shareErrorText(err: unknown, t: T): string {
   if (err instanceof ApiError) {
     if (err.status === 400 && typeof err.data.detail === "string")
       return err.data.detail;
-    if (err.status === 503)
-      return "I couldn’t read it just now. Try again in a minute.";
-    if (err.status === 409)
-      return "Setup has finished, so I can’t add this any more.";
+    if (err.status === 503) return t("share.unavailable");
+    if (err.status === 409) return t("share.finished");
   }
-  return "That didn’t go through. Try again in a moment.";
+  return t("share.other");
 }

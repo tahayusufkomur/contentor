@@ -1,8 +1,9 @@
 import { createElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { BIO_GUIDE, BIO_SHORT_WORDS, bioIsShort } from "@shared/lib/bio-guide";
+import { BIO_SHORT_WORDS, bioIsShort } from "@shared/lib/bio-guide";
+import admin from "../../../../messages/en/admin.json";
 import { BioHints, BioNudge } from "../bio-hints";
+import { renderToStaticMarkup } from "./intl";
 
 const words = (n: number) => Array.from({ length: n }, () => "word").join(" ");
 
@@ -16,8 +17,9 @@ describe("bioIsShort", () => {
   });
 
   it("holds an example that is itself long enough, and no creator-as-teacher wording", () => {
-    expect(bioIsShort(BIO_GUIDE.example)).toBe(false);
-    const copy = JSON.stringify(BIO_GUIDE).toLowerCase();
+    const bio = admin.setupFlow.bio;
+    expect(bioIsShort(bio.example)).toBe(false);
+    const copy = JSON.stringify(bio).toLowerCase();
     expect(copy).not.toMatch(/teacher|coach|instructor/);
   });
 });
@@ -28,7 +30,8 @@ describe("BioHints and BioNudge", () => {
     expect(html).toContain(
       "The more you tell us, the more your site sounds like you",
     );
-    for (const point of BIO_GUIDE.includes) expect(html).toContain(point);
+    for (const point of [0, 1, 2, 3, 4])
+      expect(html).toContain(admin.setupFlow.bio.include[String(point) as "0"]);
     expect(html).toContain("See an example");
     expect(html).toContain('aria-expanded="false"');
     expect(html).not.toContain("vinyasa");

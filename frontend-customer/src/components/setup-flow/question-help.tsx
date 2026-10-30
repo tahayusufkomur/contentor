@@ -2,6 +2,7 @@
 
 import { useId, useState } from "react";
 import { Info } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import type { GuideHelp } from "@/lib/setup-flow";
 import { cn } from "@/lib/utils";
@@ -14,6 +15,7 @@ import { HelpPicture } from "./help-pictures";
  *  nothing when the question has no help. Mount it inside the question's own
  *  screen: it starts closed on every question. */
 export function QuestionHelp({ help }: { help?: GuideHelp | null }) {
+  const t = useTranslations("admin.setupFlow");
   const [open, setOpen] = useState(false);
   const panel = useId();
   if (!help) return null;
@@ -22,7 +24,7 @@ export function QuestionHelp({ help }: { help?: GuideHelp | null }) {
     <div className="mt-3">
       {help.example && (
         <p className="max-w-[60ch] text-[14.5px] leading-relaxed text-[var(--sf-graphite)]">
-          e.g. {help.example}
+          {t("help.example", { example: help.example })}
         </p>
       )}
       {more && (

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { socialLink, socialOk, socialSite } from "@/lib/interview";
 import { cn } from "@/lib/utils";
 
@@ -17,11 +18,11 @@ export function SocialsPicker({
   onChange,
   disabled,
   className,
-  placeholder = (n) => `${socialSite(n)}yourname or @yourname`,
+  placeholder,
   ok = socialOk,
-  problem = (n) =>
-    `Use your ${n} handle, like @mira.yoga, or a link that starts with ${socialSite(n)}`,
+  problem,
   reads = socialLink,
+  labelOf = (n) => n,
 }: {
   networks: string[];
   value: Record<string, string>;
@@ -33,7 +34,10 @@ export function SocialsPicker({
   problem?: (choice: string) => string;
   /** What a valid entry means, read back under its box. */
   reads?: (choice: string, raw: string) => string | null;
+  /** What a box is called: the choice itself unless it is a code (the address's Place and Address). */
+  labelOf?: (choice: string) => string;
 }) {
+  const t = useTranslations("admin.setupFlow");
   return (
     <div
       className={cn(
@@ -48,13 +52,17 @@ export function SocialsPicker({
         return (
           <label key={n} className="flex flex-col gap-1.5">
             <span className="text-[13px] font-medium text-[var(--sf-graphite)]">
-              {n}
+              {labelOf(n)}
             </span>
             <input
               type="text"
               value={value[n] ?? ""}
               disabled={disabled}
-              placeholder={placeholder(n)}
+              placeholder={
+                placeholder
+                  ? placeholder(n)
+                  : t("socials.placeholder", { site: socialSite(n) })
+              }
               autoComplete="off"
               aria-invalid={bad || undefined}
               aria-describedby={bad ? `social-${n}-error` : undefined}
@@ -66,7 +74,9 @@ export function SocialsPicker({
                 id={`social-${n}-error`}
                 className="text-[12.5px] text-destructive"
               >
-                {problem(n)}
+                {problem
+                  ? problem(n)
+                  : t("socials.problem", { network: n, site: socialSite(n) })}
               </span>
             )}
             {means && (
