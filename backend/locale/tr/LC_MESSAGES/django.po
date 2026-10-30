@@ -9569,6 +9569,667 @@ msgstr "%(field)s şunlardan biri olmalıdır: %(choices)s."
 
 #: apps/tenant_config/sections.py
 #, fuzzy
+msgid "Headline beside a photo"
+msgstr "Fotoğrafın yanında başlık"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Giant type over a photo"
+msgstr "Fotoğraf üzerinde devasa yazı"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Photo first, words second"
+msgstr "Önce fotoğraf, sonra sözcükler"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Centred, with an arched photo"
+msgstr "Ortalanmış, kemerli bir fotoğrafla"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "A framed title page"
+msgstr "Çerçeveli bir başlık sayfası"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Photo fills the page, words on a card"
+msgstr "Fotoğraf sayfayı doldurur, sözcükler bir kartta"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "A cluster of photos"
+msgstr "Bir fotoğraf kümesi"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Giant headline, photos beneath"
+msgstr "Devasa başlık, altında fotoğraflar"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "A magazine cover"
+msgstr "Bir dergi kapağı"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Centred words, a band of photos"
+msgstr "Ortalanmış sözcükler, bir fotoğraf şeridi"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "A tall portrait fading into shadow"
+msgstr "Gölgeye doğru solan dikey bir portre"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Atelier"
+msgstr "Atölye"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"A beauty atelier — blush paper, a light italic serif, arched photo crops and"
+" a champagne hairline."
+msgstr ""
+"Bir güzellik atölyesi — allık rengi kâğıt, ince italik bir serif, kemerli "
+"fotoğraf kırpmaları ve şampanya rengi ince bir çizgi."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Blush"
+msgstr "Allık"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Fig"
+msgstr "İncir"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Apricot"
+msgstr "Kayısı"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Darkroom"
+msgstr "Karanlık Oda"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"A gallery wall — the work enormous, the words a museum label beside it, one "
+"red dot."
+msgstr ""
+"Bir galeri duvarı — eser devasa, sözcükler yanında bir müze etiketi, bir "
+"kırmızı nokta."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "White cube"
+msgstr "Beyaz küp"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Black box"
+msgstr "Kara kutu"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Linen"
+msgstr "Keten"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Dojo"
+msgstr "Dojo"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"The dojo — rice paper, black sumi ink, one red seal, vertical rules and "
+"belts as progress."
+msgstr ""
+"Dojo — pirinç kâğıdı, siyah sumi mürekkebi, bir kırmızı mühür, dikey "
+"çizgiler ve ilerleme olarak kuşaklar."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Ink on rice"
+msgstr "Pirinç üzerine mürekkep"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Sumi"
+msgstr "Sumi"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Aizome"
+msgstr "Aizome"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Encore"
+msgstr "Bis"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"A gig poster and the record it sells — cream stock, black ink, a teal second"
+" colour, a tracklist."
+msgstr ""
+"Bir konser afişi ve sattığı plak — krem rengi kâğıt, siyah mürekkep, "
+"camgöbeği ikinci bir renk, bir parça listesi."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Cream stock"
+msgstr "Krem kâğıt"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Jazz club"
+msgstr "Caz kulübü"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Riot"
+msgstr "İsyan"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Swiss Grid"
+msgstr "İsviçre Izgarası"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"Clear, intelligent, modern — a text-led grid with cobalt accents and mono "
+"labels."
+msgstr ""
+"Net, akıllı, modern — kobalt vurgular ve mono etiketler içeren metin odaklı "
+"bir ızgara."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Cobalt"
+msgstr "Kobalt"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Mono"
+msgstr "Mono"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Terracotta"
+msgstr "Terakota"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Quiet Journal"
+msgstr "Sakin Günlük"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"A calm editorial magazine — light serif headlines, paper tones, quiet "
+"confidence."
+msgstr ""
+"Sakin bir editoryal dergi — ince serif başlıklar, kâğıt tonları, dingin bir "
+"özgüven."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Paper"
+msgstr "Kâğıt"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Sage"
+msgstr "Adaçayı"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Dusk"
+msgstr "Alacakaranlık"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Kinetic Club"
+msgstr "Kinetik Kulüp"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"Loud, fast and bold — condensed caps, signal red and volt, a premium "
+"boutique gym."
+msgstr ""
+"Yüksek sesli, hızlı ve cesur — sıkıştırılmış büyük harfler, sinyal kırmızısı"
+" ve volt, premium bir butik spor salonu."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Signal"
+msgstr "Sinyal"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Ocean"
+msgstr "Okyanus"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Ember"
+msgstr "Kor"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Ledger"
+msgstr "Büyük Defter"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"The trusted advisor's annual report — bone paper, navy ink, one oxblood "
+"rule, numbered clauses."
+msgstr ""
+"Güvenilir danışmanın yıllık raporu — kemik rengi kağıt, lacivert mürekkep, "
+"tek bir öküz kanı çizgi, numaralandırılmış maddeler."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Bone"
+msgstr "Kemik"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Slate"
+msgstr "Arduvaz"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Forest"
+msgstr "Orman"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Maison"
+msgstr "Moda Evi"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"A fashion house lookbook — ivory, black, a huge high-contrast Bodoni, "
+"hairline frames and a great deal of air."
+msgstr ""
+"Bir moda evi tanıtım kataloğu — fildişi, siyah, devasa, yüksek kontrastlı "
+"bir Bodoni, kıl inceliğinde çerçeveler ve bolca nefes alanı."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Ivory"
+msgstr "Fildişi"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Noir"
+msgstr "Siyah"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Bordeaux"
+msgstr "Bordo"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Manuscript"
+msgstr "El Yazması"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"The book — cream pages, a light literary serif, drop caps, chapter numbers "
+"and long-form reading rhythm."
+msgstr ""
+"Kitap — krem rengi sayfalar, ince, edebi bir tırnaklı yazı tipi, büyük "
+"başlangıç harfleri, bölüm numaraları ve uzun soluklu okuma ritmi."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Cream"
+msgstr "Krem"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Lamplight"
+msgstr "Lamba Işığı"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Newsprint"
+msgstr "Gazete Kağıdı"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Nocturne"
+msgstr "Noktürn"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"Night blue with one warm lamp — a soft dark style, rounded serif, a glow on "
+"the one button."
+msgstr ""
+"Tek bir sıcak lambayla gece mavisi — yumuşak, koyu bir stil, yuvarlatılmış "
+"tırnaklı yazı tipi, tek butonda bir ışıltı."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Lamp"
+msgstr "Lamba"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Moss night"
+msgstr "Yosun gecesi"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Plum"
+msgstr "Mürdüm"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Pop Studio"
+msgstr "Pop Stüdyo"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"Joyful and colour-blocked — heavy grotesk type, stickers and hard shadows, "
+"an indie zine."
+msgstr ""
+"Neşeli ve renk bloklu — kalın grotesk yazı tipi, çıkartmalar ve sert "
+"gölgeler, bağımsız bir fanzin."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Candy"
+msgstr "Şeker"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Sorbet"
+msgstr "Sorbe"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Mint"
+msgstr "Nane"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Primer"
+msgstr "Alfabe"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"The exercise book you loved — ruled lines, a red margin, index tabs, "
+"outcomes as checkboxes."
+msgstr ""
+"Sevdiğin o alıştırma defteri — çizgili satırlar, kırmızı bir kenar boşluğu, "
+"fihrist sekmeleri, onay kutuları olarak kazanımlar."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Exercise book"
+msgstr "Alıştırma defteri"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Chalkboard"
+msgstr "Kara tahta"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Manila"
+msgstr "Manila"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Sanctum"
+msgstr "Mabet"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"The temple of the stars — midnight indigo, thin gold line-art, zodiac rings "
+"and moon phases."
+msgstr ""
+"Yıldızlar mabedi — gece yarısı çivit mavisi, ince altın çizgi sanatı, burç "
+"halkaları ve ayın evreleri."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Midnight gold"
+msgstr "Gece yarısı altını"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Rose gold"
+msgstr "Pembe altın"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Moonstone"
+msgstr "Aytaşı"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Sprout"
+msgstr "Filiz"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"The family room — cream paper, a round friendly face, chunky colour shapes "
+"and hand-drawn sprouts."
+msgstr ""
+"Aile odası — krem rengi kağıt, yuvarlak ve samimi bir yüz, kalın renk "
+"şekilleri ve el çizimi filizler."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Meadow"
+msgstr "Çayır"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Berry"
+msgstr "Böğürtlen"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Sky"
+msgstr "Gökyüzü"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Studio Floor"
+msgstr "Stüdyo Zemini"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"The dance studio after dark — stage black, neon edges, stretched italic type"
+" and a mirror wall of photos."
+msgstr ""
+"Hava karardıktan sonra dans stüdyosu — sahne siyahı, neon kenarlar, "
+"uzatılmış italik yazı ve fotoğraflarla kaplı bir ayna duvar."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Neon night"
+msgstr "Neon gece"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Ember floor"
+msgstr "Kor zemin"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Ice rink"
+msgstr "Buz pisti"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Tavola"
+msgstr "Tavola"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"The trattoria — butter-yellow awning, olive and tomato, a chunky warm serif "
+"and a menu card with dotted leaders."
+msgstr ""
+"Trattoria — tereyağı sarısı tente, zeytin ve domates, dolgun sıcak bir serif"
+" ve noktalı çizgili bir menü kartı."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Awning"
+msgstr "Tente"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Harbour"
+msgstr "Liman"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Bakery"
+msgstr "Fırın"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Terminal"
+msgstr "Terminal"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"The command line — phosphor on near-black, a monospace headline, prompts, "
+"code blocks and a blinking cursor."
+msgstr ""
+"Komut satırı — siyaha yakın zemin üzerinde fosfor, eş aralıklı bir başlık, "
+"komut istemleri, kod blokları ve yanıp sönen bir imleç."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Phosphor"
+msgstr "Fosfor"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "IDE light"
+msgstr "IDE açık"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Night owl"
+msgstr "Gece kuşu"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Trail"
+msgstr "Patika"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"A national park field guide — stone paper with contour lines, pine and blaze"
+" orange, a route card and stamps."
+msgstr ""
+"Bir milli park saha rehberi — eş yükselti çizgili taş kağıt, çam ve alev "
+"turuncusu, bir rota kartı ve damgalar."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Pine"
+msgstr "Çam"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Alpine"
+msgstr "Alpin"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Desert"
+msgstr "Çöl"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Velvet Room"
+msgstr "Kadife Oda"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"After-hours and unhurried — oxblood and near-black, a blush light, champagne"
+" hairlines, slanted Playfair italics and one tall portrait sinking into "
+"shadow."
+msgstr ""
+"Mesai sonrası ve telaşsız — vişneçürüğü ve siyaha yakın ton, hafif pembe bir"
+" ışık, şampanya rengi ince çizgiler, eğik Playfair italikleri ve gölgede "
+"kaybolan uzun bir portre."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Oxblood"
+msgstr "Vişneçürüğü"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Satin"
+msgstr "Saten"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Workshop"
+msgstr "Atölye"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"The maker's bench — kraft paper, indigo thread, a handwritten margin note "
+"and projects shown as materials lists."
+msgstr ""
+"Üreticinin tezgahı — kraft kağıdı, çivit mavisi iplik, el yazısıyla kenar "
+"notu ve malzeme listeleri olarak gösterilen projeler."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Kraft"
+msgstr "Kraft"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Linen & thread"
+msgstr "Keten & iplik"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Clay"
+msgstr "Kil"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
 msgid "Original"
 msgstr "Orijinal"
 

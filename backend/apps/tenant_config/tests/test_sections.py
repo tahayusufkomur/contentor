@@ -380,3 +380,34 @@ def test_config_patch_cannot_change_the_look(tenant_ctx, real_styles):
     ser = TenantConfigSerializer(cfg, data={"style": "grid", "palette": ""}, partial=True)
     assert ser.is_valid(), ser.errors
     assert "style" not in ser.validated_data and "palette" not in ser.validated_data
+
+
+def test_every_text_the_look_picker_shows_is_in_the_catalog(real_styles):
+    """A style brings its name, mood and colourway names in the manifest; the catalog lists them
+    (sections.LOOK_TEXTS) so they get translated. A new style fails here until it is listed."""
+    shown = set()
+    for s in sections.enabled_styles().values():
+        shown |= {s.get("label"), s.get("mood"), s.get("paletteLabel"), *(p.get("label") for p in s["palettes"])}
+    assert shown - {None, ""} <= set(sections.LOOK_TEXTS)
+
+
+def test_the_look_picker_speaks_the_creator_language_and_keeps_identities(real_styles):
+    from django.utils.translation import override
+
+    from apps.core.tests.i18n_utils import translated
+
+    style = sections.style("journal")
+    with override("en"):
+        english = {o["value"]: o for o in sections.looks()}["journal"]
+    with override("tr"):
+        turkish = {o["value"]: o for o in sections.looks()}["journal"]
+    # English is the manifest, as before.
+    assert english["label"] == style["label"] and english["detail"] == style["mood"]
+    assert english["group"] == sections.HERO_LAYOUTS[style["heroLayout"]]
+    # Turkish reads in Turkish: the mood, the hero layout's group and the colourway's name.
+    assert turkish["detail"] == translated(style["mood"])
+    assert turkish["group"] == translated(sections.HERO_LAYOUTS[style["heroLayout"]])
+    assert turkish["palettes"][0]["label"] == translated(style["paletteLabel"])
+    # What code matches on never changes: the look's value, style, palette ids.
+    assert (turkish["value"], turkish["style"], turkish["palette"]) == ("journal", "journal", "")
+    assert [p["id"] for p in turkish["palettes"]] == [p["id"] for p in english["palettes"]] == ["", "sage", "dusk"]

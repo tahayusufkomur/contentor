@@ -9703,6 +9703,667 @@ msgstr "%(field)s muss eines der folgenden sein: %(choices)s."
 
 #: apps/tenant_config/sections.py
 #, fuzzy
+msgid "Headline beside a photo"
+msgstr "Überschrift neben einem Foto"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Giant type over a photo"
+msgstr "Riesige Schrift über einem Foto"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Photo first, words second"
+msgstr "Foto zuerst, Text danach"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Centred, with an arched photo"
+msgstr "Zentriert, mit einem bogenförmigen Foto"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "A framed title page"
+msgstr "Eine gerahmte Titelseite"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Photo fills the page, words on a card"
+msgstr "Foto füllt die Seite, Text auf einer Karte"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "A cluster of photos"
+msgstr "Ein Cluster aus Fotos"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Giant headline, photos beneath"
+msgstr "Riesige Überschrift, Fotos darunter"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "A magazine cover"
+msgstr "Ein Magazincover"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Centred words, a band of photos"
+msgstr "Zentrierter Text, ein Band aus Fotos"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "A tall portrait fading into shadow"
+msgstr "Ein hohes Porträt, das im Schatten verblasst"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Atelier"
+msgstr "Atelier"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"A beauty atelier — blush paper, a light italic serif, arched photo crops and"
+" a champagne hairline."
+msgstr ""
+"Ein Beauty-Atelier — puderrosa Papier, eine feine kursive Serife, "
+"bogenförmige Fotoausschnitte und eine champagnerfarbene Haarlinie."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Blush"
+msgstr "Puderrosa"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Fig"
+msgstr "Feige"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Apricot"
+msgstr "Aprikose"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Darkroom"
+msgstr "Dunkelkammer"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"A gallery wall — the work enormous, the words a museum label beside it, one "
+"red dot."
+msgstr ""
+"Eine Galeriewand — das Werk enorm, der Text ein Museumsschild daneben, ein "
+"roter Punkt."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "White cube"
+msgstr "Weißer Kubus"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Black box"
+msgstr "Schwarze Box"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Linen"
+msgstr "Leinen"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Dojo"
+msgstr "Dojo"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"The dojo — rice paper, black sumi ink, one red seal, vertical rules and "
+"belts as progress."
+msgstr ""
+"Das Dojo — Reispapier, schwarze Sumi-Tusche, ein rotes Siegel, vertikale "
+"Linien und Gürtel als Fortschritt."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Ink on rice"
+msgstr "Tusche auf Reispapier"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Sumi"
+msgstr "Sumi"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Aizome"
+msgstr "Aizome"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Encore"
+msgstr "Zugabe"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"A gig poster and the record it sells — cream stock, black ink, a teal second"
+" colour, a tracklist."
+msgstr ""
+"Ein Konzertplakat und die Platte, die es verkauft — cremefarbenes Papier, "
+"schwarze Tinte, Petrol als zweite Farbe, eine Trackliste."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Cream stock"
+msgstr "Cremepapier"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Jazz club"
+msgstr "Jazzclub"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Riot"
+msgstr "Aufruhr"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Swiss Grid"
+msgstr "Schweizer Raster"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"Clear, intelligent, modern — a text-led grid with cobalt accents and mono "
+"labels."
+msgstr ""
+"Klar, intelligent, modern — ein textbasiertes Raster mit Kobalt-Akzenten und"
+" Mono-Beschriftungen."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Cobalt"
+msgstr "Kobalt"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Mono"
+msgstr "Mono"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Terracotta"
+msgstr "Terrakotta"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Quiet Journal"
+msgstr "Stilles Journal"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"A calm editorial magazine — light serif headlines, paper tones, quiet "
+"confidence."
+msgstr ""
+"Ein ruhiges Editorial-Magazin — feine Serifen-Überschriften, Papiertöne, "
+"stille Souveränität."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Paper"
+msgstr "Papier"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Sage"
+msgstr "Salbei"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Dusk"
+msgstr "Dämmerung"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Kinetic Club"
+msgstr "Kinetic Club"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"Loud, fast and bold — condensed caps, signal red and volt, a premium "
+"boutique gym."
+msgstr ""
+"Laut, schnell und markant — schmale Versalien, Signalrot und Volt, ein "
+"erstklassiges Boutique-Fitnessstudio."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Signal"
+msgstr "Signal"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Ocean"
+msgstr "Ozean"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Ember"
+msgstr "Glut"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Ledger"
+msgstr "Ledger"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"The trusted advisor's annual report — bone paper, navy ink, one oxblood "
+"rule, numbered clauses."
+msgstr ""
+"Der Jahresbericht des vertrauten Beraters — knochenweißes Papier, "
+"marineblaue Tinte, eine ochsenblutrote Linie, nummerierte Klauseln."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Bone"
+msgstr "Knochenweiß"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Slate"
+msgstr "Schiefer"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Forest"
+msgstr "Waldgrün"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Maison"
+msgstr "Maison"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"A fashion house lookbook — ivory, black, a huge high-contrast Bodoni, "
+"hairline frames and a great deal of air."
+msgstr ""
+"Ein Lookbook eines Modehauses — Elfenbein, Schwarz, eine riesige, "
+"kontrastreiche Bodoni, haardünne Rahmen und sehr viel Luft."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Ivory"
+msgstr "Elfenbein"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Noir"
+msgstr "Noir"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Bordeaux"
+msgstr "Bordeaux"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Manuscript"
+msgstr "Manuscript"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"The book — cream pages, a light literary serif, drop caps, chapter numbers "
+"and long-form reading rhythm."
+msgstr ""
+"Das Buch — cremefarbene Seiten, eine feine literarische Serifenschrift, "
+"Initialen, Kapitelnummern und ein Leserhythmus für lange Texte."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Cream"
+msgstr "Creme"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Lamplight"
+msgstr "Lampenlicht"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Newsprint"
+msgstr "Zeitungspapier"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Nocturne"
+msgstr "Nocturne"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"Night blue with one warm lamp — a soft dark style, rounded serif, a glow on "
+"the one button."
+msgstr ""
+"Nachtblau mit einer warmen Lampe — ein sanfter dunkler Stil, abgerundete "
+"Serifen, ein Leuchten auf dem einen Button."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Lamp"
+msgstr "Lampe"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Moss night"
+msgstr "Moosnacht"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Plum"
+msgstr "Pflaume"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Pop Studio"
+msgstr "Pop Studio"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"Joyful and colour-blocked — heavy grotesk type, stickers and hard shadows, "
+"an indie zine."
+msgstr ""
+"Fröhlich und im Colour-Blocking-Stil — kräftige Groteskschrift, Sticker und "
+"harte Schatten, ein Indie-Zine."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Candy"
+msgstr "Bonbon"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Sorbet"
+msgstr "Sorbet"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Mint"
+msgstr "Minze"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Primer"
+msgstr "Primer"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"The exercise book you loved — ruled lines, a red margin, index tabs, "
+"outcomes as checkboxes."
+msgstr ""
+"Das Schulheft, das du geliebt hast — linierte Zeilen, ein roter Rand, "
+"Register-Tabs, Ergebnisse als Checkboxen."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Exercise book"
+msgstr "Schulheft"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Chalkboard"
+msgstr "Kreidetafel"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Manila"
+msgstr "Manila"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Sanctum"
+msgstr "Sanctum"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"The temple of the stars — midnight indigo, thin gold line-art, zodiac rings "
+"and moon phases."
+msgstr ""
+"Der Tempel der Sterne — Mitternachtsindigo, feine goldene Line-Art, "
+"Tierkreisringe und Mondphasen."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Midnight gold"
+msgstr "Mitternachtsgold"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Rose gold"
+msgstr "Roségold"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Moonstone"
+msgstr "Mondstein"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Sprout"
+msgstr "Spross"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"The family room — cream paper, a round friendly face, chunky colour shapes "
+"and hand-drawn sprouts."
+msgstr ""
+"Das Familienzimmer — cremefarbenes Papier, ein rundes freundliches Gesicht, "
+"kräftige Farbformen und handgezeichnete Sprossen."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Meadow"
+msgstr "Wiese"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Berry"
+msgstr "Beere"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Sky"
+msgstr "Himmel"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Studio Floor"
+msgstr "Studioboden"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"The dance studio after dark — stage black, neon edges, stretched italic type"
+" and a mirror wall of photos."
+msgstr ""
+"Das Tanzstudio nach Einbruch der Dunkelheit — Bühnenschwarz, Neonkanten, "
+"gestreckte Kursivschrift und eine Spiegelwand voller Fotos."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Neon night"
+msgstr "Neon-Nacht"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Ember floor"
+msgstr "Glutboden"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Ice rink"
+msgstr "Eislaufbahn"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Tavola"
+msgstr "Tavola"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"The trattoria — butter-yellow awning, olive and tomato, a chunky warm serif "
+"and a menu card with dotted leaders."
+msgstr ""
+"Die Trattoria — buttergelbe Markise, Olive und Tomate, eine kräftige warme "
+"Serife und eine Speisekarte mit Füllpunkten."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Awning"
+msgstr "Markise"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Harbour"
+msgstr "Hafen"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Bakery"
+msgstr "Bäckerei"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Terminal"
+msgstr "Terminal"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"The command line — phosphor on near-black, a monospace headline, prompts, "
+"code blocks and a blinking cursor."
+msgstr ""
+"Die Befehlszeile — Phosphor auf Fast-Schwarz, eine Monospace-Überschrift, "
+"Prompts, Codeblöcke und ein blinkender Cursor."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Phosphor"
+msgstr "Phosphor"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "IDE light"
+msgstr "IDE hell"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Night owl"
+msgstr "Nachteule"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Trail"
+msgstr "Pfad"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"A national park field guide — stone paper with contour lines, pine and blaze"
+" orange, a route card and stamps."
+msgstr ""
+"Ein Nationalpark-Feldführer — Steinpapier mit Höhenlinien, Kieferngrün und "
+"Signalorange, eine Routenkarte und Stempel."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Pine"
+msgstr "Kiefer"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Alpine"
+msgstr "Alpin"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Desert"
+msgstr "Wüste"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Velvet Room"
+msgstr "Samtzimmer"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"After-hours and unhurried — oxblood and near-black, a blush light, champagne"
+" hairlines, slanted Playfair italics and one tall portrait sinking into "
+"shadow."
+msgstr ""
+"Zu später Stunde und ohne Eile — Ochsenblut und Fast-Schwarz, ein zartrosa "
+"Licht, champagnerfarbene Haarlinien, schräggestellte Playfair-Kursive und "
+"ein hohes Porträt, das im Schatten versinkt."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Oxblood"
+msgstr "Ochsenblut"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Satin"
+msgstr "Satin"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Workshop"
+msgstr "Werkstatt"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid ""
+"The maker's bench — kraft paper, indigo thread, a handwritten margin note "
+"and projects shown as materials lists."
+msgstr ""
+"Die Werkbank des Handwerkers — Kraftpapier, Indigofaden, eine "
+"handschriftliche Randnotiz und Projekte, dargestellt als Materiallisten."
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Kraft"
+msgstr "Kraftpapier"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Linen & thread"
+msgstr "Leinen & Faden"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
+msgid "Clay"
+msgstr "Ton"
+
+#: apps/tenant_config/sections.py
+#, fuzzy
 msgid "Original"
 msgstr "Original"
 
