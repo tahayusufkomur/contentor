@@ -216,5 +216,208 @@
       "live_stream": "Live Stream",
       "onsite_event": "In-Person Event"
     }
+  },
+  "logo": {
+    "palette": {
+      "theme": "Your theme",
+      "ink": "Ink",
+      "slate": "Slate",
+      "forest": "Forest",
+      "terracotta": "Terracotta",
+      "rose": "Rose",
+      "violet": "Violet",
+      "amber": "Amber",
+      "ocean-fade": "Ocean fade",
+      "sunset-fade": "Sunset fade",
+      "mint-fade": "Mint fade",
+      "berry-fade": "Berry fade",
+      "midnight-fade": "Midnight fade",
+      "gold-fade": "Gold fade",
+      "sage": "Sage",
+      "clay": "Clay",
+      "sky": "Sky",
+      "plum": "Plum",
+      "sand": "Sand",
+      "coral": "Coral",
+      "pine": "Pine",
+      "mono": "Mono",
+      "cocoa": "Cocoa",
+      "lavender": "Lavender"
+    },
+    "iconGroup": {
+      "wellness": "Wellness",
+      "fitness": "Fitness",
+      "music": "Music",
+      "education": "Education",
+      "business": "Business",
+      "creative": "Creative",
+      "food": "Food",
+      "lifestyle": "Lifestyle"
+    },
+    "vibe": {
+      "Modern": "Modern",
+      "Elegant": "Elegant",
+      "Bold": "Bold",
+      "Playful": "Playful",
+      "Minimal": "Minimal"
+    }
+  },
+  "mailbox": {
+    "attachmentTooLarge": "— too large, ask the sender to share another way",
+    "compose": {
+      "addRecipient": "Add a recipient first.",
+      "sent": "Message sent.",
+      "sendFailed": "Could not send the message. Please try again.",
+      "title": "New message",
+      "to": "To",
+      "subject": "Subject",
+      "button": "Compose"
+    },
+    "actions": {
+      "close": "Close",
+      "back": "Back",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "archive": "Archive",
+      "spam": "Mark as spam",
+      "moveToInbox": "Move to inbox"
+    },
+    "time": {
+      "justNow": "just now",
+      "minutes": "{count}m",
+      "hours": "{count}h",
+      "days": "{count}d"
+    },
+    "emptyFolder": "Nothing here.",
+    "noSubject": "(no subject)",
+    "folder": {
+      "inbox": "Inbox",
+      "archived": "Archived",
+      "spam": "Spam"
+    },
+    "deleteDialog": {
+      "title": "Delete conversation?",
+      "text": "This removes the entire thread. You can't undo this."
+    },
+    "loadFailed": "Could not load conversations.",
+    "inboxFailed": "Could not load inbox.",
+    "threadFailed": "Could not load this conversation.",
+    "replySent": "Reply sent.",
+    "replyFailed": "Could not send reply. Please try again.",
+    "updateFailed": "Could not update. Please try again.",
+    "deleted": "Conversation deleted.",
+    "deleteFailed": "Could not delete. Please try again.",
+    "loading": "Loading…",
+    "archived": "Conversation archived.",
+    "movedToInbox": "Moved to inbox.",
+    "spamMarked": "Marked as spam.",
+    "search": "Search mail",
+    "clearSearch": "Clear search",
+    "you": "You",
+    "editor": {
+      "placeholder": "Write your message…",
+      "replyPlaceholder": "Write a reply…",
+      "maxFiles": "{count, plural, one {At most # attachment per message.} other {At most # attachments per message.}}",
+      "tooBig": "{name} is larger than 10 MB.",
+      "uploadFailed": "Could not upload {name}.",
+      "bold": "Bold",
+      "italic": "Italic",
+      "underline": "Underline",
+      "bulletList": "Bullet list",
+      "numberedList": "Numbered list",
+      "quote": "Quote",
+      "link": "Link",
+      "linkPrompt": "Link URL",
+      "attach": "Attach files",
+      "remove": "Remove {name}",
+      "ctrlEnter": "Ctrl+Enter to send",
+      "send": "Send"
+    }
+  },
+  "adminKit": {
+    "actions": {
+      "dismiss": "Dismiss",
+      "close": "Close",
+      "closePanel": "Close panel",
+      "cancel": "Cancel",
+      "save": "Save",
+      "delete": "Delete",
+      "create": "Create",
+      "newItem": "New {label}",
+      "editItem": "Edit {label}"
+    },
+    "errors": {
+      "loadIndex": "Failed to load.",
+      "loadModel": "Failed to load model.",
+      "loadRows": "Failed to load rows.",
+      "action": "Action failed.",
+      "save": "Save failed.",
+      "delete": "Delete failed.",
+      "request": "Request failed.",
+      "requestStatus": "Request failed ({status})",
+      "upload": "Upload failed.",
+      "uploadStatus": "Upload failed ({status}).",
+      "invalidJson": "Invalid JSON."
+    },
+    "index": {
+      "title": "Data",
+      "intro": "Browse, edit and act on {title} records."
+    },
+    "list": {
+      "empty": "No {plural} found.",
+      "selectAll": "Select all",
+      "selectRow": "Select row {pk}"
+    },
+    "gallery": {
+      "add": "Add PNG",
+      "drop": "…or drag & drop a PNG anywhere here.",
+      "empty": "No {plural} yet — drop a PNG to add the first one.",
+      "live": "Live",
+      "off": "Off"
+    },
+    "json": {
+      "previous": "Previous item",
+      "next": "Next item",
+      "label": "Record JSON",
+      "deleteConfirm": "Delete this {label}?",
+      "invalid": "Invalid JSON: {message}",
+      "expectedObject": "Expected a JSON object.",
+      "unknownFields": "Unknown field(s): {fields}"
+    },
+    "form": {
+      "deleteConfirm": "Delete this {label}? This cannot be undone.",
+      "created": "{label} created.",
+      "saved": "{label} saved.",
+      "deleted": "{label} deleted."
+    },
+    "field": {
+      "readOnly": "(read-only)",
+      "uploadPng": "Upload PNG",
+      "replacePng": "Replace PNG"
+    },
+    "cell": {
+      "yes": "yes",
+      "no": "no"
+    },
+    "page": {
+      "searchPlaceholder": "Search {plural}…",
+      "stringFilter": "{label} (exact)",
+      "filterSearch": "Search…",
+      "filterSearchLabel": "Search {label} options",
+      "scrollLeft": "Scroll {label} options left",
+      "scrollRight": "Scroll {label} options right",
+      "noMatches": "No matches",
+      "all": "All",
+      "allCount": "All ({count})",
+      "yes": "Yes",
+      "no": "No",
+      "loadingMore": "Loading more...",
+      "selected": "{count} selected",
+      "count": "{count, plural, one {# {singular}} other {# {plural}}}",
+      "done": "Done.",
+      "created": "{label} created.",
+      "updated": "{label} updated.",
+      "deleted": "{label} deleted."
+    }
   }
 }

@@ -30,7 +30,8 @@
     "callToAction": "Twoje wezwanie do działania",
     "yourHeadline": "Twój nagłówek",
     "addSubheadline": "Dodaj podtytuł",
-    "announcement": "Ogłoszenie"
+    "announcement": "Ogłoszenie",
+    "badge": "Odznaka"
   },
   "empty": {
     "courses": {
@@ -740,5 +741,12 @@
     "welcomeFallback": "Witaj w swojej nowej witrynie",
     "yourSite": "Twoja witryna",
     "explore": "Odkrywaj"
+  },
+  "meta": {
+    "fallbackName": "Witaj"
+  },
+  "unknownHost": {
+    "title": "Nie znaleziono witryny",
+    "text": "Pod tym adresem nie ma witryny Contentor. Sprawdź link lub skontaktuj się z właścicielem witryny."
   }
 }

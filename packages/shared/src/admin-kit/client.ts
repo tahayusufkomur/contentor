@@ -22,6 +22,8 @@ export class AdminKitError extends Error {
   status: number;
   fieldErrors: Record<string, string>;
   detail: string;
+  /** The server sent nothing to show: the view words it (errors.requestStatus). */
+  bare: boolean;
 
   constructor(status: number, data: unknown) {
     const fieldErrors: Record<string, string> = {};
@@ -35,13 +37,25 @@ export class AdminKitError extends Error {
         else fieldErrors[key] = message;
       }
     }
-    if (!detail && Object.keys(fieldErrors).length === 0)
-      detail = `Request failed (${status})`;
-    super(detail || "Validation failed");
+    const bare = !detail && Object.keys(fieldErrors).length === 0;
+    super(
+      detail || (bare ? `Request failed (${status})` : "Validation failed"),
+    );
     this.status = status;
     this.fieldErrors = fieldErrors;
     this.detail = detail;
+    this.bare = bare;
   }
+}
+
+/** What to show for an error: the server's own words, else a message in the creator's language. */
+export function kitDetail(
+  err: AdminKitError,
+  t: (key: "errors.requestStatus", values: { status: number }) => string,
+): string {
+  return err.bare
+    ? t("errors.requestStatus", { status: err.status })
+    : err.detail;
 }
 
 async function kitFetch<T>(path: string, options?: RequestInit): Promise<T> {

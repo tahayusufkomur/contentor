@@ -3546,5 +3546,239 @@
       "keep": "Keep this look"
     },
     "pageTitle": "Set up your site"
+  },
+  "logo": {
+    "studio": {
+      "title": "Logo Studio",
+      "stepsLabel": "Studio steps",
+      "step": {
+        "brief": "1 · Brief",
+        "ideas": "2 · Ideas",
+        "editor": "3 · Editor"
+      },
+      "saving": "Saving…",
+      "useLogo": "Use this logo",
+      "close": "Close Logo Studio",
+      "startOverConfirm": "Start over? This clears your brief and saved progress.",
+      "refineQuota": "You've used this month's AI refinements. More next month.",
+      "refineFailed": "Couldn't refine the design — try again.",
+      "unreachable": "Couldn't reach the design studio just now.",
+      "uploadFailed": "Upload failed",
+      "saveFailed": "Could not save the logo — you can upload a file instead.",
+      "replaceConfirm": "Replace your current draft? Your edits in the editor will be lost.",
+      "useFailed": "Couldn't use that logo — try again.",
+      "iconOnly": "Your icon is ready, but the AI lockup didn't finish — style the text in the editor.",
+      "similarFailed": "Couldn't design a similar logo — try again.",
+      "gettingReady": "Getting your logo ready…",
+      "similar": {
+        "disabled": "AI design isn't available right now.",
+        "upgrade_required": "Upgrade to design with AI.",
+        "quota_exhausted": "You've used this month's AI design turns.",
+        "unreachable": "Couldn't reach the design studio just now.",
+        "empty": "The AI couldn't draw this one — try another logo."
+      }
+    },
+    "brief": {
+      "title": "Tell us about your brand",
+      "intro": "We'll turn this into a wall of logo ideas you can pick from and fine-tune.",
+      "brandName": "Brand name",
+      "niche": "What do you offer?",
+      "nichePlaceholder": "e.g. yoga, fitness, music, cooking…",
+      "tagline": "Tagline",
+      "optional": "(optional)",
+      "taglinePlaceholder": "e.g. Yoga for busy mothers",
+      "vibe": "Describe your vibe",
+      "vibePlaceholder": "e.g. calm, earthy, premium but approachable",
+      "style": "Style",
+      "pickUpTo": "(pick up to 3)",
+      "chip": {
+        "Minimal": "Minimal",
+        "Bold": "Bold",
+        "Elegant": "Elegant",
+        "Playful": "Playful",
+        "Organic": "Organic",
+        "Tech": "Tech"
+      },
+      "show": "Show my logo ideas",
+      "startOver": "Start over"
+    },
+    "canvas": {
+      "hintSelected": "Drag to move · corners to resize · arrows to nudge · Esc to deselect",
+      "hint": "Click any part of your logo to edit it",
+      "previewLight": "Preview on light background",
+      "previewDark": "Preview on dark background",
+      "label": "Logo canvas"
+    },
+    "editor": {
+      "kitNoSvg": "Fonts couldn't be fetched, so the kit contains PNGs only (no SVG).",
+      "kitFailed": "Could not build the brand kit — please try again.",
+      "browserTab": "Browser tab",
+      "appIcon": "App icon",
+      "building": "Building…",
+      "downloadKit": "Download brand kit (.zip)",
+      "kitContents": "PNGs for light & dark, favicon sizes, and a vector SVG."
+    },
+    "entrance": {
+      "readyMade": "Ready-made logos",
+      "readyMadeHint": "Complete logo ideas for your brand — free to use and fine-tune.",
+      "designWithAi": "Design with AI",
+      "aiHint": "Describe your vibe and let AI craft a bespoke logo.",
+      "aiUpgradeHint": "Upgrade to design a bespoke logo with AI."
+    },
+    "gallery": {
+      "empty": "No ready-made logos yet — try Design with AI instead.",
+      "designing": "Designing your version…",
+      "use": "Use this",
+      "createOwn": "Create your own"
+    },
+    "chat": {
+      "step": {
+        "describe": "Describe",
+        "icon": "Icon",
+        "name": "Name",
+        "tagline": "Tagline"
+      },
+      "notice": {
+        "quota_exhausted": "You've used this month's AI design turns. More next month.",
+        "disabled": "AI design is temporarily unavailable.",
+        "upgrade_required": "AI design is included with paid plans.",
+        "error": "Couldn't design that turn — try again."
+      },
+      "phase": {
+        "designing": "Sketching concepts",
+        "illustrating": "Drawing the marks",
+        "tracing": "Converting to vectors"
+      },
+      "pick": "Pick this",
+      "useTagline": "Use \"{tagline}\"",
+      "soFar": "Your logo so far",
+      "picksHere": "Your picks will appear here as you go.",
+      "cancelled": "Cancelled — that used one of your design turns.",
+      "unreachable": "Couldn't reach the design studio just now.",
+      "ideas": "Ideas",
+      "stepsLabel": "Design steps",
+      "title": "Design with AI",
+      "reviewing": "Reviewing its own work…",
+      "cancelNote": "Cancelling still uses 1 turn.",
+      "preparing": "Preparing options…",
+      "changePlaceholder": "Describe a change for this step… (e.g. more geometric, less playful)",
+      "send": "Send",
+      "differentOptions": "Show different options",
+      "turnsLeft": "{count, plural, one {# AI design turn left this month.} other {# AI design turns left this month.}}",
+      "describeTitle": "Describe the logo you want",
+      "describeHint": "A sentence or two is plenty — a mood, a symbol, colors to lean into or avoid. Or skip it and we'll propose concepts from your brand.",
+      "describePlaceholder": "e.g. a calm, minimal mark — maybe a leaf or sunrise, warm earthy greens, nothing corporate",
+      "designing": "Designing…",
+      "generate": "Generate concepts",
+      "skip": "Skip, just show me ideas",
+      "upsell": "AI design is included with paid plans.",
+      "upgrade": "Upgrade"
+    },
+    "refine": {
+      "title": "Ask the AI designer",
+      "quota": "You've used this month's AI refinements. More next month.",
+      "unavailable": "AI refinement is temporarily unavailable.",
+      "placeholder": "e.g. warmer colors, a rounder mark, more premium",
+      "redraw": "Redraw the icon (start the mark from scratch)",
+      "refining": "Refining…",
+      "refine": "Refine",
+      "left": "{count, plural, one {# AI refinement left this month.} other {# AI refinements left this month.}}"
+    },
+    "panel": {
+      "undo": "Undo",
+      "redo": "Redo",
+      "getIdeas": "Get new ideas",
+      "clickToEdit": "Click any part of your logo in the preview to edit it directly.",
+      "name": "Name",
+      "tagline": "Tagline",
+      "taglineOptional": "Tagline (optional)",
+      "layout": {
+        "label": "Layout",
+        "horizontal": "Mark + name",
+        "horizontal_reversed": "Name + mark",
+        "stacked": "Stacked",
+        "emblem": "Emblem",
+        "name_only": "Name only"
+      },
+      "colors": "Colors",
+      "customBadgeColor": "Custom badge color",
+      "badgeShape": "Badge shape",
+      "badge": {
+        "circle": "Circle",
+        "rounded": "Rounded",
+        "squircle": "Squircle",
+        "hexagon": "Hexagon",
+        "shield": "Shield",
+        "diamond": "Diamond",
+        "none": "None"
+      },
+      "outlineOnly": "Outline only",
+      "font": "Font",
+      "weight": {
+        "label": "Weight",
+        "400": "Regular",
+        "500": "Medium",
+        "600": "Semibold",
+        "700": "Bold",
+        "800": "Extra bold"
+      },
+      "case": {
+        "label": "Case",
+        "none": "As typed",
+        "titleCase": "Title Case",
+        "upper": "UPPERCASE"
+      },
+      "letterSpacing": "Letter spacing",
+      "size": "Size",
+      "color": "Color",
+      "colorHex": "Color {hex}",
+      "customColor": "Custom color",
+      "mark": {
+        "title": "Mark",
+        "aiDrawn": "AI-drawn mark",
+        "designedInSetup": "Designed in setup",
+        "generatedHint": "This logo was designed for you during setup. Pick another in Setup → Logo, or choose a mark below to start over.",
+        "customHint": "Pick a different mark below to swap it out, or use the color controls to recolor it.",
+        "initials": {
+          "plain": "{initials} Plain",
+          "monogram": "{initials} Monogram",
+          "split": "{initials} Split",
+          "overlap": "{initials} Overlap"
+        },
+        "yourOwn": "Your own",
+        "abstract": "Abstract",
+        "family": {
+          "orbits": "Abstract orbits",
+          "bloom": "Abstract bloom",
+          "waves": "Abstract waves",
+          "prism": "Abstract prism",
+          "knot": "Abstract knot",
+          "grid": "Abstract grid"
+        },
+        "shuffle": "Click again to shuffle the shape.",
+        "style": {
+          "outline": "Outline",
+          "solid": "Solid"
+        },
+        "color": "Mark color",
+        "solid": "Solid",
+        "gradient": "Gradient",
+        "gradientEnd": "Mark gradient end color",
+        "gradientAngle": "Gradient angle",
+        "aiColors": "AI-drawn mark colors",
+        "secondaryColor": "Secondary color",
+        "secondary": "Secondary",
+        "accentColor": "Accent color",
+        "accent": "Accent"
+      }
+    }
+  },
+  "cx": {
+    "emptyItems": "Add items in the editor panel."
+  },
+  "aiProgress": {
+    "inProgress": "{phase} in progress",
+    "elapsed": "Time elapsed",
+    "cancel": "Cancel"
   }
 }

@@ -3,7 +3,7 @@ import { chatReducer, initialChatState } from "@/lib/logo/chat-state";
 import type { ChatState } from "@/lib/logo/chat-state";
 import {
   activeStep,
-  briefTaglineButtonLabel,
+  briefTaglineText,
   currentCandidates,
   currentSelection,
   stepStatus,
@@ -136,28 +136,23 @@ describe("currentSelection", () => {
   });
 });
 
-describe("briefTaglineButtonLabel", () => {
+describe("briefTaglineText", () => {
   it("returns null when the brief has no tagline", () => {
-    expect(briefTaglineButtonLabel(undefined)).toBeNull();
-    expect(briefTaglineButtonLabel("")).toBeNull();
-    expect(briefTaglineButtonLabel("   ")).toBeNull();
+    expect(briefTaglineText(undefined)).toBeNull();
+    expect(briefTaglineText("")).toBeNull();
+    expect(briefTaglineText("   ")).toBeNull();
   });
 
-  it("returns a quoted label for a short tagline", () => {
-    expect(briefTaglineButtonLabel("Move every day")).toBe(
-      'Use "Move every day"',
-    );
+  it("returns a short tagline as it is", () => {
+    expect(briefTaglineText("Move every day")).toBe("Move every day");
   });
 
-  it("trims surrounding whitespace before quoting", () => {
-    expect(briefTaglineButtonLabel("  Move every day  ")).toBe(
-      'Use "Move every day"',
-    );
+  it("trims surrounding whitespace", () => {
+    expect(briefTaglineText("  Move every day  ")).toBe("Move every day");
   });
 
   it("truncates a long tagline with an ellipsis", () => {
     const long = "A".repeat(60);
-    const label = briefTaglineButtonLabel(long);
-    expect(label).toBe(`Use "${"A".repeat(40)}…"`);
+    expect(briefTaglineText(long)).toBe(`${"A".repeat(40)}…`);
   });
 });

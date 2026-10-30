@@ -14,18 +14,22 @@ import { Spinner } from "../ui/spinner";
 import type { ConversationListItem } from "@/lib/mailbox";
 
 import type { Folder } from "./folder-rail";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
-function relativeTime(iso: string | null, locale: string): string {
+function relativeTime(
+  iso: string | null,
+  locale: string,
+  t: ReturnType<typeof useTranslations<"studio.mailbox.time">>,
+): string {
   if (!iso) return "";
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m`;
+  if (mins < 1) return t("justNow");
+  if (mins < 60) return t("minutes", { count: mins });
   const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h`;
+  if (hrs < 24) return t("hours", { count: hrs });
   const days = Math.floor(hrs / 24);
-  if (days < 7) return `${days}d`;
+  if (days < 7) return t("days", { count: days });
   return new Date(iso).toLocaleDateString(locale, {
     month: "short",
     day: "numeric",
@@ -79,6 +83,8 @@ export default function ConversationList({
   onDelete: (id: number) => void;
 }) {
   const locale = useLocale();
+  const t = useTranslations("studio.mailbox");
+  const tTime = useTranslations("studio.mailbox.time");
   if (loading) {
     return (
       <div className="flex flex-1 items-center justify-center py-16">
@@ -87,7 +93,9 @@ export default function ConversationList({
     );
   }
   if (items.length === 0) {
-    return <EmptyState icon={Inbox} title="Nothing here." className="flex-1" />;
+    return (
+      <EmptyState icon={Inbox} title={t("emptyFolder")} className="flex-1" />
+    );
   }
 
   return (
@@ -122,7 +130,7 @@ export default function ConversationList({
                         : "text-muted-foreground"
                     }`}
                   >
-                    {c.subject || "(no subject)"}
+                    {c.subject || t("noSubject")}
                   </span>
                   {c.last_message_has_attachments && (
                     <Paperclip className="h-3 w-3 shrink-0 text-muted-foreground" />
@@ -135,19 +143,19 @@ export default function ConversationList({
 
               {/* date ↔ hover actions swap */}
               <span className="shrink-0 text-xs text-muted-foreground group-hover:hidden">
-                {relativeTime(c.last_message_at, locale)}
+                {relativeTime(c.last_message_at, locale, tTime)}
               </span>
               <div className="hidden shrink-0 items-center group-hover:flex">
                 {folder === "inbox" ? (
                   <>
                     <QuickAction
-                      label="Archive"
+                      label={t("actions.archive")}
                       onClick={() => onArchive(c.id, true)}
                     >
                       <Archive className="h-4 w-4" />
                     </QuickAction>
                     <QuickAction
-                      label="Mark as spam"
+                      label={t("actions.spam")}
                       onClick={() => onSpam(c.id, true)}
                     >
                       <Flag className="h-4 w-4" />
@@ -155,7 +163,7 @@ export default function ConversationList({
                   </>
                 ) : (
                   <QuickAction
-                    label="Move to inbox"
+                    label={t("actions.moveToInbox")}
                     onClick={() =>
                       folder === "archived"
                         ? onArchive(c.id, false)
@@ -166,7 +174,7 @@ export default function ConversationList({
                   </QuickAction>
                 )}
                 <QuickAction
-                  label="Delete"
+                  label={t("actions.delete")}
                   destructive
                   onClick={() => onDelete(c.id)}
                 >

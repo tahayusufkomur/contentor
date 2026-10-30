@@ -1,6 +1,7 @@
 "use client";
 
 import { Sparkles, Wand2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { CuratedLogo } from "@/lib/logo/library-catalog";
 import type { LogoAiStatus } from "@/lib/logo/converse-api";
 import type { LogoRecipe } from "@/types/logo";
@@ -37,6 +38,7 @@ export function StudioEntrance({
   generatingFilename,
   generatingLabel,
 }: StudioEntranceProps) {
+  const t = useTranslations("admin.logo.entrance");
   const aiEligible = logoAiStatus?.eligible ?? false;
 
   return (
@@ -44,10 +46,10 @@ export function StudioEntrance({
       <div className="grid grid-cols-1 gap-4 p-6 pb-0 md:grid-cols-2">
         <div className="rounded-xl border bg-card p-5">
           <div className="flex items-center gap-2 text-sm font-semibold">
-            <Sparkles className="h-4 w-4 text-primary" /> Ready-made logos
+            <Sparkles className="h-4 w-4 text-primary" /> {t("readyMade")}
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            Complete logo ideas for your brand — free to use and fine-tune.
+            {t("readyMadeHint")}
           </p>
         </div>
         <button
@@ -56,12 +58,10 @@ export function StudioEntrance({
           className="flex flex-col items-start rounded-xl border bg-card p-5 text-left transition-colors hover:border-primary"
         >
           <div className="flex items-center gap-2 text-sm font-semibold">
-            <Wand2 className="h-4 w-4 text-primary" /> Design with AI
+            <Wand2 className="h-4 w-4 text-primary" /> {t("designWithAi")}
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            {aiEligible
-              ? "Describe your vibe and let AI craft a bespoke logo."
-              : "Upgrade to design a bespoke logo with AI."}
+            {aiEligible ? t("aiHint") : t("aiUpgradeHint")}
           </p>
         </button>
       </div>

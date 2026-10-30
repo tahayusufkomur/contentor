@@ -12,7 +12,7 @@ import MessageEditor, {
   type MessageEditorHandle,
   type OutgoingDraft,
 } from "./message-editor";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 function HeaderAction({
   label,
@@ -50,9 +50,10 @@ function MessageCard({
   expandedDefault: boolean;
 }) {
   const locale = useLocale();
+  const t = useTranslations("studio.mailbox");
   const [expanded, setExpanded] = useState(expandedDefault);
   const isOutbound = msg.direction === "outbound";
-  const sender = isOutbound ? "You" : msg.from_email;
+  const sender = isOutbound ? t("you") : msg.from_email;
   // Zebra background alternates by position so the thread is easy to scan;
   // a coloured left border still marks who sent each message. accent/15 is used
   // (not muted) because in these themes muted sits ~0.03 lightness from the
@@ -137,6 +138,7 @@ export default function ThreadView({
   onDelete: () => void;
   editorRef: React.Ref<MessageEditorHandle>;
 }) {
+  const t = useTranslations("studio.mailbox");
   const endRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -146,12 +148,12 @@ export default function ThreadView({
     <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-2 border-b px-3 py-2">
-        <HeaderAction label="Back" onClick={onBack}>
+        <HeaderAction label={t("actions.back")} onClick={onBack}>
           <ArrowLeft className="h-4 w-4" />
         </HeaderAction>
         <div className="min-w-0 flex-1">
           <h2 className="truncate text-sm font-semibold">
-            {thread.subject || "(no subject)"}
+            {thread.subject || t("noSubject")}
           </h2>
           <p className="truncate text-xs text-muted-foreground">
             {thread.counterparty_name
@@ -161,16 +163,22 @@ export default function ThreadView({
         </div>
         {folder === "inbox" ? (
           <>
-            <HeaderAction label="Archive" onClick={() => onArchive(true)}>
+            <HeaderAction
+              label={t("actions.archive")}
+              onClick={() => onArchive(true)}
+            >
               <Archive className="h-4 w-4" />
             </HeaderAction>
-            <HeaderAction label="Mark as spam" onClick={() => onSpam(true)}>
+            <HeaderAction
+              label={t("actions.spam")}
+              onClick={() => onSpam(true)}
+            >
               <Flag className="h-4 w-4" />
             </HeaderAction>
           </>
         ) : (
           <HeaderAction
-            label="Move to inbox"
+            label={t("actions.moveToInbox")}
             onClick={() =>
               folder === "archived" ? onArchive(false) : onSpam(false)
             }
@@ -178,7 +186,11 @@ export default function ThreadView({
             <ArchiveRestore className="h-4 w-4" />
           </HeaderAction>
         )}
-        <HeaderAction label="Delete" destructive onClick={onDelete}>
+        <HeaderAction
+          label={t("actions.delete")}
+          destructive
+          onClick={onDelete}
+        >
           <Trash2 className="h-4 w-4" />
         </HeaderAction>
       </div>
@@ -201,7 +213,7 @@ export default function ThreadView({
         <MessageEditor
           ref={editorRef}
           compact
-          placeholder="Write a reply…"
+          placeholder={t("editor.replyPlaceholder")}
           sending={replySending}
           onSend={onReply}
         />

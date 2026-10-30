@@ -1,6 +1,7 @@
 "use client";
 
 import { Wand2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { PALETTES, applyPalette } from "@/lib/logo/catalog";
 import type { LogoRecipe } from "@/types/logo";
@@ -15,6 +16,8 @@ export function GlobalControls({
   primaryHex,
   onGetNewIdeas,
 }: StudioPanelProps) {
+  const t = useTranslations("admin.logo");
+  const ts = useTranslations("studio.logo");
   const badgeSwatch = (fill: LogoRecipe["colors"]["badge"]) =>
     fill.type === "solid"
       ? fill.color
@@ -31,15 +34,15 @@ export function GlobalControls({
           onClick={onGetNewIdeas}
         >
           <Wand2 className="h-3.5 w-3.5" />
-          Get new ideas
+          {t("panel.getIdeas")}
         </Button>
         <p className="mt-2 text-xs text-muted-foreground">
-          Click any part of your logo in the preview to edit it directly.
+          {t("panel.clickToEdit")}
         </p>
       </section>
 
       <section className="space-y-1.5">
-        <p className="text-sm font-medium">Name</p>
+        <p className="text-sm font-medium">{t("panel.name")}</p>
         <input
           className="w-full rounded-md border bg-background px-3 py-2 text-sm"
           value={recipe.name}
@@ -49,35 +52,35 @@ export function GlobalControls({
       </section>
 
       <section className="space-y-1.5">
-        <p className="text-sm font-medium">Tagline (optional)</p>
+        <p className="text-sm font-medium">{t("panel.taglineOptional")}</p>
         <input
           className="w-full rounded-md border bg-background px-3 py-2 text-sm"
           value={recipe.tagline}
           maxLength={120}
-          placeholder="e.g. Yoga for busy mothers"
+          placeholder={t("brief.taglinePlaceholder")}
           onChange={(e) => onPatch({ tagline: e.target.value }, "tagline-text")}
         />
       </section>
 
       <section className="space-y-1.5">
-        <p className="text-sm font-medium">Layout</p>
+        <p className="text-sm font-medium">{t("panel.layout.label")}</p>
         <div className="flex flex-wrap gap-1.5">
           {LAYOUTS.map((l) => (
             <button
-              key={l.id}
+              key={l}
               type="button"
-              aria-pressed={recipe.layout === l.id}
-              onClick={() => onPatch({ layout: l.id })}
-              className={toggleClass(recipe.layout === l.id)}
+              aria-pressed={recipe.layout === l}
+              onClick={() => onPatch({ layout: l })}
+              className={toggleClass(recipe.layout === l)}
             >
-              {l.label}
+              {t(`panel.layout.${l}`)}
             </button>
           ))}
         </div>
       </section>
 
       <section className="space-y-1.5">
-        <p className="text-sm font-medium">Colors</p>
+        <p className="text-sm font-medium">{t("panel.colors")}</p>
         <div className="flex flex-wrap gap-1.5">
           {PALETTES(primaryHex).map((pair) => {
             const active = recipe.colors.palette_id === pair.id;
@@ -85,8 +88,8 @@ export function GlobalControls({
               <button
                 key={pair.id}
                 type="button"
-                title={pair.label}
-                aria-label={pair.label}
+                title={ts(`palette.${pair.id}`)}
+                aria-label={ts(`palette.${pair.id}`)}
                 aria-pressed={active}
                 onClick={() => onUpdate((r) => applyPalette(r, pair))}
                 className={`h-7 w-7 rounded-full border-2 ${active ? "border-primary" : "border-transparent"}`}
@@ -96,7 +99,7 @@ export function GlobalControls({
           })}
           <input
             type="color"
-            aria-label="Custom badge color"
+            aria-label={t("panel.customBadgeColor")}
             value={
               recipe.colors.badge.type === "solid"
                 ? recipe.colors.badge.color
@@ -121,19 +124,19 @@ export function GlobalControls({
 
       {recipe.layout !== "name_only" && (
         <section className="space-y-1.5">
-          <p className="text-sm font-medium">Badge shape</p>
+          <p className="text-sm font-medium">{t("panel.badgeShape")}</p>
           <div className="flex flex-wrap gap-1.5">
             {BADGES.map((badge) => (
               <button
-                key={badge.id}
+                key={badge}
                 type="button"
-                aria-pressed={recipe.badge.shape === badge.id}
+                aria-pressed={recipe.badge.shape === badge}
                 onClick={() =>
-                  onPatch({ badge: { ...recipe.badge, shape: badge.id } })
+                  onPatch({ badge: { ...recipe.badge, shape: badge } })
                 }
-                className={toggleClass(recipe.badge.shape === badge.id)}
+                className={toggleClass(recipe.badge.shape === badge)}
               >
-                {badge.label}
+                {t(`panel.badge.${badge}`)}
               </button>
             ))}
           </div>
@@ -148,7 +151,7 @@ export function GlobalControls({
               }
               className={toggleClass(recipe.badge.outline)}
             >
-              Outline only
+              {t("panel.outlineOnly")}
             </button>
           )}
         </section>

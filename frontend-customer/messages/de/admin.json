@@ -3546,5 +3546,239 @@
       "keep": "Diesen Look behalten"
     },
     "pageTitle": "Richte deine Website ein"
+  },
+  "logo": {
+    "studio": {
+      "title": "Logo-Studio",
+      "stepsLabel": "Studio-Schritte",
+      "step": {
+        "brief": "1 · Briefing",
+        "ideas": "2 · Ideen",
+        "editor": "3 · Editor"
+      },
+      "saving": "Wird gespeichert…",
+      "useLogo": "Dieses Logo verwenden",
+      "close": "Logo-Studio schließen",
+      "startOverConfirm": "Neu beginnen? Dadurch werden dein Briefing und dein gespeicherter Fortschritt gelöscht.",
+      "refineQuota": "Du hast deine KI-Verfeinerungen für diesen Monat aufgebraucht. Nächsten Monat gibt es neue.",
+      "refineFailed": "Das Design konnte nicht verfeinert werden – versuch es noch einmal.",
+      "unreachable": "Das Design-Studio ist gerade nicht erreichbar.",
+      "uploadFailed": "Hochladen fehlgeschlagen",
+      "saveFailed": "Das Logo konnte nicht gespeichert werden – du kannst stattdessen eine Datei hochladen.",
+      "replaceConfirm": "Deinen aktuellen Entwurf ersetzen? Deine Änderungen im Editor gehen dabei verloren.",
+      "useFailed": "Dieses Logo konnte nicht verwendet werden – versuch es noch einmal.",
+      "iconOnly": "Dein Icon ist fertig, aber die KI-Kombination aus Icon und Schrift wurde nicht abgeschlossen – gestalte den Text im Editor.",
+      "similarFailed": "Es konnte kein ähnliches Logo gestaltet werden – versuch es noch einmal.",
+      "gettingReady": "Dein Logo wird vorbereitet…",
+      "similar": {
+        "disabled": "KI-Design ist gerade nicht verfügbar.",
+        "upgrade_required": "Upgrade deinen Tarif, um mit KI zu gestalten.",
+        "quota_exhausted": "Du hast deine KI-Design-Durchgänge für diesen Monat aufgebraucht.",
+        "unreachable": "Das Design-Studio ist gerade nicht erreichbar.",
+        "empty": "Die KI konnte dieses Logo nicht zeichnen – probier ein anderes."
+      }
+    },
+    "brief": {
+      "title": "Erzähl uns von deiner Marke",
+      "intro": "Daraus machen wir eine ganze Wand voller Logo-Ideen, aus denen du wählen und die du feinabstimmen kannst.",
+      "brandName": "Markenname",
+      "niche": "Was bietest du an?",
+      "nichePlaceholder": "z. B. Yoga, Fitness, Musik, Kochen…",
+      "tagline": "Slogan",
+      "optional": "(optional)",
+      "taglinePlaceholder": "z. B. Yoga für vielbeschäftigte Mütter",
+      "vibe": "Beschreib deinen Stil",
+      "vibePlaceholder": "z. B. ruhig, erdig, hochwertig, aber nahbar",
+      "style": "Stil",
+      "pickUpTo": "(bis zu 3 auswählen)",
+      "chip": {
+        "Minimal": "Minimalistisch",
+        "Bold": "Kräftig",
+        "Elegant": "Elegant",
+        "Playful": "Verspielt",
+        "Organic": "Organisch",
+        "Tech": "Technik"
+      },
+      "show": "Meine Logo-Ideen anzeigen",
+      "startOver": "Neu beginnen"
+    },
+    "canvas": {
+      "hintSelected": "Ziehen zum Verschieben · Ecken zum Skalieren · Pfeiltasten zum Feinjustieren · Esc zum Abwählen",
+      "hint": "Klicke auf einen beliebigen Teil deines Logos, um ihn zu bearbeiten",
+      "previewLight": "Vorschau auf hellem Hintergrund",
+      "previewDark": "Vorschau auf dunklem Hintergrund",
+      "label": "Logo-Arbeitsfläche"
+    },
+    "editor": {
+      "kitNoSvg": "Die Schriftarten konnten nicht geladen werden, daher enthält das Kit nur PNGs (kein SVG).",
+      "kitFailed": "Das Brand-Kit konnte nicht erstellt werden – bitte versuche es erneut.",
+      "browserTab": "Browser-Tab",
+      "appIcon": "App-Symbol",
+      "building": "Wird erstellt…",
+      "downloadKit": "Brand-Kit herunterladen (.zip)",
+      "kitContents": "PNGs für hell & dunkel, Favicon-Größen und ein Vektor-SVG."
+    },
+    "entrance": {
+      "readyMade": "Fertige Logos",
+      "readyMadeHint": "Komplette Logo-Ideen für deine Marke – kostenlos nutzbar und anpassbar.",
+      "designWithAi": "Mit KI gestalten",
+      "aiHint": "Beschreibe deinen Stil und lass die KI ein individuelles Logo gestalten.",
+      "aiUpgradeHint": "Führe ein Upgrade durch, um mit KI ein individuelles Logo zu gestalten."
+    },
+    "gallery": {
+      "empty": "Noch keine fertigen Logos – probiere stattdessen „Mit KI gestalten“.",
+      "designing": "Deine Version wird gestaltet…",
+      "use": "Dieses verwenden",
+      "createOwn": "Eigenes erstellen"
+    },
+    "chat": {
+      "step": {
+        "describe": "Beschreiben",
+        "icon": "Symbol",
+        "name": "Name",
+        "tagline": "Slogan"
+      },
+      "notice": {
+        "quota_exhausted": "Du hast deine KI-Design-Runden für diesen Monat aufgebraucht. Nächsten Monat gibt es neue.",
+        "disabled": "KI-Design ist vorübergehend nicht verfügbar.",
+        "upgrade_required": "KI-Design ist in kostenpflichtigen Tarifen enthalten.",
+        "error": "Diese Runde konnte nicht gestaltet werden – versuche es erneut."
+      },
+      "phase": {
+        "designing": "Konzepte werden skizziert",
+        "illustrating": "Bildmarken werden gezeichnet",
+        "tracing": "Umwandlung in Vektoren"
+      },
+      "pick": "Dieses wählen",
+      "useTagline": "„{tagline}“ verwenden",
+      "soFar": "Dein bisheriges Logo",
+      "picksHere": "Deine Auswahl erscheint hier nach und nach.",
+      "cancelled": "Abgebrochen – dafür wurde einer deiner Design-Durchgänge verbraucht.",
+      "unreachable": "Das Design-Studio war gerade nicht erreichbar.",
+      "ideas": "Ideen",
+      "stepsLabel": "Design-Schritte",
+      "title": "Mit KI gestalten",
+      "reviewing": "Prüft das eigene Ergebnis…",
+      "cancelNote": "Auch ein Abbruch verbraucht 1 Durchgang.",
+      "preparing": "Optionen werden vorbereitet…",
+      "changePlaceholder": "Beschreibe eine Änderung für diesen Schritt… (z. B. geometrischer, weniger verspielt)",
+      "send": "Senden",
+      "differentOptions": "Andere Optionen anzeigen",
+      "turnsLeft": "{count, plural, one {Noch # KI-Design-Durchgang in diesem Monat.} other {Noch # KI-Design-Durchgänge in diesem Monat.}}",
+      "describeTitle": "Beschreibe dein Wunschlogo",
+      "describeHint": "Ein, zwei Sätze reichen völlig – eine Stimmung, ein Symbol, Farben, die du magst oder vermeiden möchtest. Oder überspring das, und wir schlagen dir Konzepte auf Basis deiner Marke vor.",
+      "describePlaceholder": "z. B. ein ruhiges, minimalistisches Zeichen – vielleicht ein Blatt oder ein Sonnenaufgang, warme erdige Grüntöne, nichts Steifes",
+      "designing": "Wird gestaltet…",
+      "generate": "Konzepte erstellen",
+      "skip": "Überspringen, zeig mir einfach Ideen",
+      "upsell": "KI-Design ist in kostenpflichtigen Tarifen enthalten.",
+      "upgrade": "Upgraden"
+    },
+    "refine": {
+      "title": "Frag den KI-Designer",
+      "quota": "Du hast deine KI-Verfeinerungen für diesen Monat aufgebraucht. Nächsten Monat gibt es neue.",
+      "unavailable": "Die KI-Verfeinerung ist vorübergehend nicht verfügbar.",
+      "placeholder": "z. B. wärmere Farben, ein runderes Zeichen, hochwertiger",
+      "redraw": "Icon neu zeichnen (Zeichen komplett neu beginnen)",
+      "refining": "Wird verfeinert…",
+      "refine": "Verfeinern",
+      "left": "{count, plural, one {Noch # KI-Verfeinerung in diesem Monat.} other {Noch # KI-Verfeinerungen in diesem Monat.}}"
+    },
+    "panel": {
+      "undo": "Rückgängig",
+      "redo": "Wiederholen",
+      "getIdeas": "Neue Ideen holen",
+      "clickToEdit": "Klicke in der Vorschau auf einen beliebigen Teil deines Logos, um ihn direkt zu bearbeiten.",
+      "name": "Name",
+      "tagline": "Slogan",
+      "taglineOptional": "Slogan (optional)",
+      "layout": {
+        "label": "Anordnung",
+        "horizontal": "Zeichen + Name",
+        "horizontal_reversed": "Name + Zeichen",
+        "stacked": "Gestapelt",
+        "emblem": "Emblem",
+        "name_only": "Nur Name"
+      },
+      "colors": "Farben",
+      "customBadgeColor": "Eigene Badge-Farbe",
+      "badgeShape": "Badge-Form",
+      "badge": {
+        "circle": "Kreis",
+        "rounded": "Abgerundet",
+        "squircle": "Squircle",
+        "hexagon": "Sechseck",
+        "shield": "Schild",
+        "diamond": "Raute",
+        "none": "Keine"
+      },
+      "outlineOnly": "Nur Umriss",
+      "font": "Schriftart",
+      "weight": {
+        "label": "Schriftstärke",
+        "400": "Normal",
+        "500": "Mittel",
+        "600": "Halbfett",
+        "700": "Fett",
+        "800": "Extrafett"
+      },
+      "case": {
+        "label": "Schreibweise",
+        "none": "Wie eingegeben",
+        "titleCase": "Wortanfänge Groß",
+        "upper": "GROSSBUCHSTABEN"
+      },
+      "letterSpacing": "Zeichenabstand",
+      "size": "Größe",
+      "color": "Farbe",
+      "colorHex": "Farbe {hex}",
+      "customColor": "Eigene Farbe",
+      "mark": {
+        "title": "Bildmarke",
+        "aiDrawn": "KI-gezeichnete Bildmarke",
+        "designedInSetup": "Bei der Einrichtung gestaltet",
+        "generatedHint": "Dieses Logo wurde bei der Einrichtung für dich gestaltet. Wähle unter Einrichtung → Logo ein anderes aus oder wähle unten eine Bildmarke, um neu zu beginnen.",
+        "customHint": "Wähle unten eine andere Bildmarke, um sie auszutauschen, oder nutze die Farbeinstellungen, um sie umzufärben.",
+        "initials": {
+          "plain": "{initials} Schlicht",
+          "monogram": "{initials} Monogramm",
+          "split": "{initials} Geteilt",
+          "overlap": "{initials} Überlappend"
+        },
+        "yourOwn": "Deine eigene",
+        "abstract": "Abstrakt",
+        "family": {
+          "orbits": "Abstrakte Umlaufbahnen",
+          "bloom": "Abstrakte Blüte",
+          "waves": "Abstrakte Wellen",
+          "prism": "Abstraktes Prisma",
+          "knot": "Abstrakter Knoten",
+          "grid": "Abstraktes Raster"
+        },
+        "shuffle": "Klick erneut, um die Form neu zu mischen.",
+        "style": {
+          "outline": "Kontur",
+          "solid": "Gefüllt"
+        },
+        "color": "Farbe des Zeichens",
+        "solid": "Einfarbig",
+        "gradient": "Verlauf",
+        "gradientEnd": "Endfarbe des Verlaufs im Zeichen",
+        "gradientAngle": "Verlaufswinkel",
+        "aiColors": "Von der KI gezeichnete Zeichenfarben",
+        "secondaryColor": "Sekundärfarbe",
+        "secondary": "Sekundär",
+        "accentColor": "Akzentfarbe",
+        "accent": "Akzent"
+      }
+    }
+  },
+  "cx": {
+    "emptyItems": "Füge im Editor-Bereich Elemente hinzu."
+  },
+  "aiProgress": {
+    "inProgress": "{phase} läuft",
+    "elapsed": "Verstrichene Zeit",
+    "cancel": "Abbrechen"
   }
 }

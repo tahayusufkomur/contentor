@@ -20,6 +20,7 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 const ICONS: Record<string, LucideIcon> = {
   "book-open": BookOpen,
@@ -137,6 +138,7 @@ export function KitBanner({
   message: string;
   onDismiss: () => void;
 }) {
+  const t = useTranslations("studio.adminKit");
   const tone =
     kind === "error"
       ? "border-destructive/30 bg-destructive/10 text-destructive"
@@ -149,7 +151,7 @@ export function KitBanner({
       <button
         type="button"
         onClick={onDismiss}
-        aria-label="Dismiss"
+        aria-label={t("actions.dismiss")}
         className="opacity-70 transition-opacity hover:opacity-100"
       >
         <X className="h-4 w-4" />

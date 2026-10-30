@@ -30,7 +30,8 @@
     "callToAction": "Dein Call-to-Action",
     "yourHeadline": "Deine Überschrift",
     "addSubheadline": "Unterüberschrift hinzufügen",
-    "announcement": "Ankündigung"
+    "announcement": "Ankündigung",
+    "badge": "Badge"
   },
   "empty": {
     "courses": {
@@ -740,5 +741,12 @@
     "welcomeFallback": "Willkommen auf deiner neuen Website",
     "yourSite": "Deine Website",
     "explore": "Entdecken"
+  },
+  "meta": {
+    "fallbackName": "Willkommen"
+  },
+  "unknownHost": {
+    "title": "Website nicht gefunden",
+    "text": "Unter dieser Adresse gibt es keine Contentor-Website. Prüf den Link oder wende dich an den Inhaber der Website."
   }
 }

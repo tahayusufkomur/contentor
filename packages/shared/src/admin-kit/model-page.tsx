@@ -8,8 +8,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
+import { useTranslations } from "next-intl";
 
-import { AdminKitError, createAdminClient } from "./client";
+import { AdminKitError, createAdminClient, kitDetail } from "./client";
 import type {
   ActionSchema,
   ChoiceOption,
@@ -43,6 +44,7 @@ function StringFilter({
   value: string;
   onApply: (value: string) => void;
 }) {
+  const t = useTranslations("studio.adminKit.page");
   const [text, setText] = useState(value);
   useEffect(() => {
     const handle = setTimeout(() => {
@@ -53,7 +55,7 @@ function StringFilter({
   return (
     <KitInput
       aria-label={label}
-      placeholder={`${label} (exact)`}
+      placeholder={t("stringFilter", { label })}
       value={text}
       onChange={(e) => setText(e.target.value)}
       className="w-auto min-w-[9rem] max-w-[12rem]"
@@ -82,7 +84,7 @@ function ButtonSelectFilter({
   value,
   options,
   onChange,
-  allLabel = "All",
+  allLabel,
 }: {
   label: string;
   value: string;
@@ -90,6 +92,7 @@ function ButtonSelectFilter({
   onChange: (val: string) => void;
   allLabel?: string;
 }) {
+  const t = useTranslations("studio.adminKit.page");
   const [search, setSearch] = useState("");
   const stripRef = useRef<HTMLDivElement>(null);
   const [canLeft, setCanLeft] = useState(false);
@@ -140,7 +143,7 @@ function ButtonSelectFilter({
       onClick={() => onChange("")}
       className={filterChipClass(value === "")}
     >
-      {allLabel}
+      {allLabel ?? t("all")}
     </button>
   );
 
@@ -184,8 +187,8 @@ function ButtonSelectFilter({
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search…"
-          aria-label={`Search ${label} options`}
+          placeholder={t("filterSearch")}
+          aria-label={t("filterSearchLabel", { label })}
           className="w-28 rounded-sm border bg-background py-1 pr-2 pl-6 text-sm outline-none focus:ring-1 focus:ring-ring"
         />
       </div>
@@ -193,7 +196,7 @@ function ButtonSelectFilter({
         type="button"
         onClick={() => scrollStrip(-1)}
         disabled={!canLeft}
-        aria-label={`Scroll ${label} options left`}
+        aria-label={t("scrollLeft", { label })}
         className="shrink-0 rounded-sm p-1 text-foreground transition-colors hover:bg-muted disabled:opacity-30 disabled:hover:bg-transparent"
       >
         <ChevronLeft className="h-4 w-4" />
@@ -205,7 +208,7 @@ function ButtonSelectFilter({
       >
         {matches.length === 0 ? (
           <span className="px-1.5 text-xs whitespace-nowrap text-muted-foreground">
-            No matches
+            {t("noMatches")}
           </span>
         ) : (
           matches.map(chip)
@@ -215,7 +218,7 @@ function ButtonSelectFilter({
         type="button"
         onClick={() => scrollStrip(1)}
         disabled={!canRight}
-        aria-label={`Scroll ${label} options right`}
+        aria-label={t("scrollRight", { label })}
         className="shrink-0 rounded-sm p-1 text-foreground transition-colors hover:bg-muted disabled:opacity-30 disabled:hover:bg-transparent"
       >
         <ChevronRight className="h-4 w-4" />
@@ -231,6 +234,7 @@ function InfiniteScrollSentinel({
   onIntersect: () => void;
   isFetching: boolean;
 }) {
+  const t = useTranslations("studio.adminKit.page");
   const ref = useRef<HTMLDivElement>(null);
   const onIntersectRef = useRef(onIntersect);
 
@@ -259,7 +263,7 @@ function InfiniteScrollSentinel({
     >
       <span className="flex items-center gap-2 min-h-[1.5rem]">
         {isFetching && <Spinner size="sm" />}
-        {isFetching ? "Loading more..." : ""}
+        {isFetching ? t("loadingMore") : ""}
       </span>
     </div>
   );
@@ -272,6 +276,8 @@ export function AdminModelPage({
   apiBase: string;
   modelKey: string;
 }) {
+  const t = useTranslations("studio.adminKit");
+  const tp = useTranslations("studio.adminKit.page");
   const client = useMemo(() => createAdminClient(apiBase), [apiBase]);
 
   const [meta, setMeta] = useState<ModelMeta | null>(null);
@@ -339,13 +345,15 @@ export function AdminModelPage({
       .catch((err) => {
         if (!cancelled)
           setLoadError(
-            err instanceof AdminKitError ? err.detail : "Failed to load model.",
+            err instanceof AdminKitError
+              ? kitDetail(err, t)
+              : t("errors.loadModel"),
           );
       });
     return () => {
       cancelled = true;
     };
-  }, [client, modelKey]);
+  }, [client, modelKey, t]);
 
   useEffect(() => {
     if (!meta) return;
@@ -366,7 +374,9 @@ export function AdminModelPage({
       .catch((err) => {
         if (!cancelled)
           setLoadError(
-            err instanceof AdminKitError ? err.detail : "Failed to load rows.",
+            err instanceof AdminKitError
+              ? kitDetail(err, t)
+              : t("errors.loadRows"),
           );
       })
       .finally(() => {
@@ -375,7 +385,7 @@ export function AdminModelPage({
     return () => {
       cancelled = true;
     };
-  }, [client, modelKey, meta, pageNum, q, ordering, filters, refreshTick]);
+  }, [client, modelKey, meta, pageNum, q, ordering, filters, refreshTick, t]);
 
   const refresh = useCallback(() => {
     setPageNum(1);
@@ -404,7 +414,7 @@ export function AdminModelPage({
       window.location.href = result.redirect;
       return;
     }
-    showBanner("success", result.detail ?? "Done.");
+    showBanner("success", result.detail ?? tp("done"));
     refresh();
   };
 
@@ -421,7 +431,7 @@ export function AdminModelPage({
     } catch (err) {
       showBanner(
         "error",
-        err instanceof AdminKitError ? err.detail : "Action failed.",
+        err instanceof AdminKitError ? kitDetail(err, t) : t("errors.action"),
       );
     } finally {
       setBusyAction("");
@@ -438,7 +448,7 @@ export function AdminModelPage({
     } catch (err) {
       showBanner(
         "error",
-        err instanceof AdminKitError ? err.detail : "Action failed.",
+        err instanceof AdminKitError ? kitDetail(err, t) : t("errors.action"),
       );
     } finally {
       setBusyRowAction("");
@@ -469,14 +479,16 @@ export function AdminModelPage({
         const data = (await res.json().catch(() => null)) as {
           detail?: string;
         } | null;
-        throw new Error(data?.detail ?? `Upload failed (${res.status}).`);
+        throw new Error(
+          data?.detail ?? t("errors.uploadStatus", { status: res.status }),
+        );
       }
       const image = (await res.json()) as { key: string; url: string };
       setGalleryServerError("");
       setGalleryTarget({ mode: "create", image });
     } catch (err) {
       setGalleryUploadError(
-        err instanceof Error ? err.message : "Upload failed.",
+        err instanceof Error ? err.message : t("errors.upload"),
       );
     } finally {
       setGalleryUploading(false);
@@ -493,25 +505,25 @@ export function AdminModelPage({
           ...data,
           [meta.gallery_image_field ?? ""]: galleryTarget.image.key,
         });
-        showBanner("success", `${meta.label} created.`);
+        showBanner("success", tp("created", { label: meta.label }));
       } else {
         await client.update(
           modelKey,
           String(galleryTarget.row[meta.pk_field]),
           data,
         );
-        showBanner("success", `${meta.label} updated.`);
+        showBanner("success", tp("updated", { label: meta.label }));
       }
       setGalleryTarget(null);
       refresh();
     } catch (err) {
       setGalleryServerError(
         err instanceof AdminKitError
-          ? err.detail ||
+          ? kitDetail(err, t) ||
               Object.entries(err.fieldErrors)
                 .map(([k, v]) => `${k}: ${v}`)
                 .join(" · ")
-          : "Save failed.",
+          : t("errors.save"),
       );
     } finally {
       setGalleryBusy(false);
@@ -524,12 +536,12 @@ export function AdminModelPage({
     setGalleryServerError("");
     try {
       await client.destroy(modelKey, String(galleryTarget.row[meta.pk_field]));
-      showBanner("success", `${meta.label} deleted.`);
+      showBanner("success", tp("deleted", { label: meta.label }));
       setGalleryTarget(null);
       refresh();
     } catch (err) {
       setGalleryServerError(
-        err instanceof AdminKitError ? err.detail : "Delete failed.",
+        err instanceof AdminKitError ? kitDetail(err, t) : t("errors.delete"),
       );
     } finally {
       setGalleryBusy(false);
@@ -570,10 +582,11 @@ export function AdminModelPage({
             </h1>
             {page && (
               <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-muted-foreground">
-                {page.count}{" "}
-                {page.count === 1
-                  ? meta.label.toLowerCase()
-                  : meta.label_plural.toLowerCase()}
+                {tp("count", {
+                  count: page.count,
+                  singular: meta.label.toLowerCase(),
+                  plural: meta.label_plural.toLowerCase(),
+                })}
               </span>
             )}
           </div>
@@ -588,7 +601,8 @@ export function AdminModelPage({
             variant="primary"
             onClick={() => setForm({ mode: "create" })}
           >
-            <Plus className="h-4 w-4" /> New {meta.label}
+            <Plus className="h-4 w-4" />{" "}
+            {t("actions.newItem", { label: meta.label })}
           </KitButton>
         )}
       </div>
@@ -606,7 +620,9 @@ export function AdminModelPage({
           <div className="relative w-full max-w-xs">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <KitInput
-              placeholder={`Search ${meta.label_plural.toLowerCase()}…`}
+              placeholder={tp("searchPlaceholder", {
+                plural: meta.label_plural.toLowerCase(),
+              })}
               value={qInput}
               onChange={(e) => setQInput(e.target.value)}
               className="pl-9"
@@ -631,8 +647,8 @@ export function AdminModelPage({
           const options =
             filter.type === "boolean"
               ? [
-                  { label: "Yes", value: "true" },
-                  { label: "No", value: "false" },
+                  { label: tp("yes"), value: "true" },
+                  { label: tp("no"), value: "false" },
                 ]
               : (filter.choices ?? fkFilterOptions[filter.name] ?? []).map(
                   (o) => ({ label: o.label, value: String(o.value) }),
@@ -646,8 +662,8 @@ export function AdminModelPage({
               options={options}
               allLabel={
                 filter.total_count !== undefined
-                  ? `All (${filter.total_count})`
-                  : "All"
+                  ? tp("allCount", { count: filter.total_count })
+                  : tp("all")
               }
               onChange={(val) => {
                 setFilters((prev) => ({
@@ -664,7 +680,7 @@ export function AdminModelPage({
       {selectable && selected.size > 0 && (
         <div className="flex flex-wrap items-center gap-2 rounded-md border bg-muted/40 px-4 py-2.5">
           <span className="text-sm font-medium text-foreground">
-            {selected.size} selected
+            {tp("selected", { count: selected.size })}
           </span>
           {bulkActions.map((action) => (
             <KitButton

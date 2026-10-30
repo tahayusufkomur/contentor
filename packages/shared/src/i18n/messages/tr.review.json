@@ -123,6 +123,10 @@
     "src": "cf84a98d",
     "reviewed": false
   },
+  "site.placeholder.badge": {
+    "src": "6d12c8ad",
+    "reviewed": false
+  },
   "site.empty.courses.title": {
     "src": "90c6b12b",
     "reviewed": false
@@ -2311,6 +2315,18 @@
     "src": "b965ae66",
     "reviewed": false
   },
+  "site.meta.fallbackName": {
+    "src": "ca4f9dcf",
+    "reviewed": false
+  },
+  "site.unknownHost.title": {
+    "src": "6ba03ac6",
+    "reviewed": false
+  },
+  "site.unknownHost.text": {
+    "src": "3cfdfb4f",
+    "reviewed": false
+  },
   "studio.plan.perMonth": {
     "src": "e9e0ceb5",
     "reviewed": false
@@ -2957,6 +2973,642 @@
   },
   "studio.contentPicker.types.onsite_event": {
     "src": "2c181fad",
+    "reviewed": false
+  },
+  "studio.logo.palette.theme": {
+    "src": "67f2a0a9",
+    "reviewed": false
+  },
+  "studio.logo.palette.ink": {
+    "src": "0480691e",
+    "reviewed": false
+  },
+  "studio.logo.palette.slate": {
+    "src": "26d7b218",
+    "reviewed": false
+  },
+  "studio.logo.palette.forest": {
+    "src": "f41c4e4d",
+    "reviewed": false
+  },
+  "studio.logo.palette.terracotta": {
+    "src": "8be6e64e",
+    "reviewed": false
+  },
+  "studio.logo.palette.rose": {
+    "src": "51ad0eae",
+    "reviewed": false
+  },
+  "studio.logo.palette.violet": {
+    "src": "ddcd2f2e",
+    "reviewed": false
+  },
+  "studio.logo.palette.amber": {
+    "src": "27a01d47",
+    "reviewed": false
+  },
+  "studio.logo.palette.ocean-fade": {
+    "src": "239098a3",
+    "reviewed": false
+  },
+  "studio.logo.palette.sunset-fade": {
+    "src": "113b4a48",
+    "reviewed": false
+  },
+  "studio.logo.palette.mint-fade": {
+    "src": "7a16ee30",
+    "reviewed": false
+  },
+  "studio.logo.palette.berry-fade": {
+    "src": "2f976128",
+    "reviewed": false
+  },
+  "studio.logo.palette.midnight-fade": {
+    "src": "fb93414d",
+    "reviewed": false
+  },
+  "studio.logo.palette.gold-fade": {
+    "src": "6f64f8d0",
+    "reviewed": false
+  },
+  "studio.logo.palette.sage": {
+    "src": "c3bd776c",
+    "reviewed": false
+  },
+  "studio.logo.palette.clay": {
+    "src": "e00d5664",
+    "reviewed": false
+  },
+  "studio.logo.palette.sky": {
+    "src": "b3d97fd6",
+    "reviewed": false
+  },
+  "studio.logo.palette.plum": {
+    "src": "cb92e50c",
+    "reviewed": false
+  },
+  "studio.logo.palette.sand": {
+    "src": "b36fbc6e",
+    "reviewed": false
+  },
+  "studio.logo.palette.coral": {
+    "src": "d27ca6c0",
+    "reviewed": false
+  },
+  "studio.logo.palette.pine": {
+    "src": "456e097f",
+    "reviewed": false
+  },
+  "studio.logo.palette.mono": {
+    "src": "c5c55338",
+    "reviewed": false
+  },
+  "studio.logo.palette.cocoa": {
+    "src": "6517f8be",
+    "reviewed": false
+  },
+  "studio.logo.palette.lavender": {
+    "src": "75c88f3a",
+    "reviewed": false
+  },
+  "studio.logo.iconGroup.wellness": {
+    "src": "3ac645f1",
+    "reviewed": false
+  },
+  "studio.logo.iconGroup.fitness": {
+    "src": "aae59f9d",
+    "reviewed": false
+  },
+  "studio.logo.iconGroup.music": {
+    "src": "131260cb",
+    "reviewed": false
+  },
+  "studio.logo.iconGroup.education": {
+    "src": "aaf87fe5",
+    "reviewed": false
+  },
+  "studio.logo.iconGroup.business": {
+    "src": "d6663dda",
+    "reviewed": false
+  },
+  "studio.logo.iconGroup.creative": {
+    "src": "20ccbc66",
+    "reviewed": false
+  },
+  "studio.logo.iconGroup.food": {
+    "src": "35b25929",
+    "reviewed": false
+  },
+  "studio.logo.iconGroup.lifestyle": {
+    "src": "ce77d621",
+    "reviewed": false
+  },
+  "studio.logo.vibe.Modern": {
+    "src": "3a4e447e",
+    "reviewed": false
+  },
+  "studio.logo.vibe.Elegant": {
+    "src": "4d459dfb",
+    "reviewed": false
+  },
+  "studio.logo.vibe.Bold": {
+    "src": "19e07430",
+    "reviewed": false
+  },
+  "studio.logo.vibe.Playful": {
+    "src": "66d1ddcf",
+    "reviewed": false
+  },
+  "studio.logo.vibe.Minimal": {
+    "src": "a711cca9",
+    "reviewed": false
+  },
+  "studio.mailbox.attachmentTooLarge": {
+    "src": "b84603a9",
+    "reviewed": false
+  },
+  "studio.mailbox.compose.addRecipient": {
+    "src": "c64c4d77",
+    "reviewed": false
+  },
+  "studio.mailbox.compose.sent": {
+    "src": "1643ddeb",
+    "reviewed": false
+  },
+  "studio.mailbox.compose.sendFailed": {
+    "src": "63ad26e0",
+    "reviewed": false
+  },
+  "studio.mailbox.compose.title": {
+    "src": "1ed2e7b5",
+    "reviewed": false
+  },
+  "studio.mailbox.compose.to": {
+    "src": "ae79ea1e",
+    "reviewed": false
+  },
+  "studio.mailbox.compose.subject": {
+    "src": "8d183dbd",
+    "reviewed": false
+  },
+  "studio.mailbox.compose.button": {
+    "src": "47da6f08",
+    "reviewed": false
+  },
+  "studio.mailbox.actions.close": {
+    "src": "bbfa773e",
+    "reviewed": false
+  },
+  "studio.mailbox.actions.back": {
+    "src": "b52b36b7",
+    "reviewed": false
+  },
+  "studio.mailbox.actions.cancel": {
+    "src": "77dfd213",
+    "reviewed": false
+  },
+  "studio.mailbox.actions.delete": {
+    "src": "f6fdbe48",
+    "reviewed": false
+  },
+  "studio.mailbox.actions.archive": {
+    "src": "2621c6fd",
+    "reviewed": false
+  },
+  "studio.mailbox.actions.spam": {
+    "src": "1c547bf5",
+    "reviewed": false
+  },
+  "studio.mailbox.actions.moveToInbox": {
+    "src": "3d0700bd",
+    "reviewed": false
+  },
+  "studio.mailbox.time.justNow": {
+    "src": "a7f8e7cc",
+    "reviewed": false
+  },
+  "studio.mailbox.time.minutes": {
+    "src": "be206a61",
+    "reviewed": false
+  },
+  "studio.mailbox.time.hours": {
+    "src": "f03ede1c",
+    "reviewed": false
+  },
+  "studio.mailbox.time.days": {
+    "src": "bf1d74fd",
+    "reviewed": false
+  },
+  "studio.mailbox.emptyFolder": {
+    "src": "7f420221",
+    "reviewed": false
+  },
+  "studio.mailbox.noSubject": {
+    "src": "49b20da0",
+    "reviewed": false
+  },
+  "studio.mailbox.folder.inbox": {
+    "src": "44caf746",
+    "reviewed": false
+  },
+  "studio.mailbox.folder.archived": {
+    "src": "eddc813f",
+    "reviewed": false
+  },
+  "studio.mailbox.folder.spam": {
+    "src": "d8628a52",
+    "reviewed": false
+  },
+  "studio.mailbox.deleteDialog.title": {
+    "src": "7121a7a2",
+    "reviewed": false
+  },
+  "studio.mailbox.deleteDialog.text": {
+    "src": "b60a6c30",
+    "reviewed": false
+  },
+  "studio.mailbox.loadFailed": {
+    "src": "01db90c1",
+    "reviewed": false
+  },
+  "studio.mailbox.inboxFailed": {
+    "src": "ceb0a51d",
+    "reviewed": false
+  },
+  "studio.mailbox.threadFailed": {
+    "src": "3c839cbe",
+    "reviewed": false
+  },
+  "studio.mailbox.replySent": {
+    "src": "5ce1bacd",
+    "reviewed": false
+  },
+  "studio.mailbox.replyFailed": {
+    "src": "a72af58d",
+    "reviewed": false
+  },
+  "studio.mailbox.updateFailed": {
+    "src": "f282c6d0",
+    "reviewed": false
+  },
+  "studio.mailbox.deleted": {
+    "src": "e5ddacc4",
+    "reviewed": false
+  },
+  "studio.mailbox.deleteFailed": {
+    "src": "556bb4cd",
+    "reviewed": false
+  },
+  "studio.mailbox.loading": {
+    "src": "33ce4174",
+    "reviewed": false
+  },
+  "studio.mailbox.archived": {
+    "src": "c3560c7a",
+    "reviewed": false
+  },
+  "studio.mailbox.movedToInbox": {
+    "src": "a1cb734c",
+    "reviewed": false
+  },
+  "studio.mailbox.spamMarked": {
+    "src": "4b5097c2",
+    "reviewed": false
+  },
+  "studio.mailbox.search": {
+    "src": "8812cc37",
+    "reviewed": false
+  },
+  "studio.mailbox.clearSearch": {
+    "src": "67300d0f",
+    "reviewed": false
+  },
+  "studio.mailbox.you": {
+    "src": "905cb326",
+    "reviewed": false
+  },
+  "studio.mailbox.editor.placeholder": {
+    "src": "e4c6097e",
+    "reviewed": false
+  },
+  "studio.mailbox.editor.replyPlaceholder": {
+    "src": "dd081ea6",
+    "reviewed": false
+  },
+  "studio.mailbox.editor.maxFiles": {
+    "src": "fc450392",
+    "reviewed": false
+  },
+  "studio.mailbox.editor.tooBig": {
+    "src": "5594ae98",
+    "reviewed": false
+  },
+  "studio.mailbox.editor.uploadFailed": {
+    "src": "832d0bef",
+    "reviewed": false
+  },
+  "studio.mailbox.editor.bold": {
+    "src": "19e07430",
+    "reviewed": false
+  },
+  "studio.mailbox.editor.italic": {
+    "src": "1616e2e5",
+    "reviewed": false
+  },
+  "studio.mailbox.editor.underline": {
+    "src": "39773aa3",
+    "reviewed": false
+  },
+  "studio.mailbox.editor.bulletList": {
+    "src": "660d9fbe",
+    "reviewed": false
+  },
+  "studio.mailbox.editor.numberedList": {
+    "src": "8294ea4f",
+    "reviewed": false
+  },
+  "studio.mailbox.editor.quote": {
+    "src": "309028a9",
+    "reviewed": false
+  },
+  "studio.mailbox.editor.link": {
+    "src": "d0517071",
+    "reviewed": false
+  },
+  "studio.mailbox.editor.linkPrompt": {
+    "src": "08738f6e",
+    "reviewed": false
+  },
+  "studio.mailbox.editor.attach": {
+    "src": "137135db",
+    "reviewed": false
+  },
+  "studio.mailbox.editor.remove": {
+    "src": "df7193a5",
+    "reviewed": false
+  },
+  "studio.mailbox.editor.ctrlEnter": {
+    "src": "03089828",
+    "reviewed": false
+  },
+  "studio.mailbox.editor.send": {
+    "src": "9bc2575c",
+    "reviewed": false
+  },
+  "studio.adminKit.actions.dismiss": {
+    "src": "70afe9ef",
+    "reviewed": false
+  },
+  "studio.adminKit.actions.close": {
+    "src": "bbfa773e",
+    "reviewed": false
+  },
+  "studio.adminKit.actions.closePanel": {
+    "src": "fa0b7b3a",
+    "reviewed": false
+  },
+  "studio.adminKit.actions.cancel": {
+    "src": "77dfd213",
+    "reviewed": false
+  },
+  "studio.adminKit.actions.save": {
+    "src": "efc007a3",
+    "reviewed": false
+  },
+  "studio.adminKit.actions.delete": {
+    "src": "f6fdbe48",
+    "reviewed": false
+  },
+  "studio.adminKit.actions.create": {
+    "src": "6e157c5d",
+    "reviewed": false
+  },
+  "studio.adminKit.actions.newItem": {
+    "src": "b8df8db3",
+    "reviewed": false
+  },
+  "studio.adminKit.actions.editItem": {
+    "src": "3358e4f3",
+    "reviewed": false
+  },
+  "studio.adminKit.errors.loadIndex": {
+    "src": "de16720a",
+    "reviewed": false
+  },
+  "studio.adminKit.errors.loadModel": {
+    "src": "e820de53",
+    "reviewed": false
+  },
+  "studio.adminKit.errors.loadRows": {
+    "src": "9f3c334a",
+    "reviewed": false
+  },
+  "studio.adminKit.errors.action": {
+    "src": "bb2ebaad",
+    "reviewed": false
+  },
+  "studio.adminKit.errors.save": {
+    "src": "aefc6368",
+    "reviewed": false
+  },
+  "studio.adminKit.errors.delete": {
+    "src": "99d69a1b",
+    "reviewed": false
+  },
+  "studio.adminKit.errors.request": {
+    "src": "92a0d7d4",
+    "reviewed": false
+  },
+  "studio.adminKit.errors.requestStatus": {
+    "src": "5681d22b",
+    "reviewed": false
+  },
+  "studio.adminKit.errors.upload": {
+    "src": "144debaf",
+    "reviewed": false
+  },
+  "studio.adminKit.errors.uploadStatus": {
+    "src": "930c149f",
+    "reviewed": false
+  },
+  "studio.adminKit.errors.invalidJson": {
+    "src": "01ccb74f",
+    "reviewed": false
+  },
+  "studio.adminKit.index.title": {
+    "src": "e5e429bc",
+    "reviewed": false
+  },
+  "studio.adminKit.index.intro": {
+    "src": "3db3627a",
+    "reviewed": false
+  },
+  "studio.adminKit.list.empty": {
+    "src": "8d6b3412",
+    "reviewed": false
+  },
+  "studio.adminKit.list.selectAll": {
+    "src": "913afff1",
+    "reviewed": false
+  },
+  "studio.adminKit.list.selectRow": {
+    "src": "b06c8554",
+    "reviewed": false
+  },
+  "studio.adminKit.gallery.add": {
+    "src": "37014d28",
+    "reviewed": false
+  },
+  "studio.adminKit.gallery.drop": {
+    "src": "57ece431",
+    "reviewed": false
+  },
+  "studio.adminKit.gallery.empty": {
+    "src": "891b5aca",
+    "reviewed": false
+  },
+  "studio.adminKit.gallery.live": {
+    "src": "65c821a5",
+    "reviewed": false
+  },
+  "studio.adminKit.gallery.off": {
+    "src": "e3de5ab0",
+    "reviewed": false
+  },
+  "studio.adminKit.json.previous": {
+    "src": "ffc04237",
+    "reviewed": false
+  },
+  "studio.adminKit.json.next": {
+    "src": "7b48d8ed",
+    "reviewed": false
+  },
+  "studio.adminKit.json.label": {
+    "src": "831e0c9e",
+    "reviewed": false
+  },
+  "studio.adminKit.json.deleteConfirm": {
+    "src": "f543d759",
+    "reviewed": false
+  },
+  "studio.adminKit.json.invalid": {
+    "src": "f1c8201c",
+    "reviewed": false
+  },
+  "studio.adminKit.json.expectedObject": {
+    "src": "32529ef0",
+    "reviewed": false
+  },
+  "studio.adminKit.json.unknownFields": {
+    "src": "af26faf7",
+    "reviewed": false
+  },
+  "studio.adminKit.form.deleteConfirm": {
+    "src": "813b06eb",
+    "reviewed": false
+  },
+  "studio.adminKit.form.created": {
+    "src": "dbc4c2ed",
+    "reviewed": false
+  },
+  "studio.adminKit.form.saved": {
+    "src": "ce274707",
+    "reviewed": false
+  },
+  "studio.adminKit.form.deleted": {
+    "src": "f95f2aae",
+    "reviewed": false
+  },
+  "studio.adminKit.field.readOnly": {
+    "src": "76103137",
+    "reviewed": false
+  },
+  "studio.adminKit.field.uploadPng": {
+    "src": "dfc69256",
+    "reviewed": false
+  },
+  "studio.adminKit.field.replacePng": {
+    "src": "7228ee69",
+    "reviewed": false
+  },
+  "studio.adminKit.cell.yes": {
+    "src": "fb360f9c",
+    "reviewed": false
+  },
+  "studio.adminKit.cell.no": {
+    "src": "fd128635",
+    "reviewed": false
+  },
+  "studio.adminKit.page.searchPlaceholder": {
+    "src": "23c1e079",
+    "reviewed": false
+  },
+  "studio.adminKit.page.stringFilter": {
+    "src": "f38dcb2b",
+    "reviewed": false
+  },
+  "studio.adminKit.page.filterSearch": {
+    "src": "f54fbca1",
+    "reviewed": false
+  },
+  "studio.adminKit.page.filterSearchLabel": {
+    "src": "0127c74f",
+    "reviewed": false
+  },
+  "studio.adminKit.page.scrollLeft": {
+    "src": "92bf32ac",
+    "reviewed": false
+  },
+  "studio.adminKit.page.scrollRight": {
+    "src": "2c664db0",
+    "reviewed": false
+  },
+  "studio.adminKit.page.noMatches": {
+    "src": "cd0af6cf",
+    "reviewed": false
+  },
+  "studio.adminKit.page.all": {
+    "src": "6a720856",
+    "reviewed": false
+  },
+  "studio.adminKit.page.allCount": {
+    "src": "0dd5c8d8",
+    "reviewed": false
+  },
+  "studio.adminKit.page.yes": {
+    "src": "5397e058",
+    "reviewed": false
+  },
+  "studio.adminKit.page.no": {
+    "src": "816c52fd",
+    "reviewed": false
+  },
+  "studio.adminKit.page.loadingMore": {
+    "src": "35e3dc3d",
+    "reviewed": false
+  },
+  "studio.adminKit.page.selected": {
+    "src": "bc67a440",
+    "reviewed": false
+  },
+  "studio.adminKit.page.count": {
+    "src": "216a20a8",
+    "reviewed": false
+  },
+  "studio.adminKit.page.done": {
+    "src": "e2bcda84",
+    "reviewed": false
+  },
+  "studio.adminKit.page.created": {
+    "src": "dbc4c2ed",
+    "reviewed": false
+  },
+  "studio.adminKit.page.updated": {
+    "src": "ece74466",
+    "reviewed": false
+  },
+  "studio.adminKit.page.deleted": {
+    "src": "f95f2aae",
     "reviewed": false
   }
 }

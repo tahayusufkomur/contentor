@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
 import { cookies, headers } from "next/headers";
 import { IntlProvider } from "@/i18n/provider";
-import { getLocale, getMessages } from "next-intl/server";
+import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { ogLocale, resolveLocale } from "@shared/i18n/locales";
 
 import { InstallPrompt } from "@/components/shared/install-prompt";
@@ -95,7 +95,8 @@ export async function generateViewport(): Promise<Viewport> {
 export async function generateMetadata(): Promise<Metadata> {
   const slug = await getTenantSlug();
   const config = await fetchTenantConfig(slug);
-  const name = config?.brand_name || "Welcome";
+  const t = await getTranslations("site");
+  const name = config?.brand_name || t("meta.fallbackName");
   const v = config?.icon_id ?? config?.logo_id ?? "default";
 
   // An empty meta description reads as an unfinished site in search results:
@@ -144,14 +145,14 @@ export default async function RootLayout({
   // retries transient failures so this branch means the tenant truly is unknown.
   if (!config && slug !== "unknown") {
     const locale = await getLocale();
+    const t = await getTranslations("site");
     return (
       <html lang={locale} className={GeistSans.variable}>
         <body className="bg-cinematic min-h-screen font-sans antialiased">
           <main className="flex min-h-screen flex-col items-center justify-center gap-3 px-6 text-center">
-            <h1 className="text-2xl font-semibold">Site not found</h1>
+            <h1 className="text-2xl font-semibold">{t("unknownHost.title")}</h1>
             <p className="text-muted-foreground max-w-md text-sm">
-              There’s no Contentor site at this address. Check the link or
-              contact the site owner.
+              {t("unknownHost.text")}
             </p>
           </main>
         </body>

@@ -138,9 +138,20 @@ export const LOGO_ICONS: Record<string, LucideIcon> = {
   waves: Waves,
 };
 
-export const ICON_GROUPS: { label: string; icons: string[] }[] = [
+// The group's name is a message: studio.logo.iconGroup.<id>.
+export type IconGroupId =
+  | "wellness"
+  | "fitness"
+  | "music"
+  | "education"
+  | "business"
+  | "creative"
+  | "food"
+  | "lifestyle";
+
+export const ICON_GROUPS: { id: IconGroupId; icons: string[] }[] = [
   {
-    label: "Wellness",
+    id: "wellness",
     icons: [
       "flower-2",
       "leaf",
@@ -153,7 +164,7 @@ export const ICON_GROUPS: { label: string; icons: string[] }[] = [
     ],
   },
   {
-    label: "Fitness",
+    id: "fitness",
     icons: [
       "dumbbell",
       "bike",
@@ -166,7 +177,7 @@ export const ICON_GROUPS: { label: string; icons: string[] }[] = [
     ],
   },
   {
-    label: "Music",
+    id: "music",
     icons: [
       "music",
       "music-2",
@@ -179,7 +190,7 @@ export const ICON_GROUPS: { label: string; icons: string[] }[] = [
     ],
   },
   {
-    label: "Education",
+    id: "education",
     icons: [
       "book-open",
       "graduation-cap",
@@ -192,7 +203,7 @@ export const ICON_GROUPS: { label: string; icons: string[] }[] = [
     ],
   },
   {
-    label: "Business",
+    id: "business",
     icons: [
       "briefcase",
       "trending-up",
@@ -205,7 +216,7 @@ export const ICON_GROUPS: { label: string; icons: string[] }[] = [
     ],
   },
   {
-    label: "Creative",
+    id: "creative",
     icons: [
       "camera",
       "palette",
@@ -218,7 +229,7 @@ export const ICON_GROUPS: { label: string; icons: string[] }[] = [
     ],
   },
   {
-    label: "Food",
+    id: "food",
     icons: [
       "chef-hat",
       "utensils-crossed",
@@ -231,7 +242,7 @@ export const ICON_GROUPS: { label: string; icons: string[] }[] = [
     ],
   },
   {
-    label: "Lifestyle",
+    id: "lifestyle",
     icons: [
       "home",
       "paw-print",
@@ -299,9 +310,35 @@ export function fontEntry(family: string): FontEntry {
   return LOGO_FONTS.find((f) => f.family === family) ?? LOGO_FONTS[0];
 }
 
+// A palette's name is a message: studio.logo.palette.<id>.
+export type PaletteId =
+  | "theme"
+  | "ink"
+  | "slate"
+  | "forest"
+  | "terracotta"
+  | "rose"
+  | "violet"
+  | "amber"
+  | "ocean-fade"
+  | "sunset-fade"
+  | "mint-fade"
+  | "berry-fade"
+  | "midnight-fade"
+  | "gold-fade"
+  | "sage"
+  | "clay"
+  | "sky"
+  | "plum"
+  | "sand"
+  | "coral"
+  | "pine"
+  | "mono"
+  | "cocoa"
+  | "lavender";
+
 export interface Palette {
-  id: string;
-  label: string;
+  id: PaletteId;
   badge: Fill;
   mark: string;
   text: string;
@@ -322,7 +359,6 @@ export function PALETTES(primaryHex: string): Palette[] {
   return [
     {
       id: "theme",
-      label: "Your theme",
       badge: solid(primaryHex),
       mark: "#ffffff",
       text: "#111827",
@@ -330,7 +366,6 @@ export function PALETTES(primaryHex: string): Palette[] {
     },
     {
       id: "ink",
-      label: "Ink",
       badge: solid("#111827"),
       mark: "#ffffff",
       text: "#111827",
@@ -338,7 +373,6 @@ export function PALETTES(primaryHex: string): Palette[] {
     },
     {
       id: "slate",
-      label: "Slate",
       badge: solid("#334155"),
       mark: "#ffffff",
       text: "#334155",
@@ -346,7 +380,6 @@ export function PALETTES(primaryHex: string): Palette[] {
     },
     {
       id: "forest",
-      label: "Forest",
       badge: solid("#15803d"),
       mark: "#ffffff",
       text: "#14532d",
@@ -354,7 +387,6 @@ export function PALETTES(primaryHex: string): Palette[] {
     },
     {
       id: "terracotta",
-      label: "Terracotta",
       badge: solid("#c2410c"),
       mark: "#fff7ed",
       text: "#7c2d12",
@@ -362,7 +394,6 @@ export function PALETTES(primaryHex: string): Palette[] {
     },
     {
       id: "rose",
-      label: "Rose",
       badge: solid("#e11d48"),
       mark: "#fff1f2",
       text: "#881337",
@@ -370,7 +401,6 @@ export function PALETTES(primaryHex: string): Palette[] {
     },
     {
       id: "violet",
-      label: "Violet",
       badge: solid("#7c3aed"),
       mark: "#f5f3ff",
       text: "#4c1d95",
@@ -378,7 +408,6 @@ export function PALETTES(primaryHex: string): Palette[] {
     },
     {
       id: "amber",
-      label: "Amber",
       badge: solid("#f59e0b"),
       mark: "#1f2937",
       text: "#78350f",
@@ -386,7 +415,6 @@ export function PALETTES(primaryHex: string): Palette[] {
     },
     {
       id: "ocean-fade",
-      label: "Ocean fade",
       badge: linear("#0ea5e9", "#1d4ed8"),
       mark: "#ffffff",
       text: "#0c4a6e",
@@ -394,7 +422,6 @@ export function PALETTES(primaryHex: string): Palette[] {
     },
     {
       id: "sunset-fade",
-      label: "Sunset fade",
       badge: linear("#f97316", "#e11d48"),
       mark: "#ffffff",
       text: "#7c2d12",
@@ -402,7 +429,6 @@ export function PALETTES(primaryHex: string): Palette[] {
     },
     {
       id: "mint-fade",
-      label: "Mint fade",
       badge: linear("#34d399", "#0d9488"),
       mark: "#022c22",
       text: "#134e4a",
@@ -410,7 +436,6 @@ export function PALETTES(primaryHex: string): Palette[] {
     },
     {
       id: "berry-fade",
-      label: "Berry fade",
       badge: linear("#a855f7", "#db2777"),
       mark: "#ffffff",
       text: "#581c87",
@@ -418,7 +443,6 @@ export function PALETTES(primaryHex: string): Palette[] {
     },
     {
       id: "midnight-fade",
-      label: "Midnight fade",
       badge: linear("#1e293b", "#0f172a"),
       mark: "#93c5fd",
       text: "#0f172a",
@@ -426,7 +450,6 @@ export function PALETTES(primaryHex: string): Palette[] {
     },
     {
       id: "gold-fade",
-      label: "Gold fade",
       badge: linear("#fbbf24", "#d97706"),
       mark: "#451a03",
       text: "#78350f",
@@ -434,7 +457,6 @@ export function PALETTES(primaryHex: string): Palette[] {
     },
     {
       id: "sage",
-      label: "Sage",
       badge: solid("#84a98c"),
       mark: "#f0fdf4",
       text: "#354f52",
@@ -442,7 +464,6 @@ export function PALETTES(primaryHex: string): Palette[] {
     },
     {
       id: "clay",
-      label: "Clay",
       badge: solid("#b08968"),
       mark: "#fefae0",
       text: "#5f4b32",
@@ -450,7 +471,6 @@ export function PALETTES(primaryHex: string): Palette[] {
     },
     {
       id: "sky",
-      label: "Sky",
       badge: solid("#38bdf8"),
       mark: "#082f49",
       text: "#0c4a6e",
@@ -458,7 +478,6 @@ export function PALETTES(primaryHex: string): Palette[] {
     },
     {
       id: "plum",
-      label: "Plum",
       badge: solid("#6b21a8"),
       mark: "#faf5ff",
       text: "#3b0764",
@@ -466,7 +485,6 @@ export function PALETTES(primaryHex: string): Palette[] {
     },
     {
       id: "sand",
-      label: "Sand",
       badge: solid("#e7e5e4"),
       mark: "#44403c",
       text: "#292524",
@@ -474,7 +492,6 @@ export function PALETTES(primaryHex: string): Palette[] {
     },
     {
       id: "coral",
-      label: "Coral",
       badge: solid("#fb7185"),
       mark: "#4c0519",
       text: "#881337",
@@ -482,7 +499,6 @@ export function PALETTES(primaryHex: string): Palette[] {
     },
     {
       id: "pine",
-      label: "Pine",
       badge: solid("#065f46"),
       mark: "#d1fae5",
       text: "#064e3b",
@@ -490,7 +506,6 @@ export function PALETTES(primaryHex: string): Palette[] {
     },
     {
       id: "mono",
-      label: "Mono",
       badge: solid("#404040"),
       mark: "#fafafa",
       text: "#171717",
@@ -498,7 +513,6 @@ export function PALETTES(primaryHex: string): Palette[] {
     },
     {
       id: "cocoa",
-      label: "Cocoa",
       badge: solid("#4a2c2a"),
       mark: "#fde68a",
       text: "#3f1d1b",
@@ -506,7 +520,6 @@ export function PALETTES(primaryHex: string): Palette[] {
     },
     {
       id: "lavender",
-      label: "Lavender",
       badge: solid("#c4b5fd"),
       mark: "#312e81",
       text: "#3730a3",

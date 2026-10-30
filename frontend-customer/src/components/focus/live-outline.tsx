@@ -43,7 +43,10 @@ export function LiveOutline({ frame }: { frame: LiveFrame }) {
           <CardHeader className="pb-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <CardTitle className="text-base">
-                Module {index + 1}: {row.title}
+                {t("courseForm.moduleTitle", {
+                  n: index + 1,
+                  title: row.title,
+                })}
               </CardTitle>
               {row.typing && tag}
             </div>

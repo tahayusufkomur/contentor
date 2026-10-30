@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { FC, ReactNode } from "react";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
@@ -21,11 +21,25 @@ vi.mock("@/components/ui/nav-link", async () => {
 
 import type { CxSpec } from "@shared/cx/types";
 import { STYLE_KITS } from "@/components/sections/all-styles";
-import { withIntl } from "@/components/sections/__tests__/with-intl";
+import { NextIntlClientProvider } from "next-intl";
+import admin from "../../../../messages/en/admin.json";
+import site from "@shared/i18n/messages/en/site.json";
 import type { EditableContext } from "@/lib/blocks/types";
 import type { Block } from "@/types/tenant";
 import { CxBlock } from "../cx-block";
 import { ITINERARY_SPEC, itineraryBlock } from "./fixtures";
+
+// The canvas speaks the site's language (site); its editing hint is the creator's (admin).
+const withIntl = (el: ReactNode) =>
+  createElement(
+    NextIntlClientProvider as FC<{
+      locale: string;
+      messages: Record<string, unknown>;
+      children?: ReactNode;
+    }>,
+    { locale: "en", messages: { site, admin } },
+    el,
+  );
 
 const EDITABLE: EditableContext = { onTextChange: () => {} };
 const html = (block: Block, styleId: string, editable?: EditableContext) =>

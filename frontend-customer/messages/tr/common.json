@@ -108,5 +108,13 @@
     "startsAtFallback": "{name} aylık ücretiyle başlar.",
     "beginsAt": "{name} aylık {price} ücretle başlıyor.",
     "beginsAtFallback": "{name} aylık ücretiyle başlıyor."
+  },
+  "impersonation": {
+    "viewingAs": "<b>{email}</b> olarak görüntülüyorsun · {by} tarafından kimliğine bürünüldü",
+    "exit": "Çık",
+    "missingToken": "Kimliğe bürünme anahtarı eksik.",
+    "invalidLink": "Bu kimliğe bürünme bağlantısı geçersiz ya da süresi dolmuş.",
+    "startFailed": "Oturum başlatılamadı",
+    "opening": "Oturum açılıyor…"
   }
 }

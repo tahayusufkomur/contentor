@@ -3546,5 +3546,239 @@
       "keep": "Bu görünümü koru"
     },
     "pageTitle": "Siteni kur"
+  },
+  "logo": {
+    "studio": {
+      "title": "Logo Stüdyosu",
+      "stepsLabel": "Stüdyo adımları",
+      "step": {
+        "brief": "1 · Özet",
+        "ideas": "2 · Fikirler",
+        "editor": "3 · Düzenleyici"
+      },
+      "saving": "Kaydediliyor…",
+      "useLogo": "Bu logoyu kullan",
+      "close": "Logo Stüdyosunu kapat",
+      "startOverConfirm": "Baştan başlamak istiyor musun? Bu işlem özetini ve kaydedilen ilerlemeni siler.",
+      "refineQuota": "Bu ayki yapay zekâ iyileştirme hakkını kullandın. Gelecek ay yeni hakların tanımlanacak.",
+      "refineFailed": "Tasarım iyileştirilemedi — tekrar dene.",
+      "unreachable": "Tasarım stüdyosuna şu anda ulaşılamadı.",
+      "uploadFailed": "Yükleme başarısız oldu",
+      "saveFailed": "Logo kaydedilemedi — bunun yerine bir dosya yükleyebilirsin.",
+      "replaceConfirm": "Mevcut taslağın değiştirilsin mi? Düzenleyicide yaptığın değişiklikler kaybolacak.",
+      "useFailed": "Bu logo kullanılamadı — tekrar dene.",
+      "iconOnly": "Simgen hazır ama yapay zekâ logo yerleşimini tamamlayamadı — metni düzenleyicide biçimlendir.",
+      "similarFailed": "Benzer bir logo tasarlanamadı — tekrar dene.",
+      "gettingReady": "Logon hazırlanıyor…",
+      "similar": {
+        "disabled": "Yapay zekâ ile tasarım şu anda kullanılamıyor.",
+        "upgrade_required": "Yapay zekâ ile tasarım yapmak için planını yükselt.",
+        "quota_exhausted": "Bu ayki yapay zekâ tasarım hakkını kullandın.",
+        "unreachable": "Tasarım stüdyosuna şu anda ulaşılamadı.",
+        "empty": "Yapay zekâ bunu çizemedi — başka bir logo dene."
+      }
+    },
+    "brief": {
+      "title": "Bize markandan bahset",
+      "intro": "Bunu, arasından seçim yapıp ince ayar yapabileceğin bir logo fikirleri panosuna dönüştüreceğiz.",
+      "brandName": "Marka adı",
+      "niche": "Ne sunuyorsun?",
+      "nichePlaceholder": "ör. yoga, fitness, müzik, yemek…",
+      "tagline": "Slogan",
+      "optional": "(isteğe bağlı)",
+      "taglinePlaceholder": "ör. Yoğun anneler için yoga",
+      "vibe": "Tarzını anlat",
+      "vibePlaceholder": "ör. sakin, doğal, premium ama samimi",
+      "style": "Stil",
+      "pickUpTo": "(en fazla 3 tane seç)",
+      "chip": {
+        "Minimal": "Minimal",
+        "Bold": "Cesur",
+        "Elegant": "Zarif",
+        "Playful": "Eğlenceli",
+        "Organic": "Organik",
+        "Tech": "Teknoloji"
+      },
+      "show": "Logo fikirlerimi göster",
+      "startOver": "Baştan başla"
+    },
+    "canvas": {
+      "hintSelected": "Taşımak için sürükle · boyutlandırmak için köşeleri kullan · ince ayar için ok tuşlarını kullan · seçimi kaldırmak için Esc'ye bas",
+      "hint": "Düzenlemek için logonun herhangi bir yerine tıkla",
+      "previewLight": "Açık arka planda önizle",
+      "previewDark": "Koyu arka planda önizle",
+      "label": "Logo tuvali"
+    },
+    "editor": {
+      "kitNoSvg": "Yazı tipleri alınamadı, bu yüzden kitte yalnızca PNG dosyaları var (SVG yok).",
+      "kitFailed": "Marka kiti oluşturulamadı — lütfen tekrar dene.",
+      "browserTab": "Tarayıcı sekmesi",
+      "appIcon": "Uygulama simgesi",
+      "building": "Oluşturuluyor…",
+      "downloadKit": "Marka kitini indir (.zip)",
+      "kitContents": "Açık ve koyu tema için PNG dosyaları, favicon boyutları ve vektörel bir SVG."
+    },
+    "entrance": {
+      "readyMade": "Hazır logolar",
+      "readyMadeHint": "Markan için eksiksiz logo fikirleri — ücretsiz kullan ve dilediğin gibi ince ayar yap.",
+      "designWithAi": "Yapay zekâ ile tasarla",
+      "aiHint": "Tarzını anlat, yapay zekâ sana özel bir logo tasarlasın.",
+      "aiUpgradeHint": "Yapay zekâ ile sana özel bir logo tasarlamak için planını yükselt."
+    },
+    "gallery": {
+      "empty": "Henüz hazır logo yok — bunun yerine Yapay zekâ ile tasarla seçeneğini dene.",
+      "designing": "Senin versiyonun tasarlanıyor…",
+      "use": "Bunu kullan",
+      "createOwn": "Kendi logonu oluştur"
+    },
+    "chat": {
+      "step": {
+        "describe": "Tanımla",
+        "icon": "Simge",
+        "name": "Ad",
+        "tagline": "Slogan"
+      },
+      "notice": {
+        "quota_exhausted": "Bu ayki yapay zekâ tasarım haklarını kullandın. Gelecek ay yenilenecek.",
+        "disabled": "Yapay zekâ ile tasarım geçici olarak kullanılamıyor.",
+        "upgrade_required": "Yapay zekâ ile tasarım ücretli planlara dahildir.",
+        "error": "Bu adım tasarlanamadı — tekrar dene."
+      },
+      "phase": {
+        "designing": "Konseptler çiziliyor",
+        "illustrating": "Amblemler çiziliyor",
+        "tracing": "Vektöre dönüştürülüyor"
+      },
+      "pick": "Bunu seç",
+      "useTagline": "\"{tagline}\" sloganını kullan",
+      "soFar": "Logonun şu anki hali",
+      "picksHere": "İlerledikçe seçimlerin burada görünecek.",
+      "cancelled": "İptal edildi — bu işlem tasarım haklarından birini kullandı.",
+      "unreachable": "Şu anda tasarım stüdyosuna ulaşılamadı.",
+      "ideas": "Fikirler",
+      "stepsLabel": "Tasarım adımları",
+      "title": "Yapay zekâ ile tasarla",
+      "reviewing": "Kendi çalışmasını gözden geçiriyor…",
+      "cancelNote": "İptal etmek yine de 1 hak kullanır.",
+      "preparing": "Seçenekler hazırlanıyor…",
+      "changePlaceholder": "Bu adım için bir değişiklik tarif et… (ör. daha geometrik, daha az eğlenceli)",
+      "send": "Gönder",
+      "differentOptions": "Farklı seçenekler göster",
+      "turnsLeft": "{count, plural, one {Bu ay # yapay zekâ tasarım hakkın kaldı.} other {Bu ay # yapay zekâ tasarım hakkın kaldı.}}",
+      "describeTitle": "İstediğin logoyu tarif et",
+      "describeHint": "Bir iki cümle yeterli — bir hava, bir sembol, öne çıkarmak ya da kaçınmak istediğin renkler. Ya da bu adımı atla, markandan yola çıkarak konseptler önerelim.",
+      "describePlaceholder": "ör. sakin, minimal bir işaret — belki bir yaprak ya da gün doğumu, sıcak toprak tonlarında yeşiller, kurumsal bir şey olmasın",
+      "designing": "Tasarlanıyor…",
+      "generate": "Konsept oluştur",
+      "skip": "Atla, bana sadece fikirleri göster",
+      "upsell": "Yapay zekâ ile tasarım ücretli planlara dahildir.",
+      "upgrade": "Yükselt"
+    },
+    "refine": {
+      "title": "Yapay zekâ tasarımcısına sor",
+      "quota": "Bu ayki yapay zekâ iyileştirme haklarını kullandın. Gelecek ay yenileri tanımlanacak.",
+      "unavailable": "Yapay zekâ ile iyileştirme geçici olarak kullanılamıyor.",
+      "placeholder": "ör. daha sıcak renkler, daha yuvarlak bir işaret, daha seçkin bir hava",
+      "redraw": "Simgeyi yeniden çiz (işarete sıfırdan başla)",
+      "refining": "İyileştiriliyor…",
+      "refine": "İyileştir",
+      "left": "{count, plural, one {Bu ay # yapay zekâ iyileştirme hakkın kaldı.} other {Bu ay # yapay zekâ iyileştirme hakkın kaldı.}}"
+    },
+    "panel": {
+      "undo": "Geri al",
+      "redo": "Yinele",
+      "getIdeas": "Yeni fikirler al",
+      "clickToEdit": "Doğrudan düzenlemek için önizlemede logonun herhangi bir bölümüne tıkla.",
+      "name": "Ad",
+      "tagline": "Slogan",
+      "taglineOptional": "Slogan (isteğe bağlı)",
+      "layout": {
+        "label": "Yerleşim",
+        "horizontal": "İşaret + ad",
+        "horizontal_reversed": "Ad + işaret",
+        "stacked": "Üst üste",
+        "emblem": "Amblem",
+        "name_only": "Yalnızca ad"
+      },
+      "colors": "Renkler",
+      "customBadgeColor": "Özel rozet rengi",
+      "badgeShape": "Rozet şekli",
+      "badge": {
+        "circle": "Daire",
+        "rounded": "Yuvarlatılmış",
+        "squircle": "Yumuşak kare",
+        "hexagon": "Altıgen",
+        "shield": "Kalkan",
+        "diamond": "Baklava",
+        "none": "Yok"
+      },
+      "outlineOnly": "Yalnızca dış çizgi",
+      "font": "Yazı tipi",
+      "weight": {
+        "label": "Kalınlık",
+        "400": "Normal",
+        "500": "Orta",
+        "600": "Yarı kalın",
+        "700": "Kalın",
+        "800": "Ekstra kalın"
+      },
+      "case": {
+        "label": "Harf düzeni",
+        "none": "Yazıldığı gibi",
+        "titleCase": "Baş Harfler Büyük",
+        "upper": "BÜYÜK HARF"
+      },
+      "letterSpacing": "Harf aralığı",
+      "size": "Boyut",
+      "color": "Renk",
+      "colorHex": "Renk {hex}",
+      "customColor": "Özel renk",
+      "mark": {
+        "title": "Simge",
+        "aiDrawn": "Yapay zekâ çizimi simge",
+        "designedInSetup": "Kurulumda tasarlandı",
+        "generatedHint": "Bu logo kurulum sırasında senin için tasarlandı. Kurulum → Logo bölümünden başka bir tane seç ya da baştan başlamak için aşağıdan bir simge seç.",
+        "customHint": "Değiştirmek için aşağıdan farklı bir simge seç ya da yeniden renklendirmek için renk ayarlarını kullan.",
+        "initials": {
+          "plain": "{initials} Sade",
+          "monogram": "{initials} Monogram",
+          "split": "{initials} Bölünmüş",
+          "overlap": "{initials} İç içe"
+        },
+        "yourOwn": "Kendi simgen",
+        "abstract": "Soyut",
+        "family": {
+          "orbits": "Soyut yörüngeler",
+          "bloom": "Soyut çiçek",
+          "waves": "Soyut dalgalar",
+          "prism": "Soyut prizma",
+          "knot": "Soyut düğüm",
+          "grid": "Soyut ızgara"
+        },
+        "shuffle": "Şekli karıştırmak için tekrar tıkla.",
+        "style": {
+          "outline": "Çizgi",
+          "solid": "Dolgulu"
+        },
+        "color": "Amblem rengi",
+        "solid": "Düz renk",
+        "gradient": "Renk geçişi",
+        "gradientEnd": "Amblem renk geçişi bitiş rengi",
+        "gradientAngle": "Renk geçişi açısı",
+        "aiColors": "Yapay zekâ ile çizilen amblem renkleri",
+        "secondaryColor": "İkincil renk",
+        "secondary": "İkincil",
+        "accentColor": "Vurgu rengi",
+        "accent": "Vurgu"
+      }
+    }
+  },
+  "cx": {
+    "emptyItems": "Düzenleyici panelinden öğe ekle."
+  },
+  "aiProgress": {
+    "inProgress": "{phase} sürüyor",
+    "elapsed": "Geçen süre",
+    "cancel": "İptal"
   }
 }

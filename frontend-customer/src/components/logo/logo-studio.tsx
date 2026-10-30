@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { Check, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import { ModalPortal } from "@/components/ui/modal-portal";
@@ -76,6 +77,7 @@ export function LogoStudio({
   config,
   onSaved,
 }: LogoStudioProps) {
+  const t = useTranslations("admin.logo.studio");
   const primaryHex = lookPrimaryHex(config.style, config.palette);
   // Stable seed recipe for gallery previews — recomputed only when the coach's
   // saved config/look changes, so the preview memo in CuratedGallery holds.
@@ -301,10 +303,7 @@ export function LogoStudio({
   }
 
   function handleStartOver() {
-    if (
-      !window.confirm("Start over? This clears your brief and saved progress.")
-    )
-      return;
+    if (!window.confirm(t("startOverConfirm"))) return;
     clearStudioSession();
     setBrief({ brandName: config.brand_name || "", niche: "", styleChips: [] });
     setIdeasReady(false);
@@ -335,8 +334,8 @@ export function LogoStudio({
       if (resp.source !== "ai" || !resp.design) {
         setRefineNotice(
           resp.source === "quota_exhausted"
-            ? "You've used this month's AI refinements. More next month."
-            : "Couldn't refine the design — try again.",
+            ? t("refineQuota")
+            : t("refineFailed"),
         );
         return;
       }
@@ -366,8 +365,7 @@ export function LogoStudio({
     },
     {
       // Failure reason shown as a persistent inline notice, not a toast.
-      onError: () =>
-        setRefineNotice("Couldn't reach the design studio just now."),
+      onError: () => setRefineNotice(t("unreachable")),
     },
   );
 
@@ -382,8 +380,9 @@ export function LogoStudio({
       patch({
         mark: { type: "image", photo_id: uploaded.photo_id, url: dataUrl },
       });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Upload failed");
+    } catch {
+      // The thrown message is an English diagnostic ("Upload failed: 403").
+      setError(t("uploadFailed"));
     } finally {
       URL.revokeObjectURL(objectUrl);
     }
@@ -449,11 +448,7 @@ export function LogoStudio({
     },
     {
       onError: (err) =>
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Could not save the logo — you can upload a file instead.",
-        ),
+        setError(err instanceof Error ? err.message : t("saveFailed")),
     },
   );
 
@@ -461,9 +456,7 @@ export function LogoStudio({
    * edits (undo history empty), or the coach confirmed the overwrite. */
   function confirmReplaceDraft(): boolean {
     if (!canUndo(editHistory)) return true;
-    return window.confirm(
-      "Replace your current draft? Your edits in the editor will be lost.",
-    );
+    return window.confirm(t("replaceConfirm"));
   }
 
   async function handleUseCurated(logo: CuratedLogo, preview: LogoRecipe) {
@@ -487,7 +480,7 @@ export function LogoStudio({
               },
         });
       } catch {
-        setError("Couldn't use that logo — try again.");
+        setError(t("useFailed"));
       } finally {
         setTakingLogo(null);
       }
@@ -517,12 +510,8 @@ export function LogoStudio({
       } finally {
         URL.revokeObjectURL(objectUrl);
       }
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Couldn't use that logo — try again.",
-      );
+    } catch {
+      setError(t("useFailed"));
     }
   }
 
@@ -541,16 +530,14 @@ export function LogoStudio({
         s ? { ...s, turns_remaining: result.turnsRemaining } : s,
       );
       if (result.kind === "icon") {
-        setError(
-          "Your icon is ready, but the AI lockup didn't finish — style the text in the editor.",
-        );
+        setError(t("iconOnly"));
       }
       handleCustomize(result.recipe, result.design.elements);
     } catch (err) {
       setError(
         err instanceof SimilarError
-          ? err.message
-          : "Couldn't design a similar logo — try again.",
+          ? t(`similar.${err.code}`)
+          : t("similarFailed"),
       );
     } finally {
       setSimilarBusy(null);
@@ -638,17 +625,17 @@ export function LogoStudio({
               <div className="flex items-center justify-between border-b px-6 py-4">
                 <div className="flex items-center gap-6">
                   <h2 id="logo-studio-title" className="text-lg font-semibold">
-                    Logo Studio
+                    {t("title")}
                   </h2>
                   <nav
                     className="flex items-center gap-1"
-                    aria-label="Studio steps"
+                    aria-label={t("stepsLabel")}
                   >
                     {(
                       [
-                        { id: "brief", label: "1 · Brief" },
-                        { id: "ideas", label: "2 · Ideas" },
-                        { id: "editor", label: "3 · Editor" },
+                        { id: "brief", label: t("step.brief") },
+                        { id: "ideas", label: t("step.ideas") },
+                        { id: "editor", label: t("step.editor") },
                       ] as { id: StudioStep; label: string }[]
                     ).map((s) => (
                       <button
@@ -673,16 +660,16 @@ export function LogoStudio({
                     <Button
                       onClick={handleSave}
                       loading={saving}
-                      loadingText="Saving…"
+                      loadingText={t("saving")}
                       className="gap-2"
                     >
                       <Check className="h-4 w-4" />
-                      Use this logo
+                      {t("useLogo")}
                     </Button>
                   )}
                   <button
                     type="button"
-                    aria-label="Close Logo Studio"
+                    aria-label={t("close")}
                     onClick={handleClose}
                     className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                   >
@@ -738,9 +725,7 @@ export function LogoStudio({
                     onOpenChat={() => setChatOpen(true)}
                     onUpgrade={handleUpgrade}
                     generatingFilename={similarBusy ?? takingLogo}
-                    generatingLabel={
-                      takingLogo ? "Getting your logo ready…" : undefined
-                    }
+                    generatingLabel={takingLogo ? t("gettingReady") : undefined}
                   />
                 ))}
 

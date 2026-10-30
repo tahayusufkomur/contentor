@@ -1,6 +1,7 @@
 "use client";
 
 import { Redo2, Undo2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { LogoAiStatus } from "@/lib/logo/converse-api";
 import type { LogoRecipe } from "@/types/logo";
 import type { ElementKey } from "../studio-canvas";
@@ -33,6 +34,7 @@ export interface StudioPanelProps {
 /** Contextual controls rail: shows the selected element's controls, or the
  * global sections (layout / palette / badge) when nothing is selected. */
 export function StudioPanel(props: StudioPanelProps) {
+  const t = useTranslations("admin.logo.panel");
   const {
     selected,
     canUndo,
@@ -49,7 +51,7 @@ export function StudioPanel(props: StudioPanelProps) {
       <div className="flex items-center gap-1.5">
         <button
           type="button"
-          aria-label="Undo"
+          aria-label={t("undo")}
           disabled={!canUndo}
           onClick={onUndo}
           className="rounded-md border p-1.5 text-muted-foreground hover:border-foreground disabled:opacity-40"
@@ -58,7 +60,7 @@ export function StudioPanel(props: StudioPanelProps) {
         </button>
         <button
           type="button"
-          aria-label="Redo"
+          aria-label={t("redo")}
           disabled={!canRedo}
           onClick={onRedo}
           className="rounded-md border p-1.5 text-muted-foreground hover:border-foreground disabled:opacity-40"

@@ -30,7 +30,8 @@
     "callToAction": "Your call to action",
     "yourHeadline": "Your headline",
     "addSubheadline": "Add a subheadline",
-    "announcement": "Announcement"
+    "announcement": "Announcement",
+    "badge": "Badge"
   },
   "empty": {
     "courses": {
@@ -740,5 +741,12 @@
     "welcomeFallback": "Welcome to your new site",
     "yourSite": "Your site",
     "explore": "Explore"
+  },
+  "meta": {
+    "fallbackName": "Welcome"
+  },
+  "unknownHost": {
+    "title": "Site not found",
+    "text": "There’s no Contentor site at this address. Check the link or contact the site owner."
   }
 }

@@ -108,5 +108,13 @@
     "startsAtFallback": "{name} zaczyna się od swojej ceny miesięcznej.",
     "beginsAt": "{name} rozpoczyna się od {price} miesięcznie.",
     "beginsAtFallback": "{name} rozpoczyna się od swojej ceny miesięcznej."
+  },
+  "impersonation": {
+    "viewingAs": "Przeglądasz jako <b>{email}</b> · personifikacja przez {by}",
+    "exit": "Wyjdź",
+    "missingToken": "Brak tokenu personifikacji.",
+    "invalidLink": "Ten link do personifikacji jest nieprawidłowy lub wygasł.",
+    "startFailed": "Nie udało się rozpocząć sesji",
+    "opening": "Otwieranie sesji…"
   }
 }

@@ -11367,6 +11367,734 @@
     "src": "b648b797",
     "reviewed": false
   },
+  "admin.logo.studio.title": {
+    "src": "993da408",
+    "reviewed": false
+  },
+  "admin.logo.studio.stepsLabel": {
+    "src": "edf0b86d",
+    "reviewed": false
+  },
+  "admin.logo.studio.step.brief": {
+    "src": "975ba727",
+    "reviewed": false
+  },
+  "admin.logo.studio.step.ideas": {
+    "src": "7cbc9bad",
+    "reviewed": false
+  },
+  "admin.logo.studio.step.editor": {
+    "src": "b1a79387",
+    "reviewed": false
+  },
+  "admin.logo.studio.saving": {
+    "src": "56a2285c",
+    "reviewed": false
+  },
+  "admin.logo.studio.useLogo": {
+    "src": "cccfb1b1",
+    "reviewed": false
+  },
+  "admin.logo.studio.close": {
+    "src": "6211d8e3",
+    "reviewed": false
+  },
+  "admin.logo.studio.startOverConfirm": {
+    "src": "25e75b7d",
+    "reviewed": false
+  },
+  "admin.logo.studio.refineQuota": {
+    "src": "a99e6f41",
+    "reviewed": false
+  },
+  "admin.logo.studio.refineFailed": {
+    "src": "308a17f5",
+    "reviewed": false
+  },
+  "admin.logo.studio.unreachable": {
+    "src": "b1a3f051",
+    "reviewed": false
+  },
+  "admin.logo.studio.uploadFailed": {
+    "src": "ad0d0603",
+    "reviewed": false
+  },
+  "admin.logo.studio.saveFailed": {
+    "src": "90c6d64b",
+    "reviewed": false
+  },
+  "admin.logo.studio.replaceConfirm": {
+    "src": "f14c6fab",
+    "reviewed": false
+  },
+  "admin.logo.studio.useFailed": {
+    "src": "a2f4b5fa",
+    "reviewed": false
+  },
+  "admin.logo.studio.iconOnly": {
+    "src": "d043f9ab",
+    "reviewed": false
+  },
+  "admin.logo.studio.similarFailed": {
+    "src": "7c1b1e81",
+    "reviewed": false
+  },
+  "admin.logo.studio.gettingReady": {
+    "src": "c1029585",
+    "reviewed": false
+  },
+  "admin.logo.studio.similar.disabled": {
+    "src": "33821ac8",
+    "reviewed": false
+  },
+  "admin.logo.studio.similar.upgrade_required": {
+    "src": "a7ab3748",
+    "reviewed": false
+  },
+  "admin.logo.studio.similar.quota_exhausted": {
+    "src": "6fdf0e77",
+    "reviewed": false
+  },
+  "admin.logo.studio.similar.unreachable": {
+    "src": "b1a3f051",
+    "reviewed": false
+  },
+  "admin.logo.studio.similar.empty": {
+    "src": "3deca8b1",
+    "reviewed": false
+  },
+  "admin.logo.brief.title": {
+    "src": "5ee17fff",
+    "reviewed": false
+  },
+  "admin.logo.brief.intro": {
+    "src": "ca33d279",
+    "reviewed": false
+  },
+  "admin.logo.brief.brandName": {
+    "src": "6b4b8b5d",
+    "reviewed": false
+  },
+  "admin.logo.brief.niche": {
+    "src": "7b75f9e9",
+    "reviewed": false
+  },
+  "admin.logo.brief.nichePlaceholder": {
+    "src": "6282174a",
+    "reviewed": false
+  },
+  "admin.logo.brief.tagline": {
+    "src": "b0f79483",
+    "reviewed": false
+  },
+  "admin.logo.brief.optional": {
+    "src": "b16c7ac6",
+    "reviewed": false
+  },
+  "admin.logo.brief.taglinePlaceholder": {
+    "src": "8a2df8a1",
+    "reviewed": false
+  },
+  "admin.logo.brief.vibe": {
+    "src": "0acb2ba8",
+    "reviewed": false
+  },
+  "admin.logo.brief.vibePlaceholder": {
+    "src": "36893f34",
+    "reviewed": false
+  },
+  "admin.logo.brief.style": {
+    "src": "99a0efc6",
+    "reviewed": false
+  },
+  "admin.logo.brief.pickUpTo": {
+    "src": "b496bf2d",
+    "reviewed": false
+  },
+  "admin.logo.brief.chip.Minimal": {
+    "src": "a711cca9",
+    "reviewed": false
+  },
+  "admin.logo.brief.chip.Bold": {
+    "src": "19e07430",
+    "reviewed": false
+  },
+  "admin.logo.brief.chip.Elegant": {
+    "src": "4d459dfb",
+    "reviewed": false
+  },
+  "admin.logo.brief.chip.Playful": {
+    "src": "66d1ddcf",
+    "reviewed": false
+  },
+  "admin.logo.brief.chip.Organic": {
+    "src": "82f86eb9",
+    "reviewed": false
+  },
+  "admin.logo.brief.chip.Tech": {
+    "src": "4fe6abe0",
+    "reviewed": false
+  },
+  "admin.logo.brief.show": {
+    "src": "5e411d2f",
+    "reviewed": false
+  },
+  "admin.logo.brief.startOver": {
+    "src": "51dd91dc",
+    "reviewed": false
+  },
+  "admin.logo.canvas.hintSelected": {
+    "src": "26049ceb",
+    "reviewed": false
+  },
+  "admin.logo.canvas.hint": {
+    "src": "8e2fe463",
+    "reviewed": false
+  },
+  "admin.logo.canvas.previewLight": {
+    "src": "05d347bf",
+    "reviewed": false
+  },
+  "admin.logo.canvas.previewDark": {
+    "src": "866f8a49",
+    "reviewed": false
+  },
+  "admin.logo.canvas.label": {
+    "src": "db700e7c",
+    "reviewed": false
+  },
+  "admin.logo.editor.kitNoSvg": {
+    "src": "5650f2d3",
+    "reviewed": false
+  },
+  "admin.logo.editor.kitFailed": {
+    "src": "3c1407b6",
+    "reviewed": false
+  },
+  "admin.logo.editor.browserTab": {
+    "src": "e5aa2806",
+    "reviewed": false
+  },
+  "admin.logo.editor.appIcon": {
+    "src": "abde7a74",
+    "reviewed": false
+  },
+  "admin.logo.editor.building": {
+    "src": "7cc766ce",
+    "reviewed": false
+  },
+  "admin.logo.editor.downloadKit": {
+    "src": "b4f54033",
+    "reviewed": false
+  },
+  "admin.logo.editor.kitContents": {
+    "src": "23d4f7f4",
+    "reviewed": false
+  },
+  "admin.logo.entrance.readyMade": {
+    "src": "993ac54e",
+    "reviewed": false
+  },
+  "admin.logo.entrance.readyMadeHint": {
+    "src": "1919b1a3",
+    "reviewed": false
+  },
+  "admin.logo.entrance.designWithAi": {
+    "src": "43a8b0e8",
+    "reviewed": false
+  },
+  "admin.logo.entrance.aiHint": {
+    "src": "09bd0dee",
+    "reviewed": false
+  },
+  "admin.logo.entrance.aiUpgradeHint": {
+    "src": "bd0130a9",
+    "reviewed": false
+  },
+  "admin.logo.gallery.empty": {
+    "src": "83efb5a6",
+    "reviewed": false
+  },
+  "admin.logo.gallery.designing": {
+    "src": "e6ecbb41",
+    "reviewed": false
+  },
+  "admin.logo.gallery.use": {
+    "src": "b80ded59",
+    "reviewed": false
+  },
+  "admin.logo.gallery.createOwn": {
+    "src": "7474aae1",
+    "reviewed": false
+  },
+  "admin.logo.chat.step.describe": {
+    "src": "60630704",
+    "reviewed": false
+  },
+  "admin.logo.chat.step.icon": {
+    "src": "716f63b9",
+    "reviewed": false
+  },
+  "admin.logo.chat.step.name": {
+    "src": "709a2322",
+    "reviewed": false
+  },
+  "admin.logo.chat.step.tagline": {
+    "src": "b0f79483",
+    "reviewed": false
+  },
+  "admin.logo.chat.notice.quota_exhausted": {
+    "src": "52e89aec",
+    "reviewed": false
+  },
+  "admin.logo.chat.notice.disabled": {
+    "src": "71e537fd",
+    "reviewed": false
+  },
+  "admin.logo.chat.notice.upgrade_required": {
+    "src": "e86a8c08",
+    "reviewed": false
+  },
+  "admin.logo.chat.notice.error": {
+    "src": "f39726c1",
+    "reviewed": false
+  },
+  "admin.logo.chat.phase.designing": {
+    "src": "3fa8c9fd",
+    "reviewed": false
+  },
+  "admin.logo.chat.phase.illustrating": {
+    "src": "4db01bfc",
+    "reviewed": false
+  },
+  "admin.logo.chat.phase.tracing": {
+    "src": "e4255862",
+    "reviewed": false
+  },
+  "admin.logo.chat.pick": {
+    "src": "dd923e45",
+    "reviewed": false
+  },
+  "admin.logo.chat.useTagline": {
+    "src": "2267ba02",
+    "reviewed": false
+  },
+  "admin.logo.chat.soFar": {
+    "src": "c9eded46",
+    "reviewed": false
+  },
+  "admin.logo.chat.picksHere": {
+    "src": "c0449092",
+    "reviewed": false
+  },
+  "admin.logo.chat.cancelled": {
+    "src": "267df08b",
+    "reviewed": false
+  },
+  "admin.logo.chat.unreachable": {
+    "src": "b1a3f051",
+    "reviewed": false
+  },
+  "admin.logo.chat.ideas": {
+    "src": "6a176af0",
+    "reviewed": false
+  },
+  "admin.logo.chat.stepsLabel": {
+    "src": "ca242082",
+    "reviewed": false
+  },
+  "admin.logo.chat.title": {
+    "src": "43a8b0e8",
+    "reviewed": false
+  },
+  "admin.logo.chat.reviewing": {
+    "src": "6f426975",
+    "reviewed": false
+  },
+  "admin.logo.chat.cancelNote": {
+    "src": "76de7d11",
+    "reviewed": false
+  },
+  "admin.logo.chat.preparing": {
+    "src": "26012dcb",
+    "reviewed": false
+  },
+  "admin.logo.chat.changePlaceholder": {
+    "src": "12cbc0be",
+    "reviewed": false
+  },
+  "admin.logo.chat.send": {
+    "src": "9bc2575c",
+    "reviewed": false
+  },
+  "admin.logo.chat.differentOptions": {
+    "src": "3a6c028b",
+    "reviewed": false
+  },
+  "admin.logo.chat.turnsLeft": {
+    "src": "11379776",
+    "reviewed": false
+  },
+  "admin.logo.chat.describeTitle": {
+    "src": "a6522cad",
+    "reviewed": false
+  },
+  "admin.logo.chat.describeHint": {
+    "src": "d54c30b9",
+    "reviewed": false
+  },
+  "admin.logo.chat.describePlaceholder": {
+    "src": "9c5c3960",
+    "reviewed": false
+  },
+  "admin.logo.chat.designing": {
+    "src": "b42dab05",
+    "reviewed": false
+  },
+  "admin.logo.chat.generate": {
+    "src": "f27f8875",
+    "reviewed": false
+  },
+  "admin.logo.chat.skip": {
+    "src": "449a0415",
+    "reviewed": false
+  },
+  "admin.logo.chat.upsell": {
+    "src": "e86a8c08",
+    "reviewed": false
+  },
+  "admin.logo.chat.upgrade": {
+    "src": "a6f47e00",
+    "reviewed": false
+  },
+  "admin.logo.refine.title": {
+    "src": "c26aa7d2",
+    "reviewed": false
+  },
+  "admin.logo.refine.quota": {
+    "src": "a99e6f41",
+    "reviewed": false
+  },
+  "admin.logo.refine.unavailable": {
+    "src": "0d6f23da",
+    "reviewed": false
+  },
+  "admin.logo.refine.placeholder": {
+    "src": "e04172c9",
+    "reviewed": false
+  },
+  "admin.logo.refine.redraw": {
+    "src": "97d2fd49",
+    "reviewed": false
+  },
+  "admin.logo.refine.refining": {
+    "src": "64155872",
+    "reviewed": false
+  },
+  "admin.logo.refine.refine": {
+    "src": "e1576068",
+    "reviewed": false
+  },
+  "admin.logo.refine.left": {
+    "src": "3961e78f",
+    "reviewed": false
+  },
+  "admin.logo.panel.undo": {
+    "src": "39fc7212",
+    "reviewed": false
+  },
+  "admin.logo.panel.redo": {
+    "src": "471b94d4",
+    "reviewed": false
+  },
+  "admin.logo.panel.getIdeas": {
+    "src": "b58467bf",
+    "reviewed": false
+  },
+  "admin.logo.panel.clickToEdit": {
+    "src": "8f7c5a2e",
+    "reviewed": false
+  },
+  "admin.logo.panel.name": {
+    "src": "709a2322",
+    "reviewed": false
+  },
+  "admin.logo.panel.tagline": {
+    "src": "b0f79483",
+    "reviewed": false
+  },
+  "admin.logo.panel.taglineOptional": {
+    "src": "7d5da1ad",
+    "reviewed": false
+  },
+  "admin.logo.panel.layout.label": {
+    "src": "972ad8d8",
+    "reviewed": false
+  },
+  "admin.logo.panel.layout.horizontal": {
+    "src": "9884523b",
+    "reviewed": false
+  },
+  "admin.logo.panel.layout.horizontal_reversed": {
+    "src": "ae68b2dc",
+    "reviewed": false
+  },
+  "admin.logo.panel.layout.stacked": {
+    "src": "9eafca46",
+    "reviewed": false
+  },
+  "admin.logo.panel.layout.emblem": {
+    "src": "33082eda",
+    "reviewed": false
+  },
+  "admin.logo.panel.layout.name_only": {
+    "src": "224e65ba",
+    "reviewed": false
+  },
+  "admin.logo.panel.colors": {
+    "src": "88d5e4ca",
+    "reviewed": false
+  },
+  "admin.logo.panel.customBadgeColor": {
+    "src": "c7d687ba",
+    "reviewed": false
+  },
+  "admin.logo.panel.badgeShape": {
+    "src": "1ae8b0ae",
+    "reviewed": false
+  },
+  "admin.logo.panel.badge.circle": {
+    "src": "1cc7820a",
+    "reviewed": false
+  },
+  "admin.logo.panel.badge.rounded": {
+    "src": "c5aa340f",
+    "reviewed": false
+  },
+  "admin.logo.panel.badge.squircle": {
+    "src": "402a93d1",
+    "reviewed": false
+  },
+  "admin.logo.panel.badge.hexagon": {
+    "src": "08596d60",
+    "reviewed": false
+  },
+  "admin.logo.panel.badge.shield": {
+    "src": "08271419",
+    "reviewed": false
+  },
+  "admin.logo.panel.badge.diamond": {
+    "src": "b3850e04",
+    "reviewed": false
+  },
+  "admin.logo.panel.badge.none": {
+    "src": "6eef6648",
+    "reviewed": false
+  },
+  "admin.logo.panel.outlineOnly": {
+    "src": "691b8037",
+    "reviewed": false
+  },
+  "admin.logo.panel.font": {
+    "src": "b97c4d4c",
+    "reviewed": false
+  },
+  "admin.logo.panel.weight.label": {
+    "src": "69c0b815",
+    "reviewed": false
+  },
+  "admin.logo.panel.weight.400": {
+    "src": "8d4e4ef3",
+    "reviewed": false
+  },
+  "admin.logo.panel.weight.500": {
+    "src": "d404968e",
+    "reviewed": false
+  },
+  "admin.logo.panel.weight.600": {
+    "src": "d0f518d7",
+    "reviewed": false
+  },
+  "admin.logo.panel.weight.700": {
+    "src": "19e07430",
+    "reviewed": false
+  },
+  "admin.logo.panel.weight.800": {
+    "src": "59f27d90",
+    "reviewed": false
+  },
+  "admin.logo.panel.case.label": {
+    "src": "9254c4bb",
+    "reviewed": false
+  },
+  "admin.logo.panel.case.none": {
+    "src": "02ad1c45",
+    "reviewed": false
+  },
+  "admin.logo.panel.case.titleCase": {
+    "src": "7b2b69bf",
+    "reviewed": false
+  },
+  "admin.logo.panel.case.upper": {
+    "src": "7ad1e7b0",
+    "reviewed": false
+  },
+  "admin.logo.panel.letterSpacing": {
+    "src": "71ae715e",
+    "reviewed": false
+  },
+  "admin.logo.panel.size": {
+    "src": "b7152342",
+    "reviewed": false
+  },
+  "admin.logo.panel.color": {
+    "src": "1d0c8304",
+    "reviewed": false
+  },
+  "admin.logo.panel.colorHex": {
+    "src": "8c4cb185",
+    "reviewed": false
+  },
+  "admin.logo.panel.customColor": {
+    "src": "34cfc644",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.title": {
+    "src": "31e9697d",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.aiDrawn": {
+    "src": "568b7ace",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.designedInSetup": {
+    "src": "53710168",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.generatedHint": {
+    "src": "1df82f6f",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.customHint": {
+    "src": "07678423",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.initials.plain": {
+    "src": "1fbd1fd8",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.initials.monogram": {
+    "src": "c75beb02",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.initials.split": {
+    "src": "956801cf",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.initials.overlap": {
+    "src": "d9d1726a",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.yourOwn": {
+    "src": "d5d84480",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.abstract": {
+    "src": "d79da395",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.family.orbits": {
+    "src": "53f1d678",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.family.bloom": {
+    "src": "fc462812",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.family.waves": {
+    "src": "9d558a9e",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.family.prism": {
+    "src": "8e5a142f",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.family.knot": {
+    "src": "3d2968ed",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.family.grid": {
+    "src": "ea5a5f22",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.shuffle": {
+    "src": "375b9d4a",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.style.outline": {
+    "src": "cdd6290b",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.style.solid": {
+    "src": "d0063586",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.color": {
+    "src": "2c04f6e5",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.solid": {
+    "src": "d0063586",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.gradient": {
+    "src": "36463cf8",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.gradientEnd": {
+    "src": "50824c1d",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.gradientAngle": {
+    "src": "87a9b56b",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.aiColors": {
+    "src": "97b650b9",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.secondaryColor": {
+    "src": "74eb8ca5",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.secondary": {
+    "src": "025de599",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.accentColor": {
+    "src": "e49578ed",
+    "reviewed": false
+  },
+  "admin.logo.panel.mark.accent": {
+    "src": "233064dd",
+    "reviewed": false
+  },
+  "admin.cx.emptyItems": {
+    "src": "e66da8a6",
+    "reviewed": false
+  },
+  "admin.aiProgress.inProgress": {
+    "src": "f8e7ac51",
+    "reviewed": false
+  },
+  "admin.aiProgress.elapsed": {
+    "src": "b6f93b69",
+    "reviewed": false
+  },
+  "admin.aiProgress.cancel": {
+    "src": "77dfd213",
+    "reviewed": false
+  },
   "common.actions.save": {
     "src": "efc007a3",
     "reviewed": false
@@ -11749,6 +12477,30 @@
   },
   "common.checkout.beginsAtFallback": {
     "src": "81a853c0",
+    "reviewed": false
+  },
+  "common.impersonation.viewingAs": {
+    "src": "3364ea24",
+    "reviewed": false
+  },
+  "common.impersonation.exit": {
+    "src": "f83b6fe3",
+    "reviewed": false
+  },
+  "common.impersonation.missingToken": {
+    "src": "8d9bf1dd",
+    "reviewed": false
+  },
+  "common.impersonation.invalidLink": {
+    "src": "4af0d238",
+    "reviewed": false
+  },
+  "common.impersonation.startFailed": {
+    "src": "bc5d23ec",
+    "reviewed": false
+  },
+  "common.impersonation.opening": {
+    "src": "e9e3017e",
     "reviewed": false
   },
   "pwa.installPrompt": {

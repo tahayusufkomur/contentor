@@ -7,8 +7,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
-import { AdminKitError, createAdminClient } from "./client";
+import { AdminKitError, createAdminClient, kitDetail } from "./client";
 import type { SiteMeta } from "./types";
 
 import { KitBanner, KitSkeletonRows, kitIcon } from "./primitives";
@@ -20,6 +21,7 @@ export function AdminModelIndex({
   apiBase: string;
   basePath: string;
 }) {
+  const t = useTranslations("studio.adminKit");
   const client = useMemo(() => createAdminClient(apiBase), [apiBase]);
   const [site, setSite] = useState<SiteMeta | null>(null);
   const [error, setError] = useState("");
@@ -34,13 +36,15 @@ export function AdminModelIndex({
       .catch((err) => {
         if (!cancelled)
           setError(
-            err instanceof AdminKitError ? err.detail : "Failed to load.",
+            err instanceof AdminKitError
+              ? kitDetail(err, t)
+              : t("errors.loadIndex"),
           );
       });
     return () => {
       cancelled = true;
     };
-  }, [client]);
+  }, [client, t]);
 
   if (error) {
     return (
@@ -60,10 +64,10 @@ export function AdminModelIndex({
     <div className="space-y-6 p-4 md:p-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          Data
+          {t("index.title")}
         </h1>
         <p className="text-sm text-muted-foreground">
-          Browse, edit and act on {site.title.toLowerCase()} records.
+          {t("index.intro", { title: site.title.toLowerCase() })}
         </p>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

@@ -9,11 +9,12 @@ import type { ConverseDesign } from "@/lib/logo/composer";
 export type WizardStep = "describe" | "icon" | "name" | "tagline";
 export type StepStatus = "done" | "current" | "upcoming";
 
-export const WIZARD_STEPS: { id: WizardStep; label: string }[] = [
-  { id: "describe", label: "Describe" },
-  { id: "icon", label: "Icon" },
-  { id: "name", label: "Name" },
-  { id: "tagline", label: "Tagline" },
+// The step's label is admin.logo.chat.step.<id>.
+export const WIZARD_STEPS: { id: WizardStep }[] = [
+  { id: "describe" },
+  { id: "icon" },
+  { id: "name" },
+  { id: "tagline" },
 ];
 
 const ORDER: WizardStep[] = ["describe", "icon", "name", "tagline"];
@@ -67,15 +68,12 @@ export function currentSelection(
 }
 
 /** The tagline-stage "use the Brief's tagline instead of an AI candidate"
- * button's label, or null when there's no Brief tagline to fall back to — in
+ * button's tagline text (the view wraps it in its own sentence), or null when there's no Brief tagline to fall back to — in
  * that case the button must not render at all, since the tagline stage never
  * offers an empty AI candidate either (picking one is then the only way to
  * finish). Truncates a long tagline so the button stays a reasonable size. */
-export function briefTaglineButtonLabel(
-  tagline: string | undefined,
-): string | null {
+export function briefTaglineText(tagline: string | undefined): string | null {
   const trimmed = (tagline ?? "").trim();
   if (!trimmed) return null;
-  const shown = trimmed.length > 40 ? `${trimmed.slice(0, 40)}…` : trimmed;
-  return `Use "${shown}"`;
+  return trimmed.length > 40 ? `${trimmed.slice(0, 40)}…` : trimmed;
 }

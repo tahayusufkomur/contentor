@@ -138,22 +138,22 @@ function CourseSlots() {
       <Card>
         <CardContent className="space-y-6 pt-6">
           <div className="space-y-2">
-            <Label>Title</Label>
+            <Label>{t("courseForm.title")}</Label>
             <div className={`h-10 ${slot}`} />
           </div>
           <div className="space-y-2">
-            <Label>Description</Label>
+            <Label>{t("courseForm.description")}</Label>
             <div className={`h-[120px] ${slot}`} />
           </div>
           <div className="space-y-2">
-            <Label>Thumbnail</Label>
+            <Label>{t("courseForm.thumbnail")}</Label>
             <div className={`aspect-video w-48 ${slot}`} />
           </div>
         </CardContent>
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Curriculum</CardTitle>
+          <CardTitle>{t("courseForm.curriculum")}</CardTitle>
           <CardDescription>{t("focus.outlineSoon")}</CardDescription>
         </CardHeader>
       </Card>

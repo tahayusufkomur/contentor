@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { Eye } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { BASE_DOMAIN } from "@/lib/constants";
+import { tEnglish } from "@/lib/english-copy";
 import { Spinner } from "@/components/ui/spinner";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 
@@ -16,7 +18,11 @@ interface ImpersonationState {
 // Fixed banner shown whenever the current session is impersonated. Reads the
 // state from the signed session claim via /users/me (can't be spoofed), and
 // offers an Exit that ends the impersonated session.
+// Who reads it: a platform-scope session is a superadmin, so it stays English.
+// A studio-scope session is a creator looking at their site as a student, so
+// it speaks the site's language, like the page around it.
 export function ImpersonationBanner() {
+  const tSite = useTranslations("common");
   const [state, setState] = useState<ImpersonationState | null>(null);
 
   useEffect(() => {
@@ -55,6 +61,7 @@ export function ImpersonationBanner() {
   });
 
   if (!state) return null;
+  const t = state.scope === "platform" ? tEnglish : tSite;
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-[60] border-t border-amber-500/40 bg-amber-500/95 text-amber-950 shadow-lg pb-safe">
@@ -62,8 +69,11 @@ export function ImpersonationBanner() {
         <div className="flex items-center gap-2">
           <Eye className="h-4 w-4 shrink-0" />
           <span>
-            Viewing as <strong>{state.email}</strong> · impersonated by{" "}
-            {state.by}
+            {t.rich("impersonation.viewingAs", {
+              email: state.email,
+              by: state.by,
+              b: (chunks) => <strong>{chunks}</strong>,
+            })}
           </span>
         </div>
         <button
@@ -73,7 +83,7 @@ export function ImpersonationBanner() {
           className="inline-flex items-center gap-1.5 rounded-md bg-amber-950/90 px-3 py-1 font-medium text-amber-50 transition-colors hover:bg-amber-950 disabled:opacity-60"
         >
           {busy && <Spinner size="sm" />}
-          Exit
+          {t("impersonation.exit")}
         </button>
       </div>
     </div>

@@ -12,6 +12,7 @@
 import { useEffect, useState } from "react";
 
 import { Check } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -57,9 +58,10 @@ export function AiProgress({
   currentPhase,
   children,
   onCancel,
-  cancelLabel = "Cancel",
+  cancelLabel,
   cancelNote,
 }: AiProgressProps) {
+  const t = useTranslations("admin.aiProgress");
   const elapsed = useElapsedSeconds();
   // -1 until the first phase frame lands, which leaves every row pending.
   const currentIndex = phases.findIndex((p) => p.key === currentPhase);
@@ -82,7 +84,10 @@ export function AiProgress({
                 {done ? (
                   <Check className="h-4 w-4 text-primary" aria-hidden="true" />
                 ) : active ? (
-                  <Spinner size="sm" label={`${phase.label} in progress`} />
+                  <Spinner
+                    size="sm"
+                    label={t("inProgress", { phase: phase.label })}
+                  />
                 ) : (
                   <span
                     className="h-1.5 w-1.5 rounded-full bg-current"
@@ -101,7 +106,7 @@ export function AiProgress({
       <div className="flex items-center justify-between gap-3 border-t pt-3">
         <span
           className="font-mono text-xs tabular-nums text-muted-foreground"
-          aria-label="Time elapsed"
+          aria-label={t("elapsed")}
         >
           {formatElapsed(elapsed)}
         </span>
@@ -113,7 +118,7 @@ export function AiProgress({
               </span>
             )}
             <Button variant="ghost" size="sm" onClick={onCancel}>
-              {cancelLabel}
+              {cancelLabel ?? t("cancel")}
             </Button>
           </div>
         )}

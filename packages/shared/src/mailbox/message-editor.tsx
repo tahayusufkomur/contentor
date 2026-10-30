@@ -19,6 +19,7 @@ import {
   Underline as UnderlineIcon,
   X,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { Button } from "../ui/button";
@@ -86,9 +87,9 @@ function ToolbarButton({
   );
 }
 
-function setLink(editor: Editor) {
+function setLink(editor: Editor, prompt: string) {
   const prev = editor.getAttributes("link").href as string | undefined;
-  const url = window.prompt("Link URL", prev || "https://");
+  const url = window.prompt(prompt, prev || "https://");
   if (url === null) return;
   if (url === "") {
     editor.chain().focus().unsetLink().run();
@@ -99,15 +100,10 @@ function setLink(editor: Editor) {
 
 const MessageEditor = forwardRef<MessageEditorHandle, MessageEditorProps>(
   function MessageEditor(
-    {
-      placeholder = "Write your message…",
-      autoFocus,
-      sending,
-      onSend,
-      compact,
-    },
+    { placeholder, autoFocus, sending, onSend, compact },
     ref,
   ) {
+    const t = useTranslations("studio.mailbox");
     const [attachments, setAttachments] = useState<MessageAttachment[]>([]);
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -121,7 +117,9 @@ const MessageEditor = forwardRef<MessageEditorHandle, MessageEditorProps>(
         }),
         Underline,
         Link.configure({ openOnClick: false, autolink: true }),
-        Placeholder.configure({ placeholder }),
+        Placeholder.configure({
+          placeholder: placeholder ?? t("editor.placeholder"),
+        }),
       ],
       autofocus: autoFocus ? "end" : false,
       editorProps: {
@@ -147,11 +145,11 @@ const MessageEditor = forwardRef<MessageEditorHandle, MessageEditorProps>(
       if (!files) return;
       for (const file of Array.from(files)) {
         if (attachments.length >= MAX_FILES) {
-          toast.error(`At most ${MAX_FILES} attachments per message.`);
+          toast.error(t("editor.maxFiles", { count: MAX_FILES }));
           break;
         }
         if (file.size > MAX_FILE_BYTES) {
-          toast.error(`${file.name} is larger than 10 MB.`);
+          toast.error(t("editor.tooBig", { name: file.name }));
           continue;
         }
         setUploading(true);
@@ -159,7 +157,7 @@ const MessageEditor = forwardRef<MessageEditorHandle, MessageEditorProps>(
           const att = await uploadAttachment(file);
           setAttachments((prev) => [...prev, att]);
         } catch {
-          toast.error(`Could not upload ${file.name}.`);
+          toast.error(t("editor.uploadFailed", { name: file.name }));
         } finally {
           setUploading(false);
         }
@@ -185,21 +183,21 @@ const MessageEditor = forwardRef<MessageEditorHandle, MessageEditorProps>(
         {/* Toolbar */}
         <div className="flex items-center gap-0.5 border-b px-2 py-1">
           <ToolbarButton
-            label="Bold"
+            label={t("editor.bold")}
             active={editor.isActive("bold")}
             onClick={() => editor.chain().focus().toggleBold().run()}
           >
             <Bold className="h-4 w-4" />
           </ToolbarButton>
           <ToolbarButton
-            label="Italic"
+            label={t("editor.italic")}
             active={editor.isActive("italic")}
             onClick={() => editor.chain().focus().toggleItalic().run()}
           >
             <Italic className="h-4 w-4" />
           </ToolbarButton>
           <ToolbarButton
-            label="Underline"
+            label={t("editor.underline")}
             active={editor.isActive("underline")}
             onClick={() => editor.chain().focus().toggleUnderline().run()}
           >
@@ -207,36 +205,36 @@ const MessageEditor = forwardRef<MessageEditorHandle, MessageEditorProps>(
           </ToolbarButton>
           <div className="mx-1 h-4 w-px bg-border" />
           <ToolbarButton
-            label="Bullet list"
+            label={t("editor.bulletList")}
             active={editor.isActive("bulletList")}
             onClick={() => editor.chain().focus().toggleBulletList().run()}
           >
             <List className="h-4 w-4" />
           </ToolbarButton>
           <ToolbarButton
-            label="Numbered list"
+            label={t("editor.numberedList")}
             active={editor.isActive("orderedList")}
             onClick={() => editor.chain().focus().toggleOrderedList().run()}
           >
             <ListOrdered className="h-4 w-4" />
           </ToolbarButton>
           <ToolbarButton
-            label="Quote"
+            label={t("editor.quote")}
             active={editor.isActive("blockquote")}
             onClick={() => editor.chain().focus().toggleBlockquote().run()}
           >
             <Quote className="h-4 w-4" />
           </ToolbarButton>
           <ToolbarButton
-            label="Link"
+            label={t("editor.link")}
             active={editor.isActive("link")}
-            onClick={() => setLink(editor)}
+            onClick={() => setLink(editor, t("editor.linkPrompt"))}
           >
             <Link2 className="h-4 w-4" />
           </ToolbarButton>
           <div className="mx-1 h-4 w-px bg-border" />
           <ToolbarButton
-            label="Attach files"
+            label={t("editor.attach")}
             disabled={uploading || attachments.length >= MAX_FILES}
             onClick={() => fileInputRef.current?.click()}
           >
@@ -282,7 +280,7 @@ const MessageEditor = forwardRef<MessageEditorHandle, MessageEditorProps>(
                 </span>
                 <button
                   type="button"
-                  aria-label={`Remove ${a.filename}`}
+                  aria-label={t("editor.remove", { name: a.filename })}
                   onClick={() =>
                     setAttachments((prev) => prev.filter((x) => x.id !== a.id))
                   }
@@ -298,7 +296,7 @@ const MessageEditor = forwardRef<MessageEditorHandle, MessageEditorProps>(
         {/* Send row */}
         <div className="flex items-center justify-end gap-2 border-t px-3 py-2">
           <span className="mr-auto text-[11px] text-muted-foreground">
-            Ctrl+Enter to send
+            {t("editor.ctrlEnter")}
           </span>
           <Button
             size="sm"
@@ -307,7 +305,7 @@ const MessageEditor = forwardRef<MessageEditorHandle, MessageEditorProps>(
             onClick={send}
           >
             <Send className="h-4 w-4" />
-            Send
+            {t("editor.send")}
           </Button>
         </div>
       </div>

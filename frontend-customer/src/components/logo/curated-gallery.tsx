@@ -3,6 +3,7 @@
 import { useSiteLocale } from "@/hooks/use-tenant";
 import { useMemo } from "react";
 import { Lock, Sparkles, Wand2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { SkeletonCardGrid } from "@/components/ui/skeletons";
 import { StaleContainer } from "@/components/ui/stale-container";
@@ -29,7 +30,7 @@ interface CuratedGalleryProps {
   onCreateSimilar: (logo: CuratedLogo) => void;
   onUpgrade: () => void;
   generatingFilename: string | null;
-  /** What the busy card says; "Designing your version…" when not given. */
+  /** What the busy card says; the "designing" message when not given. */
   generatingLabel?: string;
 }
 
@@ -47,6 +48,7 @@ export function CuratedGallery({
   generatingFilename,
   generatingLabel,
 }: CuratedGalleryProps) {
+  const t = useTranslations("admin.logo.gallery");
   const siteLocale = useSiteLocale();
   const shown = useMemo(() => logos.slice(0, IDEAS_COUNT), [logos]);
 
@@ -76,11 +78,7 @@ export function CuratedGallery({
     );
   }
   if (!logos.length) {
-    return (
-      <p className="p-6 text-sm text-muted-foreground">
-        No ready-made logos yet — try Design with AI instead.
-      </p>
-    );
+    return <p className="p-6 text-sm text-muted-foreground">{t("empty")}</p>;
   }
 
   return (
@@ -104,7 +102,7 @@ export function CuratedGallery({
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-white/80">
                     <Spinner />
                     <p className="text-xs font-medium text-primary">
-                      {generatingLabel ?? "Designing your version…"}
+                      {generatingLabel ?? t("designing")}
                     </p>
                   </div>
                 )}
@@ -119,7 +117,7 @@ export function CuratedGallery({
                   disabled={anyGenerating}
                   className="gap-2"
                 >
-                  <Sparkles className="h-4 w-4" /> Use this
+                  <Sparkles className="h-4 w-4" /> {t("use")}
                 </Button>
                 <Button
                   size="sm"
@@ -135,7 +133,7 @@ export function CuratedGallery({
                   ) : (
                     <Lock className="h-3.5 w-3.5" />
                   )}
-                  Create your own
+                  {t("createOwn")}
                 </Button>
               </div>
             </div>

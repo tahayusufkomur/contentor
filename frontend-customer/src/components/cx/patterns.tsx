@@ -2,6 +2,7 @@
  *  an items field. Responsive collapse is fixed here; the spec only picks
  *  enums and clamped numbers (passed as --cx-* custom properties). */
 import type { CSSProperties } from "react";
+import { useTranslations } from "next-intl";
 import type { CxNode } from "@shared/cx/types";
 import { cn } from "@/lib/utils";
 import { type CxCtx, type CxRender, clampNum, ordinal, pick } from "./context";
@@ -25,9 +26,16 @@ const at = (
 /** Nothing on the public site; a hint on the coach's canvas. */
 function EmptyItems({ ctx }: { ctx: CxCtx }) {
   if (!ctx.editable) return null;
+  return <EmptyItemsHint />;
+}
+
+// Its own component: the `admin` messages are loaded only for the creator, so
+// the public site never asks for them.
+function EmptyItemsHint() {
+  const t = useTranslations("admin");
   return (
     <p className="rounded-[var(--radius)] border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-      Add items in the editor panel.
+      {t("cx.emptyItems")}
     </p>
   );
 }

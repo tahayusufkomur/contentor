@@ -7,8 +7,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Trash2, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
-import { AdminKitError, type AdminClient } from "./client";
+import { AdminKitError, kitDetail, type AdminClient } from "./client";
 import type {
   ChoiceOption,
   FieldSchema,
@@ -59,6 +60,7 @@ export function ModelForm({
   onSaved: (message: string) => void;
   onDeleted: (message: string) => void;
 }) {
+  const t = useTranslations("studio.adminKit");
   const isCreate = row === null;
   const editable = useMemo(
     () => meta.form_fields.filter((f) => !f.read_only),
@@ -107,7 +109,7 @@ export function ModelForm({
           try {
             value = JSON.parse(text);
           } catch {
-            clientErrors[field.name] = "Invalid JSON.";
+            clientErrors[field.name] = t("errors.invalidJson");
             continue;
           }
         }
@@ -139,10 +141,10 @@ export function ModelForm({
       setFormError("");
       if (isCreate) {
         await client.create(modelKey, payload);
-        onSaved(`${meta.label} created.`);
+        onSaved(t("form.created", { label: meta.label }));
       } else {
         await client.update(modelKey, String(row[meta.pk_field]), payload);
-        onSaved(`${meta.label} saved.`);
+        onSaved(t("form.saved", { label: meta.label }));
       }
     },
     {
@@ -150,9 +152,9 @@ export function ModelForm({
       onError: (err) => {
         if (err instanceof AdminKitError) {
           setErrors(err.fieldErrors);
-          setFormError(err.detail);
+          setFormError(kitDetail(err, t));
         } else {
-          setFormError("Request failed.");
+          setFormError(t("errors.request"));
         }
       },
     },
@@ -163,19 +165,19 @@ export function ModelForm({
       if (!row) return;
       if (
         !window.confirm(
-          `Delete this ${meta.label.toLowerCase()}? This cannot be undone.`,
+          t("form.deleteConfirm", { label: meta.label.toLowerCase() }),
         )
       )
         return;
       setFormError("");
       await client.destroy(modelKey, String(row[meta.pk_field]));
-      onDeleted(`${meta.label} deleted.`);
+      onDeleted(t("form.deleted", { label: meta.label }));
     },
     {
       errorToast: false,
       onError: (err) => {
         setFormError(
-          err instanceof AdminKitError ? err.detail : "Delete failed.",
+          err instanceof AdminKitError ? kitDetail(err, t) : t("errors.delete"),
         );
       },
     },
@@ -187,18 +189,20 @@ export function ModelForm({
     <div className="fixed inset-0 z-50 flex justify-end">
       <button
         type="button"
-        aria-label="Close"
+        aria-label={t("actions.close")}
         className="absolute inset-0 bg-black/40"
         onClick={onClose}
       />
       <div className="relative flex h-full w-full max-w-md flex-col border-l bg-background shadow-xl">
         <div className="flex items-center justify-between border-b px-5 py-4">
           <h2 className="text-lg font-semibold text-foreground">
-            {isCreate ? `New ${meta.label}` : `Edit ${meta.label}`}
+            {isCreate
+              ? t("actions.newItem", { label: meta.label })
+              : t("actions.editItem", { label: meta.label })}
           </h2>
           <KitButton
             variant="ghost"
-            aria-label="Close panel"
+            aria-label={t("actions.closePanel")}
             onClick={onClose}
             className="h-8 px-2"
           >
@@ -234,19 +238,19 @@ export function ModelForm({
               ) : (
                 <Trash2 className="h-4 w-4" />
               )}{" "}
-              Delete
+              {t("actions.delete")}
             </KitButton>
           ) : (
             <span />
           )}
           <div className="flex gap-2">
             <KitButton onClick={onClose} disabled={busy}>
-              Cancel
+              {t("actions.cancel")}
             </KitButton>
             {(isCreate ? meta.can_create : meta.can_edit) && (
               <KitButton variant="primary" onClick={submit} disabled={busy}>
                 {saving && <Spinner size="sm" />}
-                {isCreate ? "Create" : "Save"}
+                {isCreate ? t("actions.create") : t("actions.save")}
               </KitButton>
             )}
           </div>

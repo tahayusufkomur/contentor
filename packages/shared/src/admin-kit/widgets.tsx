@@ -26,7 +26,7 @@ import {
 } from "./primitives";
 import { Spinner } from "../ui/spinner";
 import { useAsyncAction } from "../hooks/use-async-action";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 function isFkValue(value: RowValue): value is FkValue {
   return (
@@ -54,15 +54,16 @@ export function CellValue({
   value: RowValue | undefined;
 }) {
   const locale = useLocale();
+  const t = useTranslations("studio.adminKit.cell");
   if (value === null || value === undefined || value === "") {
     return <span className="text-muted-foreground">—</span>;
   }
   switch (column.type) {
     case "boolean":
       return value ? (
-        <Check className="h-4 w-4 text-primary" aria-label="yes" />
+        <Check className="h-4 w-4 text-primary" aria-label={t("yes")} />
       ) : (
-        <Minus className="h-4 w-4 text-muted-foreground" aria-label="no" />
+        <Minus className="h-4 w-4 text-muted-foreground" aria-label={t("no")} />
       );
     case "fk":
       return <span>{isFkValue(value) ? value.label : String(value)}</span>;
@@ -124,6 +125,7 @@ function ImageFieldInput({
   onChange: (value: unknown) => void;
   disabled: boolean;
 }) {
+  const t = useTranslations("studio.adminKit");
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState("");
@@ -149,7 +151,9 @@ function ImageFieldInput({
         const data = (await res.json().catch(() => null)) as {
           detail?: string;
         } | null;
-        throw new Error(data?.detail ?? `Upload failed (${res.status}).`);
+        throw new Error(
+          data?.detail ?? t("errors.uploadStatus", { status: res.status }),
+        );
       }
       const data = (await res.json()) as { key: string; url: string };
       onChange(data.key);
@@ -158,7 +162,7 @@ function ImageFieldInput({
     {
       errorToast: false,
       onError: (err) =>
-        setUploadError(err instanceof Error ? err.message : "Upload failed."),
+        setUploadError(err instanceof Error ? err.message : t("errors.upload")),
     },
   );
 
@@ -190,7 +194,7 @@ function ImageFieldInput({
         disabled={disabled || uploading}
       >
         {uploading ? <Spinner size="sm" /> : <Upload className="h-4 w-4" />}
-        {basename || preview ? "Replace PNG" : "Upload PNG"}
+        {basename || preview ? t("field.replacePng") : t("field.uploadPng")}
       </KitButton>
       {uploadError && <p className="text-xs text-destructive">{uploadError}</p>}
     </div>
@@ -213,6 +217,7 @@ export function FieldInput({
   fkOptions,
   error,
 }: FieldInputProps) {
+  const t = useTranslations("studio.adminKit");
   const disabled = field.read_only;
   const invalid = error ? "border-destructive focus:ring-destructive" : "";
 
@@ -355,7 +360,7 @@ export function FieldInput({
         )}
         {disabled && (
           <span className="text-xs font-normal text-muted-foreground">
-            (read-only)
+            {t("field.readOnly")}
           </span>
         )}
       </label>

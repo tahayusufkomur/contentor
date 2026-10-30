@@ -3546,5 +3546,239 @@
       "keep": "Zachowaj ten wygląd"
     },
     "pageTitle": "Skonfiguruj swoją witrynę"
+  },
+  "logo": {
+    "studio": {
+      "title": "Studio logo",
+      "stepsLabel": "Kroki w studiu",
+      "step": {
+        "brief": "1 · Brief",
+        "ideas": "2 · Pomysły",
+        "editor": "3 · Edytor"
+      },
+      "saving": "Zapisywanie…",
+      "useLogo": "Użyj tego logo",
+      "close": "Zamknij Studio logo",
+      "startOverConfirm": "Zacząć od nowa? To wyczyści Twój brief i zapisane postępy.",
+      "refineQuota": "Wykorzystałeś ulepszenia AI na ten miesiąc. Więcej w przyszłym miesiącu.",
+      "refineFailed": "Nie udało się ulepszyć projektu — spróbuj ponownie.",
+      "unreachable": "Nie udało się teraz połączyć ze studiem projektowym.",
+      "uploadFailed": "Przesyłanie nie powiodło się",
+      "saveFailed": "Nie udało się zapisać logo — zamiast tego możesz przesłać plik.",
+      "replaceConfirm": "Zastąpić bieżącą wersję roboczą? Twoje zmiany w edytorze zostaną utracone.",
+      "useFailed": "Nie udało się użyć tego logo — spróbuj ponownie.",
+      "iconOnly": "Twoja ikona jest gotowa, ale kompozycja AI nie została ukończona — sformatuj tekst w edytorze.",
+      "similarFailed": "Nie udało się zaprojektować podobnego logo — spróbuj ponownie.",
+      "gettingReady": "Przygotowywanie Twojego logo…",
+      "similar": {
+        "disabled": "Projektowanie z AI jest teraz niedostępne.",
+        "upgrade_required": "Przejdź na wyższy plan, aby projektować z AI.",
+        "quota_exhausted": "Wykorzystałeś próby projektowania AI na ten miesiąc.",
+        "unreachable": "Nie udało się teraz połączyć ze studiem projektowym.",
+        "empty": "AI nie mogło tego narysować — spróbuj innego logo."
+      }
+    },
+    "brief": {
+      "title": "Opowiedz nam o swojej marce",
+      "intro": "Przekształcimy to w ścianę pomysłów na logo, z których możesz wybierać i je dopracowywać.",
+      "brandName": "Nazwa marki",
+      "niche": "Co oferujesz?",
+      "nichePlaceholder": "np. joga, fitness, muzyka, gotowanie…",
+      "tagline": "Slogan",
+      "optional": "(opcjonalnie)",
+      "taglinePlaceholder": "np. Joga dla zapracowanych mam",
+      "vibe": "Opisz swój klimat",
+      "vibePlaceholder": "np. spokojny, naturalny, elegancki, ale przystępny",
+      "style": "Styl",
+      "pickUpTo": "(wybierz do 3)",
+      "chip": {
+        "Minimal": "Minimalistyczny",
+        "Bold": "Wyrazisty",
+        "Elegant": "Elegancki",
+        "Playful": "Zabawny",
+        "Organic": "Organiczny",
+        "Tech": "Technologiczny"
+      },
+      "show": "Pokaż moje pomysły na logo",
+      "startOver": "Zacznij od nowa"
+    },
+    "canvas": {
+      "hintSelected": "Przeciągnij, aby przesunąć · narożniki, aby zmienić rozmiar · strzałki, aby lekko przesunąć · Esc, aby odznaczyć",
+      "hint": "Kliknij dowolną część swojego logo, aby ją edytować",
+      "previewLight": "Podgląd na jasnym tle",
+      "previewDark": "Podgląd na ciemnym tle",
+      "label": "Obszar roboczy logo"
+    },
+    "editor": {
+      "kitNoSvg": "Nie udało się pobrać czcionek, więc zestaw zawiera tylko pliki PNG (bez SVG).",
+      "kitFailed": "Nie udało się utworzyć zestawu marki — spróbuj ponownie.",
+      "browserTab": "Karta przeglądarki",
+      "appIcon": "Ikona aplikacji",
+      "building": "Tworzenie…",
+      "downloadKit": "Pobierz zestaw marki (.zip)",
+      "kitContents": "Pliki PNG na jasne i ciemne tło, rozmiary favicon oraz wektorowy plik SVG."
+    },
+    "entrance": {
+      "readyMade": "Gotowe logo",
+      "readyMadeHint": "Kompletne pomysły na logo dla Twojej marki — do bezpłatnego wykorzystania i dopracowania.",
+      "designWithAi": "Zaprojektuj z AI",
+      "aiHint": "Opisz swój styl i pozwól AI stworzyć unikalne logo.",
+      "aiUpgradeHint": "Przejdź na wyższy plan, aby zaprojektować unikalne logo z AI."
+    },
+    "gallery": {
+      "empty": "Nie ma jeszcze gotowych logo — wypróbuj zamiast tego opcję Zaprojektuj z AI.",
+      "designing": "Projektowanie Twojej wersji…",
+      "use": "Użyj tego",
+      "createOwn": "Stwórz własne"
+    },
+    "chat": {
+      "step": {
+        "describe": "Opisz",
+        "icon": "Ikona",
+        "name": "Nazwa",
+        "tagline": "Slogan"
+      },
+      "notice": {
+        "quota_exhausted": "Wykorzystano wszystkie próby projektowania z AI na ten miesiąc. Kolejne w przyszłym miesiącu.",
+        "disabled": "Projektowanie z AI jest tymczasowo niedostępne.",
+        "upgrade_required": "Projektowanie z AI jest dostępne w płatnych planach.",
+        "error": "Nie udało się tego zaprojektować — spróbuj ponownie."
+      },
+      "phase": {
+        "designing": "Szkicowanie koncepcji",
+        "illustrating": "Rysowanie znaków",
+        "tracing": "Konwertowanie na wektory"
+      },
+      "pick": "Wybierz to",
+      "useTagline": "Użyj \"{tagline}\"",
+      "soFar": "Twoje dotychczasowe logo",
+      "picksHere": "Twoje wybory będą się tu pojawiać na bieżąco.",
+      "cancelled": "Anulowano — to wykorzystało jedną z twoich tur projektowania.",
+      "unreachable": "Nie udało się teraz połączyć ze studiem projektowym.",
+      "ideas": "Pomysły",
+      "stepsLabel": "Kroki projektowania",
+      "title": "Projektuj z AI",
+      "reviewing": "Przeglądanie własnej pracy…",
+      "cancelNote": "Anulowanie nadal zużywa 1 turę.",
+      "preparing": "Przygotowywanie opcji…",
+      "changePlaceholder": "Opisz zmianę dla tego kroku… (np. bardziej geometryczne, mniej zabawne)",
+      "send": "Wyślij",
+      "differentOptions": "Pokaż inne opcje",
+      "turnsLeft": "{count, plural, one {Pozostała # tura projektowania AI w tym miesiącu.} few {Pozostały # tury projektowania AI w tym miesiącu.} many {Pozostało # tur projektowania AI w tym miesiącu.} other {Pozostało # tury projektowania AI w tym miesiącu.}}",
+      "describeTitle": "Opisz logo, jakiego chcesz",
+      "describeHint": "Wystarczy zdanie lub dwa — nastrój, symbol, kolory do uwzględnienia lub unikania. Albo to pomiń, a zaproponujemy koncepcje na podstawie twojej marki.",
+      "describePlaceholder": "np. spokojny, minimalistyczny znak — może liść lub wschód słońca, ciepłe ziemiste zielenie, nic korporacyjnego",
+      "designing": "Projektowanie…",
+      "generate": "Generuj koncepcje",
+      "skip": "Pomiń, po prostu pokaż mi pomysły",
+      "upsell": "Projektowanie z AI jest zawarte w płatnych planach.",
+      "upgrade": "Zmień plan"
+    },
+    "refine": {
+      "title": "Zapytaj projektanta AI",
+      "quota": "Wykorzystano twoje poprawki AI na ten miesiąc. Więcej w przyszłym miesiącu.",
+      "unavailable": "Dopracowywanie z AI jest tymczasowo niedostępne.",
+      "placeholder": "np. cieplejsze kolory, bardziej okrągły znak, bardziej prestiżowy",
+      "redraw": "Narysuj ikonę na nowo (zacznij znak od zera)",
+      "refining": "Dopracowywanie…",
+      "refine": "Dopracuj",
+      "left": "{count, plural, one {Pozostała # poprawka AI w tym miesiącu.} few {Pozostały # poprawki AI w tym miesiącu.} many {Pozostało # poprawek AI w tym miesiącu.} other {Pozostało # poprawki AI w tym miesiącu.}}"
+    },
+    "panel": {
+      "undo": "Cofnij",
+      "redo": "Ponów",
+      "getIdeas": "Uzyskaj nowe pomysły",
+      "clickToEdit": "Kliknij dowolną część swojego logo w podglądzie, aby edytować ją bezpośrednio.",
+      "name": "Nazwa",
+      "tagline": "Slogan",
+      "taglineOptional": "Slogan (opcjonalnie)",
+      "layout": {
+        "label": "Układ",
+        "horizontal": "Znak + nazwa",
+        "horizontal_reversed": "Nazwa + znak",
+        "stacked": "Pionowy",
+        "emblem": "Emblemat",
+        "name_only": "Tylko nazwa"
+      },
+      "colors": "Kolory",
+      "customBadgeColor": "Niestandardowy kolor plakietki",
+      "badgeShape": "Kształt plakietki",
+      "badge": {
+        "circle": "Koło",
+        "rounded": "Zaokrąglony",
+        "squircle": "Squircle",
+        "hexagon": "Sześciokąt",
+        "shield": "Tarcza",
+        "diamond": "Romb",
+        "none": "Brak"
+      },
+      "outlineOnly": "Tylko obrys",
+      "font": "Czcionka",
+      "weight": {
+        "label": "Grubość",
+        "400": "Normalny",
+        "500": "Średni",
+        "600": "Półgruby",
+        "700": "Pogrubiony",
+        "800": "Bardzo gruby"
+      },
+      "case": {
+        "label": "Wielkość liter",
+        "none": "Jak wpisano",
+        "titleCase": "Jak w Tytułach",
+        "upper": "WIELKIE LITERY"
+      },
+      "letterSpacing": "Odstępy między literami",
+      "size": "Rozmiar",
+      "color": "Kolor",
+      "colorHex": "Kolor {hex}",
+      "customColor": "Niestandardowy kolor",
+      "mark": {
+        "title": "Sygnet",
+        "aiDrawn": "Sygnet narysowany przez AI",
+        "designedInSetup": "Zaprojektowany podczas konfiguracji",
+        "generatedHint": "To logo zostało zaprojektowane dla Ciebie podczas konfiguracji. Wybierz inne w Konfiguracja → Logo lub wybierz sygnet poniżej, aby zacząć od nowa.",
+        "customHint": "Wybierz inny sygnet poniżej, aby go zamienić, lub użyj elementów sterowania kolorem, aby zmienić jego kolor.",
+        "initials": {
+          "plain": "{initials} Prosty",
+          "monogram": "{initials} Monogram",
+          "split": "{initials} Rozdzielony",
+          "overlap": "{initials} Nakładający się"
+        },
+        "yourOwn": "Własny",
+        "abstract": "Abstrakcyjny",
+        "family": {
+          "orbits": "Abstrakcyjne orbity",
+          "bloom": "Abstrakcyjny kwiat",
+          "waves": "Abstrakcyjne fale",
+          "prism": "Abstrakcyjny pryzmat",
+          "knot": "Abstrakcyjny węzeł",
+          "grid": "Abstrakcyjna siatka"
+        },
+        "shuffle": "Kliknij ponownie, aby przetasować kształt.",
+        "style": {
+          "outline": "Kontur",
+          "solid": "Wypełnienie"
+        },
+        "color": "Kolor sygnetu",
+        "solid": "Jednolity",
+        "gradient": "Gradient",
+        "gradientEnd": "Kolor końcowy gradientu sygnetu",
+        "gradientAngle": "Kąt gradientu",
+        "aiColors": "Kolory sygnetu narysowanego przez AI",
+        "secondaryColor": "Kolor dodatkowy",
+        "secondary": "Dodatkowy",
+        "accentColor": "Kolor akcentu",
+        "accent": "Akcent"
+      }
+    }
+  },
+  "cx": {
+    "emptyItems": "Dodaj elementy w panelu edytora."
+  },
+  "aiProgress": {
+    "inProgress": "{phase} w toku",
+    "elapsed": "Czas, który upłynął",
+    "cancel": "Anuluj"
   }
 }

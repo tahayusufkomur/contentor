@@ -6,6 +6,7 @@
 // Presentational table: columns, sorting, selection. State lives in ModelPage.
 
 import { ArrowDown, ArrowUp, Inbox } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import type { ActionSchema, ListPage, ModelMeta, Row } from "./types";
 
@@ -39,6 +40,7 @@ export function ModelList({
   selectable: boolean;
   busyRowAction: string;
 }) {
+  const t = useTranslations("studio.adminKit");
   const rows = page.results;
   const orderingField = ordering.replace(/^-/, "");
   const descending = ordering.startsWith("-");
@@ -47,7 +49,9 @@ export function ModelList({
     return (
       <div className="flex flex-col items-center gap-2 py-16 text-muted-foreground">
         <Inbox className="h-8 w-8" />
-        <p className="text-sm">No {meta.label_plural.toLowerCase()} found.</p>
+        <p className="text-sm">
+          {t("list.empty", { plural: meta.label_plural.toLowerCase() })}
+        </p>
       </div>
     );
   }
@@ -65,7 +69,7 @@ export function ModelList({
               <th className="w-10 px-4 py-3">
                 <input
                   type="checkbox"
-                  aria-label="Select all"
+                  aria-label={t("list.selectAll")}
                   checked={allSelected}
                   onChange={onToggleAll}
                   className="h-4 w-4 accent-[hsl(var(--primary))]"
@@ -121,7 +125,7 @@ export function ModelList({
                   >
                     <input
                       type="checkbox"
-                      aria-label={`Select row ${pk}`}
+                      aria-label={t("list.selectRow", { pk })}
                       checked={selected.has(pk)}
                       onChange={() => onToggleRow(pk)}
                       className="h-4 w-4 accent-[hsl(var(--primary))]"

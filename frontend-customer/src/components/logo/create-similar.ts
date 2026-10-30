@@ -19,7 +19,21 @@ import type { CuratedLogo } from "@/lib/logo/library-catalog";
 import type { LogoRecipe } from "@/types/logo";
 import { renderDraftPngs } from "./render-draft";
 
-export class SimilarError extends Error {}
+/** Why a similar-logo turn failed; the studio shows the matching message in
+ * the creator's language (admin.logo.studio.similar.<code>). `message` is only
+ * for logs and tests. */
+export type SimilarErrorCode =
+  | "disabled"
+  | "upgrade_required"
+  | "quota_exhausted"
+  | "unreachable"
+  | "empty";
+
+export class SimilarError extends Error {
+  constructor(readonly code: SimilarErrorCode) {
+    super(code);
+  }
+}
 
 export interface SimilarResult {
   /** "lockup" = full AI design; "icon" = the name turn failed after a good
@@ -29,12 +43,6 @@ export interface SimilarResult {
   recipe: LogoRecipe;
   turnsRemaining: number;
 }
-
-const GATE_NOTICES: Record<string, string> = {
-  disabled: "AI design isn't available right now.",
-  upgrade_required: "Upgrade to design with AI.",
-  quota_exhausted: "You've used this month's AI design turns.",
-};
 
 type TurnBody = Parameters<typeof fetchConverseTurn>[0];
 
@@ -53,7 +61,11 @@ async function runStage(
   const resp = await fetchConverseTurn(body);
   if (resp.source !== "ai") {
     throw new SimilarError(
-      GATE_NOTICES[resp.source] ?? "Couldn't reach the design studio just now.",
+      resp.source === "disabled" ||
+        resp.source === "upgrade_required" ||
+        resp.source === "quota_exhausted"
+        ? resp.source
+        : "unreachable",
     );
   }
   let designs = resp.designs;
@@ -69,7 +81,7 @@ async function runStage(
     }
   }
   if (!designs.length) {
-    throw new SimilarError("The AI couldn't draw this one — try another logo.");
+    throw new SimilarError("empty");
   }
   return {
     designs,

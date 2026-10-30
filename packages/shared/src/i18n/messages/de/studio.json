@@ -216,5 +216,208 @@
       "live_stream": "Livestream",
       "onsite_event": "Präsenzveranstaltung"
     }
+  },
+  "logo": {
+    "palette": {
+      "theme": "Dein Theme",
+      "ink": "Tinte",
+      "slate": "Schiefer",
+      "forest": "Wald",
+      "terracotta": "Terrakotta",
+      "rose": "Rosé",
+      "violet": "Violett",
+      "amber": "Bernstein",
+      "ocean-fade": "Ozean-Verlauf",
+      "sunset-fade": "Sonnenuntergang-Verlauf",
+      "mint-fade": "Minz-Verlauf",
+      "berry-fade": "Beeren-Verlauf",
+      "midnight-fade": "Mitternachts-Verlauf",
+      "gold-fade": "Gold-Verlauf",
+      "sage": "Salbei",
+      "clay": "Ton",
+      "sky": "Himmel",
+      "plum": "Pflaume",
+      "sand": "Sand",
+      "coral": "Koralle",
+      "pine": "Kiefer",
+      "mono": "Mono",
+      "cocoa": "Kakao",
+      "lavender": "Lavendel"
+    },
+    "iconGroup": {
+      "wellness": "Wellness",
+      "fitness": "Fitness",
+      "music": "Musik",
+      "education": "Bildung",
+      "business": "Business",
+      "creative": "Kreativ",
+      "food": "Essen",
+      "lifestyle": "Lifestyle"
+    },
+    "vibe": {
+      "Modern": "Modern",
+      "Elegant": "Elegant",
+      "Bold": "Kräftig",
+      "Playful": "Verspielt",
+      "Minimal": "Minimalistisch"
+    }
+  },
+  "mailbox": {
+    "attachmentTooLarge": "— zu groß, bitte den Absender, die Datei auf anderem Weg zu teilen",
+    "compose": {
+      "addRecipient": "Füge zuerst einen Empfänger hinzu.",
+      "sent": "Nachricht gesendet.",
+      "sendFailed": "Die Nachricht konnte nicht gesendet werden. Bitte versuche es erneut.",
+      "title": "Neue Nachricht",
+      "to": "An",
+      "subject": "Betreff",
+      "button": "Verfassen"
+    },
+    "actions": {
+      "close": "Schließen",
+      "back": "Zurück",
+      "cancel": "Abbrechen",
+      "delete": "Löschen",
+      "archive": "Archivieren",
+      "spam": "Als Spam markieren",
+      "moveToInbox": "In den Posteingang verschieben"
+    },
+    "time": {
+      "justNow": "gerade eben",
+      "minutes": "{count} Min.",
+      "hours": "{count} Std.",
+      "days": "{count} T."
+    },
+    "emptyFolder": "Hier ist nichts.",
+    "noSubject": "(kein Betreff)",
+    "folder": {
+      "inbox": "Posteingang",
+      "archived": "Archiviert",
+      "spam": "Spam"
+    },
+    "deleteDialog": {
+      "title": "Unterhaltung löschen?",
+      "text": "Dadurch wird der gesamte Verlauf entfernt. Das kannst du nicht rückgängig machen."
+    },
+    "loadFailed": "Unterhaltungen konnten nicht geladen werden.",
+    "inboxFailed": "Posteingang konnte nicht geladen werden.",
+    "threadFailed": "Diese Unterhaltung konnte nicht geladen werden.",
+    "replySent": "Antwort gesendet.",
+    "replyFailed": "Antwort konnte nicht gesendet werden. Bitte versuche es erneut.",
+    "updateFailed": "Aktualisierung fehlgeschlagen. Bitte versuche es erneut.",
+    "deleted": "Unterhaltung gelöscht.",
+    "deleteFailed": "Löschen fehlgeschlagen. Bitte versuche es erneut.",
+    "loading": "Wird geladen…",
+    "archived": "Unterhaltung archiviert.",
+    "movedToInbox": "In den Posteingang verschoben.",
+    "spamMarked": "Als Spam markiert.",
+    "search": "E-Mails durchsuchen",
+    "clearSearch": "Suche löschen",
+    "you": "Du",
+    "editor": {
+      "placeholder": "Schreib deine Nachricht…",
+      "replyPlaceholder": "Schreib eine Antwort…",
+      "maxFiles": "{count, plural, one {Höchstens # Anhang pro Nachricht.} other {Höchstens # Anhänge pro Nachricht.}}",
+      "tooBig": "{name} ist größer als 10 MB.",
+      "uploadFailed": "{name} konnte nicht hochgeladen werden.",
+      "bold": "Fett",
+      "italic": "Kursiv",
+      "underline": "Unterstrichen",
+      "bulletList": "Aufzählungsliste",
+      "numberedList": "Nummerierte Liste",
+      "quote": "Zitat",
+      "link": "Link",
+      "linkPrompt": "Link-URL",
+      "attach": "Dateien anhängen",
+      "remove": "{name} entfernen",
+      "ctrlEnter": "Strg+Enter zum Senden",
+      "send": "Senden"
+    }
+  },
+  "adminKit": {
+    "actions": {
+      "dismiss": "Ausblenden",
+      "close": "Schließen",
+      "closePanel": "Bereich schließen",
+      "cancel": "Abbrechen",
+      "save": "Speichern",
+      "delete": "Löschen",
+      "create": "Erstellen",
+      "newItem": "Neu: {label}",
+      "editItem": "{label} bearbeiten"
+    },
+    "errors": {
+      "loadIndex": "Laden fehlgeschlagen.",
+      "loadModel": "Modell konnte nicht geladen werden.",
+      "loadRows": "Zeilen konnten nicht geladen werden.",
+      "action": "Aktion fehlgeschlagen.",
+      "save": "Speichern fehlgeschlagen.",
+      "delete": "Löschen fehlgeschlagen.",
+      "request": "Anfrage fehlgeschlagen.",
+      "requestStatus": "Anfrage fehlgeschlagen ({status})",
+      "upload": "Upload fehlgeschlagen.",
+      "uploadStatus": "Upload fehlgeschlagen ({status}).",
+      "invalidJson": "Ungültiges JSON."
+    },
+    "index": {
+      "title": "Daten",
+      "intro": "Durchsuche und bearbeite {title}-Datensätze und führe Aktionen darauf aus."
+    },
+    "list": {
+      "empty": "Keine {plural} gefunden.",
+      "selectAll": "Alle auswählen",
+      "selectRow": "Zeile {pk} auswählen"
+    },
+    "gallery": {
+      "add": "PNG hinzufügen",
+      "drop": "…oder zieh eine PNG-Datei einfach irgendwo hierher.",
+      "empty": "Noch keine {plural} – leg eine PNG-Datei hier ab, um den ersten Eintrag hinzuzufügen.",
+      "live": "Live",
+      "off": "Aus"
+    },
+    "json": {
+      "previous": "Vorheriger Eintrag",
+      "next": "Nächster Eintrag",
+      "label": "Datensatz-JSON",
+      "deleteConfirm": "{label} löschen?",
+      "invalid": "Ungültiges JSON: {message}",
+      "expectedObject": "Ein JSON-Objekt wurde erwartet.",
+      "unknownFields": "Unbekannte(s) Feld(er): {fields}"
+    },
+    "form": {
+      "deleteConfirm": "{label} löschen? Das kann nicht rückgängig gemacht werden.",
+      "created": "{label} erstellt.",
+      "saved": "{label} gespeichert.",
+      "deleted": "{label} gelöscht."
+    },
+    "field": {
+      "readOnly": "(schreibgeschützt)",
+      "uploadPng": "PNG hochladen",
+      "replacePng": "PNG ersetzen"
+    },
+    "cell": {
+      "yes": "ja",
+      "no": "nein"
+    },
+    "page": {
+      "searchPlaceholder": "{plural} durchsuchen…",
+      "stringFilter": "{label} (exakt)",
+      "filterSearch": "Suchen…",
+      "filterSearchLabel": "Optionen für {label} durchsuchen",
+      "scrollLeft": "Optionen für {label} nach links scrollen",
+      "scrollRight": "Optionen für {label} nach rechts scrollen",
+      "noMatches": "Keine Treffer",
+      "all": "Alle",
+      "allCount": "Alle ({count})",
+      "yes": "Ja",
+      "no": "Nein",
+      "loadingMore": "Weitere werden geladen...",
+      "selected": "{count} ausgewählt",
+      "count": "{count, plural, one {# {singular}} other {# {plural}}}",
+      "done": "Fertig.",
+      "created": "{label} erstellt.",
+      "updated": "{label} aktualisiert.",
+      "deleted": "{label} gelöscht."
+    }
   }
 }

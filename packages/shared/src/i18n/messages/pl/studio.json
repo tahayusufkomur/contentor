@@ -216,5 +216,208 @@
       "live_stream": "Transmisja na żywo",
       "onsite_event": "Wydarzenie stacjonarne"
     }
+  },
+  "logo": {
+    "palette": {
+      "theme": "Twój motyw",
+      "ink": "Atrament",
+      "slate": "Łupek",
+      "forest": "Leśna zieleń",
+      "terracotta": "Terakota",
+      "rose": "Róż",
+      "violet": "Fiolet",
+      "amber": "Bursztyn",
+      "ocean-fade": "Oceaniczny gradient",
+      "sunset-fade": "Gradient zachodu słońca",
+      "mint-fade": "Miętowy gradient",
+      "berry-fade": "Jagodowy gradient",
+      "midnight-fade": "Gradient północy",
+      "gold-fade": "Złoty gradient",
+      "sage": "Szałwia",
+      "clay": "Glina",
+      "sky": "Błękit",
+      "plum": "Śliwka",
+      "sand": "Piasek",
+      "coral": "Koral",
+      "pine": "Sosna",
+      "mono": "Mono",
+      "cocoa": "Kakao",
+      "lavender": "Lawenda"
+    },
+    "iconGroup": {
+      "wellness": "Wellness",
+      "fitness": "Fitness",
+      "music": "Muzyka",
+      "education": "Edukacja",
+      "business": "Biznes",
+      "creative": "Kreatywność",
+      "food": "Jedzenie",
+      "lifestyle": "Styl życia"
+    },
+    "vibe": {
+      "Modern": "Nowoczesny",
+      "Elegant": "Elegancki",
+      "Bold": "Odważny",
+      "Playful": "Zabawny",
+      "Minimal": "Minimalistyczny"
+    }
+  },
+  "mailbox": {
+    "attachmentTooLarge": "— zbyt duży, poproś nadawcę o udostępnienie w inny sposób",
+    "compose": {
+      "addRecipient": "Najpierw dodaj odbiorcę.",
+      "sent": "Wiadomość wysłana.",
+      "sendFailed": "Nie udało się wysłać wiadomości. Spróbuj ponownie.",
+      "title": "Nowa wiadomość",
+      "to": "Do",
+      "subject": "Temat",
+      "button": "Napisz"
+    },
+    "actions": {
+      "close": "Zamknij",
+      "back": "Wstecz",
+      "cancel": "Anuluj",
+      "delete": "Usuń",
+      "archive": "Zarchiwizuj",
+      "spam": "Oznacz jako spam",
+      "moveToInbox": "Przenieś do skrzynki odbiorczej"
+    },
+    "time": {
+      "justNow": "przed chwilą",
+      "minutes": "{count}m",
+      "hours": "{count}h",
+      "days": "{count}d"
+    },
+    "emptyFolder": "Nic tu nie ma.",
+    "noSubject": "(brak tematu)",
+    "folder": {
+      "inbox": "Skrzynka odbiorcza",
+      "archived": "Zarchiwizowane",
+      "spam": "Spam"
+    },
+    "deleteDialog": {
+      "title": "Usunąć konwersację?",
+      "text": "To usunie cały wątek. Nie możesz tego cofnąć."
+    },
+    "loadFailed": "Nie udało się załadować konwersacji.",
+    "inboxFailed": "Nie udało się załadować skrzynki odbiorczej.",
+    "threadFailed": "Nie udało się załadować tej konwersacji.",
+    "replySent": "Wysłano odpowiedź.",
+    "replyFailed": "Nie udało się wysłać odpowiedzi. Spróbuj ponownie.",
+    "updateFailed": "Nie udało się zaktualizować. Spróbuj ponownie.",
+    "deleted": "Usunięto konwersację.",
+    "deleteFailed": "Nie udało się usunąć. Spróbuj ponownie.",
+    "loading": "Ładowanie…",
+    "archived": "Zarchiwizowano konwersację.",
+    "movedToInbox": "Przeniesiono do skrzynki odbiorczej.",
+    "spamMarked": "Oznaczono jako spam.",
+    "search": "Szukaj w poczcie",
+    "clearSearch": "Wyczyść wyszukiwanie",
+    "you": "Ty",
+    "editor": {
+      "placeholder": "Napisz swoją wiadomość…",
+      "replyPlaceholder": "Napisz odpowiedź…",
+      "maxFiles": "{count, plural, one {Maksymalnie # załącznik na wiadomość.} few {Maksymalnie # załączniki na wiadomość.} many {Maksymalnie # załączników na wiadomość.} other {Maksymalnie # załącznika na wiadomość.}}",
+      "tooBig": "{name} jest większy niż 10 MB.",
+      "uploadFailed": "Nie udało się przesłać {name}.",
+      "bold": "Pogrubienie",
+      "italic": "Kursywa",
+      "underline": "Podkreślenie",
+      "bulletList": "Lista punktowana",
+      "numberedList": "Lista numerowana",
+      "quote": "Cytat",
+      "link": "Link",
+      "linkPrompt": "Adres URL linku",
+      "attach": "Załącz pliki",
+      "remove": "Usuń {name}",
+      "ctrlEnter": "Ctrl+Enter, aby wysłać",
+      "send": "Wyślij"
+    }
+  },
+  "adminKit": {
+    "actions": {
+      "dismiss": "Odrzuć",
+      "close": "Zamknij",
+      "closePanel": "Zamknij panel",
+      "cancel": "Anuluj",
+      "save": "Zapisz",
+      "delete": "Usuń",
+      "create": "Utwórz",
+      "newItem": "Nowy {label}",
+      "editItem": "Edytuj {label}"
+    },
+    "errors": {
+      "loadIndex": "Nie udało się załadować.",
+      "loadModel": "Nie udało się załadować modelu.",
+      "loadRows": "Nie udało się załadować wierszy.",
+      "action": "Działanie nie powiodło się.",
+      "save": "Zapisywanie nie powiodło się.",
+      "delete": "Usuwanie nie powiodło się.",
+      "request": "Żądanie nie powiodło się.",
+      "requestStatus": "Żądanie nie powiodło się ({status})",
+      "upload": "Przesyłanie nie powiodło się.",
+      "uploadStatus": "Przesyłanie nie powiodło się ({status}).",
+      "invalidJson": "Nieprawidłowy format JSON."
+    },
+    "index": {
+      "title": "Dane",
+      "intro": "Przeglądaj i edytuj rekordy {title} oraz wykonuj na nich działania."
+    },
+    "list": {
+      "empty": "Nie znaleziono {plural}.",
+      "selectAll": "Zaznacz wszystko",
+      "selectRow": "Zaznacz wiersz {pk}"
+    },
+    "gallery": {
+      "add": "Dodaj PNG",
+      "drop": "…lub przeciągnij i upuść plik PNG w dowolnym miejscu tutaj.",
+      "empty": "Nie ma jeszcze {plural} — upuść plik PNG, aby dodać pierwszy.",
+      "live": "Na żywo",
+      "off": "Wyłączone"
+    },
+    "json": {
+      "previous": "Poprzedni element",
+      "next": "Następny element",
+      "label": "JSON rekordu",
+      "deleteConfirm": "Usunąć {label}?",
+      "invalid": "Nieprawidłowy JSON: {message}",
+      "expectedObject": "Oczekiwano obiektu JSON.",
+      "unknownFields": "Nieznane pole (pola): {fields}"
+    },
+    "form": {
+      "deleteConfirm": "Usunąć {label}? Tej operacji nie można cofnąć.",
+      "created": "{label} utworzono.",
+      "saved": "{label} zapisano.",
+      "deleted": "{label} usunięto."
+    },
+    "field": {
+      "readOnly": "(tylko do odczytu)",
+      "uploadPng": "Prześlij PNG",
+      "replacePng": "Zastąp PNG"
+    },
+    "cell": {
+      "yes": "tak",
+      "no": "nie"
+    },
+    "page": {
+      "searchPlaceholder": "Szukaj {plural}…",
+      "stringFilter": "{label} (dokładne)",
+      "filterSearch": "Szukaj…",
+      "filterSearchLabel": "Szukaj opcji {label}",
+      "scrollLeft": "Przewiń opcje {label} w lewo",
+      "scrollRight": "Przewiń opcje {label} w prawo",
+      "noMatches": "Brak dopasowań",
+      "all": "Wszystkie",
+      "allCount": "Wszystkie ({count})",
+      "yes": "Tak",
+      "no": "Nie",
+      "loadingMore": "Wczytywanie kolejnych...",
+      "selected": "{count} wybranych",
+      "count": "{count, plural, one {# {singular}} few {# {plural}} many {# {plural}} other {# {plural}}}",
+      "done": "Gotowe.",
+      "created": "{label} utworzono.",
+      "updated": "{label} zaktualizowano.",
+      "deleted": "{label} usunięto."
+    }
   }
 }

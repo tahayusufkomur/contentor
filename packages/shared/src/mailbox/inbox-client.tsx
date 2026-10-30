@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 
 import { Search, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { Button } from "../ui/button";
@@ -37,6 +38,7 @@ function DeleteConfirmDialog({
   onConfirm,
   loading,
 }: DeleteConfirmProps) {
+  const t = useTranslations("studio.mailbox");
   return (
     <ModalPortal>
       <div
@@ -48,14 +50,16 @@ function DeleteConfirmDialog({
           onClick={(e) => e.stopPropagation()}
         >
           <div className="space-y-1">
-            <h2 className="text-base font-semibold">Delete conversation?</h2>
+            <h2 className="text-base font-semibold">
+              {t("deleteDialog.title")}
+            </h2>
             <p className="text-sm text-muted-foreground">
-              This removes the entire thread. You can&apos;t undo this.
+              {t("deleteDialog.text")}
             </p>
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="ghost" size="sm" onClick={onCancel}>
-              Cancel
+              {t("actions.cancel")}
             </Button>
             <Button
               variant="destructive"
@@ -63,7 +67,7 @@ function DeleteConfirmDialog({
               loading={loading}
               onClick={onConfirm}
             >
-              Delete
+              {t("actions.delete")}
             </Button>
           </div>
         </div>
@@ -80,6 +84,7 @@ interface InboxClientProps {
 }
 
 export function InboxClient({ topBanner }: InboxClientProps = {}) {
+  const t = useTranslations("studio.mailbox");
   const [conversations, setConversations] = useState<ConversationListItem[]>(
     [],
   );
@@ -101,7 +106,7 @@ export function InboxClient({ topBanner }: InboxClientProps = {}) {
     try {
       setConversations(await listConversations());
     } catch {
-      toast.error("Could not load conversations.");
+      toast.error(t("loadFailed"));
     }
   };
 
@@ -109,7 +114,7 @@ export function InboxClient({ topBanner }: InboxClientProps = {}) {
     setLoading(true);
     listConversations()
       .then((list) => setConversations(list))
-      .catch(() => toast.error("Could not load inbox."))
+      .catch(() => toast.error(t("inboxFailed")))
       .finally(() => setLoading(false));
   }, []);
 
@@ -170,7 +175,7 @@ export function InboxClient({ topBanner }: InboxClientProps = {}) {
       setThread(await getConversation(id));
       await loadList();
     },
-    { errorToast: "Could not load this conversation." },
+    { errorToast: t("threadFailed") },
   );
 
   const { run: sendReply, loading: replySending } = useAsyncAction(
@@ -183,9 +188,9 @@ export function InboxClient({ topBanner }: InboxClientProps = {}) {
       });
       replyEditorRef.current?.clear();
       setThread(await getConversation(thread.id));
-      toast.success("Reply sent.");
+      toast.success(t("replySent"));
     },
-    { errorToast: "Could not send reply. Please try again." },
+    { errorToast: t("replyFailed") },
   );
 
   liveRef.current = { threadId: thread?.id ?? null, replySending };
@@ -201,7 +206,7 @@ export function InboxClient({ topBanner }: InboxClientProps = {}) {
       if (thread?.id === id) setThread(null);
       await loadList();
     } catch {
-      toast.error("Could not update. Please try again.");
+      toast.error(t("updateFailed"));
     }
   };
 
@@ -209,12 +214,12 @@ export function InboxClient({ topBanner }: InboxClientProps = {}) {
     async () => {
       if (deletingId === null) return;
       await deleteConversation(deletingId);
-      toast.success("Conversation deleted.");
+      toast.success(t("deleted"));
       if (thread?.id === deletingId) setThread(null);
       setDeletingId(null);
       await loadList();
     },
-    { errorToast: "Could not delete. Please try again." },
+    { errorToast: t("deleteFailed") },
   );
 
   return (
@@ -234,7 +239,9 @@ export function InboxClient({ topBanner }: InboxClientProps = {}) {
         {thread || threadLoading ? (
           threadLoading || !thread ? (
             <div className="flex flex-1 items-center justify-center">
-              <span className="text-sm text-muted-foreground">Loading…</span>
+              <span className="text-sm text-muted-foreground">
+                {t("loading")}
+              </span>
             </div>
           ) : (
             <ThreadView
@@ -248,14 +255,14 @@ export function InboxClient({ topBanner }: InboxClientProps = {}) {
                 patchConversation(
                   thread.id,
                   { is_archived: v },
-                  v ? "Conversation archived." : "Moved to inbox.",
+                  v ? t("archived") : t("movedToInbox"),
                 )
               }
               onSpam={(v) =>
                 patchConversation(
                   thread.id,
                   { is_spam: v },
-                  v ? "Marked as spam." : "Moved to inbox.",
+                  v ? t("spamMarked") : t("movedToInbox"),
                 )
               }
               onDelete={() => setDeletingId(thread.id)}
@@ -268,13 +275,13 @@ export function InboxClient({ topBanner }: InboxClientProps = {}) {
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search mail"
+                placeholder={t("search")}
                 className="w-full bg-transparent py-1 text-sm placeholder:text-muted-foreground focus-visible:outline-none"
               />
               {query && (
                 <button
                   type="button"
-                  aria-label="Clear search"
+                  aria-label={t("clearSearch")}
                   onClick={() => setQuery("")}
                   className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
                 >
@@ -291,14 +298,14 @@ export function InboxClient({ topBanner }: InboxClientProps = {}) {
                 patchConversation(
                   id,
                   { is_archived: v },
-                  v ? "Conversation archived." : "Moved to inbox.",
+                  v ? t("archived") : t("movedToInbox"),
                 )
               }
               onSpam={(id, v) =>
                 patchConversation(
                   id,
                   { is_spam: v },
-                  v ? "Marked as spam." : "Moved to inbox.",
+                  v ? t("spamMarked") : t("movedToInbox"),
                 )
               }
               onDelete={(id) => setDeletingId(id)}

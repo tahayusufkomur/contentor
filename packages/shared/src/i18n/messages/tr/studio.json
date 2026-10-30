@@ -216,5 +216,208 @@
       "live_stream": "Canlı Yayın",
       "onsite_event": "Yüz Yüze Etkinlik"
     }
+  },
+  "logo": {
+    "palette": {
+      "theme": "Temanın",
+      "ink": "Mürekkep",
+      "slate": "Arduvaz",
+      "forest": "Orman",
+      "terracotta": "Terakota",
+      "rose": "Gül",
+      "violet": "Menekşe",
+      "amber": "Kehribar",
+      "ocean-fade": "Okyanus geçişi",
+      "sunset-fade": "Gün batımı geçişi",
+      "mint-fade": "Nane geçişi",
+      "berry-fade": "Böğürtlen geçişi",
+      "midnight-fade": "Gece yarısı geçişi",
+      "gold-fade": "Altın geçişi",
+      "sage": "Adaçayı",
+      "clay": "Kil",
+      "sky": "Gökyüzü",
+      "plum": "Erik",
+      "sand": "Kum",
+      "coral": "Mercan",
+      "pine": "Çam",
+      "mono": "Tek renk",
+      "cocoa": "Kakao",
+      "lavender": "Lavanta"
+    },
+    "iconGroup": {
+      "wellness": "Sağlıklı yaşam",
+      "fitness": "Fitness",
+      "music": "Müzik",
+      "education": "Eğitim",
+      "business": "İş",
+      "creative": "Yaratıcı",
+      "food": "Yemek",
+      "lifestyle": "Yaşam tarzı"
+    },
+    "vibe": {
+      "Modern": "Modern",
+      "Elegant": "Zarif",
+      "Bold": "Cesur",
+      "Playful": "Eğlenceli",
+      "Minimal": "Minimal"
+    }
+  },
+  "mailbox": {
+    "attachmentTooLarge": "— çok büyük, gönderenden başka bir yolla paylaşmasını iste",
+    "compose": {
+      "addRecipient": "Önce bir alıcı ekle.",
+      "sent": "Mesaj gönderildi.",
+      "sendFailed": "Mesaj gönderilemedi. Lütfen tekrar dene.",
+      "title": "Yeni mesaj",
+      "to": "Alıcı",
+      "subject": "Konu",
+      "button": "Yeni mesaj yaz"
+    },
+    "actions": {
+      "close": "Kapat",
+      "back": "Geri",
+      "cancel": "İptal",
+      "delete": "Sil",
+      "archive": "Arşivle",
+      "spam": "Spam olarak işaretle",
+      "moveToInbox": "Gelen kutusuna taşı"
+    },
+    "time": {
+      "justNow": "az önce",
+      "minutes": "{count} dk",
+      "hours": "{count} sa",
+      "days": "{count} g"
+    },
+    "emptyFolder": "Burada hiçbir şey yok.",
+    "noSubject": "(konu yok)",
+    "folder": {
+      "inbox": "Gelen kutusu",
+      "archived": "Arşivlenenler",
+      "spam": "Spam"
+    },
+    "deleteDialog": {
+      "title": "Konuşma silinsin mi?",
+      "text": "Bu işlem tüm yazışmayı kaldırır. Bunu geri alamazsın."
+    },
+    "loadFailed": "Konuşmalar yüklenemedi.",
+    "inboxFailed": "Gelen kutusu yüklenemedi.",
+    "threadFailed": "Bu konuşma yüklenemedi.",
+    "replySent": "Yanıt gönderildi.",
+    "replyFailed": "Yanıt gönderilemedi. Lütfen tekrar dene.",
+    "updateFailed": "Güncellenemedi. Lütfen tekrar dene.",
+    "deleted": "Konuşma silindi.",
+    "deleteFailed": "Silinemedi. Lütfen tekrar dene.",
+    "loading": "Yükleniyor…",
+    "archived": "Konuşma arşivlendi.",
+    "movedToInbox": "Gelen kutusuna taşındı.",
+    "spamMarked": "Spam olarak işaretlendi.",
+    "search": "Postalarda ara",
+    "clearSearch": "Aramayı temizle",
+    "you": "Sen",
+    "editor": {
+      "placeholder": "Mesajını yaz…",
+      "replyPlaceholder": "Bir yanıt yaz…",
+      "maxFiles": "{count, plural, one {Mesaj başına en fazla # ek.} other {Mesaj başına en fazla # ek.}}",
+      "tooBig": "{name} 10 MB'tan büyük.",
+      "uploadFailed": "{name} yüklenemedi.",
+      "bold": "Kalın",
+      "italic": "İtalik",
+      "underline": "Altı çizili",
+      "bulletList": "Madde işaretli liste",
+      "numberedList": "Numaralı liste",
+      "quote": "Alıntı",
+      "link": "Bağlantı",
+      "linkPrompt": "Bağlantı URL'si",
+      "attach": "Dosya ekle",
+      "remove": "{name} öğesini kaldır",
+      "ctrlEnter": "Göndermek için Ctrl+Enter",
+      "send": "Gönder"
+    }
+  },
+  "adminKit": {
+    "actions": {
+      "dismiss": "Kapat",
+      "close": "Kapat",
+      "closePanel": "Paneli kapat",
+      "cancel": "İptal",
+      "save": "Kaydet",
+      "delete": "Sil",
+      "create": "Oluştur",
+      "newItem": "Yeni {label}",
+      "editItem": "{label} düzenle"
+    },
+    "errors": {
+      "loadIndex": "Yüklenemedi.",
+      "loadModel": "Model yüklenemedi.",
+      "loadRows": "Satırlar yüklenemedi.",
+      "action": "İşlem başarısız oldu.",
+      "save": "Kaydetme başarısız oldu.",
+      "delete": "Silme başarısız oldu.",
+      "request": "İstek başarısız oldu.",
+      "requestStatus": "İstek başarısız oldu ({status})",
+      "upload": "Yükleme başarısız oldu.",
+      "uploadStatus": "Yükleme başarısız oldu ({status}).",
+      "invalidJson": "Geçersiz JSON."
+    },
+    "index": {
+      "title": "Veriler",
+      "intro": "{title} kayıtlarına göz at, onları düzenle ve üzerlerinde işlem yap."
+    },
+    "list": {
+      "empty": "Hiç {plural} bulunamadı.",
+      "selectAll": "Tümünü seç",
+      "selectRow": "{pk} satırını seç"
+    },
+    "gallery": {
+      "add": "PNG ekle",
+      "drop": "…ya da bir PNG'yi buradaki herhangi bir yere sürükleyip bırak.",
+      "empty": "Henüz hiç {plural} yok — ilkini eklemek için bir PNG bırak.",
+      "live": "Yayında",
+      "off": "Kapalı"
+    },
+    "json": {
+      "previous": "Önceki öğe",
+      "next": "Sonraki öğe",
+      "label": "Kayıt JSON'u",
+      "deleteConfirm": "Bu {label} silinsin mi?",
+      "invalid": "Geçersiz JSON: {message}",
+      "expectedObject": "Bir JSON nesnesi bekleniyordu.",
+      "unknownFields": "Bilinmeyen alan(lar): {fields}"
+    },
+    "form": {
+      "deleteConfirm": "Bu {label} silinsin mi? Bu işlem geri alınamaz.",
+      "created": "{label} oluşturuldu.",
+      "saved": "{label} kaydedildi.",
+      "deleted": "{label} silindi."
+    },
+    "field": {
+      "readOnly": "(salt okunur)",
+      "uploadPng": "PNG yükle",
+      "replacePng": "PNG'yi değiştir"
+    },
+    "cell": {
+      "yes": "evet",
+      "no": "hayır"
+    },
+    "page": {
+      "searchPlaceholder": "{plural} içinde ara…",
+      "stringFilter": "{label} (tam eşleşme)",
+      "filterSearch": "Ara…",
+      "filterSearchLabel": "{label} seçeneklerinde ara",
+      "scrollLeft": "{label} seçeneklerini sola kaydır",
+      "scrollRight": "{label} seçeneklerini sağa kaydır",
+      "noMatches": "Eşleşme yok",
+      "all": "Tümü",
+      "allCount": "Tümü ({count})",
+      "yes": "Evet",
+      "no": "Hayır",
+      "loadingMore": "Daha fazlası yükleniyor...",
+      "selected": "{count} seçildi",
+      "count": "{count, plural, one {# {singular}} other {# {plural}}}",
+      "done": "Tamamlandı.",
+      "created": "{label} oluşturuldu.",
+      "updated": "{label} güncellendi.",
+      "deleted": "{label} silindi."
+    }
   }
 }

@@ -3,6 +3,7 @@
 import { useSiteLocale } from "@/hooks/use-tenant";
 import { useRef } from "react";
 import { Upload } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { ABSTRACT_FAMILIES } from "@/lib/logo/abstract";
 import { ICON_GROUPS, LOGO_ICONS, initialsFor } from "@/lib/logo/catalog";
@@ -18,6 +19,8 @@ export function MarkControls({
   onUpdate,
   onUploadMark,
 }: StudioPanelProps) {
+  const t = useTranslations("admin.logo.panel");
+  const ts = useTranslations("studio.logo");
   const siteLocale = useSiteLocale();
   const fileRef = useRef<HTMLInputElement>(null);
   return (
@@ -25,21 +28,19 @@ export function MarkControls({
       <section className="space-y-1.5">
         <p className="text-sm font-medium">
           {recipe.mark.type === "custom"
-            ? "AI-drawn mark"
+            ? t("mark.aiDrawn")
             : recipe.mark.type === "generated"
-              ? "Designed in setup"
-              : "Mark"}
+              ? t("mark.designedInSetup")
+              : t("mark.title")}
         </p>
         {recipe.mark.type === "generated" && (
           <p className="text-xs text-muted-foreground">
-            This logo was designed for you during setup. Pick another in Setup →
-            Logo, or choose a mark below to start over.
+            {t("mark.generatedHint")}
           </p>
         )}
         {recipe.mark.type === "custom" && (
           <p className="text-xs text-muted-foreground">
-            Pick a different mark below to swap it out, or use the color
-            controls to recolor it.
+            {t("mark.customHint")}
           </p>
         )}
         <div className="flex flex-wrap gap-1.5">
@@ -54,7 +55,9 @@ export function MarkControls({
                 onClick={() => onPatch({ mark: { type: "initials", style } })}
                 className={`${toggleClass(active)} capitalize`}
               >
-                {initialsFor(recipe.name, siteLocale)} {style}
+                {t(`mark.initials.${style}`, {
+                  initials: initialsFor(recipe.name, siteLocale),
+                })}
               </button>
             );
           })}
@@ -74,11 +77,13 @@ export function MarkControls({
             className="gap-1.5"
             onClick={() => fileRef.current?.click()}
           >
-            <Upload className="h-3.5 w-3.5" /> Your own
+            <Upload className="h-3.5 w-3.5" /> {t("mark.yourOwn")}
           </Button>
         </div>
         <div>
-          <p className="mb-1 text-xs text-muted-foreground">Abstract</p>
+          <p className="mb-1 text-xs text-muted-foreground">
+            {t("mark.abstract")}
+          </p>
           <div className="grid grid-cols-6 gap-1">
             {ABSTRACT_FAMILIES.map((family) => {
               const active =
@@ -90,7 +95,7 @@ export function MarkControls({
                 <button
                   key={family}
                   type="button"
-                  aria-label={`Abstract ${family}`}
+                  aria-label={t(`mark.family.${family}`)}
                   aria-pressed={active}
                   onClick={() =>
                     onPatch({
@@ -117,15 +122,15 @@ export function MarkControls({
           </div>
           {recipe.mark.type === "abstract" && (
             <p className="mt-1 text-xs text-muted-foreground">
-              Click again to shuffle the shape.
+              {t("mark.shuffle")}
             </p>
           )}
         </div>
         <div className="max-h-64 space-y-3 overflow-y-auto pr-1">
           {ICON_GROUPS.map((group) => (
-            <div key={group.label}>
+            <div key={group.id}>
               <p className="mb-1 text-xs text-muted-foreground">
-                {group.label}
+                {ts(`iconGroup.${group.id}`)}
               </p>
               <div className="grid grid-cols-8 gap-1">
                 {group.icons.map((iconName) => {
@@ -174,7 +179,7 @@ export function MarkControls({
                   }
                   className={`${toggleClass(active)} capitalize`}
                 >
-                  {style}
+                  {t(`mark.style.${style}`)}
                 </button>
               );
             })}
@@ -189,7 +194,7 @@ export function MarkControls({
           return (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium">Mark color</p>
+                <p className="text-sm font-medium">{t("mark.color")}</p>
                 <button
                   type="button"
                   aria-pressed={isGradient}
@@ -211,13 +216,13 @@ export function MarkControls({
                   }
                   className="text-xs text-muted-foreground hover:underline"
                 >
-                  {isGradient ? "Solid" : "Gradient"}
+                  {isGradient ? t("mark.solid") : t("mark.gradient")}
                 </button>
               </div>
               <div className="flex items-center gap-2">
                 <input
                   type="color"
-                  aria-label="Mark color"
+                  aria-label={t("mark.color")}
                   value={
                     isGradient ? markFill.from : solidOf(recipe.colors.mark)
                   }
@@ -240,7 +245,7 @@ export function MarkControls({
                   <>
                     <input
                       type="color"
-                      aria-label="Mark gradient end color"
+                      aria-label={t("mark.gradientEnd")}
                       value={markFill.to}
                       onChange={(e) =>
                         onPatch(
@@ -257,7 +262,7 @@ export function MarkControls({
                     />
                     <input
                       type="number"
-                      aria-label="Gradient angle"
+                      aria-label={t("mark.gradientAngle")}
                       min={0}
                       max={360}
                       value={markFill.angle}
@@ -288,7 +293,7 @@ export function MarkControls({
           );
         })()}
         <label className="block text-xs text-muted-foreground">
-          Size
+          {t("size")}
           <input
             type="range"
             min={0.5}
@@ -317,12 +322,12 @@ export function MarkControls({
 
       {recipe.mark.type === "custom" && (
         <section className="space-y-1.5">
-          <p className="text-sm font-medium">AI-drawn mark colors</p>
+          <p className="text-sm font-medium">{t("mark.aiColors")}</p>
           <div className="flex items-center gap-4">
             <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <input
                 type="color"
-                aria-label="Secondary color"
+                aria-label={t("mark.secondaryColor")}
                 value={solidOf(recipe.colors.mark2 ?? recipe.colors.mark)}
                 onChange={(e) =>
                   onPatch(
@@ -332,12 +337,12 @@ export function MarkControls({
                 }
                 className="h-7 w-7 shrink-0 cursor-pointer rounded-full border p-0"
               />
-              Secondary
+              {t("mark.secondary")}
             </label>
             <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <input
                 type="color"
-                aria-label="Accent color"
+                aria-label={t("mark.accentColor")}
                 value={solidOf(recipe.colors.mark_accent ?? recipe.colors.mark)}
                 onChange={(e) =>
                   onPatch(
@@ -349,7 +354,7 @@ export function MarkControls({
                 }
                 className="h-7 w-7 shrink-0 cursor-pointer rounded-full border p-0"
               />
-              Accent
+              {t("mark.accent")}
             </label>
           </div>
         </section>

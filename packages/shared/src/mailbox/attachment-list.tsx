@@ -1,6 +1,7 @@
 "use client";
 
 import { FileText, ImageOff } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import type { MessageAttachment } from "@/lib/mailbox";
 
@@ -15,6 +16,7 @@ export default function AttachmentList({
 }: {
   attachments: MessageAttachment[];
 }) {
+  const t = useTranslations("studio.mailbox");
   if (attachments.length === 0) return null;
   const images = attachments.filter(
     (a) => !a.omitted && a.content_type.startsWith("image/"),
@@ -53,7 +55,7 @@ export default function AttachmentList({
           >
             <ImageOff className="h-3.5 w-3.5" />
             <span className="max-w-[220px] truncate">{a.filename}</span>
-            <span>— too large, ask the sender to share another way</span>
+            <span>{t("attachmentTooLarge")}</span>
           </div>
         ) : (
           <a

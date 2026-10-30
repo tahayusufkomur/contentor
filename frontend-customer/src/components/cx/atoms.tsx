@@ -37,6 +37,7 @@ import {
   Waves,
   type LucideIcon,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { CxNode } from "@shared/cx/types";
 import {
   Img,
@@ -59,20 +60,23 @@ import {
 type Tag = "h2" | "h3" | "h4" | "p" | "span";
 
 /** A bound text value: inline-editable when bound to a block field, plain
- *  when bound to an item field. Nothing when empty on the public site. */
+ *  when bound to an item field. Nothing when empty on the public site. The
+ *  placeholderKey names a `site.placeholder.*` message (the canvas speaks the
+ *  site's language). */
 function TextOf({
   ctx,
   bind,
   as,
   className,
-  placeholder,
+  placeholderKey,
 }: {
   ctx: CxCtx;
   bind: unknown;
   as: Tag;
   className?: string;
-  placeholder?: string;
+  placeholderKey?: "heading" | "text" | "label" | "badge" | "buttonText";
 }) {
+  const t = useTranslations("site");
   if (!isItemBind(bind)) {
     return (
       <Txt
@@ -81,7 +85,7 @@ function TextOf({
         editable={ctx.editable}
         as={as}
         className={className}
-        placeholder={placeholder}
+        placeholder={placeholderKey && t(`placeholder.${placeholderKey}`)}
       />
     );
   }
@@ -135,7 +139,7 @@ export const Heading: CxRender = (node, ctx) => {
       ctx={ctx}
       bind={node.bind}
       as={`h${level}`}
-      placeholder="Heading"
+      placeholderKey="heading"
       className={cn(
         "block",
         base,
@@ -158,7 +162,7 @@ export const Text: CxRender = (node, ctx) => (
     ctx={ctx}
     bind={node.bind}
     as="p"
-    placeholder="Text"
+    placeholderKey="text"
     className={cn(
       "block text-pretty",
       pick(node.size, TEXT_SIZE, "md"),
@@ -182,7 +186,7 @@ export const Label: CxRender = (node, ctx) => (
     ctx={ctx}
     bind={node.bind}
     as="p"
-    placeholder="Label"
+    placeholderKey="label"
     className={cn(ctx.kit.label, "block text-muted-foreground")}
   />
 );
@@ -192,7 +196,7 @@ export const Badge: CxRender = (node, ctx) => (
     ctx={ctx}
     bind={node.bind}
     as="span"
-    placeholder="Badge"
+    placeholderKey="badge"
     className={cn(
       ctx.kit.label,
       "inline-flex w-fit items-center rounded-full border border-current px-3 py-1",
@@ -271,7 +275,12 @@ function Action({
       href={ctx.editable ? null : href}
       className={cn("w-fit", className)}
     >
-      <TextOf ctx={ctx} bind={node.label} as="span" placeholder="Button text" />
+      <TextOf
+        ctx={ctx}
+        bind={node.label}
+        as="span"
+        placeholderKey="buttonText"
+      />
     </SmartLink>
   );
 }

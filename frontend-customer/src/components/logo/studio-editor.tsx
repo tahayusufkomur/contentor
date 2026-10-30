@@ -3,6 +3,7 @@
 import { useSiteLocale } from "@/hooks/use-tenant";
 import { useRef, useState } from "react";
 import { Download } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAsyncAction } from "@shared/hooks/use-async-action";
 import { Button } from "@/components/ui/button";
 import type { LogoAiStatus } from "@/lib/logo/converse-api";
@@ -54,6 +55,7 @@ export function StudioEditor({
   logoSvgRef,
   markSvgRef,
 }: StudioEditorProps) {
+  const t = useTranslations("admin.logo.editor");
   const siteLocale = useSiteLocale();
   const [selected, setSelected] = useState<ElementKey | null>(null);
   const [dark, setDark] = useState(false);
@@ -85,16 +87,13 @@ export function StudioEditor({
       a.click();
       URL.revokeObjectURL(url);
       if (!svgIncluded) {
-        setKitNote(
-          "Fonts couldn't be fetched, so the kit contains PNGs only (no SVG).",
-        );
+        setKitNote(t("kitNoSvg"));
       }
     },
     {
       // The failure reason is shown as a persistent inline note below the
       // button (not a transient toast) — replaces the default error toast.
-      onError: () =>
-        setKitNote("Could not build the brand kit — please try again."),
+      onError: () => setKitNote(t("kitFailed")),
     },
   );
 
@@ -117,7 +116,9 @@ export function StudioEditor({
               <MarkRenderer locale={siteLocale} recipe={recipe} size={16} />
               {recipe.name}
             </div>
-            <span className="text-xs text-muted-foreground">Browser tab</span>
+            <span className="text-xs text-muted-foreground">
+              {t("browserTab")}
+            </span>
           </div>
           <div className="flex flex-col items-center gap-2">
             <div className="overflow-hidden rounded-2xl shadow-md">
@@ -128,7 +129,9 @@ export function StudioEditor({
                 svgRef={markSvgRef}
               />
             </div>
-            <span className="text-xs text-muted-foreground">App icon</span>
+            <span className="text-xs text-muted-foreground">
+              {t("appIcon")}
+            </span>
           </div>
         </div>
 
@@ -141,15 +144,13 @@ export function StudioEditor({
             size="sm"
             className="gap-2"
             loading={kitBuilding}
-            loadingText="Building…"
+            loadingText={t("building")}
             onClick={downloadBrandKit}
           >
             <Download className="h-3.5 w-3.5" />
-            Download brand kit (.zip)
+            {t("downloadKit")}
           </Button>
-          <p className="text-xs text-muted-foreground">
-            PNGs for light &amp; dark, favicon sizes, and a vector SVG.
-          </p>
+          <p className="text-xs text-muted-foreground">{t("kitContents")}</p>
           {kitNote && <p className="text-xs text-destructive">{kitNote}</p>}
         </div>
 

@@ -108,5 +108,13 @@
     "startsAtFallback": "{name} startet zum monatlichen Preis.",
     "beginsAt": "{name} beginnt ab {price} pro Monat.",
     "beginsAtFallback": "{name} beginnt zum monatlichen Preis."
+  },
+  "impersonation": {
+    "viewingAs": "Ansicht als <b>{email}</b> · Identitätswechsel durch {by}",
+    "exit": "Beenden",
+    "missingToken": "Token für den Identitätswechsel fehlt.",
+    "invalidLink": "Dieser Link für den Identitätswechsel ist ungültig oder abgelaufen.",
+    "startFailed": "Die Sitzung konnte nicht gestartet werden",
+    "opening": "Sitzung wird geöffnet…"
   }
 }

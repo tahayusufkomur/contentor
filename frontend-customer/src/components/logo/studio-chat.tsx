@@ -11,6 +11,7 @@
 
 import { useSiteLocale } from "@/hooks/use-tenant";
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { ArrowLeft, RefreshCw, Send, Sparkles } from "lucide-react";
 import { AiDraftPreview, AiProgress } from "@/components/ui/ai-progress";
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,6 @@ import type { ChatEvent, ChatState } from "@/lib/logo/chat-state";
 import {
   fetchConverseFinish,
   fetchConverseTurnStream,
-  type ConverseTurnResponse,
   type LogoAiStatus,
   type TurnPreview,
 } from "@/lib/logo/converse-api";
@@ -35,7 +35,7 @@ import {
 } from "@/lib/logo/composer";
 import {
   activeStep,
-  briefTaglineButtonLabel,
+  briefTaglineText,
   currentCandidates,
   currentSelection,
   stepStatus,
@@ -46,25 +46,25 @@ import type { LogoRecipe } from "@/types/logo";
 import { LogoRenderer, MarkRenderer } from "./logo-renderer";
 import { renderDraftPngs } from "./render-draft";
 
-const NOTICES: Record<ConverseTurnResponse["source"], string> = {
-  quota_exhausted: "You've used this month's AI design turns. More next month.",
-  disabled: "AI design is temporarily unavailable.",
-  upgrade_required: "AI design is included with paid plans.",
-  error: "Couldn't design that turn — try again.",
-  draft: "",
-  ai: "",
-};
+// Server turn outcome -> the notice key under admin.logo.chat.notice ("draft" and
+// "ai" are not failures).
+const NOTICE_KEYS = [
+  "quota_exhausted",
+  "disabled",
+  "upgrade_required",
+  "error",
+] as const;
+type NoticeKey = (typeof NOTICE_KEYS)[number];
 
-// Server phase key -> what the coach sees. Keys come from
+// Server phase key -> its label under admin.logo.chat.phase. Keys come from
 // backend/apps/tenant_config/logo_converse.py (converse_turn_stream).
-const TURN_PHASE_LABELS: Record<string, string> = {
-  designing: "Sketching concepts",
-  illustrating: "Drawing the marks",
-  tracing: "Converting to vectors",
-};
+const TURN_PHASES = ["designing", "illustrating", "tracing"] as const;
+const isTurnPhase = (key: string): key is (typeof TURN_PHASES)[number] =>
+  (TURN_PHASES as readonly string[]).includes(key);
 
 // The coach's Describe-step text becomes the first turn's message; a blank
 // Describe falls back to this so "just show me ideas" still produces concepts.
+// These prompts go to the model, so they stay English whatever the studio's language.
 const FIRST_PROMPT = "Show me first concepts for my brand.";
 // Canned prompts that auto-fetch the next step's candidates on stage entry, so
 // each step lands on options rather than an empty box.
@@ -100,17 +100,18 @@ function DesignCard({
   design,
   brandName,
   canPick,
-  briefTaglineLabel,
+  briefTagline,
   onPick,
   onUseBriefTagline,
 }: {
   design: ConverseDesign;
   brandName: string;
   canPick: boolean;
-  briefTaglineLabel: string | null;
+  briefTagline: string | null;
   onPick: () => void;
   onUseBriefTagline: () => void;
 }) {
+  const t = useTranslations("admin.logo.chat");
   const siteLocale = useSiteLocale();
   const icon = isIconDesign(design);
   const recipe = icon
@@ -141,16 +142,16 @@ function DesignCard({
             className="flex-1 gap-1.5"
             onClick={onPick}
           >
-            Pick this
+            {t("pick")}
           </Button>
-          {briefTaglineLabel && (
+          {briefTagline && (
             <Button
               type="button"
               size="sm"
               variant="outline"
               onClick={onUseBriefTagline}
             >
-              {briefTaglineLabel}
+              {t("useTagline", { tagline: briefTagline })}
             </Button>
           )}
         </div>
@@ -170,12 +171,13 @@ function SelectionSummary({
   brandName: string;
   compact?: boolean;
 }) {
+  const t = useTranslations("admin.logo.chat");
   const siteLocale = useSiteLocale();
   const selection = currentSelection(state);
   return (
     <div className={compact ? "" : "space-y-3"}>
       <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        Your logo so far
+        {t("soFar")}
       </p>
       <div className="flex items-center justify-center rounded-lg border bg-muted/30 p-4">
         {selection?.kind === "lockup" ? (
@@ -192,7 +194,7 @@ function SelectionSummary({
           />
         ) : (
           <p className="py-6 text-center text-xs text-muted-foreground">
-            Your picks will appear here as you go.
+            {t("picksHere")}
           </p>
         )}
       </div>
@@ -212,6 +214,7 @@ export function StudioChat({
   onStatusChange,
   onClose,
 }: StudioChatProps) {
+  const t = useTranslations("admin.logo.chat");
   const [input, setInput] = useState("");
   const [describeInput, setDescribeInput] = useState(seedPrompt ?? "");
   const [phase, setPhase] = useState<string | null>(null);
@@ -229,7 +232,7 @@ export function StudioChat({
   };
   const turnPhases = seenPhases.map((key) => ({
     key,
-    label: TURN_PHASE_LABELS[key] ?? key,
+    label: isTurnPhase(key) ? t(`phase.${key}`) : key,
   }));
   const bannerState = deriveAiBannerState({ status });
   const turnsRemaining = status?.turns_remaining ?? 0;
@@ -279,7 +282,12 @@ export function StudioChat({
       );
       onStatusChange(resp.turns_remaining);
       if (resp.source !== "ai") {
-        dispatch({ type: "turn_failed", notice: NOTICES[resp.source] });
+        dispatch({
+          type: "turn_failed",
+          notice: NOTICE_KEYS.includes(resp.source as NoticeKey)
+            ? t(`notice.${resp.source as NoticeKey}`)
+            : "",
+        });
         return;
       }
       // Single-pass backend (no token / already final): show it as-is.
@@ -324,9 +332,7 @@ export function StudioChat({
       // the first preview), so say so rather than implying it was free.
       dispatch({
         type: "turn_failed",
-        notice: isAbortError(err)
-          ? "Cancelled — that used one of your design turns."
-          : "Couldn't reach the design studio just now.",
+        notice: isAbortError(err) ? t("cancelled") : t("unreachable"),
       });
     } finally {
       abortRef.current = null;
@@ -420,10 +426,10 @@ export function StudioChat({
               className="flex items-center gap-1 rounded-md px-2 py-1 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
             >
               <ArrowLeft className="h-4 w-4" />
-              <span className="max-sm:hidden">Ideas</span>
+              <span className="max-sm:hidden">{t("ideas")}</span>
             </button>
           )}
-          <nav className="flex items-center gap-1" aria-label="Design steps">
+          <nav className="flex items-center gap-1" aria-label={t("stepsLabel")}>
             {WIZARD_STEPS.map((s, i) => {
               const st = stepStatus(state, s.id);
               return (
@@ -444,7 +450,7 @@ export function StudioChat({
                           : "text-muted-foreground/50"
                     }`}
                   >
-                    {i + 1}. {s.label}
+                    {i + 1}. {t(`step.${s.id}`)}
                   </button>
                 </div>
               );
@@ -453,7 +459,7 @@ export function StudioChat({
         </div>
         <p className="flex items-center gap-1.5 text-sm font-semibold max-md:hidden">
           <Sparkles className="h-4 w-4 text-primary" />
-          Design with AI
+          {t("title")}
         </p>
       </div>
 
@@ -489,14 +495,14 @@ export function StudioChat({
                   // no server-side steps to report — a plain spinner is honest.
                   <p className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Spinner size="sm" />
-                    Reviewing its own work…
+                    {t("reviewing")}
                   </p>
                 ) : (
                   <AiProgress
                     phases={turnPhases}
                     currentPhase={phase}
                     onCancel={() => abortRef.current?.abort()}
-                    cancelNote="Cancelling still uses 1 turn."
+                    cancelNote={t("cancelNote")}
                   >
                     {preview && (
                       <AiDraftPreview
@@ -514,9 +520,9 @@ export function StudioChat({
                       design={design}
                       brandName={brandName}
                       canPick={canPick}
-                      briefTaglineLabel={
+                      briefTagline={
                         state.stage === "tagline"
-                          ? briefTaglineButtonLabel(brief.tagline)
+                          ? briefTaglineText(brief.tagline)
                           : null
                       }
                       onPick={() => dispatch({ type: "pin", design })}
@@ -531,7 +537,7 @@ export function StudioChat({
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  {noticeText || "Preparing options…"}
+                  {noticeText || t("preparing")}
                 </p>
               )}
 
@@ -543,7 +549,7 @@ export function StudioChat({
                       className="min-h-[40px] flex-1 resize-none rounded-md border bg-background px-3 py-2 text-sm"
                       rows={1}
                       maxLength={400}
-                      placeholder="Describe a change for this step… (e.g. more geometric, less playful)"
+                      placeholder={t("changePlaceholder")}
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={(e) => {
@@ -556,7 +562,7 @@ export function StudioChat({
                     <Button
                       type="button"
                       size="sm"
-                      aria-label="Send"
+                      aria-label={t("send")}
                       disabled={!input.trim()}
                       onClick={submitRefine}
                     >
@@ -572,11 +578,10 @@ export function StudioChat({
                       onClick={() => runTurn(DIFFERENT_PROMPT)}
                     >
                       <RefreshCw className="h-3.5 w-3.5" />
-                      Show different options
+                      {t("differentOptions")}
                     </Button>
                     <p className="text-[11px] text-muted-foreground">
-                      {turnsRemaining} AI design turn
-                      {turnsRemaining === 1 ? "" : "s"} left this month.
+                      {t("turnsLeft", { count: turnsRemaining })}
                     </p>
                   </div>
                 </div>
@@ -607,20 +612,20 @@ function DescribeStep({
   onChange: (v: string) => void;
   onSubmit: () => void;
 }) {
+  const t = useTranslations("admin.logo.chat");
   return (
     <div className="mx-auto flex w-full max-w-lg flex-col gap-4 py-6">
       <div>
-        <h3 className="text-lg font-semibold">Describe the logo you want</h3>
+        <h3 className="text-lg font-semibold">{t("describeTitle")}</h3>
         <p className="mt-1 text-sm text-muted-foreground">
-          A sentence or two is plenty — a mood, a symbol, colors to lean into or
-          avoid. Or skip it and we&apos;ll propose concepts from your brand.
+          {t("describeHint")}
         </p>
       </div>
       <textarea
         className="min-h-[120px] w-full resize-none rounded-md border bg-background px-3 py-2 text-sm"
         maxLength={400}
         autoFocus
-        placeholder="e.g. a calm, minimal mark — maybe a leaf or sunrise, warm earthy greens, nothing corporate"
+        placeholder={t("describePlaceholder")}
         value={value}
         onChange={(e) => onChange(e.target.value)}
       />
@@ -630,11 +635,11 @@ function DescribeStep({
           size="lg"
           className="gap-2"
           loading={busy}
-          loadingText="Designing…"
+          loadingText={t("designing")}
           onClick={onSubmit}
         >
           <Sparkles className="h-4 w-4" />
-          Generate concepts
+          {t("generate")}
         </Button>
         <button
           type="button"
@@ -642,7 +647,7 @@ function DescribeStep({
           onClick={onSubmit}
           className="text-sm text-muted-foreground hover:underline disabled:opacity-50"
         >
-          Skip, just show me ideas
+          {t("skip")}
         </button>
       </div>
     </div>
@@ -654,14 +659,13 @@ function GateBanner({
 }: {
   kind: ReturnType<typeof deriveAiBannerState>["kind"];
 }) {
+  const t = useTranslations("admin.logo.chat");
   if (kind === "upsell") {
     return (
       <div className="mx-auto flex max-w-md items-center justify-between gap-3 rounded-lg border border-dashed p-4">
-        <p className="text-sm text-muted-foreground">
-          AI design is included with paid plans.
-        </p>
+        <p className="text-sm text-muted-foreground">{t("upsell")}</p>
         <Button asChild size="sm" variant="outline">
-          <NavLink href="/admin/billing">Upgrade</NavLink>
+          <NavLink href="/admin/billing">{t("upgrade")}</NavLink>
         </Button>
       </div>
     );
@@ -669,8 +673,8 @@ function GateBanner({
   return (
     <p className="mx-auto max-w-md text-center text-sm text-muted-foreground">
       {kind === "quota_exhausted"
-        ? "You've used this month's AI design turns. More next month."
-        : "AI design is temporarily unavailable."}
+        ? t("notice.quota_exhausted")
+        : t("notice.disabled")}
     </p>
   );
 }

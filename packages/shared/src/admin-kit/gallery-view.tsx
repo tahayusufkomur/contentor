@@ -6,6 +6,7 @@
 
 import { useRef, useState } from "react";
 import { ImageIcon, ImagePlus, Inbox } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import type { ImageValue, ModelMeta, Row, RowValue } from "./types";
 
@@ -33,6 +34,7 @@ export function GalleryView({
   onCardClick: (row: Row) => void;
   onFile: (file: File) => void;
 }) {
+  const t = useTranslations("studio.adminKit.gallery");
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const imageField = meta.gallery_image_field ?? "";
@@ -74,11 +76,9 @@ export function GalleryView({
           ) : (
             <ImagePlus className="h-4 w-4" />
           )}
-          Add PNG
+          {t("add")}
         </KitButton>
-        <p className="text-xs text-muted-foreground">
-          …or drag &amp; drop a PNG anywhere here.
-        </p>
+        <p className="text-xs text-muted-foreground">{t("drop")}</p>
         {uploadError && (
           <p className="text-xs text-destructive">{uploadError}</p>
         )}
@@ -88,8 +88,7 @@ export function GalleryView({
         <div className="flex flex-col items-center gap-2 py-16 text-muted-foreground">
           <Inbox className="h-8 w-8" />
           <p className="text-sm">
-            No {meta.label_plural.toLowerCase()} yet — drop a PNG to add the
-            first one.
+            {t("empty", { plural: meta.label_plural.toLowerCase() })}
           </p>
         </div>
       ) : (
@@ -131,7 +130,7 @@ export function GalleryView({
                           : "bg-muted text-muted-foreground"
                       }`}
                     >
-                      {enabled ? "Live" : "Off"}
+                      {enabled ? t("live") : t("off")}
                     </span>
                   )}
                 </div>

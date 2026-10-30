@@ -133,15 +133,15 @@ describe("generateSimilar", () => {
 
   it("throws SimilarError when the icon turn is gated", async () => {
     turnMock.mockResolvedValueOnce(turnResponse({ source: "quota_exhausted" }));
-    await expect(
-      generateSimilar(LOGO, BRIEF, "Zeynep Yoga"),
-    ).rejects.toBeInstanceOf(SimilarError);
+    const failed = generateSimilar(LOGO, BRIEF, "Zeynep Yoga");
+    await expect(failed).rejects.toBeInstanceOf(SimilarError);
+    await expect(failed).rejects.toMatchObject({ code: "quota_exhausted" });
   });
 
   it("throws SimilarError when the icon turn returns no designs", async () => {
     turnMock.mockResolvedValueOnce(turnResponse({ designs: [] }));
-    await expect(
-      generateSimilar(LOGO, BRIEF, "Zeynep Yoga"),
-    ).rejects.toBeInstanceOf(SimilarError);
+    const failed = generateSimilar(LOGO, BRIEF, "Zeynep Yoga");
+    await expect(failed).rejects.toBeInstanceOf(SimilarError);
+    await expect(failed).rejects.toMatchObject({ code: "empty" });
   });
 });

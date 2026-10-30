@@ -7,6 +7,7 @@
 
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, ImageIcon, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import type {
   FieldSchema,
@@ -81,22 +82,28 @@ export function initialJson(
 export function parseRecord(
   meta: ModelMeta,
   text: string,
+  t: (
+    key: "json.invalid" | "json.expectedObject" | "json.unknownFields",
+    values?: Record<string, string>,
+  ) => string,
 ): { data?: Record<string, unknown>; error?: string } {
   let parsed: unknown;
   try {
     parsed = JSON.parse(text);
   } catch (err) {
     return {
-      error: `Invalid JSON: ${err instanceof Error ? err.message : String(err)}`,
+      error: t("json.invalid", {
+        message: err instanceof Error ? err.message : String(err),
+      }),
     };
   }
   if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-    return { error: "Expected a JSON object." };
+    return { error: t("json.expectedObject") };
   }
   const allowed = new Set(editableFields(meta).map((f) => f.name));
   const unknown = Object.keys(parsed).filter((k) => !allowed.has(k));
   if (unknown.length) {
-    return { error: `Unknown field(s): ${unknown.join(", ")}` };
+    return { error: t("json.unknownFields", { fields: unknown.join(", ") }) };
   }
   return { data: parsed as Record<string, unknown> };
 }
@@ -148,6 +155,7 @@ export function JsonRecordModal({
   hasMore?: boolean;
   onLoadMore?: () => void;
 }) {
+  const t = useTranslations("studio.adminKit");
   const [text, setText] = useState(() => initialJson(meta, target, rows));
   const [parseError, setParseError] = useState("");
   const [waitingForNext, setWaitingForNext] = useState(false);
@@ -201,7 +209,7 @@ export function JsonRecordModal({
   ]);
 
   const save = () => {
-    const { data, error } = parseRecord(meta, text);
+    const { data, error } = parseRecord(meta, text, t);
     if (error) {
       setParseError(error);
       return;
@@ -226,7 +234,7 @@ export function JsonRecordModal({
         {prevRow && (
           <button
             type="button"
-            aria-label="Previous item"
+            aria-label={t("json.previous")}
             onClick={() => onNavigate?.(prevRow)}
             className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white transition-colors hover:bg-black/60"
           >
@@ -236,7 +244,7 @@ export function JsonRecordModal({
         {(nextRow || hasMore) && (
           <button
             type="button"
-            aria-label="Next item"
+            aria-label={t("json.next")}
             onClick={() => {
               if (nextRow) {
                 onNavigate?.(nextRow);
@@ -261,12 +269,12 @@ export function JsonRecordModal({
         <div className="flex items-center justify-between gap-2">
           <h2 className="text-lg font-semibold text-foreground">
             {target.mode === "create"
-              ? `New ${meta.label}`
-              : `Edit ${meta.label}`}
+              ? t("actions.newItem", { label: meta.label })
+              : t("actions.editItem", { label: meta.label })}
           </h2>
           <KitButton
             variant="ghost"
-            aria-label="Close"
+            aria-label={t("actions.close")}
             onClick={onClose}
             className="h-8 w-8 shrink-0 px-0"
           >
@@ -274,7 +282,7 @@ export function JsonRecordModal({
           </KitButton>
         </div>
         <KitTextarea
-          aria-label="Record JSON"
+          aria-label={t("json.label")}
           value={text}
           onChange={(e) => setText(e.target.value)}
           spellCheck={false}
@@ -291,22 +299,28 @@ export function JsonRecordModal({
               variant="danger"
               disabled={busy}
               onClick={() => {
-                if (window.confirm(`Delete this ${meta.label.toLowerCase()}?`))
+                if (
+                  window.confirm(
+                    t("json.deleteConfirm", {
+                      label: meta.label.toLowerCase(),
+                    }),
+                  )
+                )
                   onDelete();
               }}
             >
-              Delete
+              {t("actions.delete")}
             </KitButton>
           ) : (
             <span />
           )}
           <div className="flex gap-2">
             <KitButton onClick={onClose} disabled={busy}>
-              Cancel
+              {t("actions.cancel")}
             </KitButton>
             <KitButton variant="primary" onClick={save} disabled={busy}>
               {busy && <Spinner size="sm" />}
-              Save
+              {t("actions.save")}
             </KitButton>
           </div>
         </div>

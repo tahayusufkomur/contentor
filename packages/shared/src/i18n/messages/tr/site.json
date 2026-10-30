@@ -30,7 +30,8 @@
     "callToAction": "Harekete geçirici mesajın",
     "yourHeadline": "Başlığın",
     "addSubheadline": "Alt başlık ekle",
-    "announcement": "Duyuru"
+    "announcement": "Duyuru",
+    "badge": "Rozet"
   },
   "empty": {
     "courses": {
@@ -740,5 +741,12 @@
     "welcomeFallback": "Yeni sitene hoş geldin",
     "yourSite": "Siten",
     "explore": "Keşfet"
+  },
+  "meta": {
+    "fallbackName": "Hoş geldin"
+  },
+  "unknownHost": {
+    "title": "Site bulunamadı",
+    "text": "Bu adreste bir Contentor sitesi yok. Bağlantıyı kontrol et ya da site sahibiyle iletişime geç."
   }
 }

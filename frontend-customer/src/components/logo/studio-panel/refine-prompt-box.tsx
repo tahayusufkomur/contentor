@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Sparkles } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import type { LogoAiStatus } from "@/lib/logo/converse-api";
 
@@ -20,6 +21,7 @@ export function RefinePromptBox({
   refineNotice: string | null;
   onRefine: (instruction: string, redrawMark: boolean) => void;
 }) {
+  const t = useTranslations("admin.logo.refine");
   const [instruction, setInstruction] = useState("");
   const [redrawMark, setRedrawMark] = useState(false);
   if (!logoAiStatus?.eligible) return null;
@@ -30,13 +32,11 @@ export function RefinePromptBox({
     <section className="space-y-1.5 rounded-md border bg-muted/30 p-3">
       <p className="flex items-center gap-1.5 text-sm font-medium">
         <Sparkles className="h-3.5 w-3.5 text-primary" />
-        Ask the AI designer
+        {t("title")}
       </p>
       {blocked ? (
         <p className="text-xs text-muted-foreground">
-          {remaining <= 0
-            ? "You've used this month's AI refinements. More next month."
-            : "AI refinement is temporarily unavailable."}
+          {remaining <= 0 ? t("quota") : t("unavailable")}
         </p>
       ) : (
         <>
@@ -44,7 +44,7 @@ export function RefinePromptBox({
             className="w-full rounded-md border bg-background px-3 py-2 text-sm"
             rows={2}
             maxLength={300}
-            placeholder="e.g. warmer colors, a rounder mark, more premium"
+            placeholder={t("placeholder")}
             value={instruction}
             onChange={(e) => setInstruction(e.target.value)}
             disabled={refining}
@@ -56,7 +56,7 @@ export function RefinePromptBox({
               onChange={(e) => setRedrawMark(e.target.checked)}
               disabled={refining}
             />
-            Redraw the icon (start the mark from scratch)
+            {t("redraw")}
           </label>
           <div className="flex items-center justify-between gap-2">
             <Button
@@ -65,7 +65,7 @@ export function RefinePromptBox({
               className="gap-1.5"
               disabled={!instruction.trim()}
               loading={refining}
-              loadingText="Refining…"
+              loadingText={t("refining")}
               onClick={() => {
                 onRefine(instruction.trim(), redrawMark);
                 setInstruction("");
@@ -73,11 +73,10 @@ export function RefinePromptBox({
               }}
             >
               <Sparkles className="h-3.5 w-3.5" />
-              Refine
+              {t("refine")}
             </Button>
             <p className="text-right text-xs text-muted-foreground">
-              {remaining} AI refinement{remaining === 1 ? "" : "s"} left this
-              month.
+              {t("left", { count: remaining })}
             </p>
           </div>
         </>

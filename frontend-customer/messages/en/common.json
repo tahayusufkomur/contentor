@@ -108,5 +108,13 @@
     "startsAtFallback": "{name} starts at its monthly price.",
     "beginsAt": "{name} begins at {price} a month.",
     "beginsAtFallback": "{name} begins at its monthly price."
+  },
+  "impersonation": {
+    "viewingAs": "Viewing as <b>{email}</b> · impersonated by {by}",
+    "exit": "Exit",
+    "missingToken": "Missing impersonation token.",
+    "invalidLink": "This impersonation link is invalid or expired.",
+    "startFailed": "Couldn’t start the session",
+    "opening": "Opening session…"
   }
 }

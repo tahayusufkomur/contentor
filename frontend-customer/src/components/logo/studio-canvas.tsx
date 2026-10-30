@@ -3,6 +3,7 @@
 import { useSiteLocale } from "@/hooks/use-tenant";
 import { useLayoutEffect, useRef, useState } from "react";
 import { Moon, Sun } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { LogoRecipe } from "@/types/logo";
 import { logoViewBox, LogoRenderer } from "./logo-renderer";
 
@@ -46,6 +47,7 @@ export function StudioCanvas({
   onToggleDark,
   logoSvgRef,
 }: StudioCanvasProps) {
+  const t = useTranslations("admin.logo.canvas");
   const siteLocale = useSiteLocale();
   const vb = logoViewBox(recipe.layout);
   const scaleToPx = CANVAS_WIDTH / vb.w;
@@ -265,15 +267,11 @@ export function StudioCanvas({
     <div className="flex w-full flex-col items-center gap-2">
       <div className="flex w-full max-w-xl items-center justify-between">
         <p className="text-xs text-muted-foreground">
-          {selected
-            ? "Drag to move · corners to resize · arrows to nudge · Esc to deselect"
-            : "Click any part of your logo to edit it"}
+          {selected ? t("hintSelected") : t("hint")}
         </p>
         <button
           type="button"
-          aria-label={
-            dark ? "Preview on light background" : "Preview on dark background"
-          }
+          aria-label={dark ? t("previewLight") : t("previewDark")}
           aria-pressed={dark}
           onClick={onToggleDark}
           className="rounded-md border p-1.5 text-muted-foreground hover:border-foreground"
@@ -286,7 +284,7 @@ export function StudioCanvas({
         data-testid="studio-canvas"
         tabIndex={0}
         role="application"
-        aria-label="Logo canvas"
+        aria-label={t("label")}
         onKeyDown={onKeyDown}
         className={`relative rounded-lg border shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${dark ? "bg-zinc-900" : "bg-white"} ${dragging ? "cursor-grabbing" : ""}`}
         style={{ width: CANVAS_WIDTH + 32, padding: 16 }}
