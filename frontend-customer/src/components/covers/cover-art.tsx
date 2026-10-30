@@ -1,6 +1,10 @@
+"use client";
+
 // One renderer for every place a cover shows: it draws a design as HTML and CSS in the nearest of
 // three sizes (Card is the look's shape, Wide 16/9, Banner 3/1), chosen by container queries in
-// cover-art.module.css, so it needs no hooks and no measuring. It fills its positioned parent.
+// cover-art.module.css, so it needs no measuring. It fills its positioned parent.
+// A client module: it reads the site's language from a context (useSiteLocale), which a server
+// page cannot call. Server pages (course detail, /render/cover) still render it, props are plain data.
 //
 // Frames and stacking come from lib/covers (framesFor, layerOrder); this file only paints them. A
 // cover wears its look's own light palette and its two fonts, whatever scheme the viewer is in.

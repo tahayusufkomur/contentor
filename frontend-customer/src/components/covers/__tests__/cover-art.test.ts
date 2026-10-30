@@ -6,6 +6,7 @@ import { renderToStaticMarkup as renderBare } from "react-dom/server";
 import { NextIntlClientProvider } from "next-intl";
 import { describe, expect, it } from "vitest";
 import { CoverArt } from "@/components/covers/cover-art";
+import { SiteLocaleBoundary } from "@shared/i18n/site-preview";
 import { LookFonts } from "@/components/covers/look-fonts";
 import { fitLines, LAYOUTS, LEADING, textSize } from "@/lib/covers/layouts";
 import { coverPalette, readableOn } from "@/lib/covers/palette";
@@ -1540,5 +1541,34 @@ describe("CoverArt icons, stickers and QR codes", () => {
     const qr = els.slice(els.indexOf(layer(els, "q1")!));
     expect(qr[1].tag).toBe("svg");
     expect(qr.find((e) => e.tag === "path")?.attrs.fill).toBe("#000");
+  });
+});
+
+describe("CoverArt in a server page", () => {
+  // Server pages (course detail, /render/cover/[token]) render CoverArt. It reads the site's
+  // language through a context hook from a "use client" file, which a server component cannot
+  // call ("useSiteLocale is not a function"), so the module has to be a client module itself.
+  it("is a client module, because it calls the site-language hook", () => {
+    const src = readFileSync(path.join(__dirname, "../cover-art.tsx"), "utf8");
+    expect(src).toMatch(/useSiteLocale\(\)/);
+    expect(src.trimStart()).toMatch(/^"use client";/);
+  });
+
+  it("draws in the page's language without a studio boundary", () => {
+    expect(draw(design())).not.toMatch(/<div[^>]*data-cover[^>]*lang=/);
+  });
+
+  it("draws in the site's language inside a studio boundary", () => {
+    const html = renderToStaticMarkup(
+      createElement(
+        SiteLocaleBoundary as React.FC<{
+          locale: string;
+          children?: React.ReactNode;
+        }>,
+        { locale: "tr" },
+        createElement(CoverArt, { design: design(), item: ITEM, now: NOW }),
+      ),
+    );
+    expect(html).toMatch(/<div[^>]*data-cover[^>]*lang="tr"/);
   });
 });
