@@ -417,7 +417,7 @@ export default function AnnouncementCompose({
             </button>
           </div>
         )}
-        <div className="flex justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <button
             type="button"
             onClick={() => setTemplateOpen(true)}

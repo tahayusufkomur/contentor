@@ -467,7 +467,7 @@ function MediaBrowserInner<T>(
 
   const selectionBar = someSelected && allActions.length > 0 && (
     <div className="flex flex-col gap-2 rounded-lg border bg-muted/50 px-4 py-2">
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <span className="text-sm font-medium">
           {selectAllMode
             ? t("mediaBrowser.allSelected", { count: effectiveTotalCount })
@@ -551,7 +551,7 @@ function MediaBrowserInner<T>(
                 : t("mediaBrowser.selectAll")}
             </Button>
           )}
-          <div className="relative flex-1">
+          <div className="relative min-w-0 flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder={t("mediaBrowser.search")}

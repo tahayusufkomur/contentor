@@ -24,6 +24,15 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* German, Polish and Turkish words are long: a heading breaks inside a word
+     instead of running off a phone (works because <html lang> is right).
+     English keeps its line breaks exactly as they are. */
+  html:lang(de) :is(h1, h2, h3, h4),
+  html:lang(pl) :is(h1, h2, h3, h4),
+  html:lang(tr) :is(h1, h2, h3, h4) {
+    hyphens: auto;
+    overflow-wrap: break-word;
+  }
   ::selection {
     background: var(--marketing-accent);
     color: var(--marketing-accent-foreground);

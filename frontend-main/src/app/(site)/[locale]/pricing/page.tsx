@@ -207,7 +207,7 @@ export default async function PricingPage() {
                     label={key === "starter" ? t("trialCta") : undefined}
                     variant={key === HIGHLIGHTED ? "brand" : "outline"}
                     size="lg"
-                    className="w-full rounded-full md:mt-5"
+                    className="h-auto min-h-10 w-full whitespace-normal rounded-full py-2 text-center md:mt-5"
                   />
                 </div>
               ))}

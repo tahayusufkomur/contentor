@@ -232,7 +232,10 @@ function PageReview({
       </p>
       <div className="mt-5 flex flex-wrap items-center gap-2">
         {!shown ? (
-          <Button onClick={() => onShow(focus)} className="rounded-full px-5">
+          <Button
+            onClick={() => onShow(focus)}
+            className="rounded-full h-auto min-h-9 whitespace-normal py-2 text-center px-5"
+          >
             {t("panel.showPage", { page: focus.key })}
           </Button>
         ) : focus.ok ? (
@@ -246,7 +249,7 @@ function PageReview({
             loading={approving}
             loadingText={t("panel.saving")}
             disabled={focus.building || sending}
-            className="rounded-full px-5"
+            className="rounded-full h-auto min-h-9 whitespace-normal py-2 text-center px-5"
           >
             {t("panel.approve")}
           </Button>
@@ -257,7 +260,7 @@ function PageReview({
             onClick={onEdit}
             // The editor saves every page at once: not while one is still being written.
             disabled={sending || pages.some((p) => p.building)}
-            className="rounded-full px-5"
+            className="rounded-full h-auto min-h-9 whitespace-normal py-2 text-center px-5"
           >
             <Pencil aria-hidden />
             {t("panel.editPage")}

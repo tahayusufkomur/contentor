@@ -137,7 +137,7 @@ export function PayoutsCard({
                     onClick={() => connect()}
                     loading={connecting}
                     loadingText={s("payouts.opening")}
-                    className="rounded-full px-7"
+                    className="rounded-full h-auto min-h-10 whitespace-normal py-2 text-center px-7"
                   >
                     {status?.connected
                       ? s("payouts.continue")

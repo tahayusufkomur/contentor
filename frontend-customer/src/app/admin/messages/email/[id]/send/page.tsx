@@ -221,7 +221,7 @@ export default function SendEmailPage() {
             <div className="flex flex-wrap gap-2">
               <Button
                 size="lg"
-                className="flex-1"
+                className="h-auto min-h-10 flex-1 whitespace-normal py-2 text-center"
                 onClick={submit}
                 loading={sending || leaving}
                 loadingText={when === "later" ? t("scheduling") : t("sending")}
@@ -236,6 +236,7 @@ export default function SendEmailPage() {
               <Button
                 size="lg"
                 variant="outline"
+                className="h-auto min-h-10 whitespace-normal py-2 text-center"
                 onClick={() => test()}
                 loading={testing}
                 loadingText={t("sending")}

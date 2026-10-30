@@ -222,14 +222,16 @@ export function NavbarTab({ config, onChange }: NavbarTabProps) {
               aria-label={tr("layoutAria", { name: tr(`layouts.${id}`) })}
               onClick={() => emit({ layout: id })}
               className={cn(
-                "flex h-14 flex-col items-center justify-center gap-1 rounded-md border text-[10px] transition-colors",
+                "flex h-14 min-w-0 flex-col items-center justify-center gap-1 overflow-hidden rounded-md border text-[10px] transition-colors",
                 layout === id
                   ? "border-primary bg-primary/5 text-foreground"
                   : "text-muted-foreground hover:border-foreground hover:text-foreground",
               )}
             >
               <LayoutThumb id={id} />
-              {tr(`layouts.${id}`)}
+              <span className="max-w-full truncate px-0.5">
+                {tr(`layouts.${id}`)}
+              </span>
             </button>
           ))}
         </div>

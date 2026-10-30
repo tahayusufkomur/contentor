@@ -600,6 +600,11 @@ function Flow({
         : step.field
           ? iv.cards?.[step.field]
           : null;
+    const partLabel = t("flow.part", {
+      section: t(`section.${SECTIONS[section]?.key}` as never),
+      n: section + 1,
+      total: SECTIONS.length,
+    });
     return (
       <div className="flex h-full flex-col">
         <header
@@ -619,12 +624,8 @@ function Flow({
               <span className="hidden truncate font-medium text-[var(--sf-graphite)] sm:inline">
                 {t("flow.step")}
               </span>
-              <span className="shrink-0">
-                {t("flow.part", {
-                  section: t(`section.${SECTIONS[section]?.key}` as never),
-                  n: section + 1,
-                  total: SECTIONS.length,
-                })}
+              <span className="min-w-0 truncate" title={partLabel}>
+                {partLabel}
               </span>
             </div>
             {/* One segment per section: done, current, still to come. */}

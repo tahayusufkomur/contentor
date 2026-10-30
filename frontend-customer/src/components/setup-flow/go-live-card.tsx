@@ -194,7 +194,7 @@ export function GoLiveCard({
       onClick={() => sellLater()}
       loading={holding}
       loadingText={t("goLive.holding")}
-      className="rounded-full"
+      className="rounded-full h-auto min-h-9 whitespace-normal py-2 text-center"
     >
       {t("goLive.sellLater")}
     </Button>
@@ -235,7 +235,7 @@ export function GoLiveCard({
           <Button
             onClick={() => checkout()}
             loading={checkingOut}
-            className="rounded-full px-6"
+            className="rounded-full h-auto min-h-9 whitespace-normal py-2 text-center px-6"
           >
             {t("goLive.trial.start")}
           </Button>
@@ -266,7 +266,7 @@ export function GoLiveCard({
             onClick={() => startNow()}
             loading={starting}
             loadingText={t("goLive.start.starting")}
-            className="rounded-full px-6"
+            className="rounded-full h-auto min-h-9 whitespace-normal py-2 text-center px-6"
           >
             {t("goLive.start.now")}
           </Button>
@@ -299,7 +299,7 @@ export function GoLiveCard({
           <Button
             onClick={() => checkout()}
             loading={checkingOut}
-            className="rounded-full px-6"
+            className="rounded-full h-auto min-h-9 whitespace-normal py-2 text-center px-6"
           >
             {t("goLive.plan.choose", { name })}
           </Button>
@@ -350,7 +350,7 @@ export function GoLiveCard({
         onClick={() => publish()}
         loading={publishing}
         loadingText={t("goLive.going")}
-        className="mt-4 rounded-full px-7"
+        className="mt-4 rounded-full h-auto min-h-10 whitespace-normal py-2 text-center px-7"
       >
         {t("goLive.goLive")}
       </Button>

@@ -424,13 +424,13 @@ export function EditSidebar({
                     className="flex items-center justify-between border-b px-5 py-4"
                     style={{ minWidth: SIDEBAR_WIDTH }}
                   >
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-sm font-semibold">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <h2 className="truncate text-sm font-semibold">
                         {tr("editSite")}
                       </h2>
                       {saving && <Spinner size="sm" label={tr("saving")} />}
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex shrink-0 items-center gap-1">
                       <UndoRedoControls />
                       {!embedded && (
                         <button

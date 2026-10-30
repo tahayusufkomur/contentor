@@ -429,7 +429,10 @@ export function StudioChat({
               <span className="max-sm:hidden">{t("ideas")}</span>
             </button>
           )}
-          <nav className="flex items-center gap-1" aria-label={t("stepsLabel")}>
+          <nav
+            className="flex min-w-0 flex-wrap items-center gap-1"
+            aria-label={t("stepsLabel")}
+          >
             {WIZARD_STEPS.map((s, i) => {
               const st = stepStatus(state, s.id);
               return (

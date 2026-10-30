@@ -625,13 +625,13 @@ export function LogoStudio({
               className="flex h-full w-full flex-col overflow-hidden rounded-xl border bg-background shadow-2xl outline-none"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between border-b px-6 py-4">
-                <div className="flex items-center gap-6">
+              <div className="flex flex-wrap items-center justify-between gap-y-2 border-b px-6 py-4">
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
                   <h2 id="logo-studio-title" className="text-lg font-semibold">
                     {t("title")}
                   </h2>
                   <nav
-                    className="flex items-center gap-1"
+                    className="flex flex-wrap items-center gap-1"
                     aria-label={t("stepsLabel")}
                   >
                     {(

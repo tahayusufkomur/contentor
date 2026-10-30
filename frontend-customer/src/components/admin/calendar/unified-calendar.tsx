@@ -331,7 +331,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
         </div>
 
         {/* View Mode & Date Nav */}
-        <div className="flex items-center justify-between sm:justify-end gap-3">
+        <div className="flex flex-wrap items-center justify-between sm:justify-end gap-x-3 gap-y-2">
           <div className="flex items-center border rounded-lg overflow-hidden bg-background">
             <button
               type="button"
@@ -436,7 +436,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
                 return (
                   <div
                     key={key}
-                    className={`p-1.5 flex flex-col transition-colors ${
+                    className={`min-w-0 p-1.5 flex flex-col transition-colors ${
                       !isCurrentMonth ? "bg-muted" : "bg-card"
                     } ${today ? "bg-primary/5 font-semibold" : ""}`}
                   >
@@ -481,9 +481,12 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
                               <Icon className="h-3 w-3 shrink-0" />
                               <span className="truncate">{item.title}</span>
                             </div>
-                            <div className="flex items-center justify-between text-[10px] mt-0.5">
-                              <span>{eventTime}</span>
-                              <span className="uppercase font-mono text-[9px]">
+                            <div className="flex min-w-0 items-center justify-between gap-1 text-[10px] mt-0.5">
+                              <span className="shrink-0">{eventTime}</span>
+                              <span
+                                className="truncate uppercase font-mono text-[9px]"
+                                title={statusLabel(item.status)}
+                              >
                                 {statusLabel(item.status)}
                               </span>
                             </div>

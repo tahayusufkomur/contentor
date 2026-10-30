@@ -128,7 +128,9 @@ export function Palette({ onAdded }: { onAdded?: () => void }) {
             className="flex h-16 flex-col items-center justify-center gap-1.5 rounded-lg border bg-background px-1 text-xs font-medium text-foreground transition-colors hover:border-primary/50 hover:bg-accent/50 active:cursor-grabbing"
           >
             <entry.icon className="h-5 w-5 text-muted-foreground" />
-            <span className="truncate">{entry.label}</span>
+            <span className="max-w-full truncate" title={entry.label}>
+              {entry.label}
+            </span>
           </PaletteSource>
         ))}
       </div>

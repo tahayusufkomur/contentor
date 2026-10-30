@@ -127,7 +127,7 @@ function ProductsTab() {
       error={error}
       onRetry={() => setReloadKey((k) => k + 1)}
       skeleton={
-        <div className="rounded-md border">
+        <div className="overflow-x-auto rounded-md border">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/50">
@@ -152,7 +152,7 @@ function ProductsTab() {
         </div>
       }
     >
-      <div className="rounded-md border">
+      <div className="overflow-x-auto rounded-md border">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-muted/50">
@@ -277,7 +277,7 @@ function BundlesTab() {
         error={error}
         onRetry={() => setReloadKey((k) => k + 1)}
         skeleton={
-          <div className="rounded-md border">
+          <div className="overflow-x-auto rounded-md border">
             <table className="w-full text-sm">
               {tableHead}
               <tbody>
@@ -287,7 +287,7 @@ function BundlesTab() {
           </div>
         }
       >
-        <div className="rounded-md border">
+        <div className="overflow-x-auto rounded-md border">
           <table className="w-full text-sm">
             {tableHead}
             <tbody>
@@ -409,7 +409,7 @@ function PlansTab() {
         error={error}
         onRetry={() => setReloadKey((k) => k + 1)}
         skeleton={
-          <div className="rounded-md border">
+          <div className="overflow-x-auto rounded-md border">
             <table className="w-full text-sm">
               {tableHead}
               <tbody>
@@ -419,7 +419,7 @@ function PlansTab() {
           </div>
         }
       >
-        <div className="rounded-md border">
+        <div className="overflow-x-auto rounded-md border">
           <table className="w-full text-sm">
             {tableHead}
             <tbody>
@@ -563,7 +563,7 @@ function SalesTab() {
       error={error}
       onRetry={() => setReloadKey((k) => k + 1)}
       skeleton={
-        <div className="rounded-md border">
+        <div className="overflow-x-auto rounded-md border">
           <table className="w-full text-sm">
             {tableHead}
             <tbody>

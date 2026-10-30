@@ -81,7 +81,7 @@ function Way({
         covered && "opacity-40",
       )}
     >
-      <div className="grid grid-cols-[1.25rem_1fr_auto] items-start gap-x-2.5">
+      <div className="grid grid-cols-[1.25rem_minmax(0,1fr)_auto] items-start gap-x-2.5">
         {fixed ? (
           <span />
         ) : (
@@ -418,7 +418,7 @@ function Loaded({
                   return (
                     <div
                       key={plan.id}
-                      className="grid grid-cols-[1.25rem_1fr] gap-x-2.5 border-t border-dashed py-2.5 first:border-t-0 first:pt-0.5"
+                      className="grid grid-cols-[1.25rem_minmax(0,1fr)] gap-x-2.5 border-t border-dashed py-2.5 first:border-t-0 first:pt-0.5"
                     >
                       <Checkbox
                         id={id}
