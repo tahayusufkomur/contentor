@@ -2,7 +2,7 @@
   "hero": {
     "pill": "<b>Kurucu içerik üreticileri</b>: kurulumunu birebir biz yapıyoruz",
     "title": "Uzman sensin. <accent>Bütün ekibin biziz.</accent>",
-    "lead": "Contentor arkanda duran bir ekip gibi çalışır. Siteni kurar, öğrenci getirir, onların geri gelmesini sağlar ve ödemelerini almanı sağlar.",
+    "lead": "Contentor arkanda duran bir ekip gibi çalışır. Siteni kurar, öğrenci getirir, onların geri gelmesini sağlar ve ödemelerini sana ulaştırır.",
     "cta": "Ücretsiz denemeyi başlat",
     "secondary": "Ekibinle tanış",
     "trust": {
@@ -20,13 +20,13 @@
       "producer": "Kurslarının taslağını hazırlar, canlı oturumları yürütür",
       "community": "Öğrencilere anlık bildirim ve e-postayla hatırlatır",
       "assistant": "Öğrencileri gece gündüz yanıtlar",
-      "cashier": "Fiyat önerir, ödemeni Stripe üzerinden yapar"
+      "cashier": "Fiyat önerir, ödemelerini Stripe üzerinden sana ulaştırır"
     }
   },
   "for": {
     "title": "İçerik üreticileri için yapıldı.",
     "lead": "Yoga, güç antrenmanı, müzik, diller, yemek ve daha fazlası. Her alanın kendine özel bir görünümü var, sen de onu kendine göre şekillendirirsin.",
-    "galleryLabel": "Koçluk alanları ve görünümleri",
+    "galleryLabel": "Uzmanlık alanları ve görünümleri",
     "renderAlt": "{look} görünümünde bir içerik üreticisi sitesinin telefon önizlemesi",
     "niches": {
       "journal": "Yoga içerik üreticileri",
@@ -57,14 +57,14 @@
         "sceneLabel": "Bir içerik üreticisi kurulum sorularını yanıtlıyor, bir görünüm seçiyor ve sitesi oluşuyor"
       },
       "marketer": {
-        "name": "Pazarlama Uzmanı",
+        "name": "Pazarlama uzmanı",
         "title": "Sen üretirken yeni öğrenciler seni bulur.",
         "text": "Öğrencilerinin Google'da ve ChatGPT'de aradıklarına yanıt veren makaleler ve bir kez yazdığın, kendiliğinden gönderilen kampanyalar.",
         "tools": "Otomatik pilotta makaleler · Aramaya hazır sayfalar · E-posta kampanyaları · Kendi alan adın",
         "sceneLabel": "Bir öğrenci önce Google'a, sonra ChatGPT'ye online yoga soruyor; ikisi de Mara'nın sitesini gösteriyor"
       },
       "producer": {
-        "name": "İçerik Üretim Uzmanı",
+        "name": "İçerik üretim uzmanı",
         "title": "Tek bir cümleden bir kursa, ardından canlı yayına geç.",
         "text": "Bir kursu anlat, taslağı ders ders kendiliğinden oluşsun. Ardından kendi sitenden canlı yayına geç: öğrenciler dizüstü bilgisayardan, tabletten ya da telefondan katılır.",
         "tools": "Kurs taslakları · Grup ya da birebir canlı oturumlar · Yüz yüze etkinlikler · Takvimin",
@@ -89,7 +89,7 @@
           "title": "Sabah akışı birazdan başlıyor",
           "body": "Katılmak için dokun. Matta görüşürüz.",
           "channels": {
-            "push": "Bildirim",
+            "push": "Anlık bildirim",
             "email": "E-posta",
             "app": "Uygulamada"
           }
@@ -103,10 +103,10 @@
         "sceneLabel": "Gece bir öğrenci Mara'nın asistanından yardım istiyor, önerdiği kursu satın alıyor ve ödeme Mara'nın sessize alınmış telefonuna ulaşıyor"
       },
       "cashier": {
-        "name": "Finans Stratejisti",
+        "name": "Finans stratejisti",
         "title": "Satan fiyatlar, ödemeler doğrudan sana.",
         "text": "Fiyat önermek için kendi satışlarını inceler, ardından ödemeler senin adınla doğrudan Stripe hesabına gider. Paranı asla biz tutmayız.",
-        "tools": "Fiyat önerileri · Üyelikler · Stripe ödemeleri · Makbuzlarda senin adın",
+        "tools": "Fiyat önerileri · Üyelikler · Stripe ödeme aktarımları · Makbuzlarda senin adın",
         "sceneLabel": "Mara'nın öğrencilerinden gelen ödemeler art arda Stripe hesabına düşüyor",
         "scene": {
           "today": "Bugün",
@@ -217,13 +217,13 @@
     "title": "Contentor'a sor",
     "bubbleLabel": "Yardım sohbetini aç",
     "close": "Kapat",
-    "intro": "Contentor hakkında soruların mı var? Çekinmeden sor — fiyatlar, ödemeler, özellikler, aklına ne gelirse.",
+    "intro": "Contentor hakkında soruların mı var? Çekinmeden sor — fiyatlar, ödeme aktarımları, özellikler, aklına ne gelirse.",
     "placeholder": "Bir soru sor…",
     "send": "Gönder",
     "thinking": "Düşünüyor…",
     "error": "Bir şeyler ters gitti — lütfen tekrar dene.",
     "suggestPrice": "Contentor'un ücreti ne kadar?",
-    "suggestPayouts": "Ödemeler nasıl işliyor?",
+    "suggestPayouts": "Ödeme aktarımları nasıl işliyor?",
     "suggestDomain": "Kendi alan adımı kullanabilir miyim?",
     "rateUp": "Faydalı",
     "rateDown": "Faydalı değil",
@@ -234,12 +234,12 @@
     "humanModeNotice": "{name} ile sohbet ediyorsun"
   },
   "meta": {
-    "title": "Contentor — Uzman sensin. Tüm ekibin biziz.",
-    "description": "Contentor arkanda bir ekip gibi çalışır: siteni kurar, öğrencileri getirir, tekrar gelmelerini sağlar ve ödeme almanı sağlar. 14 gün ücretsiz dene."
+    "title": "Contentor — Uzman sensin. Bütün ekibin biziz.",
+    "description": "Contentor arkanda bir ekip gibi çalışır: siteni kurar, öğrencileri getirir, tekrar gelmelerini sağlar ve ödemelerini sana ulaştırır. 14 gün ücretsiz dene."
   },
   "blogMeta": {
     "title": "Blog — Contentor",
-    "description": "Contentor ile çevrim içi bir iş kuran içerik üreticileri için rehberler ve fikirler."
+    "description": "Contentor ile çevrimiçi bir iş kuran içerik üreticileri için rehberler ve fikirler."
   },
   "blog": {
     "title": "Blog",
@@ -250,20 +250,20 @@
     "pause": "Animasyonu duraklat",
     "found": {
       "askedGoogle": "Google'da soruldu",
-      "query": "why are my hips so tight after sitting",
+      "query": "oturduktan sonra kalçalarım neden bu kadar gergin",
       "resultUrl": "{site} › makaleler",
-      "resultTitle": "Masa başında geçen bir günün ardından kalçaların neden gergin hissettirir",
+      "resultTitle": "Masa başında geçen bir günün ardından kalçaların neden gerilir",
       "resultSnippet": "Oturmak, kalçaların ön kısmını kısaltır. Bunun ne anlama geldiği ve iki dakikalık çözümü burada.",
       "askedChatGpt": "ChatGPT'de soruldu",
       "question": "Vücudu tutulmuş ofis çalışanları için online yogayı nerede bulabilirim?",
-      "answer": "{coach}’u dene. Bütün gün masa başında oturanlar için canlı dersler ve gergin sırtlar için nazik bir kursla birlikte yavaş vinyasa ve yin dersleri veriyor.",
+      "answer": "{coach} adlı içerik üreticisini dene. Bütün gün masa başında oturanlar için canlı oturumlar ve gergin sırtlar için nazik bir kursla birlikte yavaş vinyasa ve yin dersleri veriyor.",
       "newStudent": "Yeni öğrenci",
-      "joined": "{student}, {coach}’un platformuna katıldı"
+      "joined": "{student}, {coach} platformuna katıldı"
     },
     "night": {
-      "time": "3:12 ÖÖ",
+      "time": "03:12",
       "asleep": "{coach} uyuyor",
-      "askAssistant": "{coach}’un asistanına sor",
+      "askAssistant": "Asistana sor · {coach}",
       "question": "Masa başında geçen uzun günlerin ardından belim ağrıyor. Nereden başlamalıyım?",
       "reply": "A Kinder Back ile başla: masa başında geçen günler için tasarlanmış kısa, nazik oturumlar. Birinci dersi bu gece yapabilirsin.",
       "course": "A Kinder Back",
@@ -272,7 +272,7 @@
       "buyNow": "Şimdi satın al",
       "paymentReceived": "Ödeme alındı",
       "sleep": "Uyku",
-      "paymentFrom": "<amount>{price}</amount> {student}’den · {course}"
+      "paymentFrom": "<amount>{price}</amount> · Gönderen: {student} · {course}"
     }
   }
 }

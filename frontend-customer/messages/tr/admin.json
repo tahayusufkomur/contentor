@@ -12,8 +12,8 @@
     "look": "{look} · {palette}"
   },
   "badges": {
-    "ai": "YZ",
-    "aiTooltip": "YZ destekli özellik"
+    "ai": "Yapay zekâ",
+    "aiTooltip": "Yapay zekâ destekli özellik"
   },
   "nav": {
     "sections": {
@@ -33,7 +33,7 @@
       "communityFeed": "Topluluk",
       "inbox": "Gelen kutusu",
       "blog": "Blog",
-      "payouts": "Ödemeler",
+      "payouts": "Ödeme aktarımları",
       "store": "Mağaza",
       "editSite": "Siteyi düzenle",
       "design": "Tasarım",
@@ -46,7 +46,7 @@
       "reels": "Reels",
       "videoStudio": "Video stüdyosu"
     },
-    "more": "+ {count} daha"
+    "more": "+{count} tane daha"
   },
   "reels": {
     "subtitle": "Videolarından kısa dikey klipler; Instagram Reels, TikTok ve YouTube Shorts için altyazılı ve çerçevelenmiş.",
@@ -55,7 +55,7 @@
     "yours": "Reels videoların",
     "ideas": {
       "title": "Fikirler",
-      "description": "Yüklediğin her video, yayılabilecek anlar için taranır: insanların paylaştığı anlar, komik anlar, güçlü kancalar. Her birinin kapağı önceden tasarlanmış olarak gelir. Beğendiklerini kullan.",
+      "description": "Yüklediğin her video, yayılabilecek anlar için taranır: insanların birbirine gönderdiği anlar, komik anlar, güçlü açılışlar. Her birinin kapağı önceden tasarlanmış olarak gelir. Beğendiklerini kullan.",
       "find": "Fikir bul",
       "more": "Daha fazla fikir bul",
       "none": "Bu video için henüz fikir yok.",
@@ -66,14 +66,14 @@
       "dismissed": "Fikir kaldırıldı"
     },
     "kinds": {
-      "send": "İnsanlar bunu paylaşır",
+      "send": "İnsanlar bunu başkalarına gönderir",
       "funny": "Komik",
-      "hook": "Güçlü kanca",
+      "hook": "Güçlü açılış",
       "insight": "Kaydetmeye değer"
     },
     "found": "{count, plural, one {# yeni fikir} other {# yeni fikir}} hazır.",
     "failed": "Bu videoda hiç fikir bulunamadı.",
-    "score": "Kanca {score}/10",
+    "score": "Açılış {score}/10",
     "status": {
       "idea": "Fikir",
       "draft": "Taslak",
@@ -91,9 +91,9 @@
       "video": "Video",
       "pick": "Bir video seç",
       "starting": "Başlatılıyor…",
-      "unavailable": "Bu, transkripti olmayan örnek bir video. Reel oluşturmak için kendi videolarından birini yükle.",
+      "unavailable": "Bu, transkripti olmayan örnek bir video. Reels videosu oluşturmak için kendi videolarından birini yükle.",
       "noSpeech": "Bu videoda konuşma bulunamadı, bu yüzden altyazı eklenecek bir şey yok.",
-      "noRender": "Video dosyası oluşturma bu sitede henüz açık değil: yine de reel bulup düzenleyebilirsin."
+      "noRender": "Video dosyası oluşturma bu sitede henüz açık değil: yine de Reels videolarını bulup düzenleyebilirsin."
     },
     "search": {
       "transcribing": "Yazıya dökülüyor…",
@@ -106,15 +106,15 @@
       "coveringHint": "Her kapak için en iyi göründüğün kareler seçiliyor."
     },
     "preview": {
-      "label": "Reel önizlemesi",
+      "label": "Reels videosu önizlemesi",
       "play": "Oynat",
       "pause": "Duraklat",
-      "seek": "Reelde bir noktaya atla",
+      "seek": "Videoda bir noktaya atla",
       "mute": "Sesi kapat",
       "unmute": "Sesi aç"
     },
     "editor": {
-      "back": "Tüm reeller",
+      "back": "Tüm Reels videoları",
       "from": "Kaynak: {video}",
       "length": "{length} uzunluğunda",
       "saving": "Kaydediliyor…",
@@ -127,16 +127,16 @@
       "openStudio": "Stüdyoda aç",
       "makeHint": "Önizleme canlı: doğru göründüğünde videoyu oluştur.",
       "makingHint": "Bu yaklaşık bir dakika sürer. Düzenlemeye devam edebilirsin.",
-      "staleHint": "Videosu oluşturulduktan sonra reelde değişiklik yaptın.",
+      "staleHint": "Video oluşturulduktan sonra Reels videosunda değişiklik yaptın.",
       "readyHint": "Paylaşmaya hazır. Gönderinin kapak görseli için kapağı da indir.",
       "noRender": "Video dosyası oluşturma bu sitede henüz açık değil.",
-      "made": "Reel videon indirilmeye hazır.",
+      "made": "Reels videon indirilmeye hazır.",
       "notMade": "Video oluşturulamadı. Tekrar dene.",
       "theFile": "Video dosyasını oynat",
       "cover": "Kapak",
-      "coverHint": "Reelin ilk saniyesi ve kapak olarak paylaşacağın görsel.",
-      "hook": "Kanca",
-      "hookHint": "Bir kelimeyi öne çıkarmak için onu *yıldız* içine al.",
+      "coverHint": "Videonun ilk saniyesi ve kapak olarak paylaşacağın görsel.",
+      "hook": "Açılış",
+      "hookHint": "Bir kelimeyi vurgulamak için etrafına *yıldız* koy.",
       "design": "Tasarım",
       "designs": {
         "editorial": "Editoryal",
@@ -150,7 +150,7 @@
       "noFrames": "Henüz kare yok: video servisi bu anı inceledikten sonra kapak görünecek.",
       "label": "Seri etiketi",
       "labelPlaceholder": "Mobilite",
-      "openWithCover": "Reel'i kapağıyla başlat",
+      "openWithCover": "Reels videosunu kapağıyla başlat",
       "clip": "Klip",
       "clipHint": "Klibi orada başlatmak ya da bitirmek için bir kelimeye tıkla.",
       "start": "Başlangıç",
@@ -169,7 +169,7 @@
         "es": "İspanyolca",
         "fr": "Fransızca",
         "it": "İtalyanca",
-        "nl": "Felemenkçe",
+        "nl": "Hollandaca",
         "pl": "Lehçe",
         "pt": "Portekizce",
         "tr": "Türkçe"
@@ -192,22 +192,22 @@
       "endCard": "Siten ve QR koduyla bitiş kartı",
       "endText": "Bitiş kartı satırı",
       "post": "Gönderi metni",
-      "postHint": "Reel'i paylaşırken altına yapıştıracağın metin.",
+      "postHint": "Videoyu paylaşırken altına yapıştıracağın metin.",
       "copy": "Kopyala",
       "copied": "Kopyalandı",
       "notCopied": "Kopyalanamadı. Metni seçip kopyala.",
-      "delete": "Reel'i sil",
-      "deleteSure": "Bu reel ve videosu silinsin mi?",
+      "delete": "Reels videosunu sil",
+      "deleteSure": "Bu Reels videosu ve oluşturulan video dosyası silinsin mi?",
       "keep": "Kalsın",
-      "deleted": "Reel silindi",
-      "madeByTeam": "Pazarlama Uzmanın tarafından hazırlandı"
+      "deleted": "Reels videosu silindi",
+      "madeByTeam": "Pazarlama uzmanın tarafından hazırlandı"
     },
     "studio": {
-      "subtitle": "Bir reel'i zaman çizelgesinde kendin düzenle: kırp, istediğin anı çıkar, bir altyazıyı yeniden yaz, altyazıları ve görüntüyü taşı, her şeyi geri al.",
-      "noneTitle": "Henüz düzenlenecek reel yok",
+      "subtitle": "Bir Reels videosunu zaman çizelgesinde kendin düzenle: kırp, istediğin anı çıkar, bir altyazıyı yeniden yaz, altyazıları ve görüntüyü taşı, her şeyi geri al.",
+      "noneTitle": "Henüz düzenlenecek Reels videosu yok",
       "none": "Önce Reels'teki fikirlerden birini kullan, sonra burada aç.",
       "toReels": "Reels'e git",
-      "back": "Stüdyodaki tüm reel'ler",
+      "back": "Stüdyodaki tüm Reels videoları",
       "timeline": "Zaman çizelgesi",
       "panelsLabel": "Stüdyo panelleri",
       "panels": {
@@ -227,9 +227,9 @@
       },
       "piece": "{from} ile {to} arası klip",
       "cut": "Senin çıkardığın bölüm",
-      "pauseCut": "Reel'in atladığı bir duraklama",
-      "trimStart": "Reel'in başladığı yer: sürükle ya da ok tuşlarını kullan",
-      "trimEnd": "Reel'in bittiği yer: sürükle ya da ok tuşlarını kullan",
+      "pauseCut": "Videonun atladığı bir duraklama",
+      "trimStart": "Videonun başladığı yer: sürükle ya da ok tuşlarını kullan",
+      "trimEnd": "Videonun bittiği yer: sürükle ya da ok tuşlarını kullan",
       "photoAt": "{at} konumunda fotoğraf: taşımak için sürükle",
       "play": "Oynat",
       "pause": "Duraklat",
@@ -242,7 +242,7 @@
       "zoomIn": "Yakınlaştır",
       "zoomOut": "Uzaklaştır",
       "zoom": "Zaman çizelgesi yakınlaştırması",
-      "fit": "Reel'i sığdır",
+      "fit": "Videoyu sığdır",
       "stageHint": "Altyazıları yukarı ya da aşağı, görüntüyü yana sürükle. Oynatmak ya da duraklatmak için tıkla.",
       "frame": {
         "dragHint": "Ya da görüntüyü oynatıcıda yana sürükle: bıraktığın yerde kalır.",
@@ -294,22 +294,22 @@
       "updateError": "Paket güncellenemedi. Lütfen tekrar dene.",
       "publishError": "Paket yayınlanamadı.",
       "needItem": "Lütfen paket için en az bir öğe seç.",
-      "edit": "Paketi Düzenle",
+      "edit": "Paketi düzenle",
       "editSubtitle": "Bu paketin ayrıntılarını ve öğelerini güncelle.",
-      "details": "Paket Ayrıntıları",
+      "details": "Paket ayrıntıları",
       "detailsHint": "Paketin hakkında temel bilgiler.",
-      "namePlaceholder": "örn. Başlangıç Paketi",
-      "descriptionPlaceholder": "Bu pakete nelerin dahil olduğunu açıkla...",
-      "originalPrice": "Orijinal Fiyat (öğelerin toplamı)",
-      "itemsTitle": "Paket Öğeleri",
+      "namePlaceholder": "örn. Başlangıç paketi",
+      "descriptionPlaceholder": "Bu pakete nelerin dahil olduğunu açıkla…",
+      "originalPrice": "Orijinal fiyat (öğelerin toplamı)",
+      "itemsTitle": "Paket öğeleri",
       "itemsHint2": "Bu pakete dahil edilecek içeriği seç.",
       "saving": "Kaydediliyor…",
-      "saveChanges": "Değişiklikleri Kaydet",
+      "saveChanges": "Değişiklikleri kaydet",
       "cancel": "İptal",
       "createdTermsFailed": "Paket oluşturuldu ancak koşulları kaydedilmedi. {reason}",
       "created": "Paket başarıyla oluşturuldu.",
       "createError": "Paket oluşturulamadı. Lütfen tekrar dene.",
-      "create": "Paket Oluştur",
+      "create": "Paket oluştur",
       "createSubtitle": "Birden fazla ürünü indirimli bir fiyata bir araya getir.",
       "creating": "Oluşturuluyor…"
     },
@@ -317,10 +317,10 @@
       "new": "Yeni üyelik",
       "edit": "Üyeliği düzenle",
       "back": "Üyeliklere dön",
-      "formSubtitle": "Seçtiğin içeriğe erişim açan yinelenen bir ücret.",
+      "formSubtitle": "Seçtiğin içeriğe erişim açan yinelenen bir fiyat.",
       "details": "Ayrıntılar",
       "name": "Ad",
-      "namePlaceholder": "ör. Stüdyo kartı",
+      "namePlaceholder": "örn. Stüdyo kartı",
       "description": "Açıklama",
       "descriptionPlaceholder": "Üyelerin neler alacağı",
       "price": "Fiyat ({currency})",
@@ -375,10 +375,10 @@
     },
     "productTypes": {
       "course": "Kurs",
-      "download": "İndirilebilir Dosya",
-      "live_class": "Canlı Oturum",
-      "live_stream": "Canlı Yayın",
-      "onsite_event": "Yüz Yüze Etkinlik",
+      "download": "İndirilebilir dosya",
+      "live_class": "Canlı oturum",
+      "live_stream": "Canlı yayın",
+      "onsite_event": "Yüz yüze etkinlik",
       "bundle": "Paket"
     }
   },
@@ -402,7 +402,7 @@
     "community": "Topluluğu açma veya kapatma ve karşılama mesajı",
     "assistant": "Öğrencilerinin gördüğü asistan",
     "autopilot": "Blog otomatik pilotu",
-    "payouts": "Ödemeleri nasıl alırsın",
+    "payouts": "Ödemelerini nasıl alırsın",
     "plan": "Contentor planın"
   },
   "dock": {
@@ -440,7 +440,7 @@
         "Bu kurs yayınlanmaya hazır mı?"
       ],
       "events": [
-        "Önümüzdeki 4 hafta için haftalık bir ders planla",
+        "Önümüzdeki 4 hafta için haftalık bir canlı oturum planla",
         "Yaklaşan etkinliklerime kapak ekle",
         "Takvimimde sırada ne var?"
       ],
@@ -450,17 +450,17 @@
         "Hangi yazılar hâlâ taslak?"
       ],
       "announcements": [
-        "Bir sonraki dersim hakkında bir duyuru taslağı hazırla",
-        "Yeni öğrenciler için bir hoş geldin mesajı taslağı hazırla",
+        "Bir sonraki canlı oturumum hakkında bir duyuru taslağı hazırla",
+        "Yeni öğrenciler için bir karşılama mesajı taslağı hazırla",
         "En yeni kursum hakkında bir hatırlatma taslağı hazırla"
       ],
       "students": [
         "Bu hafta kaç öğrenci katıldı?",
-        "Yeni öğrenciler için bir hoş geldin mesajı taslağı hazırla",
-        "Bana daha fazla öğrenci ne kazandırır?"
+        "Yeni öğrenciler için bir karşılama mesajı taslağı hazırla",
+        "Daha fazla öğrenci kazanmak için ne yapabilirim?"
       ],
       "money": [
-        "Ödememi nasıl alırım?",
+        "Ödemelerimi nasıl alırım?",
         "Planım neleri içeriyor?",
         "Bir kurs için ne kadar ücret almalıyım?"
       ],
@@ -484,20 +484,20 @@
         "job": "Siten, görünümün, logon ve fotoğrafların"
       },
       "content": {
-        "name": "İçerik Üretim Uzmanı",
+        "name": "İçerik üretim uzmanı",
         "job": "Kurslar, canlı oturumlar ve indirilebilir dosyalar"
       },
       "marketing": {
-        "name": "Pazarlama Uzmanı",
-        "job": "Makaleler, kampanyalar ve arama"
+        "name": "Pazarlama uzmanı",
+        "job": "Blog yazıları, kampanyalar ve arama"
       },
       "community": {
         "name": "Topluluk yöneticisi",
         "job": "Öğrenciler, topluluk ve gelen kutusu"
       },
       "finance": {
-        "name": "Finans Stratejisti",
-        "job": "Fiyatlar, üyelikler, satışlar ve ödemeler"
+        "name": "Finans stratejisti",
+        "job": "Fiyatlar, üyelikler, satışlar ve ödeme aktarımları"
       },
       "assistant": {
         "name": "Asistan",
@@ -506,18 +506,18 @@
     },
     "starters": {
       "designer": [
-        "Ana sayfamı daha sıcak hissettir",
+        "Ana sayfamın havasını daha sıcak yap",
         "Kurslarıma birbiriyle uyumlu kapaklar yap",
         "Siteme daha sakin bir görünüm dene"
       ],
       "content": [
         "Bir fikirden kurs taslağı hazırla",
-        "Önümüzdeki 4 hafta için haftalık bir ders planla",
+        "Önümüzdeki 4 hafta için haftalık bir canlı oturum planla",
         "Hangi kurslar hâlâ taslak?"
       ],
       "marketing": [
-        "Öğrencilerim için üç makale fikri öner",
-        "En yeni kursum hakkında bir makale yaz",
+        "Öğrencilerim için üç blog yazısı fikri öner",
+        "En yeni kursum hakkında bir blog yazısı yaz",
         "Google'ın sitem için gösterdiği metni iyileştir"
       ],
       "community": [
@@ -528,7 +528,7 @@
       "finance": [
         "Bu ay satışlar nasıl gitti?",
         "Bir sonraki kursum için ne kadar fiyat belirlemeliyim?",
-        "Ödememi nasıl alırım?"
+        "Ödemelerimi nasıl alırım?"
       ],
       "assistant": [
         "Sırada ne yapmalıyım?",
@@ -547,14 +547,14 @@
     "enable": "Asistanı sitemde göster",
     "enableHint": "Bu açıkken ziyaretçiler ve öğrenciler sitende bir sohbet balonu görür.",
     "enableFailed": "Bu değiştirilemedi. Lütfen tekrar dene.",
-    "upsellTitle": "Öğrencilerin için bir site asistanı edin",
+    "upsellTitle": "Öğrencilerin için bir site asistanı al",
     "upsellBody": "Asistan öğrencilerinin sorularını yanıtlar ve kurslarını önerir — ücretli planlara dahildir.",
     "upsellCta": "Planları gör",
     "greetingLabel": "Karşılama mesajı",
     "greetingHint": "Ziyaretçilerin gördüğü ilk mesaj.",
     "greetingPlaceholder": "Merhaba! Kurslarımızla ilgili bana her şeyi sorabilirsin.",
     "suggestionsLabel": "Önerilen sorular (en fazla 3)",
-    "suggestionPlaceholder": "ör. Nasıl başlarım?",
+    "suggestionPlaceholder": "örn. Nasıl başlarım?",
     "save": "Kaydet",
     "saved": "Kaydedildi.",
     "saveFailed": "Kaydedilemedi. Lütfen tekrar dene.",
@@ -569,7 +569,7 @@
     "knowledgeSaveFailed": "Bu kayıt kaydedilemedi. Lütfen tekrar dene.",
     "knowledgeDeleteFailed": "Bu kayıt silinemedi. Lütfen tekrar dene.",
     "entryTitle": "Konu veya soru",
-    "entryTitlePlaceholder": "ör. İadeler",
+    "entryTitlePlaceholder": "örn. İadeler",
     "entryContent": "Yanıt",
     "entryContentPlaceholder": "Asistan ne söylemeli?",
     "entryEnabled": "Etkin",
@@ -616,7 +616,7 @@
     "linkLimit": "En fazla 20 bağlantı ekleyebilirsin.",
     "linksEmpty": "Henüz bağlantı yok.",
     "handoff": "Ziyaretçiler seni isteyebilsin",
-    "handoffHint": "\"Bir insanla konuş\" düğmesi gösterir; biri bu düğmeye dokunduğunda sana e-posta gelir."
+    "handoffHint": "“Bir insanla konuş” butonunu gösterir; biri ona dokunduğunda sana e-posta gelir."
   },
   "blog": {
     "title": "Blog",
@@ -625,7 +625,7 @@
     "newPost": "Yeni yazı",
     "writeWithAi": "Yapay zekâyla yaz",
     "creditsLeft": "Bu ay {limit} yapay zekâ yazısından {remaining} tane kaldı",
-    "aiBadge": "YZ",
+    "aiBadge": "Yapay zekâ",
     "draft": "Taslak",
     "published": "Yayında",
     "deleteConfirm": "Bu yazı silinsin mi? Bu işlem geri alınamaz.",
@@ -645,7 +645,7 @@
     "viewOnSite": "Sitede görüntüle",
     "regenerate": "Yeniden oluştur",
     "regenerateConfirm": "Bu yazı sıfırdan yeniden oluşturulsun mu? Bu işlem 1 yapay zekâ kredisi kullanır ve mevcut metnin yerine geçer.",
-    "generateTitle": "Yapay zekâ ile yaz",
+    "generateTitle": "Yapay zekâyla yaz",
     "topicYourOwn": "Ya da kendi konun",
     "instructionsPlaceholder": "Özellikle değinmesini istediğin bir şey var mı?",
     "generating": "Yazın hazırlanıyor — bu yaklaşık yarım dakika sürer…",
@@ -654,7 +654,7 @@
     "phaseRendering": "Biçimlendiriliyor ve görseller seçiliyor",
     "cancelKeepsCredit": "İptal etsen de 1 kredi kullanılır.",
     "cancelled": "Oluşturma iptal edildi — kredi kullanıldı.",
-    "errQuota": "Bu ayki yapay zekâ yazı hakkın doldu.",
+    "errQuota": "Bu ay için yapay zekâ yazı hakkın kalmadı.",
     "errBudget": "Yapay zekâ ile yazma geçici olarak kullanılamıyor.",
     "errGeneric": "Bir şeyler ters gitti — kredin kullanılmadı.",
     "autopilotTitle": "Otomatik pilot",
@@ -686,9 +686,9 @@
     "deleted": "Silindi",
     "delete": "Sil",
     "saved": "Kaydedildi",
-    "regenerated": "Yeniden Oluşturuldu",
+    "regenerated": "Yeniden oluşturuldu",
     "editor": {
-      "placeholder": "Gönderini yaz…",
+      "placeholder": "Yazını yaz…",
       "bold": "Kalın",
       "italic": "İtalik",
       "heading2": "Başlık 2",
@@ -828,11 +828,11 @@
       },
       "first_blog_post": {
         "title": "İlk blog yazını yaz",
-        "description": "Bir makale paylaş — ilk yazı yayınlandığında sitende Blog bölümü görünür."
+        "description": "Bir blog yazısı paylaş — ilk yazı yayınlandığında sitende Blog bölümü görünür."
       },
       "first_community_post": {
         "title": "Topluluğunda merhaba de",
-        "description": "Yeni üyeler hareketli bir ortama gelsin diye bir hoş geldin mesajı paylaş."
+        "description": "Yeni üyeler hareketli bir ortama gelsin diye bir karşılama mesajı paylaş."
       },
       "share_site": {
         "title": "Siteni paylaş",
@@ -904,8 +904,8 @@
     "siteLanguageLocked": "Siten yayında, bu yüzden dili olduğu gibi kalır.",
     "subtitle": "Sitenin genel ayarlarını yapılandır.",
     "saving": "Kaydediliyor…",
-    "saveChanges": "Değişiklikleri Kaydet",
-    "timezone": "Saat Dilimi",
+    "saveChanges": "Değişiklikleri kaydet",
+    "timezone": "Saat dilimi",
     "timezoneHint": "Takvimdeki tüm etkinlik saatleri öğrencilerin için bu saat diliminde gösterilecek.",
     "currentTimezone": "Mevcut seçim: {timezone}"
   },
@@ -925,7 +925,7 @@
       "none": "Plan yok",
       "incomplete": "Hazırlanıyor",
       "trialing": "Ücretsiz deneme",
-      "active": "Aktif",
+      "active": "Etkin",
       "past_due": "Ödemesi gecikmiş",
       "canceled": "İptal edildi"
     },
@@ -951,7 +951,7 @@
       "switchViaSupport": "Geçiş için destekle iletişime geç",
       "downgrade": "Alt plana geçmek için destekle iletişime geç",
       "comingSoonInCurrency": "Yakında {currency} ile",
-      "processing": "İşleniyor...",
+      "processing": "İşleniyor…",
       "error": "Ödeme başlatılamadı. Lütfen tekrar dene.",
       "limits": {
         "students": "{n} öğrenci",
@@ -971,11 +971,11 @@
   "describe": {
     "course": {
       "label": "Bir kursu anlat, asistan taslağını hazırlasın",
-      "placeholder": "ör. koşucular için nefes üzerine 4 haftalık başlangıç kursu"
+      "placeholder": "örn. koşucular için nefes üzerine 4 haftalık başlangıç kursu"
     },
     "event": {
       "label": "Bir oturumu ya da seriyi anlat, asistan planlasın",
-      "placeholder": "ör. 6 hafta boyunca her salı 18:00'de canlı akış dersi"
+      "placeholder": "örn. 6 hafta boyunca her salı 18:00'de canlı akış oturumu"
     },
     "submit": "Taslağını hazırla",
     "working": "Taslak hazırlanıyor…",
@@ -984,13 +984,13 @@
     "failed": "Bu işe yaramadı. Tekrar dene ya da elle oluştur."
   },
   "media": {
-    "subtitle": "Sitende, kurslarında ve gönderilerinde kullandığın fotoğraflar ve videolar.",
+    "subtitle": "Sitende, kurslarında ve yazılarında kullandığın fotoğraflar ve videolar.",
     "photos": "Fotoğraflar",
     "videos": "Videolar",
     "mine": "Fotoğraflarım",
     "contentor": "Contentor fotoğrafları",
     "emptyMine": "Henüz kendi fotoğrafın yok. Eklemek için yukarıya birkaç tane bırak.",
-    "emptyContentor": "Henüz Contentor fotoğrafı yok. Siten için kütüphaneden seçilen fotoğraflar burada görünür.",
+    "emptyContentor": "Henüz Contentor fotoğrafı yok. Siten için kitaplıktan seçilen fotoğraflar burada görünür.",
     "shape": {
       "label": "Şekil",
       "any": "Tüm şekiller",
@@ -1015,9 +1015,9 @@
       "cancel": "{name} dosyasının yüklemesini iptal et"
     },
     "untitled": "Başlıksız",
-    "untitledPhoto": "Başlıksız Fotoğraf",
-    "untitledVideo": "Başlıksız Video",
-    "lightbox": "Lightbox",
+    "untitledPhoto": "Başlıksız fotoğraf",
+    "untitledVideo": "Başlıksız video",
+    "lightbox": "Medya görüntüleyici",
     "emptyVideos": "Henüz video yok. Başlamak için bir tane yükle.",
     "uploaded": "Yüklendi",
     "noVideo": "Video yok",
@@ -1032,30 +1032,30 @@
     },
     "field": {
       "title": "Başlık",
-      "altText": "Alt Metin",
+      "altText": "Alternatif metin",
       "tags": "Etiketler",
       "description": "Açıklama"
     },
     "tip": {
-      "copyCdnUrl": "CDN URL'sini Kopyala",
-      "copyCdnLink": "CDN Bağlantısını Kopyala",
-      "copyEmbed": "HTML Yerleştirme Kodunu Kopyala",
-      "copyVideoEmbed": "Video Yerleştirme Kodunu Kopyala",
-      "editDetails": "Ayrıntıları Düzenle",
-      "makeReels": "Reels oluştur"
+      "copyCdnUrl": "CDN URL'sini kopyala",
+      "copyCdnLink": "CDN bağlantısını kopyala",
+      "copyEmbed": "HTML yerleştirme kodunu kopyala",
+      "copyVideoEmbed": "Video yerleştirme kodunu kopyala",
+      "editDetails": "Ayrıntıları düzenle",
+      "makeReels": "Reels videoları oluştur"
     },
     "toast": {
       "photoUpdated": "Fotoğraf güncellendi",
       "photoUpdateFailed": "Fotoğraf güncellenemedi",
-      "cdnLinkCopied": "CDN Bağlantısı panoya kopyalandı!",
+      "cdnLinkCopied": "CDN bağlantısı panoya kopyalandı!",
       "embedCopied": "HTML yerleştirme kodu kopyalandı!",
       "photosDeleted": "Fotoğraflar silindi",
       "photoDeleted": "Fotoğraf silindi",
       "photoDeleteFailed": "Fotoğraf silinemedi",
       "videoUpdated": "Video güncellendi",
       "videoUpdateFailed": "Video güncellenemedi",
-      "cdnVideoCopied": "CDN Video URL'si kopyalandı!",
-      "videoEmbedCopied": "HTML Video Yerleştirme kodu kopyalandı!",
+      "cdnVideoCopied": "CDN video URL'si kopyalandı!",
+      "videoEmbedCopied": "HTML video yerleştirme kodu kopyalandı!",
       "videosDeleted": "Videolar silindi",
       "videoDeleted": "Video silindi",
       "videoDeleteFailed": "Video silinemedi"
@@ -1070,9 +1070,9 @@
       "size": "Boyut: {size}",
       "duration": "Süre: {time}",
       "uploaded": "Yüklendi: {date}",
-      "copyLink": "CDN Bağlantısını Kopyala",
-      "copyEmbed": "HTML Yerleştirme Kodunu Kopyala",
-      "close": "Önizlemeyi Kapat"
+      "copyLink": "CDN bağlantısını kopyala",
+      "copyEmbed": "HTML yerleştirme kodunu kopyala",
+      "close": "Önizlemeyi kapat"
     }
   },
   "studio": {
@@ -1153,12 +1153,12 @@
           "panel": "renk panelini",
           "label": "etiketi",
           "title": "başlığı",
-          "subtitle": "alt başlık",
-          "badge": "rozet",
-          "text": "seçili metin",
-          "shape": "seçili şekil",
-          "icon": "seçili simge",
-          "qr": "QR kodunun kareleri"
+          "subtitle": "alt başlığı",
+          "badge": "rozeti",
+          "text": "seçili metni",
+          "shape": "seçili şekli",
+          "icon": "seçili simgeyi",
+          "qr": "QR kodunun karelerini"
         },
         "fonts": "Yazı tipleri",
         "fontFor": {
@@ -1236,7 +1236,7 @@
       "waiting": "Sen bu kapağı seçene kadar {target} şu anki kapağını korur.",
       "isKept": "{title} şu anda bu kapağı kullanıyor. Değiştirmek için bir kopyasını düzenle.",
       "replaced": "Bu kapağın yerini daha yeni bir kapak aldı. Tekrar kullanmak için bir kopyasını düzenle.",
-      "gone": "Bu kapağın ait olduğu kurs ya da etkinlik artık yok, bu yüzden seçilemez.",
+      "gone": "Bu kapağın ait olduğu kurs ya da etkinlik artık yok, bu yüzden kullanılamaz.",
       "controls": "Kapak kontrolleri",
       "saving": "Kaydediliyor…",
       "saved": "Kaydedildi",
@@ -1254,7 +1254,7 @@
         "download": "İndirilebilir dosyada kullan",
         "event": "Etkinlikte kullan"
       },
-      "kept": "Kaydedildi. {title} artık bu kapağı kullanıyor.",
+      "kept": "Ayarlandı. {title} artık bu kapağı kullanıyor.",
       "waitForPhoto": "Fotoğrafın tamamlanmasını bekle",
       "notFound": "Bu kapak artık burada değil."
     },
@@ -1273,7 +1273,7 @@
       "photo": "Fotoğraf",
       "layout": "Yerleşim",
       "set": "Senin setin",
-      "setHint": "En son kaydettiğin kapak gibi.",
+      "setHint": "En son kullandığın kapak gibi.",
       "layouts": {
         "panel": "Renk paneli",
         "full": "Tam fotoğraf",
@@ -1293,7 +1293,7 @@
         "paper": "Arka plan",
         "surface": "Yüzey",
         "inverse": "Koyu",
-        "inverse-ink": "Koyu üzerinde metin",
+        "inverse-ink": "Koyu zeminde metin",
         "primary-light": "Ana renk, daha açık",
         "primary-dark": "Ana renk, daha koyu",
         "accent-light": "Vurgu, daha açık",
@@ -1338,7 +1338,7 @@
       "retry": "Tekrar dene",
       "pickFailed": "Bu fotoğraf kullanılamadı. Başka birini dene.",
       "describe": "Fotoğrafı tarif et",
-      "describePlaceholder": "A woman stretching on a porch at sunrise, warm light",
+      "describePlaceholder": "Gün doğarken verandada esneme yapan bir kadın, sıcak ışık",
       "left": "{count, plural, one {Bu ay # yeni fotoğraf hakkın kaldı} other {Bu ay # yeni fotoğraf hakkın kaldı}}",
       "used": "Bu ayki yeni fotoğraf haklarını kullandın.",
       "make": "Oluştur",
@@ -1427,7 +1427,7 @@
       "effect": "Efekt",
       "effects": {
         "none": "Efekt yok",
-        "lift": "Kaldır",
+        "lift": "Yükselt",
         "shadow": "Gölge",
         "outline": "Dış çizgi",
         "highlight": "Vurgu",
@@ -1437,7 +1437,7 @@
       "markWord": "Bir kelimeyi renklendir",
       "markNone": "Kelime yok",
       "markColour": "Kelime rengi",
-      "flip": "Çevir",
+      "flip": "Ters çevir",
       "editPhoto": "Fotoğrafı düzenle",
       "icon": "Simge",
       "qrLink": "Bağlantı",
@@ -1480,7 +1480,7 @@
         "coffee": "Kahve",
         "smile": "Gülümseme",
         "globe": "Dünya",
-        "mail": "Posta",
+        "mail": "E-posta",
         "phone": "Telefon",
         "arrow-right": "Ok",
         "chevron-right": "Köşeli ok"
@@ -1510,7 +1510,7 @@
     "draftGone": "Bu taslak artık yok.",
     "designedTemplates": "Tasarımlı e-posta şablonları",
     "tabs": {
-      "sent": "Gönderilen & planlanan",
+      "sent": "Gönderilen ve planlanan",
       "repeating": "Tekrarlanan",
       "templates": "Şablonlar"
     },
@@ -1518,7 +1518,7 @@
     "emptyHint": "Mesajın öğrencilerine uygulamada ulaşır; kutuyu işaretlersen e-postayla da gider.",
     "emailDown": "Tasarımlı e-postalar şu anda yüklenemedi. Aşağıdaki mesajlar eksiksiz; e-postalar bir sonraki ziyaretinde yeniden görünecek.",
     "untitled": "Başlıksız",
-    "review": "İncele & gönder",
+    "review": "İncele ve gönder",
     "removeError": "Bu işlem olmadı. Lütfen tekrar dene.",
     "channel": {
       "app": "Uygulamada",
@@ -1583,7 +1583,7 @@
       "draftCleanup": "Gönderildi, ancak incelendiği taslak silinemedi.",
       "sendError": "Duyuru gönderilemedi",
       "send": {
-        "recurring": "Tekrarlanan oluştur",
+        "recurring": "Tekrarlanan mesaj oluştur",
         "schedule": "Zamanla",
         "now": "Şimdi gönder"
       },
@@ -1605,8 +1605,8 @@
       "reach": {
         "counting": "Bunu kimlerin alacağı hesaplanıyor…",
         "nobody": "Bu filtrelerle eşleşen öğrenci yok — bu mesajı kimse almayacak.",
-        "withPush": "<b>{audience}</b> {audience, plural, other {öğrencinin}} akışına gider · <b>{push}</b> ayrıca telefon bildirimi alır",
-        "noPush": "<b>{audience}</b> {audience, plural, one {öğrencinin} other {öğrencilerin}} akışına gider · henüz hiçbirinin telefon bildirimleri açık değil"
+        "withPush": "<b>{audience}</b> {audience, plural, one {öğrencinin} other {öğrencinin}} akışına gider · <b>{push}</b> kişi ayrıca telefon bildirimi alır",
+        "noPush": "<b>{audience}</b> {audience, plural, one {öğrencinin} other {öğrencinin}} akışına gider · henüz hiçbirinin telefon bildirimleri açık değil"
       },
       "mode": {
         "once": "Tek seferlik",
@@ -1664,24 +1664,24 @@
       "created": "Oluşturuldu",
       "completed": "Tamamlandı",
       "preview": "E-posta önizlemesi",
-      "noPreview": "Bu kampanya için önizleme mevcut değil.",
-      "noTracking": "Bu güncellemeden önce gönderilen kampanyalar için alıcı takibi mevcut değil.",
+      "noPreview": "Bu kampanya için önizleme yok.",
+      "noTracking": "Bu güncellemeden önce gönderilen kampanyalar için alıcı takibi yok.",
       "colName": "Ad",
       "colEmail": "E-posta",
       "colStatus": "Durum",
-      "colSentAt": "Gönderilme Tarihi",
+      "colSentAt": "Gönderilme tarihi",
       "colError": "Hata"
     },
     "send": {
       "testSent": "{email} adresine test gönderildi",
       "scheduled": "{when} için zamanlandı.",
       "onItsWay": "E-postan yola çıktı.",
-      "needSubject": "E-postana bir konu belirle.",
+      "needSubject": "E-postana bir konu yaz.",
       "needCourse": "En az bir kurs seç.",
       "needStudent": "En az bir öğrenci seç.",
       "nobody": "Kimse almayacak: buradaki hiçbir öğrenci e-posta almak istemiyor (bazıları abonelikten çıkmış olabilir).",
       "needTime": "Bir gün ve saat seç.",
-      "needFuture": "Gelecekteki bir zamanı seç.",
+      "needFuture": "Gelecekte bir zaman seç.",
       "backToEditor": "Editöre geri dön",
       "title": "E-postanı gönder",
       "subtitle": "Kimin ne zaman alacağını seç. Her öğrenci, kendi adını ve bir abonelikten çıkma bağlantısını içeren kendi kopyasını alır.",
@@ -1689,7 +1689,7 @@
       "when": "Ne zaman",
       "sendNow": "Şimdi gönder",
       "schedule": "Zamanla",
-      "sendAt": "Şu zamanda gönder",
+      "sendAt": "Gönderim zamanı",
       "scheduling": "Zamanlanıyor…",
       "sending": "Gönderiliyor…",
       "sendTo": "{count, plural, one {# öğrenciye gönder} other {# öğrenciye gönder}}",
@@ -1721,8 +1721,8 @@
       "manageTemplates": "Şablonları yönet",
       "opening": "Açılıyor",
       "blank": "Boş",
-      "blankHint": "Üst bilgin ve alt bilgin, henüz başka bir şey yok.",
-      "designerPlaceholder": "Veya Tasarımcı'ya sor: “öğrencilerimi yeni sabah dersine davet et, samimi ve kısa olsun”…",
+      "blankHint": "Şimdilik yalnızca üst bilgin ve alt bilgin var.",
+      "designerPlaceholder": "Veya Tasarımcı'ya sor: “öğrencilerimi yeni sabah oturumuma davet et, samimi ve kısa olsun”…",
       "feature": "Öne çıkar (en fazla {max})"
     },
     "templates": {
@@ -1733,7 +1733,7 @@
       "new": "Yeni şablon",
       "fromDesigner": "Tasarımcı'dan yeni bir şablon",
       "kindPrompt": "Bununla ne tür bir e-posta göndereceksin?",
-      "briefPlaceholder": "Örn. Aylık bir bülten: benden kısa bir not, en son makalem ve bir sonraki dersim.",
+      "briefPlaceholder": "Örn. Aylık bir bülten: benden kısa bir not, en son blog yazım ve bir sonraki oturumum.",
       "notNow": "Şimdi değil",
       "empty": "Henüz şablon yok. Yeni bir tanesiyle başla veya Tasarımcı'ya sor.",
       "duplicated": "Çoğaltıldı.",
@@ -1748,13 +1748,13 @@
     "recurring": {
       "daily": "Her gün saat {time}",
       "weekly": {
-        "mon": "Her Pazartesi saat {time}",
-        "tue": "Her Salı saat {time}",
-        "wed": "Her Çarşamba saat {time}",
-        "thu": "Her Perşembe saat {time}",
-        "fri": "Her Cuma saat {time}",
-        "sat": "Her Cumartesi saat {time}",
-        "sun": "Her Pazar saat {time}"
+        "mon": "Her pazartesi saat {time}",
+        "tue": "Her salı saat {time}",
+        "wed": "Her çarşamba saat {time}",
+        "thu": "Her perşembe saat {time}",
+        "fri": "Her cuma saat {time}",
+        "sat": "Her cumartesi saat {time}",
+        "sun": "Her pazar saat {time}"
       },
       "monthly": "Her ayın {day}. günü saat {time}",
       "loadError": "Yinelenen duyurular yüklenemedi.",
@@ -1766,11 +1766,11 @@
       "nextRun": "sonraki: {when}",
       "paused": "duraklatıldı",
       "pause": "Duraklat",
-      "resume": "Devam ettir"
+      "resume": "Sürdür"
     },
     "templateList": {
       "loadError": "Şablonlar yüklenemedi.",
-      "empty": "Henüz kayıtlı şablon yok. Oluştururken “Şablon olarak kaydet” seçeneğini kullan.",
+      "empty": "Henüz kayıtlı şablon yok. Yazarken “Şablon olarak kaydet” seçeneğini kullan.",
       "confirmDelete": "Bu şablonu silmek istiyor musun?",
       "deleted": "Silindi",
       "deleteError": "Silinemedi"
@@ -1791,7 +1791,7 @@
     "upcoming": "Yaklaşan",
     "past": "Geçmiş",
     "empty": "Yaklaşan bir şey yok. Bir oturum veya etkinlik oluştur ya da yukarıda birini tarif et.",
-    "emptyPast": "Henüz geçmişte bir şey yok.",
+    "emptyPast": "Geçmişte henüz bir şey yok.",
     "sort": {
       "date": "Tarihe göre",
       "newest": "En son eklenen",
@@ -1815,13 +1815,13 @@
     "kinds": {
       "live": {
         "label": "Canlı oturum",
-        "hint": "Doğrudan tarayıcıda, bir video odasında grup dersi ya da birebir görüşme. Ek yazılım gerekmez.",
+        "hint": "Tarayıcıda, bir video odasında grup oturumu ya da birebir görüşme. Ek yazılım gerekmez.",
         "titlePlaceholder": "örn. Cuma akış oturumu"
       },
       "stream": {
         "label": "Canlı yayın",
         "hint": "Sen yayın yaparsın; öğrenciler izler ve sohbet eder.",
-        "titlePlaceholder": "örn. Haftalık Soru-Cevap"
+        "titlePlaceholder": "örn. Haftalık soru-cevap"
       },
       "zoom": {
         "label": "Zoom",
@@ -1853,7 +1853,7 @@
     "paid": "Ücretli",
     "membersOnly": "Yalnızca üyeler",
     "price": "Fiyat ({currency})",
-    "record": "Otomatik olarak kaydet",
+    "record": "Otomatik olarak kayda al",
     "watermark": "Filigran",
     "watermarkHint": "Ekran kaydını caydırmak için öğrenciler videonun üzerinde kendi adlarını görür.",
     "whiteboard": "Beyaz tahta",
@@ -1875,13 +1875,13 @@
     "trialTitle": "İlk oturum ücretsiz deneme olsun mu?",
     "trialHint": "İlk oturuma herkes ücretsiz katılabilir. Diğer tüm oturumlar fiyatını korur.",
     "trialOn": "Ücretsiz oturum: {when}. Diğer tüm oturumlar fiyatını korur.",
-    "trialHelpTerm": "Ücretsiz deneme dersi nedir?",
-    "trialHelp": "Deneme dersi, birinin ödeme yapmadan önce öğrettiklerini denemesini sağlar. Yalnızca ilk oturum ücretsizdir ve herkes katılabilir. Sonraki tüm oturumlar normal fiyatından satılır. İstediğin zaman kapatabilirsin; o oturum yeniden kendi fiyatına döner.",
+    "trialHelpTerm": "Ücretsiz deneme oturumu nedir?",
+    "trialHelp": "Deneme oturumu, birinin ödeme yapmadan önce sunduklarını denemesini sağlar. Yalnızca ilk oturum ücretsizdir ve herkes katılabilir. Sonraki tüm oturumlar her zamanki fiyatından satılır. İstediğin zaman kapatabilirsin; o oturum yeniden kendi fiyatına döner.",
     "trialTurnedOn": "Tamam. İlk oturum artık ücretsiz deneme.",
     "trialTurnedOff": "Tamam. İlk oturum yeniden kendi fiyatında.",
-    "trialError": "Ücretsiz deneme değiştirilemedi. Lütfen tekrar dene.",
-    "held": "Taslak: öğrencilerin bunu henüz görmüyor. Yayınladığında yaklaşan tüm oturumları görünür.",
-    "heldPast": "Önce ileri bir tarih seç.",
+    "trialError": "Ücretsiz deneme değiştirilemedi. Tekrar dene.",
+    "held": "Taslak: öğrencilerin bunu henüz görmüyor. Yayınlarsan yaklaşan tüm oturumları görünür olur.",
+    "heldPast": "Önce gelecekten bir tarih seç.",
     "publish": "Yayınla",
     "publishing": "Yayınlanıyor…",
     "published": "Yayınlandı. Öğrencilerin artık görebilir.",
@@ -1892,9 +1892,9 @@
     "join": "Katıl",
     "end": "Bitir",
     "ending": "Bitiriliyor…",
-    "stopped": "Bitti.",
-    "startError": "Başlatılamadı. Lütfen tekrar dene.",
-    "stopError": "Bitirilemedi. Lütfen tekrar dene.",
+    "stopped": "Sona erdi.",
+    "startError": "Başlatılamadı. Tekrar dene.",
+    "stopError": "Bitirilemedi. Tekrar dene.",
     "openZoom": "Zoom'u aç",
     "deleted": "{count, plural, one {# öğe silindi} other {# öğe silindi}}.",
     "deleteRefused": "{count, plural, one {# öğe silinemedi} other {# öğe silinemedi}}. Bir oturumu veya etkinliği yalnızca site sahibi silebilir."
@@ -1919,7 +1919,7 @@
         "fillMyself": "Kendim yazayım",
         "tick": "E-postayla da gönder",
         "writing": "Mesajın yazılıyor…",
-        "thinking": "Mesajın üzerinde düşünülüyor…"
+        "thinking": "Mesajın üzerinde düşünüyorum…"
       },
       "download": {
         "new": "Yeni indirilebilir dosya",
@@ -1927,16 +1927,16 @@
         "fillMyself": "Kendim doldurayım",
         "drop": "Dosyanı buraya bırak ya da bir dosya seç",
         "fileNotAnswered": "Dosyan sayfada, ama rehber onu gözden kaçırdı.",
-        "thinking": "İndirilebilir dosyan üzerinde düşünülüyor…"
+        "thinking": "İndirilebilir dosyan üzerinde düşünüyorum…"
       },
       "membership": {
         "new": "Yeni üyelik",
         "continue": "Üyeliğine devam et: {title}",
         "fillMyself": "Kendim doldurayım",
-        "thinking": "Üyeliğin üzerinde düşünülüyor…",
+        "thinking": "Üyeliğin üzerinde düşünüyorum…",
         "writing": "Ad ve açıklama yazılıyor…",
         "handOver": {
-          "access": "{name} burada: hadi fiyatını belirleyelim."
+          "access": "Ben {name}: hadi fiyatını belirleyelim."
         }
       },
       "bundle": {
@@ -1944,21 +1944,21 @@
         "continue": "Paketine devam et: {title}",
         "tooFew": "Bir paket için sattığın en az iki ürün gerekir. Önce ikisine fiyat ver.",
         "fillMyself": "Kendim doldurayım",
-        "thinking": "Paketin üzerine düşünüyorum…",
+        "thinking": "Paketin üzerinde düşünüyorum…",
         "writing": "Ad ve açıklama yazılıyor…",
         "handOver": {
-          "access": "{name} hazır: şimdi fiyatını belirleyelim."
+          "access": "Ben {name}: şimdi fiyatını belirleyelim."
         }
       },
       "post": {
         "new": "Yeni gönderi",
         "continue": "Gönderine devam et: {title}",
-        "fillMyself": "Kendim yazacağım",
+        "fillMyself": "Kendim yazayım",
         "writing": "Gönderin yazılıyor…",
         "copyFailed": "Gönderi oluşturulamadı.",
-        "thinking": "Gönderinin üzerine düşünüyorum…",
+        "thinking": "Gönderin üzerinde düşünüyorum…",
         "refused": {
-          "upgrade_required": "Gönderilerini senin yerine yazmak ücretli planlarda var. Kendin yaz ya da planını yükselt.",
+          "upgrade_required": "Gönderilerini senin yerine yazmak ücretli planlara dahil. Kendin yaz ya da planını yükselt.",
           "quota_exhausted": "Bu ayki yapay zekâ gönderi hakkın bitti. Kendin yaz ya da daha fazlası için planını yükselt.",
           "disabled": "Yapay zekâ ile yazma şu anda kullanılamıyor. Kendin yaz.",
           "budget": "Yapay zekâ ile yazma şu anda kullanılamıyor. Kendin yaz."
@@ -1975,8 +1975,8 @@
     "addTimeLimit": "Süre sınırı ekle",
     "answerPlaceholder": "Ya da kendi sözlerinle anlat…",
     "changePlaceholder": "Ya da neyin değişeceğini söyle…",
-    "writingOutline": "Ana hatların yazılıyor…",
-    "outlineFailed": "Ana hatlar oluşturulamadı.",
+    "writingOutline": "Kurs planın yazılıyor…",
+    "outlineFailed": "Kurs planı oluşturulamadı.",
     "writingCopy": "Başlık ve açıklama yazılıyor…",
     "copyFailed": "Başlık ve açıklama oluşturulamadı.",
     "looksGood": "İyi görünüyor, devam et",
@@ -1991,7 +1991,7 @@
     "progress": "Adım {done}/{total}",
     "outlineSoon": "Modüllerin ve derslerin yazıldıkça burada görünür.",
     "readingDetails": "Bilgilerini okuyorum…",
-    "thinking": "Kursun üzerine düşünüyorum…",
+    "thinking": "Kursun üzerinde düşünüyorum…",
     "writingDescriptions": "ders açıklamaları yazılıyor",
     "descriptionCount": "{done} / {total}",
     "descriptionsNote": "Her dersin videosu için kısa bir açıklama yazılıyor. İstediğini sayfada düzenleyebilirsin.",
@@ -2034,12 +2034,12 @@
     }
   },
   "downloads": {
-    "upload": "Dosya Yükle",
+    "upload": "Dosya yükle",
     "new": "Yeni indirilebilir dosya",
     "edit": "İndirilebilir dosyayı düzenle",
     "back": "İndirilebilir dosyalara dön",
     "title": "Başlık",
-    "titlePlaceholder": "ör. Kurs Çalışma Kitabı",
+    "titlePlaceholder": "örn. Kurs çalışma kitabı",
     "description": "Açıklama",
     "descriptionPlaceholder": "İçinde ne olduğunu bir iki satırla anlat.",
     "cover": "Kapak",
@@ -2073,7 +2073,7 @@
       "access": "Erişim"
     },
     "count": "{count, plural, one {# indirilebilir dosya} other {# indirilebilir dosya}}",
-    "confirmDelete": "\"{title}\" silinsin mi? Bu işlem geri alınamaz.",
+    "confirmDelete": "“{title}” silinsin mi? Bu işlem geri alınamaz.",
     "deleteError": "Dosya silinemedi",
     "openError": "Dosya açılamadı",
     "openFile": "Dosyayı aç"
@@ -2086,13 +2086,13 @@
     "closeMenu": "Menüyü kapat",
     "creator": "İçerik üreticisi",
     "signOut": "Çıkış yap",
-    "signingOut": "Çıkış yapılıyor...",
+    "signingOut": "Çıkış yapılıyor…",
     "signOutTitle": "{name} — Çıkış yap"
   },
   "community": {
     "tabs": {
       "feed": "Akış",
-      "reports": "Raporlar",
+      "reports": "Bildirilenler",
       "members": "Üyeler",
       "settings": "Ayarlar"
     },
@@ -2126,7 +2126,7 @@
       "banned": "Yasaklandı",
       "mutedUntil": "{date} tarihine kadar sessize alındı",
       "needsApproval": "Gönderiler onay gerektiriyor",
-      "active": "Aktif",
+      "active": "Etkin",
       "actionFailed": "İşlem başarısız oldu.",
       "actions": "Üye işlemleri",
       "unbanned": "{name} topluluğa yeniden erişebilir.",
@@ -2151,7 +2151,7 @@
     "reports": {
       "contentRemoved": "İçerik kaldırıldı.",
       "contentKept": "İçerik korundu.",
-      "resolveError": "Bildirim çözülemedi.",
+      "resolveError": "Bildirilen içerik sonuçlandırılamadı.",
       "reasons": {
         "spam": "Spam",
         "inappropriate": "Uygunsuz",
@@ -2172,16 +2172,16 @@
       "approve": "Onayla",
       "loadError": "Kuyruk yüklenemedi.",
       "allClear": "Her şey yolunda",
-      "allClearHint": "Seni bekleyen şikayet veya gönderi yok.",
+      "allClearHint": "Seni bekleyen bildirilmiş içerik ya da gönderi yok.",
       "waiting": "Onay bekliyor",
-      "reports": "Şikayetler"
+      "reports": "Bildirilenler"
     }
   },
   "courses": {
     "loadError": "Kurs yüklenemedi.",
-    "edit": "Kursu Düzenle",
-    "new": "Yeni Kurs",
-    "thumbnail": "Küçük Resim",
+    "edit": "Kursu düzenle",
+    "new": "Yeni kurs",
+    "thumbnail": "Küçük görsel",
     "deleted": "Kurslar silindi",
     "updated": "Kurs güncellendi",
     "updateError": "Kurs güncellenemedi",
@@ -2195,12 +2195,12 @@
   },
   "list": {
     "sort": {
-      "newest": "En Yeni",
-      "oldest": "En Eski",
+      "newest": "En yeni",
+      "oldest": "En eski",
       "nameAsc": "Ad A-Z",
       "nameDesc": "Ad Z-A",
-      "largest": "En Büyük",
-      "smallest": "En Küçük",
+      "largest": "En büyük",
+      "smallest": "En küçük",
       "longest": "En uzun",
       "shortest": "En kısa"
     },
@@ -2211,12 +2211,12 @@
       "date": "Tarih",
       "name": "Ad",
       "price": "Fiyat",
-      "items": "Ögeler"
+      "items": "Öğeler"
     },
     "status": {
       "published": "Yayında",
       "draft": "Taslak",
-      "active": "Aktif",
+      "active": "Etkin",
       "inactive": "Pasif"
     },
     "pricing": {
@@ -2231,47 +2231,47 @@
       "students": "Öğrenciler",
       "studentsHint": "Toplam kayıtlı",
       "courses": "Kurslar",
-      "coursesHint": "Yayında & taslak",
+      "coursesHint": "Yayında ve taslak",
       "revenue": "Gelir",
       "revenueHint": "Tüm zamanlar",
       "storage": "Depolama",
       "storageHint": "Kullanılan"
     },
-    "liveEvent": "Canlı Etkinlik",
+    "liveEvent": "Canlı etkinlik",
     "message": "Mesaj"
   },
   "payouts": {
-    "onboardError": "İlk katılım başlatılamadı. Lütfen tekrar dene.",
+    "onboardError": "Kurulum başlatılamadı. Tekrar dene.",
     "dashboardError": "Stripe paneli açılamadı.",
-    "subtitle": "Öğrencilerinden ödeme almak için bir Stripe hesabı bağla. Stripe banka bilgilerini ve ödemeleri yönetir; sen kayıtlı satıcı olarak kalırsın.",
-    "stripeTitle": "Stripe ödemeleri",
-    "notConnected": "Henüz bir ödeme hesabı bağlamadın. Ücretli içeriklerin için ödeme almaya başlamak üzere Stripe ile bağlan.",
+    "subtitle": "Öğrencilerinden ödeme almak için bir Stripe hesabı bağla. Stripe banka bilgilerini ve ödeme aktarımlarını yönetir; kayıtlı satıcı sen olarak kalırsın.",
+    "stripeTitle": "Stripe ödeme aktarımları",
+    "notConnected": "Henüz bir ödeme alma hesabı bağlamadın. Ücretli içeriklerin için ödeme kabul etmeye başlamak üzere Stripe ile bağlan.",
     "country": "İşletmen nerede bulunuyor?",
-    "countryHint": "Stripe bunu ödeme hesabın için bir kez belirler; daha sonra değiştirilemez.",
+    "countryHint": "Stripe bunu ödeme alma hesabın için bir kez belirler; daha sonra değiştirilemez.",
     "connect": "Stripe ile bağlan",
     "paymentsOn": "Ödemeler kabul ediliyor",
     "paymentsOff": "Ödemeler henüz etkinleştirilmedi",
-    "payoutsOn": "Bankana yapılan ödemeler etkinleştirildi",
-    "payoutsOff": "Ödemeler henüz etkinleştirilmedi",
+    "payoutsOn": "Bankana ödeme aktarımları etkin",
+    "payoutsOff": "Ödeme aktarımları henüz etkinleştirilmedi",
     "opening": "Açılıyor…",
     "openDashboard": "Stripe panelini aç",
     "continueSetup": "Kuruluma devam et",
     "reviewing": "Stripe hâlâ bilgilerini inceliyor. Onaylandığında bu sayfa otomatik olarak güncellenir.",
-    "earnings": "Kazançlar",
-    "netPayout": "Net ödeme",
+    "earnings": "Gelir",
+    "netPayout": "Net ödeme aktarımı",
     "grossSales": "Brüt satışlar",
     "salesCount": "{count, plural, one {# satış} other {# satış}}",
     "platformFees": "Platform ücretleri",
     "refunded": "İade edilen",
     "pending": "Bankana aktarılıyor:",
     "available": "Kullanılabilir:",
-    "earningsNote": "Net ödeme, platform ücretinden sonraki payındır. Bakiyeler Stripe tarafından bankana aktarılır.",
+    "earningsNote": "Net ödeme aktarımı, platform ücretinden sonra sana kalan paydır. Bakiyeler Stripe tarafından bankana aktarılır.",
     "enabled": "Etkin",
     "pendingBadge": "Beklemede",
-    "trialTitle": "Ödemeler planın başladığında açılır",
+    "trialTitle": "Ödeme aktarımları planın başladığında açılır",
     "upgradeTitle": "Satış yapmaya başlamak için yükselt",
     "trialBody": "Ücretsiz denemede ödeme alınamaz. Stripe'ı bağlamak ve satış yapmak için planını şimdi başlat veya geliştirmeye devam edip denemen bittiğinde satış yap.",
-    "upgradeBody": "Ödeme almak için aktif aboneliği olan ücretli bir plan gerekir. Ücretsiz planda sunduğun her şey ücretsiz olmalıdır — ödeme, ücretli içerik veya abonelik yok.",
+    "upgradeBody": "Ödeme almak için etkin aboneliği olan ücretli bir plan gerekir. Ücretsiz planda sunduğun her şey ücretsiz olmalıdır — ödeme aktarımı, ücretli içerik veya abonelik yok.",
     "startPlan": "Planımı şimdi başlat",
     "viewPlans": "Planları görüntüle",
     "redirecting": "Yönlendiriliyor…"
@@ -2283,10 +2283,10 @@
     "deleted": "Öğrenciler silindi",
     "col": {
       "student": "Öğrenci",
-      "enrolled": "Kayıtlı Kurslar",
-      "progress": "Kurs İlerlemesi",
+      "enrolled": "Kayıtlı kurslar",
+      "progress": "Kurs ilerlemesi",
       "joined": "Katıldı",
-      "active": "Son Aktif"
+      "active": "Son aktivite"
     },
     "unnamed": "İsimsiz",
     "courseCount": "{count, plural, one {# kurs} other {# kurs}}",
@@ -2307,40 +2307,40 @@
       "refunded": "İade edildi",
       "refund": "İade et",
       "itemRefunded": "Öğe iade edildi.",
-      "refundError": "İade başarısız oldu. Lütfen tekrar dene.",
-      "cancel": "İptal",
+      "refundError": "İade başarısız oldu. Tekrar dene.",
+      "cancel": "Vazgeç",
       "refunding": "İade ediliyor…",
       "confirmRefund": "İadeyi onayla"
     },
     "drawer": {
-      "grantOk": "Kurs erişimi başarıyla verildi!",
+      "grantOk": "Kurs erişimi verildi!",
       "grantError": "Kurs erişimi verilemedi",
-      "coursesError": "Kurslar yüklenemedi. Lütfen tekrar dene.",
+      "coursesError": "Kurslar yüklenemedi. Tekrar dene.",
       "na": "Yok",
-      "unnamed": "Adsız Öğrenci",
+      "unnamed": "Adsız öğrenci",
       "joined": "{date} tarihinde katıldı",
-      "tabOverview": "Genel Bakış",
-      "tabActions": "Hızlı İşlemler",
+      "tabOverview": "Genel bakış",
+      "tabActions": "Hızlı işlemler",
       "membership": "Üyelik",
       "free": "Ücretsiz",
-      "noMembership": "Aktif üyelik yok.",
-      "enrolled": "Kayıtlı Kurslar ({count})",
+      "noMembership": "Etkin üyelik yok.",
+      "enrolled": "Kayıtlı kurslar ({count})",
       "notEnrolled": "Henüz hiçbir kursa kayıtlı değil.",
       "lessonsDone": "{total, plural, one {# dersten {done} tanesi tamamlandı} other {# dersten {done} tanesi tamamlandı}}",
       "done": "Tamamlandı",
-      "grantTitle": "Kurs Erişimi Ver",
+      "grantTitle": "Kurs erişimi ver",
       "grantText": "Bu öğrenciyi ücret almadan bir kursa manuel olarak kaydet.",
-      "grantButton": "Kurs Kaydı Ver",
-      "dmTitle": "Doğrudan Mesaj Gönder",
+      "grantButton": "Kurs kaydı ver",
+      "dmTitle": "Doğrudan mesaj gönder",
       "dmText": "Kişisel bir e-posta veya uygulama içi mesaj yaz.",
-      "dmButton": "E-posta Mesajı Yaz",
-      "payTitle": "Ödeme & İade Geçmişi",
+      "dmButton": "E-posta mesajı yaz",
+      "payTitle": "Ödeme ve iade geçmişi",
       "payText": "İşlemleri görüntüle, faturaları yönet veya para iadesi yap.",
       "payButton": "İşlemleri Görüntüle",
-      "studentId": "Öğrenci Kimliği: #{id}",
-      "modalTitle": "Ücretsiz Kurs Erişimi Ver",
-      "selectCourse": "Kurs Seç:",
-      "loadingCourses": "Kurslar yükleniyor...",
+      "studentId": "Öğrenci kimliği: #{id}",
+      "modalTitle": "Ücretsiz kurs erişimi ver",
+      "selectCourse": "Kurs seç:",
+      "loadingCourses": "Kurslar yükleniyor…",
       "duration": "Ne kadar süreyle:",
       "forever": "Süresiz",
       "month1": "1 ay",
@@ -2349,7 +2349,7 @@
       "untilDate": "Belirli bir tarihe kadar",
       "lastDay": "Erişimin son günü",
       "granting": "Erişim veriliyor…",
-      "confirmGrant": "Erişimi Onayla"
+      "confirmGrant": "Erişimi onayla"
     }
   },
   "courseForm": {
@@ -2369,21 +2369,21 @@
     "moduleDeleteFailed": "Modül silinemedi",
     "lessonDeleted": "Ders silindi",
     "lessonDeleteFailed": "Ders silinemedi",
-    "settingsTitle": "Kurs Ayarları",
+    "settingsTitle": "Kurs ayarları",
     "settingsHint": "Kurs ayrıntılarını, fiyatlandırmayı ve yayınlamayı güncelle.",
     "title": "Başlık",
-    "titlePlaceholder": "örn. Fotoğrafçılığa Giriş",
+    "titlePlaceholder": "örn. Fotoğrafçılığa giriş",
     "description": "Açıklama",
-    "descriptionPlaceholder": "Öğrencilerin ne öğreneceğini açıkla...",
-    "thumbnail": "Küçük resim",
-    "chooseThumbnail": "Küçük resim seç",
+    "descriptionPlaceholder": "Öğrencilerin ne öğreneceğini açıkla…",
+    "thumbnail": "Küçük görsel",
+    "chooseThumbnail": "Küçük görsel seç",
     "publishNow": "Hemen yayınla",
     "publishedLabel": "Yayınlandı",
     "filters": "Filtreler",
-    "filtersHint": "Öğrencilerin kurslarını filtreleyebileceği isteğe bağlı kategoriler (seviye, tarz…).",
+    "filtersHint": "Öğrencilerin kurslarını filtreleyebileceği isteğe bağlı kategoriler (seviye, stil…).",
     "tags": "Etiketler",
     "saving": "Kaydediliyor…",
-    "saveChanges": "Değişiklikleri Kaydet",
+    "saveChanges": "Değişiklikleri kaydet",
     "curriculum": "Müfredat",
     "curriculumCreateHint": "Modülleri ve dersleri şimdi ekle — her şey tek bir adımda birlikte oluşturulur.",
     "curriculumHint": "Kursunu modüller ve dersler halinde düzenle.",
@@ -2396,12 +2396,12 @@
     "noVideo": "Video yok",
     "videoUploaded": "Yüklendi",
     "free": "Ücretsiz",
-    "addLesson": "Ders Ekle",
+    "addLesson": "Ders ekle",
     "newModuleTitle": "Yeni modül başlığı",
-    "addModule": "Modül Ekle",
+    "addModule": "Modül ekle",
     "adding": "Ekleniyor…",
     "creating": "Oluşturuluyor…",
-    "createCourse": "Kurs Oluştur",
+    "createCourse": "Kurs oluştur",
     "lessonContent": "Ders içeriği",
     "writeContent": "Ders içeriğini yazmak için tıkla…",
     "captions": {
@@ -2418,19 +2418,19 @@
         "hint": "Öğrenciler altyazıları açabilir ve videonun altındaki transkripti okuyabilir."
       },
       "failed": {
-        "label": "Altyazılar başarısız oldu",
+        "label": "Altyazılar oluşturulamadı",
         "hint": "Bu videonun sesinden altyazı oluşturulamadı. Videoyu değiştirmek işlemi tekrar dener."
       }
     },
-    "freePreview": "Ücretsiz Önizleme",
+    "freePreview": "Ücretsiz önizleme",
     "content": "İçerik",
-    "editLesson": "Dersi Düzenle",
-    "newLesson": "Yeni Ders",
+    "editLesson": "Dersi düzenle",
+    "newLesson": "Yeni ders",
     "lessonTitlePlaceholder": "Ders başlığı"
   },
   "mediaBrowser": {
-    "loadError": "Öğeler yüklenemedi. Lütfen tekrar dene.",
-    "confirmAction": "{action} {count, plural, one {# öğe} other {# öğe}}? Bu işlem geri alınamaz.",
+    "loadError": "Öğeler yüklenemedi. Tekrar dene.",
+    "confirmAction": "{count, plural, one {# öğe} other {# öğe}} için “{action}” uygulansın mı? Bu işlem geri alınamaz.",
     "allSelected": "Tüm {count, plural, one {# öğe} other {# öğe}} seçildi",
     "selected": "{count, plural, one {# seçildi} other {# seçildi}}",
     "actions": "İşlemler",
@@ -2439,13 +2439,13 @@
     "selectAllItems": "{count, plural, one {# öğenin} other {# öğenin}} tümünü seç",
     "deselectAll": "Tümünün seçimini kaldır",
     "selectAll": "Tümünü seç",
-    "search": "Ara..."
+    "search": "Ara…"
   },
   "inlineEdit": {
     "saving": "Kaydediliyor…"
   },
   "mediaPicker": {
-    "uploadFailed": "Yükleme başarısız oldu. Lütfen tekrar dene.",
+    "uploadFailed": "Yükleme başarısız oldu. Tekrar dene.",
     "upload": "Yükle",
     "progress": "%{percent} yüklendi"
   },
@@ -2453,7 +2453,7 @@
     "choose": "Video seç",
     "urlPlaceholder": "YouTube, Vimeo veya doğrudan video URL'si",
     "title": "Bir video seç",
-    "search": "Videoları ara...",
+    "search": "Videoları ara…",
     "empty": "Henüz video yok.",
     "noMatch": "Aramanla eşleşen video yok."
   },
@@ -2466,12 +2466,12 @@
     "noOptions": "Henüz seçenek yok — bir tane ekle.",
     "newOption": "Yeni {name} seçeneği",
     "add": "Ekle",
-    "newFilterName": "Yeni filtre adı (ör. Seviye)",
+    "newFilterName": "Yeni filtre adı (örn. Seviye)",
     "newFilter": "Yeni filtre",
     "deleteFailed": "Filtre silinemedi",
     "deleteAria": "{name} filtresini sil",
-    "confirmDeleteCourse": "\"{name}\" filtresi ve tüm seçenekleri silinsin mi? Her kurstan kaldırılacak.",
-    "confirmDeleteEvent": "\"{name}\" filtresi ve tüm seçenekleri silinsin mi? Her etkinlikten kaldırılacak."
+    "confirmDeleteCourse": "“{name}” filtresi ve tüm seçenekleri silinsin mi? Her kurstan kaldırılacak.",
+    "confirmDeleteEvent": "“{name}” filtresi ve tüm seçenekleri silinsin mi? Her etkinlikten kaldırılacak."
   },
   "tagFilter": {
     "label": "Etiketler:",
@@ -2484,45 +2484,45 @@
   },
   "publish": {
     "requirementsUnmet": "Yayınlamadan önce gerekli kurulum adımlarını tamamla.",
-    "wrong": "Bir şeyler ters gitti. Lütfen tekrar dene.",
+    "wrong": "Bir şeyler ters gitti. Tekrar dene.",
     "confirmUnpublish": "Siten, sen tekrar yayınlayana kadar öğrencilerden gizlenecek.",
     "pwSaved": "Önizleme şifresi kaydedildi",
     "pwCleared": "Önizleme şifresi temizlendi",
     "linkCopied": "Bağlantı kopyalandı",
-    "installCopied": "Kurulum kılavuzu bağlantısı kopyalandı",
+    "installCopied": "Yükleme rehberi bağlantısı kopyalandı",
     "live": "Yayındasın! 🎉",
     "liveHint": "Siten herkese açık. Bağlantıyı öğrencilerinle paylaş:",
     "copy": "Kopyala",
     "shareInstall": "Yükleme rehberini paylaş",
     "inviteStudents": "İlk öğrencilerini davet et",
-    "done": "Bitti",
+    "done": "Tamam",
     "siteLive": "Siten yayında",
     "publishSite": "Siteni yayınla",
     "liveStatus": "<live>● Yayında</live> — öğrenciler siteni bulabilir ve yükleyebilir.",
     "copyLink": "Bağlantıyı kopyala",
     "unpublishing": "Yayından kaldırılıyor…",
     "unpublish": "Yayından kaldır",
-    "hidden": "Siten bir ön izleme kapısının arkasında gizli. Öğrencilerin siteni bulabilmesi ve yükleyebilmesi için yayınla.",
+    "hidden": "Siten bir önizleme kapısının arkasında gizli. Öğrencilerin siteni bulabilmesi ve yükleyebilmesi için yayınla.",
     "finishFirst": "Yayınlamak için önce bunları tamamla:",
     "publishing": "Yayınlanıyor…",
     "finishSteps": "Yayınlamak için gerekli kurulum adımlarını tamamla",
     "publishGoLive": "Siteyi yayınla — yayına geç",
-    "previewLink": "Ön izleme bağlantısı:",
-    "pw": "Ön izleme şifresi",
-    "pwIsSet": "Ön izleme şifresi — ayarlandı",
+    "previewLink": "Önizleme bağlantısı:",
+    "pw": "Önizleme şifresi",
+    "pwIsSet": "Önizleme şifresi — ayarlandı",
     "pwChange": "Şifreyi değiştir",
     "pwSet": "Bir şifre belirle",
     "saving": "Kaydediliyor…",
     "clearing": "Temizleniyor…",
     "clear": "Temizle",
-    "pwHint": "Yayınlamadan önce başkalarının siteyi görebilmesi için ön izleme bağlantısını + şifreyi paylaş.",
+    "pwHint": "Yayınlamadan önce başkalarının siteyi görebilmesi için önizleme bağlantısını ve şifreyi paylaş.",
     "blockers": {
       "plan": "Bir plan seç",
       "look": "Logonu ekle",
       "first_course": "İlk kursunu veya indirilebilir dosyanı yayınla",
       "first_event": "İlk canlı oturumunu veya etkinliğini planla",
       "first_blog_post": "İlk blog yazını yayınla",
-      "payouts": "Ücretli içerik satmak için ödemeleri bağla",
+      "payouts": "Ücretli içerik satmak için ödeme almayı ayarla",
       "payoutsTrial": "Ücretli içerik planının başlamasını bekler — şimdi başlat veya taslak olarak sakla",
       "payoutsFreePlan": "Ücretli içerik bir plan gerektirir — birini seç veya taslak olarak sakla"
     },
@@ -2531,41 +2531,41 @@
   "monetize": {
     "trialing": "Satış, planın başladığında açılır — bunu taslak olarak kaydedebilirsin. <link>Şimdi başlat</link>",
     "freePlan": "Satış için Starter planı gerekir — bunu taslak olarak kaydedebilirsin. <link>Planları gör</link>",
-    "noPayouts": "Öğrenciler henüz satın alamaz — satışa başlamak için <link>ödemeleri ayarla</link>."
+    "noPayouts": "Öğrenciler henüz satın alamaz — satışa başlamak için <link>ödeme almayı ayarla</link>."
   },
   "paused": {
     "title": "Siteni açmak için bir plan seç",
     "hint": "Bunu yapana kadar ziyaretçiler bir “yakında döneceğiz” sayfası görür. Oluşturduğun her şey korunur ve başladığın anda geri gelir."
   },
   "usage": {
-    "title": "Uygulama benimsenmesi (30 gün)",
+    "title": "Uygulama kullanımı (30 gün)",
     "installed": "öğrenci uygulamayı yükledi",
     "pwaShare": "PWA %{pct}",
     "webShare": "Web %{pct}",
     "dayTitle": "{day}: {pwa} PWA / {web} Web",
-    "none": "Henüz uygulama etkinliği yok."
+    "none": "Henüz uygulama aktivitesi yok."
   },
   "calendar": {
     "loadError": "Takvim öğeleri yüklenemedi.",
     "subtitle": "Oturumların, e-postaların ve blog yazıların, tarihe göre.",
     "newSession": "Oturum veya etkinlik",
     "newEmail": "Tasarlanmış e-posta",
-    "newBlog": "Blog Makalesi",
-    "allItems": "Tüm Öğeler ({count})",
+    "newBlog": "Blog yazısı",
+    "allItems": "Tüm öğeler ({count})",
     "filter": {
-      "live": "Canlı Etkinlikler",
-      "email": "E-posta Yayınları",
-      "blog": "Blog Yazıları"
+      "live": "Canlı etkinlikler",
+      "email": "Toplu e-postalar",
+      "blog": "Blog yazıları"
     },
     "month": "Ay",
     "week": "Hafta",
     "today": "Bugün",
-    "empty": "Bu aralıkta planlanmış içerik yok. Burada görünmesi için bir canlı etkinlik, yayın veya blog yazısı oluştur.",
+    "empty": "Bu aralıkta planlanmış içerik yok. Burada görünmesi için bir canlı etkinlik, toplu e-posta veya blog yazısı oluştur.",
     "itemCount": "{count, plural, one {# öğe} other {# öğe}}",
     "category": {
-      "live": "Canlı Etkinlik",
-      "email": "E-posta Yayını",
-      "blog": "Blog Yazısı"
+      "live": "Canlı etkinlik",
+      "email": "Toplu e-posta",
+      "blog": "Blog yazısı"
     },
     "status": {
       "scheduled": "planlandı",
@@ -2580,18 +2580,18 @@
     },
     "statusLabel": "Durum:",
     "close": "Kapat",
-    "manageLive": "Canlı Etkinliği Yönet",
-    "manageEmail": "E-posta Yayınını Yönet",
-    "manageBlog": "Blog Yazısını Yönet",
+    "manageLive": "Canlı etkinliği yönet",
+    "manageEmail": "Toplu e-postayı yönet",
+    "manageBlog": "Blog yazısını yönet",
     "manageOther": "Yönet"
   },
   "email": {
     "workspace": {
-      "readingBrief": "Tasarımcı · brief'ini okuyor",
-      "saveRetry": "Son değişikliğin kaydedilemedi. Yeniden deneniyor…",
+      "readingBrief": "Tasarımcı · isteğini okuyor",
+      "saveRetry": "Son değişikliğin kaydedilemedi. Tekrar deneniyor…",
       "designerFailed": "Tasarımcı bunu tamamlayamadı.",
       "designerDone": "Tasarımcı tamamladı",
-      "designerDoneUndo": "Tasarımcı tamamladı. Geri Al işlemi geri alır.",
+      "designerDoneUndo": "Tasarımcı tamamladı. “Geri al” yaptıklarını geri alır.",
       "testSent": "Test {email} adresine gönderildi",
       "savedAsTemplate": "Şablonlarına “{name}” olarak kaydedildi",
       "templates": "Şablonlar",
@@ -2626,60 +2626,60 @@
       }
     },
     "itemPicker": {
-      "title": "Kendine ait bir şeyi öne çıkar",
+      "title": "Sana ait bir şeyi öne çıkar",
       "search": "Kurslarında, oturumlarında ve sayfalarında ara…",
       "alwaysUpToDate": "Her zaman güncel",
       "today": "Bugün: {title}",
       "offers": "Tekliflerin ve sayfaların",
-      "noMatch": "Hiçbir şey eşleşmedi.",
-      "none": "Henüz hiçbir şey yayımlanmadı. Kursların, oturumların ve makalelerin yayına girdiğinde burada görünür.",
+      "noMatch": "Eşleşen bir şey yok.",
+      "none": "Henüz hiçbir şey yayınlanmadı. Kursların, oturumların ve blog yazıların yayına girince burada görünür.",
       "close": "Kapat"
     },
     "recipients": {
       "title": "Alıcılar",
       "all": "Tüm öğrenciler",
       "course": "Kursa göre",
-      "individual": "Bireysel öğrenciler",
+      "individual": "Tek tek öğrenciler",
       "selectCourses": "Kursları seç",
       "noCourses": "Kurs bulunamadı.",
-      "searchStudents": "Öğrencileri ara...",
+      "searchStudents": "Öğrencileri ara…",
       "noStudents": "Öğrenci bulunamadı.",
-      "counting": "Alıcılar sayılıyor...",
+      "counting": "Alıcılar sayılıyor…",
       "count": "{count, plural, one {# alıcı} other {# alıcı}}",
-      "allActive": "Tüm aktif öğrenciler",
+      "allActive": "Tüm etkin öğrenciler",
       "selectAbove": "Yukarıdan alıcıları seç"
     }
   },
   "mailbox": {
     "errors": {
       "taken": "Bu adres zaten alınmış. Başka birini dene.",
-      "reserved_local_part": "Bu adres rezerve edilmiş. Başka birini dene.",
+      "reserved_local_part": "Bu adres ayrılmış. Başka birini dene.",
       "invalid_local_part": "Yalnızca harfler, sayılar, noktalar, tireler ve alt çizgiler kullanılabilir.",
       "upgrade_required": "Bir adres almak için planını yükselt.",
       "feature_unavailable": "Özel adresler şu anda kullanılamıyor."
     },
     "onlyChars": "Yalnızca harfler, sayılar, noktalar, tireler ve alt çizgiler kullanılabilir.",
-    "saveFailed": "Kaydedilemedi. Lütfen tekrar dene.",
+    "saveFailed": "Kaydedilemedi. Tekrar dene.",
     "emailSaved": "E-posta adresi kaydedildi.",
     "prefixEmpty": "E-posta ön eki boş olamaz.",
     "settingsSaved": "Posta kutusu ayarları kaydedildi.",
-    "settingsError": "Posta kutusu ayarları kaydedilemedi. Lütfen tekrar dene.",
+    "settingsError": "Posta kutusu ayarları kaydedilemedi. Tekrar dene.",
     "yourAddress": "E-posta adresin",
     "claimText": "{domain} üzerinde bir adres seç. Öğrenciler sana oradan yazabilir ve mesajları gelen kutuna düşer.",
     "chooseAddress": "Adresini seç",
     "willSee": "Öğrencilerin şunu görecek: <m>{address}</m>",
-    "active": "Aktif adres: <m>{email}</m>",
+    "active": "Etkin adres: <m>{email}</m>",
     "saving": "Kaydediliyor…",
     "saveAddress": "Adresi kaydet",
     "customDomain": "Kendi alan adında markalı bir adres (<m>info@yourdomain.com</m> gibi) mi istiyorsun? Özel bir alan adı eklemek için destekle iletişime geç.",
-    "title": "Posta Kutusu",
+    "title": "Posta kutusu",
     "freeText": "Platformun için özel bir e-posta adresi ayarla.",
     "sendingFrom": "Şu anda şuradan gönderiyorsun:",
     "upgradeText": "Kendi e-posta adresini almak için ücretli bir plana yükselt — öğrenciler sana yazabilir ve mesajları doğrudan gelen kutuna düşer.",
     "domainText": "E-posta adresini seç ve öğrencilerden mesaj almak için gelen kutunu etkinleştir.",
     "enable": "Gelen kutusunu etkinleştir",
     "enableText": "Etkinleştirildiğinde öğrenciler adresine mesaj gönderebilir.",
-    "saveChanges": "Değişiklikleri Kaydet"
+    "saveChanges": "Değişiklikleri kaydet"
   },
   "owner": {
     "blockForm": {
@@ -2699,7 +2699,7 @@
       "reorder": "“{label}” bloğunu yeniden sırala",
       "confirmDelete": "Silmeyi onayla",
       "delete": "Bloğu sil",
-      "cancel": "İptal"
+      "cancel": "Vazgeç"
     },
     "canvas": {
       "empty": "Bu sayfada henüz hiç blok yok.",
@@ -2711,18 +2711,18 @@
     "redo": "Yinele (⌘⇧Z)",
     "cx": {
       "failure": {
-        "disabled": "Yapay zeka tasarımı şu anda kullanılamıyor. Lütfen daha sonra tekrar dene.",
+        "disabled": "Yapay zekâ tasarımı şu anda kullanılamıyor. Daha sonra tekrar dene.",
         "upgrade_required": "Özel bölümler ücretli planlarla birlikte gelir.",
-        "quota_exhausted": "Bu ayın yapay zeka değişikliklerini kullandın. Gelecek ay yenilenir.",
+        "quota_exhausted": "Bu ayın yapay zekâ değişikliklerini kullandın. Gelecek ay yenilenir.",
         "error": "Bunu oluşturamadım. Biraz daha farklı tarif etmeyi dene."
       },
       "missing": "Henüz mümkün değil: {missing}. En yakın olanı oluşturdum.",
       "describe": "Bir bölüm tarif et",
       "placeholder": "5 günlük inzivamın gün gün planı, her gün için bir fotoğrafla",
       "designing": "Tasarlanıyor…",
-      "create": "Yapay zeka ile oluştur",
+      "create": "Yapay zekâ ile oluştur",
       "yours": "Bölümlerin",
-      "change": "Yapay zeka ile değiştir",
+      "change": "Yapay zekâ ile değiştir",
       "changePlaceholder": "İki sütun yap ve kısa bir giriş ekle",
       "changing": "Değiştiriliyor…",
       "apply": "Değişikliği uygula"
@@ -2733,7 +2733,7 @@
       "uploading": "Yükleniyor…",
       "replace": "Logoyu değiştir",
       "upload": "Logo yükle",
-      "uploaded": "{pct}% yüklendi"
+      "uploaded": "%{pct} yüklendi"
     },
     "look": {
       "original": "Orijinal",
@@ -2745,7 +2745,7 @@
       "dialogHint": "Her sayfa seçtiğin görünümü alır, metinlerini ve fotoğraflarını korur. Sayfa olarak görmek için bir görünüme dokun.",
       "changing": "Değiştiriliyor…",
       "use": "Bu görünümü kullan",
-      "cancel": "İptal"
+      "cancel": "Vazgeç"
     },
     "style": {
       "title": "Stil",
@@ -2797,11 +2797,11 @@
         "section": "Bölümler"
       },
       "deleteBlock": "Bloğu sil",
-      "cancel": "İptal",
+      "cancel": "Vazgeç",
       "delete": "Sil"
     },
     "sidebar": {
-      "saveError": "Değişikliklerin kaydedilemedi. Lütfen tekrar dene.",
+      "saveError": "Değişikliklerin kaydedilemedi. Tekrar dene.",
       "editSite": "Siteyi düzenle",
       "saving": "Kaydediliyor",
       "exit": "Düzenleme modundan çık — siteni önizle",
@@ -2847,8 +2847,8 @@
         "stacked": "Alt alta",
         "name_only": "Yalnızca ad"
       },
-      "transparent": "Hero üzerinde şeffaf",
-      "transparentHint": "Ana sayfa hero bölümünde şeffaf, kaydırdıktan sonra opak",
+      "transparent": "Kapak alanı üzerinde şeffaf",
+      "transparentHint": "Ana sayfa kapak alanında şeffaf, kaydırdıktan sonra opak",
       "links": "Gezinme bağlantıları",
       "noLinks": "Henüz bağlantı yok. Aşağıdan bir tane ekle.",
       "moveUp": "Yukarı taşı",
@@ -2859,15 +2859,15 @@
       "labelPlaceholder": "Etiket",
       "removeLink": "Bağlantıyı kaldır",
       "addSuggestion": {
-        "events": "Canlı Oturumlar Ekle",
-        "store": "Mağaza Ekle"
+        "events": "Canlı oturumlar ekle",
+        "store": "Mağaza ekle"
       },
       "addLink": "Bağlantı ekle",
       "cta": "CTA butonu",
       "ctaPlaceholder": "Buton metni",
       "showLogin": "Giriş butonunu göster",
-      "showLoginHint": "Gezinmede \"Giriş Yap\" bağlantısını göster",
-      "showInstall": "\"Uygulamayı yükle\"yi göster",
+      "showLoginHint": "Gezinmede “Giriş yap” bağlantısını göster",
+      "showInstall": "“Uygulamayı yükle” seçeneğini göster",
       "showInstallHint": "Ziyaretçileri siteni bir uygulama olarak yüklemeye yönlendir"
     },
     "link": {
@@ -2879,10 +2879,10 @@
         "custom": "Özel URL"
       },
       "page": {
-        "home": "Ana Sayfa",
+        "home": "Ana sayfa",
         "about": "Hakkında",
         "courses": "Kurslar",
-        "pricing": "Fiyatlandırma / Planlar",
+        "pricing": "Fiyatlandırma / planlar",
         "faq": "SSS",
         "contact": "İletişim",
         "calendar": "Takvim",
@@ -2894,8 +2894,8 @@
         "courses": "Kurslarda ara…",
         "events": "Etkinliklerde ara…"
       },
-      "coursesError": "Kurslar yüklenemedi. Lütfen tekrar dene.",
-      "eventsError": "Etkinlikler yüklenemedi. Lütfen tekrar dene.",
+      "coursesError": "Kurslar yüklenemedi. Tekrar dene.",
+      "eventsError": "Etkinlikler yüklenemedi. Tekrar dene.",
       "enterUrl": "Bir URL veya yol gir",
       "urlPlaceholder": "/yol veya https://…",
       "useLink": "Bu bağlantıyı kullan",
@@ -2907,7 +2907,7 @@
       "delete": "Şablonu sil",
       "blocks": "{count, plural, one {# blok} other {# blok}}",
       "replace": "Sayfayı değiştir",
-      "cancel": "İptal",
+      "cancel": "Vazgeç",
       "use": "Bu şablonu kullan",
       "title": "Şablonlar",
       "startFrom": "Bir şablonla başla",
@@ -2924,7 +2924,7 @@
       "bullets": "Madde işaretli liste",
       "numbers": "Numaralı liste",
       "addLink": "Bağlantı ekle",
-      "cancel": "İptal",
+      "cancel": "Vazgeç",
       "save": "Kaydet"
     },
     "field": {
@@ -2939,7 +2939,7 @@
       "itemNumber": "{name} {number}",
       "addItem": {
         "image": "Görsel ekle",
-        "testimonial": "Görüş ekle",
+        "testimonial": "Müşteri yorumu ekle",
         "question": "Soru ekle",
         "stat": "İstatistik ekle",
         "logo": "Logo ekle",
@@ -2954,11 +2954,11 @@
     },
     "blockLib": {
       "block": {
-        "hero": "Karşılama",
+        "hero": "Kapak alanı",
         "richText": "Metin",
         "imageText": "Görsel + Metin",
         "gallery": "Galeri",
-        "testimonials": "Görüşler",
+        "testimonials": "Müşteri yorumları",
         "faq": "SSS",
         "cta": "Eylem çağrısı",
         "stats": "İstatistikler",
@@ -2973,14 +2973,14 @@
         "cx": "Özel bölüm"
       },
       "layout": {
-        "centeredFullBleed": "Ortalanmış (tam taşmalı görsel)",
+        "centeredFullBleed": "Ortalanmış (tam genişlikte görsel)",
         "splitTextImage": "Bölünmüş (metin + görsel)",
         "minimal": "Minimal (görsel yok)",
         "standard": "Standart",
         "centered": "Ortalanmış",
         "wide": "Geniş",
         "sideBySide": "Yan yana",
-        "stacked": "Üst üste",
+        "stacked": "Alt alta",
         "card": "Kart",
         "grid": "Izgara",
         "masonry": "Mozaik",
@@ -3026,10 +3026,10 @@
       "help": {
         "imageBackground": "Arka plan (Ortalanmış) veya yan görsel (Bölünmüş) olarak kullanılır.",
         "shade": "Başlığın okunabilir kalması için arka plan fotoğrafını gölgelendir.",
-        "secondaryButton": "İsteğe bağlı ikinci düğme (çerçeveli).",
-        "video": "Bir YouTube/Vimeo bağlantısı yapıştır veya kütüphaneden bir video seç.",
+        "secondaryButton": "İsteğe bağlı ikinci buton (çerçeveli).",
+        "video": "Bir YouTube/Vimeo bağlantısı yapıştır veya kitaplıktan bir video seç.",
         "dismissible": "Ziyaretçilerin kapatabilmesi için bir X ekler; tercihleri hatırlanır.",
-        "filterFacets": "Ziyaretçilerin göz atabileceği fasetler olarak hangi filtrelerin görüneceğini seç."
+        "filterFacets": "Ziyaretçilerin göz atabileceği filtre grupları olarak hangi filtrelerin görüneceğini seç."
       },
       "item": {
         "image": "Görsel",
@@ -3054,10 +3054,10 @@
         "shadeStrength": "Gölge yoğunluğu",
         "heading": "Başlık",
         "headingSize": "Başlık boyutu",
-        "body": "Gövde",
+        "body": "Gövde metni",
         "imagePosition": "Görsel konumu (Yan yana)",
         "images": "Görseller",
-        "caption": "Resim yazısı",
+        "caption": "Görsel yazısı",
         "testimonials": "Müşteri yorumları",
         "name": "Ad",
         "role": "Rol / şirket",
@@ -3066,7 +3066,7 @@
         "avatar": "Avatar",
         "questions": "Sorular",
         "question": "Soru",
-        "answer": "Cevap",
+        "answer": "Yanıt",
         "secondaryButtonText": "İkincil buton metni",
         "secondaryButtonLink": "İkincil buton bağlantısı",
         "stats": "İstatistikler",
@@ -3083,20 +3083,20 @@
         "intro": "Giriş metni",
         "submitLabel": "Gönder butonu etiketi",
         "successMessage": "Başarı mesajı",
-        "maxCourses": "Maksimum kurs (0 = tümü)",
+        "maxCourses": "En fazla kurs (0 = tümü)",
         "columns": "Sütunlar",
         "cardStyle": "Kart stili",
-        "showFilters": "Arama & filtreleri göster",
+        "showFilters": "Aramayı ve filtreleri göster",
         "showPrice": "Fiyatı göster",
-        "showMeta": "İçerik üreticisi & dersleri göster",
-        "filterFacets": "Filtre boyutları",
+        "showMeta": "İçerik üreticisini ve dersleri göster",
+        "filterFacets": "Filtre grupları",
         "subheading": "Alt başlık",
-        "maxEvents": "Maksimum etkinlik",
+        "maxEvents": "En fazla etkinlik",
         "showCovers": "Kapak fotoğraflarını göster",
-        "maxProducts": "Maksimum ürün"
+        "maxProducts": "En fazla ürün"
       },
       "family": {
-        "hero": "Giriş",
+        "hero": "Kapak alanı",
         "story": "İçerik üreticisi hikayesi",
         "benefits": "Avantajlar",
         "courseShowcase": "Kurslar",
@@ -3109,7 +3109,7 @@
         "contact": "İletişim",
         "events": "Yaklaşan etkinlikler",
         "proof": "Kanıt",
-        "statement": "Açıklama",
+        "statement": "Beyan",
         "video": "Video"
       },
       "manifest": {
@@ -3120,7 +3120,7 @@
         "buttonLink": "Buton bağlantısı",
         "secondButtonText": "İkinci buton metni",
         "secondButtonLink": "İkinci buton bağlantısı",
-        "smallLineEGLocationOrFormat": "Küçük satır (ör. konum veya biçim)",
+        "smallLineEGLocationOrFormat": "Küçük satır (örn. konum veya biçim)",
         "mainPhoto": "Ana fotoğraf",
         "detailPhoto": "Detay fotoğrafı",
         "thirdPhotoSomeLayouts": "Üçüncü fotoğraf (bazı düzenler)",
@@ -3139,14 +3139,14 @@
         "photo": "Fotoğraf",
         "howMany": "Kaç adet",
         "steps": "Adımlar",
-        "statement": "İfade",
+        "statement": "Beyan",
         "attributionCreatorName": "Atıf (içerik üreticisi adı)",
         "atmospherePhoto": "Atmosfer fotoğrafı",
-        "caption": "Açıklama",
+        "caption": "Görsel yazısı",
         "photos": "Fotoğraflar",
         "questions": "Sorular",
         "question": "Soru",
-        "answer": "Cevap",
+        "answer": "Yanıt",
         "backgroundPhoto": "Arka plan fotoğrafı",
         "email": "E-posta",
         "location": "Konum",
@@ -3178,22 +3178,22 @@
       "template": {
         "homeClassic": {
           "name": "Klasik",
-          "description": "Karşılama bölümü, kurslar, referanslar ve kapanışta bir harekete geçirici mesaj."
+          "description": "Kapak alanı, kurslar, müşteri yorumları ve kapanışta bir harekete geçirici mesaj."
         },
         "homeStoryteller": {
-          "name": "Hikaye Anlatıcısı",
+          "name": "Hikaye anlatıcısı",
           "description": "Hikayenle başla, sonuçlarla destekle, ardından dönüştür."
         },
         "homeMinimal": {
           "name": "Minimal",
-          "description": "Sade bir karşılama bölümü ve tek bir harekete geçirici mesaj."
+          "description": "Sade bir kapak alanı ve tek bir harekete geçirici mesaj."
         },
         "aboutFounder": {
           "name": "Kurucu hikayesi",
           "description": "Bir giriş, fotoğraflı kişisel bir biyografi ve güvenilirlik istatistikleri."
         },
         "pricingPlansFaq": {
-          "name": "Planlar & sorular",
+          "name": "Planlar ve sorular",
           "description": "Fiyatlandırma planların ve ardından kısa bir SSS."
         },
         "contactSimple": {
@@ -3234,7 +3234,7 @@
       "preview": "Sitende canlı üst bilgi önizlemesi",
       "device": "Önizleme cihazı",
       "desktop": "Masaüstü",
-      "mobile": "Mobil + Menü",
+      "mobile": "Mobil + menü",
       "toggleMenu": "Mobil menü önizlemesini aç/kapat",
       "noLinks": "Seçili menü bağlantısı yok"
     },
@@ -3248,7 +3248,7 @@
       "placeholder": "Kendi seçeneğini ekle…"
     },
     "help": {
-      "example": "ör. {example}",
+      "example": "örn. {example}",
       "look": {
         "dark": "Koyu",
         "light": "Açık"
@@ -3260,11 +3260,11 @@
         "course": "Bir kurs satın alır",
         "membership": "Bir üyeliğe katılır",
         "session": "Oturum başına öder",
-        "month": "{n}. Ay"
+        "month": "{n}. ay"
       },
       "membership": {
         "club": "Kulüp",
-        "library": "Kurs kütüphanesi",
+        "library": "Kurs kitaplığı",
         "price": "Ayda {sign}{price}",
         "coversLive": "Kapsar: Her canlı oturum",
         "coversCourses": "Kapsar: Her kurs"
@@ -3283,19 +3283,19 @@
         "title": "6 haftalık program",
         "stats": "3 modül · 18 ders",
         "module": "<b>Modül</b> · {title}",
-        "week1": "1. Hafta: Temel bilgiler",
-        "week2": "2. Hafta: Alışkanlık oluşturma",
-        "week3": "3. Hafta: Daha ileriye",
+        "week1": "1. hafta: Temel bilgiler",
+        "week2": "2. hafta: Alışkanlık oluşturma",
+        "week3": "3. hafta: Daha ileriye",
         "lessons": "<b>Dersler</b>, her modülün içindeki videolardır."
       },
       "live": {
-        "title": "Salı akşamı dersi",
+        "title": "Salı akşamı canlı oturumu",
         "when": "Salı günleri, 19:00",
         "join": "Katıl"
       },
       "inbox": {
         "name": "Anna",
-        "message": "Selam! Salı günkü ders tamamen yeni başlayanlar için uygun mu?"
+        "message": "Selam! Salı günkü oturum tamamen yeni başlayanlar için uygun mu?"
       }
     },
     "starter": {
@@ -3310,7 +3310,7 @@
     },
     "activity": {
       "building": "{page, select, home {Ana sayfan oluşturuluyor: {stage}} about {Hakkında sayfan oluşturuluyor: {stage}} courses {Kurslar sayfan oluşturuluyor: {stage}} pricing {Fiyatlandırma sayfan oluşturuluyor: {stage}} faq {SSS sayfan oluşturuluyor: {stage}} contact {İletişim sayfan oluşturuluyor: {stage}} events {Etkinlikler sayfan oluşturuluyor: {stage}} other {{page} sayfan oluşturuluyor: {stage}}}",
-      "drafting": "{kind, select, course {İlk kursunun} event {İlk canlı oturumunun} onsite {İlk yüz yüze etkinliğinin} post {İlk makalenin} other {{kind}}} taslağı hazırlanıyor",
+      "drafting": "{kind, select, course {İlk kursunun} event {İlk canlı oturumunun} onsite {İlk yüz yüze etkinliğinin} post {İlk blog yazının} other {{kind}}} taslağı hazırlanıyor",
       "more": "{first} · {count} tane daha yolda",
       "stage": {
         "planning": "yerleşim planlanıyor",
@@ -3326,9 +3326,9 @@
         "course": "İlk kursunun taslağı hazırlandı. Onu Kurslar sayfana ekliyorum.",
         "event": "İlk canlı oturumun takvimde.",
         "onsite": "İlk yüz yüze etkinliğin takvimde.",
-        "post": "İlk makalenin taslağı hazırlandı."
+        "post": "İlk blog yazının taslağı hazırlandı."
       },
-      "draftFailed": "{kind, select, course {İlk kursunun taslağını} event {İlk canlı oturumunun taslağını} onsite {İlk yüz yüze etkinliğinin taslağını} post {İlk makalenin taslağını} other {{kind} taslağını}} hazırlayamadım. Daha sonra kontrol panelinden ekleyebilirsin."
+      "draftFailed": "{kind, select, course {İlk kursunun taslağını} event {İlk canlı oturumunun taslağını} onsite {İlk yüz yüze etkinliğinin taslağını} post {İlk blog yazının taslağını} other {{kind} taslağını}} hazırlayamadım. Daha sonra kontrol panelinden ekleyebilirsin."
     },
     "section": {
       "you": "Sen",
@@ -3342,7 +3342,7 @@
     },
     "page": {
       "name": {
-        "home": "Ana Sayfa",
+        "home": "Ana sayfa",
         "about": "Hakkında",
         "courses": "Kurslar",
         "pricing": "Fiyatlandırma",
@@ -3373,7 +3373,7 @@
       "ends": "Bitiş",
       "endsHint": "Devam etmesi için boş bırak",
       "sessionTime": "Oturum saati {n}",
-      "classTime": "Ders saati {n}",
+      "classTime": "Oturum saati {n}",
       "removeDayTime": "Bu günü ve saati kaldır",
       "removeTime": "Bu saati kaldır",
       "addTime": "Saat ekle",
@@ -3387,9 +3387,9 @@
     "blockers": {
       "plan": "Ücretsiz denemeni başlat",
       "first_course": "İlk kursunu yayınla",
-      "payouts": "Ödemeleri bağla",
+      "payouts": "Ödeme almayı ayarla",
       "first_event": "İlk canlı oturumunu planla",
-      "first_blog_post": "İlk makaleni yayınla",
+      "first_blog_post": "İlk blog yazını yayınla",
       "look": "Ana sayfanı tamamla"
     },
     "turnError": {
@@ -3399,7 +3399,7 @@
       "invalid_schedule": "Oturum için en az bir gün ve bir saat seç.",
       "unknown_logo": "Bu logo artık mevcut değil. Başka bir tane seç.",
       "unknown_style": "Bu görünüm artık mevcut değil. Başka bir tane seç.",
-      "trial_unavailable": "Ücretsiz deneme için fiyatı ve en az iki oturumu olan haftalık bir ders gerekir.",
+      "trial_unavailable": "Ücretsiz deneme için fiyatı olan ve en az iki oturumdan oluşan haftalık bir canlı oturum gerekir.",
       "other": "Bu işlem gerçekleşmedi. Yanıtın hâlâ burada, bu yüzden birazdan tekrar dene."
     },
     "editor": {
@@ -3426,12 +3426,12 @@
       "lead": "İşte nasıl ödeme alacağın.",
       "title": "Öğrencilerinden ödeme al",
       "body": "Ödemeler Stripe üzerinden yürütülür ve doğrudan bankana aktarılır. Kim olduğunu ve paranın nereye gitmesi gerektiğini onaylayacaksın. Yaklaşık beş dakika sürer.",
-      "ownerOnly": "Yalnızca stüdyo sahibi ödemeleri bağlayabilir. Şimdilik bu adımı atla; stüdyo sahibi daha sonra Ödemeler bölümünden Stripe'ı bağlayabilir.",
-      "connected": "Ödemeler bağlandı",
+      "ownerOnly": "Yalnızca stüdyo sahibi ödeme alma hesabını bağlayabilir. Şimdilik bu adımı atla; stüdyo sahibi Stripe'ı daha sonra Ödeme aktarımları bölümünden bağlayabilir.",
+      "connected": "Ödeme alma hesabı bağlandı",
       "needsDetails": "Ödeme alabilmen için Stripe'ın hâlâ birkaç ayrıntıya ihtiyacı var.",
       "opening": "Stripe açılıyor…",
       "continue": "Stripe'ta devam et",
-      "connect": "Stripe ile bağlan"
+      "connect": "Stripe'ı bağla"
     },
     "panel": {
       "aria": "Kurulum rehberin",
@@ -3474,7 +3474,7 @@
       "finishing": "Sayfaların tamamlanıyor…",
       "holding": "Onlar bekletiliyor…",
       "sellLater": "Şimdi yayına geç, sonra sat",
-      "sellLaterHint": "Şimdi yayına geçmek fiyatlarını korur: ücretli ögeler taslak olarak bekler ve ödeme alabildiğinde kendiliğinden satışa çıkar.",
+      "sellLaterHint": "Şimdi yayına geçmek fiyatlarını korur: ücretli öğeler taslak olarak bekler ve ödeme alabildiğinde kendiliğinden satışa çıkar.",
       "trial": {
         "title": "{days, plural, one {# günlük ücretsiz denemeni başlat} other {# günlük ücretsiz denemeni başlat}}",
         "body": "{plan}, {date} tarihine kadar ücretsiz. Kartını şimdi ekle: bu tarihten önce istediğin zaman iptal edebilirsin ve senden ücret alınmaz. Doğrudan buraya geri döneceksin.",
@@ -3496,9 +3496,9 @@
         "bodyPrice": "Ücretli kurslar ve canlı oturumlar için {name} planı gerekir (ayda {price}). Doğrudan buraya geri döneceksin.",
         "choose": "{name} planını seç"
       },
-      "ready": "Sen hazır olduğunda hazır",
-      "held": "Sen satış yapana kadar, fiyatlarınla bekliyor:",
-      "heldHint": "Kontrol panelinden istediğin zaman bir plan seç ve ödemeleri ayarla; kendiliğinden satışa çıkarlar.",
+      "ready": "Sen hazırsan hazırız",
+      "held": "Satış yapana kadar fiyatlarınla birlikte bekliyor:",
+      "heldHint": "Kontrol panelinden istediğin zaman bir plan seç ve ödeme almayı ayarla; kendiliğinden satışa çıkarlar.",
       "goLive": "Yayına geç",
       "going": "Yayına geçiliyor…",
       "keepEditing": "Siten yayına geçtikten sonra da düzenlemeye devam edebilirsin.",
@@ -3546,8 +3546,8 @@
       "trial": {
         "title": "İlk oturum ücretsiz bir deneme olsun mu?",
         "body": "Herkes buna ücretsiz katılabilir. Diğer tüm oturumlar normal fiyatını korur.",
-        "help": "Ücretsiz deneme dersi nedir?",
-        "tip": "Deneme dersi, birinin ödeme yapmadan önce öğrettiklerini denemesini sağlar. Yalnızca ilk oturumun ücretsizdir ve herkes buna katılabilir. Ondan sonraki her oturum normal fiyatından satılır. Bunu istediğin zaman kapatabilirsin.",
+        "help": "Ücretsiz deneme oturumu nedir?",
+        "tip": "Deneme oturumu, birinin ödeme yapmadan önce sunduklarını denemesini sağlar. Yalnızca ilk oturumun ücretsizdir ve herkes buna katılabilir. Ondan sonraki her oturum normal fiyatından satılır. Bunu istediğin zaman kapatabilirsin.",
         "example": "Her oturum {price} tutarındadır. İlki ücretsiz bir denemedir ve diğer tüm oturumlar yine {price} tutarındadır."
       }
     },
@@ -3555,15 +3555,15 @@
       "label": "Veya çalışmalarından bahset",
       "why": "Bize ne kadar çok şey anlatırsan, siten o kadar seni yansıtır. Şunlara değinmeye çalış:",
       "include": {
-        "0": "Ne öğrettiğin ve kime öğrettiğin",
+        "0": "Ne sunduğun ve kimlerle çalıştığın",
         "1": "Geçmişin ve sertifikaların",
-        "2": "Öğretme tarzın",
+        "2": "Çalışma stilin",
         "3": "Bu işi kaç yıldır yaptığın",
         "4": "Seni neyin farklı kıldığı"
       },
-      "placeholder": "… kişilere … öğretiyorum. … eğitimi aldım ve … yıldır ders veriyorum. Derslerim … hissettirir ve onları farklı kılan şey …",
+      "placeholder": "… kişilerle … alanında çalışıyorum. … eğitimi aldım ve … yıldır bu işi yapıyorum. Oturumlarım … hissettirir ve onları farklı kılan şey …",
       "exampleLink": "Bir örnek gör",
-      "example": "Brooklyn'de çevrim içi ve yüz yüze olarak yeni başlayanlara ve yoğun masa başı çalışanlarına vinyasa yoga ve nefes çalışmaları öğretiyorum. 500 saatlik bir programda eğitim aldım ve kurumsal bir işteki tükenmişliğin beni yogaya yönlendirmesinden bu yana 10 yıldır ders veriyorum. Derslerim yavaş, samimi ve pratiktir: küçük gruplar, gösteriş yok ve her poza girmek için her zaman daha kolay bir yol. Öğrenciler beni farklı kılan şeyin, onlara kendi başlarına pratik yapmayı öğretmem olduğunu söylüyor.",
+      "example": "Brooklyn'de çevrimiçi ve yüz yüze olarak yeni başlayanlara ve yoğun masa başı çalışanlarına vinyasa yoga ve nefes çalışmaları öğretiyorum. 500 saatlik bir programda eğitim aldım ve kurumsal bir işteki tükenmişliğin beni yogaya yönlendirmesinden bu yana 10 yıldır ders veriyorum. Derslerim yavaş, samimi ve pratiktir: küçük gruplar, gösteriş yok ve her poza girmek için her zaman daha kolay bir yol. Öğrenciler beni farklı kılan şeyin, onlara kendi başlarına pratik yapmayı öğretmem olduğunu söylüyor.",
       "nudge": "Bu iyi bir başlangıç. Geçmişin ve seni neyin farklı kıldığı hakkında birkaç satır daha, daha iyi bir siten olmasını sağlar."
     },
     "answer": {
@@ -3596,7 +3596,7 @@
       "taken": "Bu ad alınmış.",
       "didYouMean": "<pick>{typo}</pick> mu demek istedin?",
       "orOneOf": "Ya da bunlardan biri:",
-      "pickOrKeep": "Birini seç veya adını olduğu gibi bırakmak için Devam et'e bas.",
+      "pickOrKeep": "Birini seç veya adını olduğu gibi bırakmak için “Devam et” butonuna bas.",
       "checking": "Adın kontrol ediliyor…",
       "moving": "Siten {address} adresine taşınıyor…",
       "movingHint": "Siten birazdan yeni adresinde, tam kaldığın yerden açılacak.",
@@ -3621,7 +3621,7 @@
       },
       "status": {
         "uploading": "Yükleniyor",
-        "pending": "Web için hazır hale getiriliyor",
+        "pending": "Web için hazırlanıyor",
         "error": "Yüklenemedi",
         "added": "Eklendi"
       },
@@ -3653,7 +3653,7 @@
     "menu": {
       "blocked": {
         "paid_plan": "Bu sitenin ücretli bir planı var, bu yüzden buradan silinemez.",
-        "payments_connected": "Bu siteye bağlı bir ödeme hesabı var. Kaldırmak için destek ekibiyle iletişime geç.",
+        "payments_connected": "Bu siteye bağlı bir ödeme alma hesabı var. Kaldırmak için destek ekibiyle iletişime geç.",
         "custom_domain": "Önce özel alan adını kaldır.",
         "provisioning": "Siten hâlâ oluşturuluyor. Birkaç dakika sonra tekrar dene.",
         "setup_finished": "Kurulum zaten tamamlandı. Siteyi kontrol panelinden sil."
@@ -3674,7 +3674,7 @@
       "keep": "Sitemi koru",
       "cancelAria": "Kurulumu iptal et",
       "cancelTitle": "Kurulum iptal edilsin mi?",
-      "cancelBody": "Bu işlem tamamlanmamış siteni ve şu ana kadar yanıtladığın her şeyi siler ve <b>{slug}</b> boşa çıkar. İstediğin zaman tekrar başlayabilirsin ancak bu işlem geri alınamaz.",
+      "cancelBody": "Bu işlem tamamlanmamış siteni ve şu ana kadar yanıtladığın her şeyi siler ve <b>{slug}</b> adresini serbest bırakır. İstediğin zaman tekrar başlayabilirsin ancak bu işlem geri alınamaz.",
       "deleting": "Siliniyor…",
       "delete": "Siteyi sil",
       "helpTitle": "Yardım",
@@ -3718,7 +3718,7 @@
       "noted": "Not edildi: {items}",
       "delegateSaid": "Benim yerime sen karar ver.",
       "approvedAnswer": "İyi görünüyor",
-      "redraftSaid": "Sıfırdan yeniden taslak oluştur",
+      "redraftSaid": "Taslağı baştan yeniden hazırla",
       "picked": "{count} seçildi",
       "applying": "{label} uygulanıyor…",
       "applyingPick": "Seçimin uygulanıyor…",
@@ -3780,13 +3780,13 @@
       "logoSits": "Logonun duruşu",
       "menuPages": "Üst bilgi menündeki sayfalar",
       "tapToggle": "Eklemek veya kaldırmak için dokun",
-      "headerElements": "Üst bilgi ögeleri",
+      "headerElements": "Üst bilgi öğeleri",
       "ctaButton": "“{label}” butonu",
-      "transparent": "Hero üzerinde şeffaf",
+      "transparent": "Kapak alanı üzerinde şeffaf",
       "wordmarkAnswer": "Sadece adım, metin olarak",
       "wordmark": "Sadece adım",
       "uploadedAnswer": "Kendi logom",
-      "upload": "Kendiminkini yükle",
+      "upload": "Kendi logomu yükle",
       "showOthers": "Bana diğerlerini göster",
       "uploadError": "Logon yüklenemedi. Tekrar dene.",
       "emailTitle": "{label} e-postası",
@@ -3799,7 +3799,7 @@
   },
   "logo": {
     "studio": {
-      "title": "Logo Stüdyosu",
+      "title": "Logo stüdyosu",
       "stepsLabel": "Stüdyo adımları",
       "step": {
         "brief": "1 · Özet",
@@ -3808,7 +3808,7 @@
       },
       "saving": "Kaydediliyor…",
       "useLogo": "Bu logoyu kullan",
-      "close": "Logo Stüdyosunu kapat",
+      "close": "Logo stüdyosunu kapat",
       "startOverConfirm": "Baştan başlamak istiyor musun? Bu işlem özetini ve kaydedilen ilerlemeni siler.",
       "refineFailed": "Tasarım iyileştirilemedi — tekrar dene.",
       "unreachable": "Tasarım stüdyosuna şu anda ulaşılamadı.",
@@ -3832,12 +3832,12 @@
       "intro": "Bunu, arasından seçim yapıp ince ayar yapabileceğin bir logo fikirleri panosuna dönüştüreceğiz.",
       "brandName": "Marka adı",
       "niche": "Ne sunuyorsun?",
-      "nichePlaceholder": "ör. yoga, fitness, müzik, yemek…",
+      "nichePlaceholder": "örn. yoga, fitness, müzik, yemek…",
       "tagline": "Slogan",
       "optional": "(isteğe bağlı)",
-      "taglinePlaceholder": "ör. Yoğun anneler için yoga",
+      "taglinePlaceholder": "örn. Yoğun anneler için yoga",
       "vibe": "Tarzını anlat",
-      "vibePlaceholder": "ör. sakin, doğal, premium ama samimi",
+      "vibePlaceholder": "örn. sakin, doğal, premium ama samimi",
       "style": "Stil",
       "pickUpTo": "(en fazla 3 tane seç)",
       "chip": {
@@ -3859,7 +3859,7 @@
       "label": "Logo tuvali"
     },
     "editor": {
-      "kitNoSvg": "Yazı tipleri alınamadı, bu yüzden kitte yalnızca PNG dosyaları var (SVG yok).",
+      "kitNoSvg": "Yazı tipleri alınamadı, bu yüzden marka kitinde yalnızca PNG dosyaları var (SVG yok).",
       "kitFailed": "Marka kiti oluşturulamadı — lütfen tekrar dene.",
       "browserTab": "Tarayıcı sekmesi",
       "appIcon": "Uygulama simgesi",
@@ -3895,11 +3895,11 @@
       },
       "phase": {
         "designing": "Konseptler çiziliyor",
-        "illustrating": "Amblemler çiziliyor",
+        "illustrating": "Simgeler çiziliyor",
         "tracing": "Vektöre dönüştürülüyor"
       },
       "pick": "Bunu seç",
-      "useTagline": "\"{tagline}\" sloganını kullan",
+      "useTagline": "“{tagline}” sloganını kullan",
       "soFar": "Logonun şu anki hali",
       "picksHere": "İlerledikçe seçimlerin burada görünecek.",
       "cancelled": "İptal edildi — bu işlem tasarım haklarından birini kullandı.",
@@ -3910,13 +3910,13 @@
       "reviewing": "Kendi çalışmasını gözden geçiriyor…",
       "cancelNote": "İptal etmek yine de 1 hak kullanır.",
       "preparing": "Seçenekler hazırlanıyor…",
-      "changePlaceholder": "Bu adım için bir değişiklik tarif et… (ör. daha geometrik, daha az eğlenceli)",
+      "changePlaceholder": "Bu adım için bir değişiklik tarif et… (örn. daha geometrik, daha az eğlenceli)",
       "send": "Gönder",
       "differentOptions": "Farklı seçenekler göster",
       "turnsLeft": "{count, plural, one {Bu ay # yapay zekâ tasarım hakkın kaldı.} other {Bu ay # yapay zekâ tasarım hakkın kaldı.}}",
       "describeTitle": "İstediğin logoyu tarif et",
       "describeHint": "Bir iki cümle yeterli — bir hava, bir sembol, öne çıkarmak ya da kaçınmak istediğin renkler. Ya da bu adımı atla, markandan yola çıkarak konseptler önerelim.",
-      "describePlaceholder": "ör. sakin, minimal bir işaret — belki bir yaprak ya da gün doğumu, sıcak toprak tonlarında yeşiller, kurumsal bir şey olmasın",
+      "describePlaceholder": "örn. sakin, minimal bir simge — belki bir yaprak ya da gün doğumu, sıcak toprak tonlarında yeşiller, kurumsal bir şey olmasın",
       "designing": "Tasarlanıyor…",
       "generate": "Konsept oluştur",
       "skip": "Atla, bana sadece fikirleri göster",
@@ -3926,8 +3926,8 @@
       "title": "Yapay zekâ tasarımcısına sor",
       "quota": "Bu ayki yapay zekâ iyileştirme haklarını kullandın. Gelecek ay yenileri tanımlanacak.",
       "unavailable": "Yapay zekâ ile iyileştirme geçici olarak kullanılamıyor.",
-      "placeholder": "ör. daha sıcak renkler, daha yuvarlak bir işaret, daha seçkin bir hava",
-      "redraw": "Simgeyi yeniden çiz (işarete sıfırdan başla)",
+      "placeholder": "örn. daha sıcak renkler, daha yuvarlak bir simge, daha seçkin bir hava",
+      "redraw": "Simgeyi yeniden çiz (simgeye sıfırdan başla)",
       "refining": "İyileştiriliyor…",
       "refine": "İyileştir",
       "left": "{count, plural, one {Bu ay # yapay zekâ iyileştirme hakkın kaldı.} other {Bu ay # yapay zekâ iyileştirme hakkın kaldı.}}"
@@ -3942,8 +3942,8 @@
       "taglineOptional": "Slogan (isteğe bağlı)",
       "layout": {
         "label": "Yerleşim",
-        "horizontal": "İşaret + ad",
-        "horizontal_reversed": "Ad + işaret",
+        "horizontal": "Simge + ad",
+        "horizontal_reversed": "Ad + simge",
         "stacked": "Üst üste",
         "emblem": "Amblem",
         "name_only": "Yalnızca ad"
@@ -3973,7 +3973,7 @@
       "case": {
         "label": "Harf düzeni",
         "none": "Yazıldığı gibi",
-        "titleCase": "Baş Harfler Büyük",
+        "titleCase": "Baş harfler büyük",
         "upper": "BÜYÜK HARF"
       },
       "letterSpacing": "Harf aralığı",
@@ -4008,12 +4008,12 @@
           "outline": "Çizgi",
           "solid": "Dolgulu"
         },
-        "color": "Amblem rengi",
+        "color": "Simge rengi",
         "solid": "Düz renk",
         "gradient": "Renk geçişi",
-        "gradientEnd": "Amblem renk geçişi bitiş rengi",
+        "gradientEnd": "Simge renk geçişi bitiş rengi",
         "gradientAngle": "Renk geçişi açısı",
-        "aiColors": "Yapay zekâ ile çizilen amblem renkleri",
+        "aiColors": "Yapay zekâ ile çizilen simgenin renkleri",
         "secondaryColor": "İkincil renk",
         "secondary": "İkincil",
         "accentColor": "Vurgu rengi",
@@ -4033,7 +4033,7 @@
     "bubble": "Yapay zekâ asistanın",
     "title": "Yapay zekâ asistanın",
     "empty": "Siten hakkında bana her şeyi sorabilirsin — ya da sayfada bir şey seç ve neyi değiştirmem gerektiğini söyle.",
-    "placeholder": "ör. bu bölümü daha sıcak yap",
+    "placeholder": "örn. bu bölümü daha sıcak yap",
     "select": "Seç",
     "send": "Gönder",
     "sending": "Gönderiliyor…",

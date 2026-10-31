@@ -23,13 +23,13 @@
     "deleted": "{name} silindi.",
     "failed": "Bu platform silinemedi. Tekrar dene.",
     "confirmTitle": "{name} silinsin mi?",
-    "confirmBody": "Bu işlem siteyi, kurslarını, sınıflarını, öğrencilerini ve dosyalarını kalıcı olarak siler ve <strong>{slug}</strong> alanını boşa çıkarır. Geri alınamaz.",
+    "confirmBody": "Bu işlem siteyi, kurslarını, canlı oturumlarını, öğrencilerini ve dosyalarını kalıcı olarak siler ve <strong>{slug}</strong> alanını boşa çıkarır. Geri alınamaz.",
     "typeToConfirm": "Onaylamak için <mono>{slug}</mono> yaz",
     "deleting": "Siliniyor…",
     "confirm": "Platformu sil",
     "blocked": {
       "paid_plan": "Önce ücretli planı iptal et — ücretli platformlar silinemez.",
-      "payments_connected": "Bu platforma bağlı bir ödeme hesabı var. Kaldırmak için destek ekibiyle iletişime geç.",
+      "payments_connected": "Bu platforma bağlı bir ödeme alma hesabı var. Kaldırmak için destek ekibiyle iletişime geç.",
       "custom_domain": "Önce özel alan adını kaldır.",
       "provisioning": "Hâlâ kuruluyor — birkaç dakika içinde tekrar dene.",
       "not_deletable": "Bu platform silinemez."

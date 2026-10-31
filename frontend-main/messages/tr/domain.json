@@ -51,15 +51,15 @@
   "status": {
     "failed": "Kurulum başarısız oldu.",
     "failedAt": "Kurulum şu adımda başarısız oldu: {step}.",
-    "retry": "Yeniden dene",
-    "retrying": "Yeniden deneniyor…",
+    "retry": "Tekrar dene",
+    "retrying": "Tekrar deneniyor…",
     "steps": {
       "registering": "Alan adı kaydediliyor",
       "dns_zone": "DNS bölgesi oluşturuluyor",
       "dns_records": "DNS sitene yönlendiriliyor",
       "email_auth": "E-posta yapılandırılıyor",
       "ssl": "SSL sertifikası düzenleniyor",
-      "live": "Yayına alınıyor"
+      "live": "Yayına geçiliyor"
     }
   }
 }

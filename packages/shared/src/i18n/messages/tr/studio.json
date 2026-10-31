@@ -59,10 +59,10 @@
       "access": "Erişim",
       "forever": "Süresiz",
       "customDays": "Özel gün sayısı",
-      "daysFromBuy": "satın aldıkları günden itibaren gün",
+      "daysFromBuy": "gün (satın aldıkları günden itibaren)",
       "itOpens": "Açılır",
       "whileAfterBuy": "Satın aldıktan bir süre sonra",
-      "daysAfterBuy": "satın aldıktan sonraki gün",
+      "daysAfterBuy": "gün sonra (satın aldıktan)",
       "onDate": "Belirli bir tarihte",
       "opensRightAway": "Hemen açılır",
       "opensLater": "Daha sonra açılır (ön satış)",
@@ -73,7 +73,7 @@
       "closes": "Kapanır",
       "never": "Asla",
       "afterTime": "Belirli bir süre sonra",
-      "daysFromJoining": "katılma tarihinden itibaren gün",
+      "daysFromJoining": "gün (katıldıkları tarihten itibaren)",
       "pickDate": "Bir tarih seç."
     },
     "title": "Erişim",
@@ -90,7 +90,7 @@
     "ownerOnly": "Bunun hangi aboneliklere dahil edileceğini yalnızca site sahibi değiştirebilir.",
     "offSale": "Satışta değil",
     "membersGet": "Üyeler erişir",
-    "planNote": "Bu durum, halihazırda buna sahip olanlar da dahil olmak üzere mevcut {name} üyeleri için de geçerlidir.",
+    "planNote": "Bu, şu anki {name} üyeleri için de geçerlidir; buna zaten sahip olanlar dahil.",
     "newPlan": "+ Yeni abonelik",
     "thisSubscription": "bu abonelik",
     "planPerMonth": "{amount}/ay",
@@ -204,17 +204,17 @@
   "contentPicker": {
     "loadFailed": "İçerik yüklenemedi.",
     "series": "{title} · {count, plural, one {# oturum} other {# oturum}}",
-    "remove": "{title} kaldır",
-    "search": "İçerik ara...",
+    "remove": "Kaldır: {title}",
+    "search": "İçerik ara…",
     "none": "İçerik bulunamadı.",
     "membersOnly": "Yalnızca üyeler",
     "types": {
       "all": "Tümü",
       "course": "Kurs",
       "download": "İndirilebilir dosya",
-      "live_class": "Canlı Oturum",
-      "live_stream": "Canlı Yayın",
-      "onsite_event": "Yüz Yüze Etkinlik"
+      "live_class": "Canlı oturum",
+      "live_stream": "Canlı yayın",
+      "onsite_event": "Yüz yüze etkinlik"
     }
   },
   "logo": {
@@ -249,7 +249,7 @@
       "fitness": "Fitness",
       "music": "Müzik",
       "education": "Eğitim",
-      "business": "İş",
+      "business": "İş dünyası",
       "creative": "Yaratıcı",
       "food": "Yemek",
       "lifestyle": "Yaşam tarzı"
@@ -311,7 +311,7 @@
     "archived": "Konuşma arşivlendi.",
     "movedToInbox": "Gelen kutusuna taşındı.",
     "spamMarked": "Spam olarak işaretlendi.",
-    "search": "Postalarda ara",
+    "search": "E-postalarda ara",
     "clearSearch": "Aramayı temizle",
     "you": "Sen",
     "editor": {
@@ -329,7 +329,7 @@
       "link": "Bağlantı",
       "linkPrompt": "Bağlantı URL'si",
       "attach": "Dosya ekle",
-      "remove": "{name} öğesini kaldır",
+      "remove": "{name} ekini kaldır",
       "ctrlEnter": "Göndermek için Ctrl+Enter",
       "send": "Gönder"
     }
@@ -344,7 +344,7 @@
       "delete": "Sil",
       "create": "Oluştur",
       "newItem": "Yeni {label}",
-      "editItem": "{label} düzenle"
+      "editItem": "Düzenle: {label}"
     },
     "errors": {
       "loadIndex": "Yüklenemedi.",
@@ -411,7 +411,7 @@
       "allCount": "Tümü ({count})",
       "yes": "Evet",
       "no": "Hayır",
-      "loadingMore": "Daha fazlası yükleniyor...",
+      "loadingMore": "Daha fazlası yükleniyor…",
       "selected": "{count} seçildi",
       "count": "{count, plural, one {# {singular}} other {# {plural}}}",
       "done": "Tamamlandı.",
@@ -435,7 +435,7 @@
         "spacer": "Boşluk",
         "columns": "Sütunlar",
         "profiles": "Profiller",
-        "hero": "Ana bölüm",
+        "hero": "Kapak alanı",
         "card": "Kart",
         "items": "Öğeler",
         "profile": "Profil",
@@ -543,7 +543,7 @@
         "itemFresh": "Başlığı, görseli ve bağlantısı hep güncel kalır: e-posta, gönderildiği andaki hâlini gösterir."
       },
       "aria": {
-        "network": "Ağ",
+        "network": "Sosyal ağ",
         "removeProfile": "Profili kaldır",
         "profileLink": "Profil bağlantısı",
         "bullet": "Madde işareti",
@@ -593,7 +593,7 @@
         "thirdTwoThirds": "Üçte bir / üçte iki",
         "twoThirdsThird": "Üçte iki / üçte bir",
         "full": "Tam",
-        "thirds": "Üçte birler"
+        "thirds": "Üç eşit parça"
       },
       "kind": {
         "course": "Kurs",
@@ -607,7 +607,7 @@
         "plan": "Üyelik",
         "page": "Sayfa",
         "subscription": "Üyelik",
-        "blogPost": "Gönderi"
+        "blogPost": "Blog yazısı"
       }
     },
     "controls": {
@@ -736,10 +736,10 @@
       "itemPick": "Öne çıkarmak için bir şey seç",
       "itemChoose": "Seç…",
       "headline": "Ana başlık",
-      "heroHeadline": "Hero ana başlığı",
+      "heroHeadline": "Kapak başlığı",
       "supportingLine": "Destekleyici bir satır",
-      "heroSubheading": "Hero alt başlığı",
-      "heroButton": "Hero butonu",
+      "heroSubheading": "Kapak alt başlığı",
+      "heroButton": "Kapak butonu",
       "badge": "Rozet",
       "cardHeading": "Kart başlığı",
       "shortDescription": "Kısa bir açıklama",
@@ -748,7 +748,7 @@
       "listItem": "Liste öğesi",
       "choosePhoto": "Bir fotoğraf seç",
       "name": "Ad",
-      "role": "Rol",
+      "role": "Unvan",
       "shortBio": "Kısa bir biyografi",
       "bio": "Biyografi"
     },

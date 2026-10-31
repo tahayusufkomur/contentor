@@ -57,10 +57,10 @@
     "trialStarts": "{days, plural, one {Ödeyeceğin bir şey yok. # günlük ücretsiz deneme süren şimdi başlıyor.} other {Ödeyeceğin bir şey yok. # günlük ücretsiz deneme süren şimdi başlıyor.}}",
     "untilDate": "{date} tarihine kadar",
     "tryEverything": "Her şeyi dene. Faturalandırma bölümünden iptal edersen hiçbir şey ödemezsin.",
-    "startsAt": "{name} aylık {price} ücretle başlar.",
-    "startsAtFallback": "{name} aylık ücretiyle başlar.",
-    "beginsAt": "{name} aylık {price} ücretle başlıyor.",
-    "beginsAtFallback": "{name} aylık ücretiyle başlıyor."
+    "startsAt": "{name}, aylık {price} fiyatla başlar.",
+    "startsAtFallback": "{name}, aylık fiyatıyla başlar.",
+    "beginsAt": "{name}, aylık {price} fiyatla başlıyor.",
+    "beginsAtFallback": "{name}, aylık fiyatıyla başlıyor."
   },
   "meta": {
     "ogAlt": "Contentor — evde yoga dersi çeken bir içerik üreticisi, kamera ve ışık kurulmuş",

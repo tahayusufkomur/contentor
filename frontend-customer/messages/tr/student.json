@@ -14,7 +14,7 @@
     "or": "veya",
     "magicLinkLabel": "E-posta",
     "magicLinkPlaceholder": "sen@ornek.com",
-    "magicLinkSubmit": "Sihirli Bağlantı Gönder",
+    "magicLinkSubmit": "Giriş bağlantısı gönder",
     "magicLinkSubmitting": "Gönderiliyor…",
     "magicLinkSentTitle": "E-postanı kontrol et",
     "magicLinkSentBody": "{email} adresine bir giriş bağlantısı gönderdik",
@@ -56,11 +56,11 @@
     "sessionLimit": "Bugünkü sohbet sınırına ulaştın. Yarın tekrar gel ya da iletişim sayfasını kullan."
   },
   "callback": {
-    "noToken": "Token sağlanmadı",
+    "noToken": "Belirteç sağlanmadı",
     "authFailed": "Kimlik doğrulama başarısız oldu",
     "networkError": "Ağ hatası",
     "verificationFailed": "Doğrulama başarısız oldu",
-    "verifying": "Doğrulanıyor...",
+    "verifying": "Doğrulanıyor…",
     "welcomeBack": "Tekrar hoş geldin!",
     "welcomeTo": "{brand} sitesine hoş geldin!",
     "welcomeToYourSite": "Sitene hoş geldin!"
@@ -71,12 +71,12 @@
     "subscriptions": "Aboneliklerim",
     "emptyTitle": "Henüz kurs yok",
     "emptyText": "Henüz hiçbir kursa kaydolmadın. İlgini çekecek bir şey bulmak için kataloğumuza göz at.",
-    "browse": "Kurslara Göz At",
+    "browse": "Kurslara göz at",
     "inYourPlan": "Planına dahil",
     "progress": "İlerleme"
   },
   "orders": {
-    "title": "Sipariş Geçmişi",
+    "title": "Sipariş geçmişi",
     "text": "Satın aldıkların ve makbuzların.",
     "emptyTitle": "Henüz sipariş yok",
     "emptyText": "Satın aldıkların makbuzlarıyla birlikte burada görünecek.",
@@ -97,8 +97,8 @@
   "subscriptions": {
     "started": "Abonelik başlatıldı! Görünmesi biraz zaman alabilir.",
     "title": "Aboneliklerim",
-    "text": "Aktif üyeliklerini yönet.",
-    "emptyTitle": "Aktif abonelik yok",
+    "text": "Etkin üyeliklerini yönet.",
+    "emptyTitle": "Etkin abonelik yok",
     "emptyText": "İçeriklerin kilidini açmak için üyelik planlarına göz at.",
     "viewPlans": "Planları gör",
     "planFallback": "Plan",
@@ -113,13 +113,13 @@
     "changePlanOption": "Planı değiştir…",
     "planOption": "{name} — {price}",
     "status": {
-      "active": "aktif",
+      "active": "etkin",
       "past_due": "ödemesi gecikmiş",
       "expired": "süresi dolmuş"
     }
   },
   "liveClasses": {
-    "title": "Canlı Oturumlar",
+    "title": "Canlı oturumlar",
     "join": "Katıl",
     "upcomingTab": "Yaklaşan ({count})",
     "pastTab": "Geçmiş ({count})",
@@ -127,23 +127,23 @@
     "emptyUpcomingText": "Şu anda planlanmış canlı oturum yok. Daha sonra tekrar göz at!",
     "emptyPastTitle": "Geçmiş oturum yok",
     "emptyPastText": "Henüz gösterilecek geçmiş canlı oturum yok.",
-    "watchRecording": "Kaydı İzle"
+    "watchRecording": "Kaydı izle"
   },
   "checkout": {
     "canceled": "Ödeme iptal edildi — sepetin hâlâ burada.",
-    "removed": "\"{title}\" sepetten kaldırıldı",
-    "paid": "Ödeme başarılı! Panele yönlendiriliyorsun...",
+    "removed": "“{title}” sepetten kaldırıldı",
+    "paid": "Ödeme başarılı! Panele yönlendiriliyorsun…",
     "loginToPurchase": "Satın almak için giriş yapman gerekiyor",
     "payFailed": "Ödeme başarısız oldu. Lütfen tekrar dene.",
     "emptyTitle": "Sepetin boş",
-    "emptyText": "Ödemeye geçmeden önce mağazadan birkaç ürün ekle.",
-    "goToStore": "Mağazaya Git",
-    "review": "Ödemeden önce ürünlerini gözden geçir.",
+    "emptyText": "Ödemeye geçmeden önce mağazadan birkaç öğe ekle.",
+    "goToStore": "Mağazaya git",
+    "review": "Ödemeden önce öğelerini gözden geçir.",
     "remove": "{title} öğesini kaldır",
-    "orderSummary": "Sipariş Özeti",
+    "orderSummary": "Sipariş özeti",
     "total": "Toplam",
     "processing": "İşleniyor…",
-    "pay": "{total} Öde"
+    "pay": "{total} öde"
   },
   "checkoutSuccess": {
     "confirmingLabel": "Ödemen onaylanıyor",
@@ -188,8 +188,8 @@
     "session": {
       "notFound": "Canlı oturum bulunamadı",
       "connecting": "Canlı oturuma bağlanılıyor",
-      "connectingDots": "Canlı oturuma bağlanılıyor...",
-      "notStarted": "Bu oturum henüz başlamadı. İçerik üreticisi yayına başladığında tekrar bak.",
+      "connectingDots": "Canlı oturuma bağlanılıyor…",
+      "notStarted": "Bu oturum henüz başlamadı. İçerik üreticisi canlı yayına geçtiğinde tekrar bak.",
       "ended": "Bu oturum sona erdi.",
       "connectFailed": "Canlı oturuma bağlanılamadı.",
       "left": "Oturumdan ayrıldın",
@@ -199,8 +199,8 @@
     "stream": {
       "notFound": "Canlı yayın bulunamadı",
       "connecting": "Canlı yayına bağlanılıyor",
-      "connectingDots": "Canlı yayına bağlanılıyor...",
-      "notStarted": "Bu yayın henüz başlamadı. Yayıncı yayına geçtiğinde tekrar bak.",
+      "connectingDots": "Canlı yayına bağlanılıyor…",
+      "notStarted": "Bu yayın henüz başlamadı. Yayını yürüten kişi canlı yayına geçtiğinde tekrar bak.",
       "ended": "Bu yayın sona erdi.",
       "connectFailed": "Canlı yayına bağlanılamadı.",
       "left": "Yayından ayrıldın",
@@ -216,7 +216,7 @@
     "noVideo": "Bu ders için video yok.",
     "captions": "Altyazılar",
     "completed": "Tamamlandı",
-    "markComplete": "Tamamlandı Olarak İşaretle",
+    "markComplete": "Tamamlandı olarak işaretle",
     "transcript": "Transkript"
   }
 }

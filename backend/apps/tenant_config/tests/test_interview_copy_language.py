@@ -208,7 +208,7 @@ def test_a_weekly_membership_tile_and_the_team_names_are_translated():
         tile = brief.tx("Weekly face yoga classes")
         note, _owner = interview.started_note(["draft:course"])
     assert tile != "Weekly face yoga classes" and "face yoga" not in tile.lower().replace("yoga", "")
-    assert "Content Creating Specialist" not in note and "İçerik Üretim Uzmanı" in note
+    assert "Content Creating Specialist" not in note and "İçerik üretim uzmanı" in note
 
 
 def test_the_summary_keeps_each_sentence_whole(setup_running):
