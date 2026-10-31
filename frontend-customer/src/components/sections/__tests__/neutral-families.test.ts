@@ -149,9 +149,9 @@ describe("proof, statement and video", () => {
 
   it("long names and attributions are not set in capitals", () => {
     const long = "Maya Laurent and the Tuesday group";
-    expect(render("statement", { statement: "Rest.", attribution: long })).toMatch(
-      /!normal-case[^"]*">Maya Laurent and the Tuesday group/,
-    );
+    expect(
+      render("statement", { statement: "Rest.", attribution: long }),
+    ).toMatch(/!normal-case[^"]*">Maya Laurent and the Tuesday group/);
     expect(
       render("proof", { quotes: [{ quote: "Calmer.", name: long }] }),
     ).toMatch(/!normal-case[^"]*">Maya Laurent and the Tuesday group/);
