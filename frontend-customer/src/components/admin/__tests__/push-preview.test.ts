@@ -24,6 +24,7 @@ const html = renderToStaticMarkup(
       timeZone: "UTC",
       messages: { admin: adminPl, site: siteDe },
     },
+    // eslint-disable-next-line react/no-children-prop -- SiteLocaleBoundary requires children as a prop
     createElement(SiteLocaleBoundary, {
       locale: "de",
       children: createElement(PushPreview, { title: "", body: "" }),
