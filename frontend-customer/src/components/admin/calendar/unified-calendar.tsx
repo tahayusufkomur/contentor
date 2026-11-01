@@ -453,12 +453,13 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
                       </span>
                       {dayEvents.length > 0 && (
                         <span className="text-[10px] text-muted-foreground font-mono">
-                          {/* A phone's day cell is ~50 px: a bare number there,
-                              the spelled-out count once there is room. */}
-                          <span aria-hidden className="md:hidden">
+                          {/* A day cell is ~50 px on a phone and ~68 px on a tablet
+                              beside the sidebar: a bare number there, the
+                              spelled-out count once there is room. */}
+                          <span aria-hidden className="lg:hidden">
                             {dayEvents.length}
                           </span>
-                          <span className="sr-only md:not-sr-only">
+                          <span className="sr-only lg:not-sr-only">
                             {t("itemCount", { count: dayEvents.length })}
                           </span>
                         </span>
