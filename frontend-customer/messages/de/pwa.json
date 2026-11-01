@@ -13,13 +13,13 @@
   "howToInstall": "So installierst du die App",
   "guide": {
     "title": "App installieren",
-    "subtitle": "Füge diese App zu deinem Startbildschirm hinzu, um am schnellsten darauf zuzugreifen – sie öffnet sich im Vollbild wie eine native App.",
+    "subtitle": "Füge diese App zu deinem Startbildschirm hinzu, für den schnellsten Zugang – sie öffnet sich im Vollbild wie eine native App.",
     "inAppNote": "Du bist im integrierten Browser einer App, der keine Apps installieren kann. Öffne diese Seite über das •••-Menü in Safari oder Chrome und folge dann den Schritten unten.",
     "installNow": "App installieren",
     "orManual": "Oder folge den Schritten unten.",
     "tabIos": "iPhone",
     "tabAndroid": "Android",
-    "iosStep1": "Tippe auf die Teilen-Taste. Bei neueren iPhones tippe zuerst auf ••• – dort findest du „Teilen“.",
+    "iosStep1": "Tippe auf den Teilen-Button. Bei neueren iPhones tippe zuerst auf ••• – dort findest du „Teilen“.",
     "iosStep2": "Scrolle nach unten und tippe auf „Zum Home-Bildschirm“.",
     "iosStep3": "Tippe auf „Hinzufügen“ – die App erscheint auf deinem Startbildschirm.",
     "iosAddLabel": "Zum Home-Bildschirm",
@@ -33,7 +33,7 @@
     "desktopNote": "Klicke am Computer auf das Installationssymbol in der Adressleiste deines Browsers.",
     "installedTitle": "Alles erledigt!",
     "installedBody": "Die App ist auf deinem Gerät installiert.",
-    "metaDescription": "Schritt-für-Schritt-Anleitung, um diese App auf deinem Handy zu installieren."
+    "metaDescription": "Schritt-für-Schritt-Anleitung, um diese App auf deinem Smartphone zu installieren."
   },
-  "manifestDescription": "Plattform für Content-Creator"
+  "manifestDescription": "Plattform für Creator"
 }

@@ -40,7 +40,7 @@
       "heading": "Kurse"
     },
     "pricingPlans": {
-      "heading": "Tarife & Preise"
+      "heading": "Mitgliedschaften & Preise"
     },
     "upcomingEvents": {
       "heading": "Kommende Veranstaltungen"
@@ -115,7 +115,7 @@
         },
         {
           "q": "Brauche ich Erfahrung?",
-          "a": "Sag, was ein Anfänger braucht."
+          "a": "Sag, was Anfänger brauchen."
         },
         {
           "q": "Wie fange ich an?",
@@ -151,11 +151,11 @@
       },
       "richText": {
         "heading": "Warum mit mir lernen?",
-        "body": "Ich habe Jahre damit verbracht, einen einfachen, bewährten Ansatz zu verfeinern, damit du ohne Rätselraten echte Fortschritte machst. Jede Lektion baut auf der vorherigen auf — klar, praktisch und für jedes Niveau gemacht."
+        "body": "Ich habe Jahre damit verbracht, einen einfachen, bewährten Ansatz zu verfeinern, damit du ohne Rätselraten echte Fortschritte machst. Jede Lektion baut auf der vorherigen auf – klar, praktisch und für jedes Niveau gemacht."
       },
       "imageText": {
         "heading": "Über mich",
-        "body": "Hi, schön, dass du da bist. Ich habe diese Kurse erstellt, um das weiterzugeben, was bei Hunderten von Teilnehmern funktioniert hat — und um dir zu helfen, schneller ans Ziel zu kommen, mit Unterstützung bei jedem Schritt."
+        "body": "Hi, ich bin deine Lehrperson. Ich habe diese Kurse erstellt, um das weiterzugeben, was bei Hunderten von Teilnehmern funktioniert hat – und um dir zu helfen, schneller ans Ziel zu kommen, mit Unterstützung bei jedem Schritt."
       },
       "testimonials": {
         "heading": "Was Teilnehmer sagen",
@@ -183,11 +183,11 @@
           },
           {
             "q": "Brauche ich eine spezielle Ausrüstung?",
-            "a": "Nein — du kannst mit dem anfangen, was du bereits hast. Alle optionalen Extras sind in den einzelnen Lektionen angegeben."
+            "a": "Nein – du kannst mit dem anfangen, was du bereits hast. Alle optionalen Extras sind in den einzelnen Lektionen angegeben."
           },
           {
             "q": "Kann ich mobil auf die Kurse zugreifen?",
-            "a": "Ja! Die Plattform ist vollständig responsiv. Streame Lektionen auf deinem Smartphone, Tablet oder Computer — perfekt, um überall zu lernen."
+            "a": "Ja! Die Plattform ist vollständig responsiv. Streame Lektionen auf deinem Smartphone, Tablet oder Computer – perfekt, um überall zu lernen."
           }
         ]
       },
@@ -213,7 +213,7 @@
         ]
       },
       "banner": {
-        "text": "Neue Kurse hinzugefügt — starte noch heute mit dem Lernen.",
+        "text": "Neue Kurse hinzugefügt – starte noch heute mit dem Lernen.",
         "linkText": "Programme durchstöbern"
       },
       "contact": {
@@ -233,8 +233,8 @@
         "heading": "Entdecke die Programme"
       },
       "pricingPlans": {
-        "heading": "Tarife & Preise",
-        "subheading": "Wähle den Tarif, der jetzt zu dir passt — Upgrade jederzeit möglich."
+        "heading": "Mitgliedschaften & Preise",
+        "subheading": "Wähle die Mitgliedschaft, die gerade zu dir passt – ein Upgrade ist jederzeit möglich."
       },
       "upcomingEvents": {
         "heading": "Bevorstehende Live-Sessions"
@@ -246,7 +246,7 @@
     "yoga": {
       "hero": {
         "heading": "Finde deine Balance durch Yoga",
-        "subheading": "Transformiere deinen Körper und Geist mit angeleiteten Yoga-Praktiken — egal, ob du kompletter Anfänger oder erfahrener Yogi bist.",
+        "subheading": "Verwandle Körper und Geist mit angeleiteten Yoga-Praktiken – egal, ob du völlig neu dabei oder schon ein erfahrener Yogi bist.",
         "ctaText": "Programme durchstöbern"
       },
       "richText": {
@@ -255,7 +255,7 @@
       },
       "imageText": {
         "heading": "Über mich",
-        "body": "Mit Yoga-Zertifizierung und über 12 Jahren Unterrichtserfahrung in Hatha-, Vinyasa- und Ashtanga-Traditionen. Ich glaube, dass Yoga eine Reise der Selbstentdeckung ist — dir selbst auf der Matte mit Mitgefühl, Atem und Intention zu begegnen."
+        "body": "Ich bin zertifiziert und unterrichte seit über 12 Jahren Yoga in den Traditionen Hatha, Vinyasa und Ashtanga. Ich glaube, dass Yoga eine Reise der Selbstentdeckung ist – dir selbst auf der Matte mit Mitgefühl, Atem und Intention zu begegnen."
       },
       "testimonials": {
         "heading": "Was Teilnehmer sagen",
@@ -287,7 +287,7 @@
           },
           {
             "q": "Kann ich mobil auf die Kurse zugreifen?",
-            "a": "Ja! Die Plattform ist voll responsiv. Du kannst Lektionen auf deinem Smartphone, Tablet oder Computer streamen — perfekt, um überall zu praktizieren."
+            "a": "Ja! Die Plattform ist voll responsiv. Du kannst Lektionen auf deinem Smartphone, Tablet oder Computer streamen – perfekt, um überall zu praktizieren."
           }
         ]
       },
@@ -313,23 +313,23 @@
         ]
       },
       "banner": {
-        "text": "Neue Anfängerserie hinzugefügt — starte noch heute deine Praxis.",
+        "text": "Neue Anfängerserie hinzugefügt – starte noch heute deine Praxis.",
         "linkText": "Programme durchstöbern"
       }
     },
     "pilates": {
       "hero": {
-        "heading": "Transformiere deinen Körper mit Pilates",
+        "heading": "Verwandle deinen Körper mit Pilates",
         "subheading": "Baue Rumpfkraft auf, verbessere deine Beweglichkeit und bewege dich voller Selbstvertrauen durch achtsame, kontrollierte Bewegungen.",
         "ctaText": "Programme durchstöbern"
       },
       "richText": {
         "heading": "Warum mit mir trainieren?",
-        "body": "Präzise, kontrollierte Bewegungen stehen im Mittelpunkt jeder Session. Wir konzentrieren uns zuerst auf die richtige Ausführung, damit du sicher einen starken, ausgeglichenen Körper aufbaust — kein Fitnessstudio, kein Reformer, nur eine Matte und ein bisschen Engagement."
+        "body": "Präzise, kontrollierte Bewegungen stehen im Mittelpunkt jeder Session. Wir konzentrieren uns zuerst auf die richtige Ausführung, damit du sicher einen starken, ausgeglichenen Körper aufbaust – kein Fitnessstudio, kein Reformer, nur eine Matte und ein bisschen Engagement."
       },
       "imageText": {
         "heading": "Über mich",
-        "body": "Mit Pilates-Zertifizierung und über 12 Jahren Erfahrung im Matten- und Reformer-Pilates. Ich habe mich darauf spezialisiert, Menschen aller Fitnesslevel dabei zu helfen, durch präzise, kontrollierte Bewegungen einen starken, ausgeglichenen Körper aufzubauen — kein Fitnessstudio erforderlich, nur eine Matte und Engagement."
+        "body": "Ich bin zertifiziert und habe über 12 Jahre Erfahrung im Matten- und Reformer-Pilates. Ich habe mich darauf spezialisiert, Menschen aller Fitnesslevel dabei zu helfen, durch präzise, kontrollierte Bewegungen einen starken, ausgeglichenen Körper aufzubauen – kein Fitnessstudio erforderlich, nur eine Matte und Engagement."
       },
       "testimonials": {
         "heading": "Was Teilnehmer sagen",
@@ -361,7 +361,7 @@
           },
           {
             "q": "Kann ich mobil auf die Kurse zugreifen?",
-            "a": "Ja! Die Plattform ist voll responsiv. Du kannst Lektionen auf deinem Smartphone, Tablet oder Computer streamen — perfekt, um überall zu trainieren."
+            "a": "Ja! Die Plattform ist voll responsiv. Du kannst Lektionen auf deinem Smartphone, Tablet oder Computer streamen – perfekt, um überall zu trainieren."
           }
         ]
       },
@@ -387,23 +387,23 @@
         ]
       },
       "banner": {
-        "text": "Neue mattenbasierte Programme wurden gerade hinzugefügt — baue zu Hause Kraft auf.",
+        "text": "Neue mattenbasierte Programme wurden gerade hinzugefügt – baue zu Hause Kraft auf.",
         "linkText": "Programme durchstöbern"
       }
     },
     "fitness": {
       "hero": {
-        "heading": "Transformiere deinen Körper, hebe dein Leben auf ein neues Level",
-        "subheading": "Wissenschaftlich fundierte Programme, um Kraft aufzubauen, Fett zu verbrennen und dein Selbstvertrauen zu stärken — trainiere überall mit von Experten geleiteten Video-Workouts.",
+        "heading": "Verwandle deinen Körper, hebe dein Leben auf ein neues Level",
+        "subheading": "Wissenschaftlich fundierte Programme, um Kraft aufzubauen, Fett zu verbrennen und dein Selbstvertrauen zu stärken – trainiere überall mit von Profis geleiteten Video-Workouts.",
         "ctaText": "Programme durchstöbern"
       },
       "richText": {
         "heading": "Trainiere klüger, nicht härter",
-        "body": "Jedes Programm basiert auf bewährten Prinzipien — funktionelles Training, HIIT und eine intelligente Kraftprogression. Folge klaren Erklärungen zur richtigen Ausführung und mache Ergebnisse auf Profi-Niveau zugänglich, kein Fitnessstudio erforderlich."
+        "body": "Jedes Programm basiert auf bewährten Prinzipien – funktionelles Training, HIIT und eine intelligente Kraftprogression. Folge klaren Erklärungen zur richtigen Ausführung und mache Ergebnisse auf Profi-Niveau zugänglich, kein Fitnessstudio erforderlich."
       },
       "imageText": {
         "heading": "Über mich",
-        "body": "Mit Personal-Training-Zertifizierung, einem Abschluss in Sportwissenschaft und über 8 Jahren Coaching-Erfahrung. Ich habe mich auf funktionelles Training, HIIT und Krafttrainingsplanung für alle Fitnesslevel spezialisiert. Meine Mission ist es, Training auf Profi-Niveau für jeden zugänglich zu machen — kein Fitnessstudio erforderlich."
+        "body": "Ich bin zertifiziert im Personal Training, habe einen Abschluss in Sportwissenschaft und über 8 Jahre Coaching-Erfahrung. Ich habe mich auf funktionelles Training, HIIT und Krafttrainingsplanung für alle Fitnesslevel spezialisiert. Meine Mission ist es, Training auf Profi-Niveau für jeden zugänglich zu machen – kein Fitnessstudio erforderlich."
       },
       "testimonials": {
         "heading": "Was Teilnehmer sagen",
@@ -414,7 +414,7 @@
           },
           {
             "name": "Sarah L.",
-            "text": "Als vielbeschäftigte Mutter brauchte ich Workouts, die ich zu Hause machen konnte. Das HIIT Power Program passt perfekt in meinen Zeitplan — 30 Minuten, maximale Ergebnisse. Ich habe jetzt so viel mehr Energie!"
+            "text": "Als vielbeschäftigte Mutter brauchte ich Workouts, die ich zu Hause machen konnte. Das HIIT Power Program passt perfekt in meinen Zeitplan – 30 Minuten, maximale Ergebnisse. Ich habe jetzt so viel mehr Energie!"
           },
           {
             "name": "David K.",
@@ -427,15 +427,15 @@
         "items": [
           {
             "q": "Brauche ich Ausrüstung?",
-            "a": "Der Total Body Transformation-Kurs erfordert keinerlei Ausrüstung — nur dein eigenes Körpergewicht. Für die HIIT- und Kraftprogramme werden Kurzhanteln und ein Widerstandsband empfohlen, aber wir zeigen immer Alternativen mit dem eigenen Körpergewicht."
+            "a": "Der Total Body Transformation-Kurs erfordert keinerlei Ausrüstung – nur dein eigenes Körpergewicht. Für die HIIT- und Kraftprogramme werden Kurzhanteln und ein Widerstandsband empfohlen, aber wir zeigen immer Alternativen mit dem eigenen Körpergewicht."
           },
           {
-            "q": "Ich bin absoluter Anfänger — ist das etwas für mich?",
+            "q": "Ich bin absoluter Anfänger – ist das etwas für mich?",
             "a": "Absolut! Jedes Programm enthält Erklärungen zur Ausführung und Anfänger-Modifikationen für jede Übung. Starte mit dem kostenlosen Total Body Transformation-Kurs und mache Fortschritte in deinem eigenen Tempo."
           },
           {
             "q": "Kann ich auf meinem Smartphone auf die Workouts zugreifen?",
-            "a": "Ja! Die Plattform ist vollständig responsiv. Streame Lektionen auf deinem Smartphone, Tablet oder Computer — perfekt für das Training zu Hause, im Fitnessstudio oder auf Reisen."
+            "a": "Ja! Die Plattform ist vollständig responsiv. Streame Lektionen auf deinem Smartphone, Tablet oder Computer – perfekt für das Training zu Hause, im Fitnessstudio oder auf Reisen."
           }
         ]
       },
@@ -461,30 +461,30 @@
         ]
       },
       "banner": {
-        "text": "Neues HIIT-Programm gerade erschienen — trainiere überall und jederzeit.",
-        "linkText": "Programme durchsuchen"
+        "text": "Neues HIIT-Programm gerade erschienen – trainiere überall und jederzeit.",
+        "linkText": "Programme durchstöbern"
       }
     },
     "faceYoga": {
       "hero": {
         "heading": "Natürliche Schönheit durch Gesichtsyoga",
-        "subheading": "Straffe, lifte und verjünge dein Gesicht mit einfachen täglichen Übungen — keine Injektionen, keine Produkte, nur wenige Minuten am Tag.",
-        "ctaText": "Programme durchsuchen"
+        "subheading": "Straffe, lifte und verjünge dein Gesicht mit einfachen täglichen Übungen – keine Injektionen, keine Produkte, nur wenige Minuten am Tag.",
+        "ctaText": "Programme durchstöbern"
       },
       "richText": {
         "heading": "Wenige Minuten am Tag",
-        "body": "Bei der natürlichen Gesichtsverjüngung kommt es ganz auf Beständigkeit an. Diese kurzen, gezielten Routinen nutzen nur deine Hände und deine eigenen Muskeln — einfach genug, um in deinen Morgen zu passen, effektiv genug, um den Unterschied zu sehen und zu spüren."
+        "body": "Bei der natürlichen Gesichtsverjüngung kommt es ganz auf Beständigkeit an. Diese kurzen, gezielten Routinen nutzen nur deine Hände und deine eigenen Muskeln – einfach genug, um in deinen Morgen zu passen, effektiv genug, um den Unterschied zu sehen und zu spüren."
       },
       "imageText": {
         "heading": "Über mich",
-        "body": "Mit Gesichtsyoga-Zertifizierung, ganzheitlichem Wellness-Coaching und über 6 Jahren Erfahrung. Nachdem ich dramatische Ergebnisse an meiner eigenen Haut gesehen hatte, habe ich meine Karriere dem Unterrichten natürlicher Gesichtsverjüngungstechniken gewidmet, die jeder zu Hause anwenden kann."
+        "body": "Ich bin zertifiziert in Gesichtsyoga und ganzheitlichem Wellness-Coaching und habe über 6 Jahre Erfahrung. Nachdem ich dramatische Ergebnisse an meiner eigenen Haut gesehen hatte, habe ich meine Karriere dem Unterrichten natürlicher Gesichtsverjüngungstechniken gewidmet, die jeder zu Hause anwenden kann."
       },
       "testimonials": {
         "heading": "Was Teilnehmer sagen",
         "items": [
           {
             "name": "Sarah W.",
-            "text": "Nach nur drei Wochen des Basics-Kurses ist meine Kinnlinie spürbar definierter. Ich kann gar nicht glauben, dass etwas so Einfaches tatsächlich funktioniert!"
+            "text": "Nach nur drei Wochen im Basics-Kurs ist meine Kinnlinie spürbar definierter. Ich kann gar nicht glauben, dass etwas so Einfaches tatsächlich funktioniert!"
           },
           {
             "name": "Mei C.",
@@ -501,15 +501,15 @@
         "items": [
           {
             "q": "Wie schnell werde ich Ergebnisse sehen?",
-            "a": "Die meisten Teilnehmer bemerken subtile Veränderungen innerhalb von 2-3 Wochen täglicher Praxis. Deutlichere Lifting- und Straffungseffekte zeigen sich typischerweise nach 6-8 Wochen konsequenter Anwendung."
+            "a": "Die meisten Teilnehmer bemerken subtile Veränderungen innerhalb von 2–3 Wochen täglicher Praxis. Deutlichere Lifting- und Straffungseffekte zeigen sich typischerweise nach 6–8 Wochen konsequenter Anwendung."
           },
           {
             "q": "Brauche ich Ausrüstung?",
-            "a": "Überhaupt keine Ausrüstung! Alle Übungen nutzen deine eigenen Hände und Gesichtsmuskeln. Ein Spiegel ist hilfreich, damit du deine Haltung überprüfen kannst, aber das ist alles, was du brauchst."
+            "a": "Überhaupt keine Ausrüstung! Alle Übungen nutzen deine eigenen Hände und Gesichtsmuskeln. Ein Spiegel ist hilfreich, damit du deine Ausführung überprüfen kannst, aber das ist alles, was du brauchst."
           },
           {
             "q": "Kann ich mobil auf die Kurse zugreifen?",
-            "a": "Ja! Die Plattform ist vollständig responsiv. Du kannst Lektionen auf deinem Smartphone, Tablet oder Computer streamen — perfekt, um bei deiner Morgenroutine mitzumachen."
+            "a": "Ja! Die Plattform ist vollständig responsiv. Du kannst Lektionen auf deinem Smartphone, Tablet oder Computer streamen – perfekt, um bei deiner Morgenroutine mitzumachen."
           }
         ]
       },
@@ -535,23 +535,23 @@
         ]
       },
       "banner": {
-        "text": "Neue Anti-Aging-Routinen hinzugefügt — sieh Ergebnisse in wenigen Wochen.",
+        "text": "Neue Anti-Aging-Routinen hinzugefügt – sieh Ergebnisse in wenigen Wochen.",
         "linkText": "Programme durchstöbern"
       }
     },
     "bellyDance": {
       "hero": {
         "heading": "Entdecke die Kunst des Bauchtanzes",
-        "subheading": "Drücke dich durch die uralte Kunst des Bauchtanzes aus — werde Teil unserer Community von Tänzern und entfessle deinen inneren Rhythmus.",
+        "subheading": "Drücke dich durch die uralte Kunst des Bauchtanzes aus – werde Teil unserer Tanz-Community und entfessle deinen inneren Rhythmus.",
         "ctaText": "Programme durchstöbern"
       },
       "richText": {
         "heading": "Tanzen ist für alle da",
-        "body": "Keine Vorerfahrung nötig — nur ein offenes Herz und die Liebe zur Bewegung. Wir beginnen mit Körperhaltung und einfacher Hüftarbeit und bauen darauf ausdrucksstarke Kombinationen auf, damit du mit Selbstvertrauen und Freude tanzen kannst."
+        "body": "Keine Vorerfahrung nötig – nur ein offenes Herz und die Liebe zur Bewegung. Wir beginnen mit Körperhaltung und einfacher Hüftarbeit und bauen darauf ausdrucksstarke Kombinationen auf, damit du mit Selbstvertrauen und Freude tanzen kannst."
       },
       "imageText": {
         "heading": "Über mich",
-        "body": "Mit Leidenschaft unterrichte ich Bauchtanz seit über 10 Jahren — in Oriental, Tribal Fusion und Classical Egyptian. Ich glaube, Tanzen ist für alle da — keine Vorerfahrung nötig, nur ein offenes Herz und die Liebe zur Bewegung."
+        "body": "Mit Leidenschaft unterrichte ich Bauchtanz seit über 10 Jahren – in Oriental, Tribal Fusion und Classical Egyptian. Ich glaube, Tanzen ist für alle da – keine Vorerfahrung nötig, nur ein offenes Herz und die Liebe zur Bewegung."
       },
       "testimonials": {
         "heading": "Was Teilnehmer sagen",
@@ -583,7 +583,7 @@
           },
           {
             "q": "Kann ich mobil auf die Kurse zugreifen?",
-            "a": "Ja! Die Plattform ist vollständig responsiv. Du kannst Lektionen auf deinem Smartphone, Tablet oder Computer streamen — perfekt, um überall zu üben."
+            "a": "Ja! Die Plattform ist vollständig responsiv. Du kannst Lektionen auf deinem Smartphone, Tablet oder Computer streamen – perfekt, um überall zu üben."
           }
         ]
       },
@@ -609,23 +609,23 @@
         ]
       },
       "banner": {
-        "text": "Neuer Choreografie-Kurs gerade hinzugefügt — finde deinen Rhythmus.",
-        "linkText": "Programme durchsuchen"
+        "text": "Neuer Choreografie-Kurs gerade hinzugefügt – finde deinen Rhythmus.",
+        "linkText": "Programme durchstöbern"
       }
     },
     "poleDance": {
       "hero": {
         "heading": "Entfessle deine Kraft an der Pole",
-        "subheading": "Baue durch Pole Dance Selbstvertrauen, Kraft und Ausdruck auf — egal, ob du absoluter Anfänger bist oder fortgeschrittene Tricks meisterst.",
-        "ctaText": "Programme durchsuchen"
+        "subheading": "Baue durch Pole Dance Selbstvertrauen, Kraft und Ausdruck auf – egal, ob du absoluter Anfänger bist oder fortgeschrittene Tricks meisterst.",
+        "ctaText": "Programme durchstöbern"
       },
       "richText": {
-        "heading": "Jeder Tänzer fängt irgendwo an",
-        "body": "Keine turnerischen Vorkenntnisse erforderlich — nur der Mut, etwas Neues auszuprobieren. Detaillierte Progressionen bauen deine Kraft Schritt für Schritt auf, sodass sich selbst die beängstigenden Moves sicher und erreichbar anfühlen."
+        "heading": "Alle Tanzenden fangen irgendwo an",
+        "body": "Keine turnerischen Vorkenntnisse erforderlich – nur der Mut, etwas Neues auszuprobieren. Detaillierte Progressionen bauen deine Kraft Schritt für Schritt auf, sodass sich selbst die beängstigenden Moves sicher und erreichbar anfühlen."
       },
       "imageText": {
         "heading": "Über mich",
-        "body": "Mit Pole-Dance-Zertifizierung, Wettkampferfahrung und über 8 Jahren Unterrichtserfahrung. Meine Mission ist es, Pole Dance für alle Körpertypen und Fitnesslevel zugänglich zu machen — keine turnerischen Vorkenntnisse erforderlich, nur der Mut, etwas Neues auszuprobieren."
+        "body": "Ich bin zertifiziert im Pole Dance, trete bei Wettkämpfen an und habe über 8 Jahre Unterrichtserfahrung. Meine Mission ist es, Pole Dance für alle Körpertypen und Fitnesslevel zugänglich zu machen – keine turnerischen Vorkenntnisse erforderlich, nur der Mut, etwas Neues auszuprobieren."
       },
       "testimonials": {
         "heading": "Was Teilnehmer sagen",
@@ -657,7 +657,7 @@
           },
           {
             "q": "Kann ich mobil auf die Kurse zugreifen?",
-            "a": "Ja! Die Plattform ist vollständig responsiv. Du kannst Lektionen auf deinem Smartphone, Tablet oder Computer streamen — perfekt, um in deinem Trainingsbereich mitzumachen."
+            "a": "Ja! Die Plattform ist vollständig responsiv. Du kannst Lektionen auf deinem Smartphone, Tablet oder Computer streamen – perfekt, um in deinem Trainingsbereich mitzumachen."
           }
         ]
       },
@@ -683,23 +683,23 @@
         ]
       },
       "banner": {
-        "text": "Neuer Kurs für Anfänger-Spins gerade hinzugefügt — starte dort, wo du bist.",
-        "linkText": "Programme durchsuchen"
+        "text": "Neuer Kurs für Anfänger-Spins gerade hinzugefügt – starte dort, wo du bist.",
+        "linkText": "Programme durchstöbern"
       }
     },
     "makeup": {
       "hero": {
         "heading": "Meistere die Kunst des Make-ups",
-        "subheading": "Von Alltags-Glam bis zu redaktionellen Meisterwerken, lerne professionelle Make-up-Techniken bequem von zu Hause aus.",
+        "subheading": "Vom Alltags-Glam bis zu redaktionellen Meisterwerken: Lerne professionelle Make-up-Techniken bequem von zu Hause aus.",
         "ctaText": "Programme durchstöbern"
       },
       "richText": {
         "heading": "Vom Everyday Glam bis Editorial",
-        "body": "Lerne die Techniken, die Profis anwenden — makellose Grundierungen, nahtloses Verblenden und Looks, die halten. Klare Schritt-für-Schritt-Anleitungen machen selbst anspruchsvolle Editorial-Styles erreichbar, ganz egal, welches Kit du hast."
+        "body": "Lerne die Techniken, die Profis anwenden – makellose Grundierungen, nahtloses Verblenden und Looks, die halten. Klare Schritt-für-Schritt-Anleitungen machen selbst anspruchsvolle Editorial-Stile erreichbar, ganz egal, welches Kit du hast."
       },
       "imageText": {
         "heading": "Über mich",
-        "body": "Professioneller Make-up-Artist mit über 12 Jahren Erfahrung in Braut-, Editorial- und Fashion-Make-up. Ich habe backstage bei Fashion Weeks und mit prominenten Kunden gearbeitet und teile meine Techniken nun mit Leidenschaft mit aufstrebenden Artists auf der ganzen Welt."
+        "body": "Professionelle Make-up-Artistin mit über 12 Jahren Erfahrung in Braut-, Editorial- und Fashion-Make-up. Ich habe backstage bei Fashion Weeks und mit Prominenten gearbeitet und teile meine Techniken nun mit Leidenschaft mit aufstrebenden Artists auf der ganzen Welt."
       },
       "testimonials": {
         "heading": "Was Teilnehmer sagen",
@@ -731,7 +731,7 @@
           },
           {
             "q": "Kann ich mobil auf die Kurse zugreifen?",
-            "a": "Ja! Die Plattform ist vollständig responsive. Du kannst Lektionen auf deinem Smartphone, Tablet oder Computer streamen — perfekt, um direkt an deinem Schminktisch mitzumachen."
+            "a": "Ja! Die Plattform ist vollständig responsiv. Du kannst Lektionen auf deinem Smartphone, Tablet oder Computer streamen – perfekt, um direkt an deinem Schminktisch mitzumachen."
           }
         ]
       },
@@ -757,7 +757,7 @@
         ]
       },
       "banner": {
-        "text": "Neue Braut-Make-up-Masterclass hinzugefügt — sichere dir deinen Platz.",
+        "text": "Neue Braut-Make-up-Masterclass hinzugefügt – sichere dir deinen Platz.",
         "linkText": "Programme durchstöbern"
       }
     }
@@ -826,7 +826,7 @@
     },
     "aboutFounder": {
       "richText": {
-        "heading": "Über mich",
+        "heading": "Über uns",
         "body": "Stelle dich und deine Mission in wenigen Sätzen vor."
       },
       "imageText": {
@@ -848,19 +848,19 @@
     },
     "pricingPlansFaq": {
       "pricingPlans": {
-        "heading": "Tarife & Preise",
-        "subheading": "Wähle einen Tarif, der zu deinen Zielen passt."
+        "heading": "Mitgliedschaften & Preise",
+        "subheading": "Wähle die Mitgliedschaft, die zu deinen Zielen passt."
       },
       "faq": {
         "heading": "Häufig gestellte Fragen",
         "items": [
           {
             "q": "Kann ich jederzeit kündigen?",
-            "a": "Ja — dein Tarif bleibt bis zum Ende des Zeitraums aktiv."
+            "a": "Ja – deine Mitgliedschaft bleibt bis zum Ende des Zeitraums aktiv."
           },
           {
-            "q": "Bietest du Rückerstattungen an?",
-            "a": "Melde dich innerhalb von 14 Tagen und wir finden eine Lösung."
+            "q": "Bietest du Erstattungen an?",
+            "a": "Melde dich innerhalb von 14 Tagen, dann finden wir eine Lösung."
           }
         ]
       }

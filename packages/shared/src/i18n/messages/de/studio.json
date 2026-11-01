@@ -87,7 +87,7 @@
     "buyNote": "Ein Kauf behält diese Bedingungen bei. Spätere Änderungen betreffen nur neue Käufer.",
     "plansTitle": "In Abonnements",
     "plansSub": "Mitglieder der Abonnements, die du anhakst, erhalten es als Teil ihres Beitrags.",
-    "ownerOnly": "Nur der Website-Inhaber kann ändern, welche Abonnements dies beinhalten.",
+    "ownerOnly": "Nur wer die Website besitzt, kann ändern, welche Abonnements dies beinhalten.",
     "offSale": "Nicht im Verkauf",
     "membersGet": "Mitglieder erhalten es",
     "planNote": "Dies gilt auch für aktuelle Mitglieder von {name}, einschließlich derer, die es bereits haben.",
@@ -205,7 +205,7 @@
     "loadFailed": "Inhalte konnten nicht geladen werden.",
     "series": "{title} · {count, plural, one {# Session} other {# Sessions}}",
     "remove": "{title} entfernen",
-    "search": "Inhalte suchen...",
+    "search": "Inhalte durchsuchen…",
     "none": "Keine Inhalte gefunden.",
     "membersOnly": "Nur für Mitglieder",
     "types": {
@@ -219,7 +219,7 @@
   },
   "logo": {
     "palette": {
-      "theme": "Dein Theme",
+      "theme": "Dein Farbschema",
       "ink": "Tinte",
       "slate": "Schiefer",
       "forest": "Wald",
@@ -228,13 +228,13 @@
       "violet": "Violett",
       "amber": "Bernstein",
       "ocean-fade": "Ozean-Verlauf",
-      "sunset-fade": "Sonnenuntergang-Verlauf",
+      "sunset-fade": "Sonnenuntergangs-Verlauf",
       "mint-fade": "Minz-Verlauf",
       "berry-fade": "Beeren-Verlauf",
       "midnight-fade": "Mitternachts-Verlauf",
       "gold-fade": "Gold-Verlauf",
       "sage": "Salbei",
-      "clay": "Ton",
+      "clay": "Lehm",
       "sky": "Himmel",
       "plum": "Pflaume",
       "sand": "Sand",
@@ -263,7 +263,7 @@
     }
   },
   "mailbox": {
-    "attachmentTooLarge": "— zu groß, bitte den Absender, die Datei auf anderem Weg zu teilen",
+    "attachmentTooLarge": "– zu groß, bitte den Absender, die Datei auf anderem Weg zu teilen",
     "compose": {
       "addRecipient": "Füge zuerst einen Empfänger hinzu.",
       "sent": "Nachricht gesendet.",
@@ -411,7 +411,7 @@
       "allCount": "Alle ({count})",
       "yes": "Ja",
       "no": "Nein",
-      "loadingMore": "Weitere werden geladen...",
+      "loadingMore": "Weitere werden geladen…",
       "selected": "{count} ausgewählt",
       "count": "{count, plural, one {# {singular}} other {# {plural}}}",
       "done": "Fertig.",
@@ -435,13 +435,13 @@
         "spacer": "Abstand",
         "columns": "Spalten",
         "profiles": "Profile",
-        "hero": "Hero-Bereich",
+        "hero": "Hero",
         "card": "Karte",
         "items": "Elemente",
         "profile": "Profil",
-        "brandHeader": "Marken-Header",
-        "brandFooter": "Marken-Footer",
-        "featuredItem": "Hervorgehobenes Element"
+        "brandHeader": "Marken-Kopfzeile",
+        "brandFooter": "Marken-Fußzeile",
+        "featuredItem": "Hervorgehobener Inhalt"
       },
       "field": {
         "size": "Größe",
@@ -535,7 +535,7 @@
       "hint": {
         "altTextHint": "Wird von Screenreadern vorgelesen und angezeigt, wenn Bilder deaktiviert sind.",
         "customHtml": "Dieser Block stammt aus einer importierten Vorlage. Er wird unverändert versendet und kann verschoben oder gelöscht, aber nicht bearbeitet werden.",
-        "text": "Schreib direkt in die E-Mail. Markiere Wörter, um sie fett, zu einem Link oder zu einer Liste zu machen; @ fügt den Vornamen des Lesers ein.",
+        "text": "Schreib direkt in die E-Mail. Markiere Wörter, um sie fett, zu einem Link oder zu einer Liste zu machen; @ fügt den Vornamen der lesenden Person ein.",
         "brandHeader": "Dein Logo und dein Name stammen aus deiner Marke, daher wird jede E-Mail aktualisiert, wenn sie sich ändern.",
         "brandFooter": "Dein Name, deine Website und deine Profile stammen aus deiner Marke. Der Link zum Abbestellen ist immer enthalten.",
         "addressMissing": "Füge deine Adresse in deinen Kontaktdaten hinzu, dann erscheint sie hier.",
@@ -607,7 +607,7 @@
         "plan": "Mitgliedschaft",
         "page": "Seite",
         "subscription": "Mitgliedschaft",
-        "blogPost": "Beitrag"
+        "blogPost": "Blogbeitrag"
       }
     },
     "controls": {
@@ -691,25 +691,25 @@
       "spacer": "Abstand",
       "columns": "Spalten",
       "social": "Social-Media-Links",
-      "hero": "Hero-Bereich",
+      "hero": "Hero",
       "card": "Karte",
       "list": "Liste",
       "profile": "Profil",
       "html": "Eigenes HTML",
-      "brandHeader": "Marken-Header",
-      "brandFooter": "Marken-Footer",
+      "brandHeader": "Marken-Kopfzeile",
+      "brandFooter": "Marken-Fußzeile",
       "item": "Hervorgehobener Inhalt"
     },
     "canvas": {
       "region": {
-        "header": "Header",
+        "header": "Kopfzeile",
         "body": "Inhalt",
-        "footer": "Footer"
+        "footer": "Fußzeile"
       },
       "empty": {
-        "header": "Dein Header: Leg den Marken-Header (Logo) hier ab",
+        "header": "Deine Kopfzeile: Leg die Marken-Kopfzeile (Logo) hier ab",
         "body": "Zieh Blöcke hierher oder klick im Bereich „Hinzufügen“ auf einen",
-        "footer": "Dein Footer: Leg den Marken-Footer hier ab",
+        "footer": "Deine Fußzeile: Leg die Marken-Fußzeile hier ab",
         "column": "Spalte {number}: Leg einen Block ab"
       },
       "toolbar": {
@@ -732,7 +732,7 @@
       "spacer": "Abstand",
       "socialEmpty": "Füge deine Social-Media-Profile in den Einstellungen hinzu",
       "htmlNote": "Eigenes HTML (aus einer importierten Vorlage). Es wird unverändert versendet und kann hier nicht bearbeitet werden.",
-      "itemGone": "Dieses Element ist nicht mehr verfügbar. Wähle etwas anderes zum Hervorheben aus.",
+      "itemGone": "Dieser Inhalt ist nicht mehr verfügbar. Wähle etwas anderes zum Hervorheben aus.",
       "itemPick": "Wähle etwas zum Hervorheben aus",
       "itemChoose": "Auswählen…",
       "headline": "Schlagzeile",

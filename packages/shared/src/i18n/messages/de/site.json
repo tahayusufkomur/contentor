@@ -39,8 +39,8 @@
       "text": "Veröffentliche einen Kurs und er erscheint hier automatisch."
     },
     "plans": {
-      "title": "Noch keine Mitgliedschaftstarife",
-      "text": "Erstelle unter Abrechnung einen Tarif und er erscheint hier."
+      "title": "Noch keine Mitgliedschaften",
+      "text": "Erstelle unter Abrechnung eine Mitgliedschaft und sie erscheint hier."
     },
     "sessions": {
       "title": "Keine anstehenden Sessions",
@@ -94,7 +94,7 @@
     "owned": "Erworben",
     "includedInMembership": "In der Mitgliedschaft enthalten",
     "buyFor": "Für {price} kaufen",
-    "includedInSubscription": "Im Abo enthalten",
+    "includedInSubscription": "Im Abonnement enthalten",
     "paid": "Kostenpflichtig"
   },
   "event": {
@@ -110,7 +110,7 @@
     "subscribed": "Abonniert",
     "items": "{count, plural, one {# Inhalt} other {# Inhalte}}",
     "itemsIncluded": "{count, plural, one {# Inhalt enthalten} other {# Inhalte enthalten}}",
-    "seeIncluded": "Ansehen, was enthalten ist",
+    "seeIncluded": "Sieh dir an, was enthalten ist",
     "whatsIncluded": "Das ist enthalten",
     "includes": "Enthält",
     "about": "Info",
@@ -118,22 +118,22 @@
     "perYear": "/Jahr",
     "perYears": "{count, plural, one {/# Jahr} other {/# Jahre}}",
     "perMonths": "{count, plural, one {/# Monat} other {/# Monate}}",
-    "notFound": "Tarif nicht gefunden",
-    "notFoundText": "Diesen Tarif gibt es nicht oder er ist nicht mehr verfügbar.",
-    "allPlans": "Alle Tarife",
+    "notFound": "Mitgliedschaft nicht gefunden",
+    "notFoundText": "Diese Mitgliedschaft gibt es nicht oder sie ist nicht mehr verfügbar.",
+    "allPlans": "Alle Mitgliedschaften",
     "whatsIncludedHeading": "Was enthalten ist",
-    "noItems": "Zu diesem Tarif wurden noch keine Inhalte hinzugefügt.",
-    "loginToSubscribe": "Du musst dich anmelden, um ein Abo abzuschließen",
-    "subscriptionFailed": "Abo fehlgeschlagen.",
+    "noItems": "Dieser Mitgliedschaft wurden noch keine Inhalte hinzugefügt.",
+    "loginToSubscribe": "Du musst dich anmelden, um zu abonnieren",
+    "subscriptionFailed": "Abonnement fehlgeschlagen.",
     "bestValue": "Bestes Angebot",
     "viewIncluded": "Enthaltene Inhalte ansehen",
     "subscribedTo": "{plan} abonniert!",
-    "subscribeFor": "Abonnieren — {price}"
+    "subscribeFor": "Abonnieren – {price}"
   },
   "table": {
     "lessons": "Lektionen",
     "price": "Preis",
-    "plan": "Tarif",
+    "plan": "Mitgliedschaft",
     "when": "Wann",
     "session": "Session",
     "where": "Wo",
@@ -166,15 +166,15 @@
     "pauseVideo": "Video pausieren",
     "clipLabel": "Ein kurzer Clip",
     "noClipTitle": "Noch kein Clip",
-    "noClipText": "Wähle links im Bereich einen Clip aus.",
-    "linkNoLoopTitle": "Dieser Link kann nicht in Schleife laufen",
-    "linkNoLoopText": "Ein Seitenlink (YouTube, Vimeo) kann hier nicht abgespielt werden. Wähle einen Clip aus deiner Mediathek oder verlinke eine Videodatei."
+    "noClipText": "Wähle im Bereich links einen Clip aus.",
+    "linkNoLoopTitle": "Dieser Link lässt sich nicht in Schleife abspielen",
+    "linkNoLoopText": "Der Link zu einer Videoseite (YouTube, Vimeo) kann hier nicht abgespielt werden. Wähle einen Clip aus deiner Mediathek oder verlinke eine Videodatei."
   },
   "kinetic": {
     "emptyCoursesText": "Veröffentliche einen Kurs, dann erscheint er hier als Posterkarte.",
     "emptyEventsTitle": "Keine anstehenden Live-Sessions",
     "emptyEventsText": "Plane eine Live-Session oder Veranstaltung, dann erscheint sie hier im Zeitplan.",
-    "emptyPlansText": "Erstelle unter „Abrechnung“ einen Abo-Tarif, dann erscheint er hier als Ticket."
+    "emptyPlansText": "Erstelle unter „Abrechnung“ eine Mitgliedschaft, dann erscheint sie hier als Ticket."
   },
   "dojo": {
     "sectionBenefits": "Disziplinen",
@@ -184,7 +184,7 @@
     "sectionPath": "Der Weg",
     "sectionMoments": "Trainingsmomente",
     "sectionPricing": "Mitgliedsbeiträge",
-    "sectionStory": "Linie",
+    "sectionStory": "Tradition",
     "sectionCta": "Tritt dem Dojo bei",
     "discipline": "Disziplin {number}",
     "location": "Dojo-Standort",
@@ -244,7 +244,7 @@
     "response": "Antwort",
     "correspondence": "Korrespondenz",
     "dearReader": "Liebe Leserin, lieber Leser,",
-    "particulars": "P.S. — Einzelheiten",
+    "particulars": "P.S. – Einzelheiten",
     "replyByLetter": "Per Brief antworten",
     "tableOfContents": "Inhaltsverzeichnis",
     "emptyCoursesText": "Veröffentliche einen Kurs und er erscheint automatisch im Inhaltsverzeichnis.",
@@ -261,8 +261,8 @@
     "subscriptions": "Abonnements",
     "orderOfSubscription": "Abonnementübersicht",
     "subscriptionTerms": "Abonnementbedingungen ansehen",
-    "emptyPlansTitle": "Noch keine Abo-Tarife",
-    "emptyPlansText": "Erstelle unter „Abrechnung“ einen Mitgliedschaftstarif und er erscheint automatisch hier.",
+    "emptyPlansTitle": "Noch keine Mitgliedschaften",
+    "emptyPlansText": "Erstelle unter „Abrechnung“ eine Mitgliedschaft und sie erscheint automatisch hier.",
     "preface": "Vorwort",
     "chapter": "Kapitel {number}",
     "chapterColon": "Kapitel {number}:",
@@ -283,8 +283,8 @@
     "emptyEventsText": "Plane eine Präsenz- oder Online-Session, dann erscheint sie hier.",
     "seeFullCalendar": "Ganzen Kalender ansehen",
     "frequentlyAsked": "Häufig gestellte Fragen",
-    "emptyPlansTitle": "Noch keine Pässe oder Tarife",
-    "emptyPlansText": "Erstelle unter Abrechnung einen Mitgliedschafts- oder Ticket-Tarif, dann wird er hier angezeigt.",
+    "emptyPlansTitle": "Noch keine Pässe oder Mitgliedschaften",
+    "emptyPlansText": "Erstelle unter Abrechnung Mitgliedschaften oder Ticket-Angebote, dann erscheinen sie hier.",
     "aboutMe": "Über mich",
     "activitiesIncluded": "{count, plural, one {# Aktivität enthalten} other {# Aktivitäten enthalten}}"
   },
@@ -303,7 +303,7 @@
     "fullStudioCalendar": "Kompletter Studio-Kalender",
     "allKitMaterials": "Alle Kit-Materialien ansehen",
     "emptyPlansTitle": "Noch keine Mitgliedschafts-Kits",
-    "emptyPlansText": "Erstelle unter Abrechnung einen Tarif, dann erscheint er hier als Workshop-Kit.",
+    "emptyPlansText": "Erstelle unter Abrechnung eine Mitgliedschaft, dann erscheint sie hier als Workshop-Kit.",
     "signature": "Deine Unterschrift (Name)",
     "projectsIncluded": "{count, plural, one {# Projekt enthalten} other {# Projekte enthalten}}",
     "kitNumber": "Kit #{number}",
@@ -339,15 +339,15 @@
     "emptyEventsText": "Plane eine Live-Masterclass oder einen Workshop, dann erscheint sie hier.",
     "viewFullCalendar": "Ganzen Kalender ansehen",
     "consultation": "Beratung",
-    "bookSession": "Sitzung buchen",
+    "bookSession": "Session buchen",
     "learnMore": "Mehr erfahren",
     "studioLocationFormat": "Studio-Standort oder Format",
     "routine": "Routine",
     "lookbook": "Lookbook",
-    "momentsLookbook": "Momente-Lookbook",
+    "momentsLookbook": "Lookbook der Momente",
     "membership": "Mitgliedschaft",
     "seeDetails": "Details ansehen",
-    "emptyPlansText": "Erstelle unter Abrechnung einen Tarif, dann erscheint er hier im Menü.",
+    "emptyPlansText": "Erstelle unter Abrechnung eine Mitgliedschaft, dann erscheint sie hier im Menü.",
     "story": "Geschichte",
     "readMore": "Weiterlesen",
     "ritualsCount": "{count, plural, one {# Ritual} other {# Rituale}}",
@@ -374,7 +374,7 @@
     "initiated": "Eingeweiht",
     "sacredPrivileges": "Heilige Privilegien",
     "emptyPlansTitle": "Noch keine Stufen",
-    "emptyPlansText": "Erstelle einen Tarif unter Abrechnung und er erscheint hier als heilige Stufe.",
+    "emptyPlansText": "Erstelle unter Abrechnung eine Mitgliedschaft und sie erscheint hier als heilige Stufe.",
     "originStory": "Ursprungsgeschichte",
     "explorePaths": "Alle Pfade entdecken",
     "fullGatheringCalendar": "Vollständiger Kalender der Zusammenkünfte",
@@ -392,7 +392,7 @@
     "seeTheCalendar": "Zum Kalender",
     "emptyEventsText": "Plane eine Live-Session und sie erscheint hier automatisch.",
     "billed": "Abrechnung",
-    "emptyPlansText": "Erstelle einen Tarif unter Abrechnung und er erscheint hier automatisch.",
+    "emptyPlansText": "Erstelle unter Abrechnung eine Mitgliedschaft, dann erscheint sie hier automatisch.",
     "everyMonth": "Jeden Monat",
     "everyYear": "Jedes Jahr",
     "everyYears": "{count, plural, one {Jedes Jahr} other {Alle # Jahre}}",
@@ -401,7 +401,7 @@
   "trail": {
     "basecamp": "Basislager",
     "join": "Beitreten",
-    "itemsIncluded": "{count, plural, one {Element enthalten} other {Elemente enthalten}}",
+    "itemsIncluded": "{count, plural, one {Inhalt enthalten} other {Inhalte enthalten}}",
     "allRoutes": "Alle Routen",
     "allMeetups": "Alle Treffen"
   },
@@ -411,7 +411,7 @@
     "sessionHours": "Session-Zeiten",
     "emptyCoursesText": "Veröffentliche einen Kurs und er wird automatisch in diese Liste aufgenommen.",
     "emptyEventsText": "Plane eine Live-Studio-Session oder einen Workshop und er erscheint hier.",
-    "momentsReel": "Momente-Reel",
+    "momentsReel": "Reel der Momente",
     "seeIncludedSessions": "Enthaltene Sessions ansehen",
     "emptyPlansText": "Erstelle einen Pass unter Abrechnung und er erscheint hier automatisch.",
     "sessionsIncluded": "{count, plural, one {# Kurs/Session enthalten} other {# Kurse/Sessions enthalten}}",
@@ -435,8 +435,8 @@
     "emptyCoursesText": "Veröffentlichte Kurse erscheinen hier automatisch.",
     "emptyEventsTitle": "Keine anstehenden Veranstaltungen",
     "emptyEventsText": "Geplante Live-Sessions erscheinen hier automatisch.",
-    "emptyPlansTitle": "Noch keine Tarife",
-    "emptyPlansText": "Erstelle einen Mitgliedschaftstarif, dann erscheint er hier."
+    "emptyPlansTitle": "Noch keine Mitgliedschaften",
+    "emptyPlansText": "Erstelle eine Mitgliedschaft, dann erscheint sie hier."
   },
   "primer": {
     "byTheEnd": "Am Ende kannst du",
@@ -444,13 +444,13 @@
   },
   "terminal": {
     "emptyEventsTitle": "Keine anstehenden Veranstaltungen geplant",
-    "emptyPlansText": "Erstelle unter Abrechnung einen Tarif, dann erscheint er hier automatisch.",
+    "emptyPlansText": "Erstelle unter Abrechnung eine Mitgliedschaft, dann erscheint sie hier automatisch.",
     "open": "offen"
   },
   "catalog": {
     "paid": "Kostenpflichtig",
     "myCourses": "Meine Kurse",
-    "searchCourses": "Kurse durchsuchen...",
+    "searchCourses": "Kurse durchsuchen…",
     "noCourses": "Keine Kurse gefunden",
     "adjustSearch": "Versuche, deine Suche oder Filter anzupassen.",
     "noneYet": "Noch keine Kurse verfügbar. Schau bald wieder vorbei!"
@@ -468,16 +468,16 @@
     "enrolling": "Wird eingeschrieben…",
     "free": "Kostenlos einschreiben",
     "addToCart": "In den Warenkorb",
-    "orBundle": "Oder hol es dir im Paket",
-    "orSubscribe": "Oder abonniere für Zugang",
-    "viewAllPlans": "Alle Tarife ansehen",
+    "orBundle": "Oder hol es dir im Bundle",
+    "orSubscribe": "Oder abonniere und bekomme Zugang",
+    "viewAllPlans": "Alle Mitgliedschaften ansehen",
     "comingSoon": "Demnächst verfügbar",
     "subscribed": "Abonniert! Du hast jetzt Zugang."
   },
   "eventType": {
     "liveSession": "Live-Session",
     "liveStream": "Livestream",
-    "onsiteEvent": "Vor-Ort-Veranstaltung",
+    "onsiteEvent": "Präsenzveranstaltung",
     "inPersonEvent": "Präsenzveranstaltung"
   },
   "eventKind": {
@@ -513,7 +513,7 @@
     "signInToJoin": "Zum Teilnehmen anmelden",
     "freeSignIn": "Diese Veranstaltung ist kostenlos. Melde dich an, um teilzunehmen.",
     "membersSignIn": "Diese Veranstaltung ist für Mitglieder. Melde dich an, um teilzunehmen.",
-    "purchaseSignIn": "Melde dich an, um Zugang zu kaufen oder ein Abo abzuschließen.",
+    "purchaseSignIn": "Melde dich an, um Zugang zu kaufen oder zu abonnieren.",
     "canAttend": "Du kannst an dieser Veranstaltung teilnehmen.",
     "canAttendAddress": "Du kannst an dieser Veranstaltung teilnehmen. Die Adresse findest du in den Details.",
     "joinNow": "Jetzt teilnehmen",
@@ -535,12 +535,12 @@
     "faq": "FAQ",
     "contact": "Kontakt",
     "events": "Veranstaltungen",
-    "plans": "Tarife",
+    "plans": "Mitgliedschaften",
     "blog": "Blog",
     "community": "Community",
     "calendar": "Kalender",
-    "blogWithBrand": "Blog — {brand}",
-    "pricingOrPlans": "Preise / Tarife"
+    "blogWithBrand": "Blog – {brand}",
+    "pricingOrPlans": "Preise / Mitgliedschaften"
   },
   "duration": {
     "hoursMinutes": "{hours} Std. {minutes} Min.",
@@ -563,30 +563,30 @@
   },
   "itemType": {
     "download": "Download",
-    "bundle": "Paket",
+    "bundle": "Bundle",
     "event": "Veranstaltung"
   },
   "store": {
     "title": "Shop",
-    "text": "Stöbere in Kursen, Downloads, Live-Sessions und Paketen.",
-    "searchItems": "Angebote durchsuchen...",
-    "subscriptionPlans": "Abo-Tarife",
-    "noItems": "Keine Angebote gefunden",
+    "text": "Stöbere in Kursen, Downloads, Live-Sessions und Bundles.",
+    "searchItems": "Produkte durchsuchen…",
+    "subscriptionPlans": "Mitgliedschaften",
+    "noItems": "Keine Produkte gefunden",
     "noItemsText": "Passe deine Suche oder deinen Filter an, um zu finden, wonach du suchst.",
-    "loadFailed": "Shop-Angebote konnten nicht geladen werden",
+    "loadFailed": "Shop-Produkte konnten nicht geladen werden",
     "addedToCart": "„{title}“ zum Warenkorb hinzugefügt",
-    "subscribed": "Abonniert! Du hast jetzt Zugriff auf die Inhalte des Tarifs.",
-    "alreadySubscribed": "Du hast diesen Tarif bereits abonniert",
+    "subscribed": "Abonniert! Du hast jetzt Zugang zu den Inhalten der Mitgliedschaft.",
+    "alreadySubscribed": "Du hast diese Mitgliedschaft bereits abonniert",
     "filter": {
       "courses": "Kurse",
       "downloads": "Downloads",
       "liveSessions": "Live-Sessions",
       "liveStreams": "Livestreams",
       "inPersonEvents": "Präsenzveranstaltungen",
-      "bundles": "Pakete"
+      "bundles": "Bundles"
     },
     "browse": "Shop durchstöbern",
-    "addToCart": "In den Warenkorb — {price}"
+    "addToCart": "In den Warenkorb – {price}"
   },
   "nav": {
     "installApp": "App installieren",
@@ -601,12 +601,12 @@
     "pages": "Seiten",
     "follow": "Folgen",
     "loginToContinue": "Bitte melde dich an, um fortzufahren",
-    "getStarted": "Loslegen"
+    "getStarted": "Jetzt starten"
   },
   "blockEmpty": {
     "video": {
       "title": "Noch kein Video",
-      "text": "Füge links einen YouTube- oder Vimeo-Link ein oder wähle ein Video aus deiner Mediathek."
+      "text": "Füge links einen YouTube- oder Vimeo-Link ein oder wähle ein Video aus deiner Bibliothek."
     },
     "logos": {
       "title": "Noch keine Logos",
@@ -626,19 +626,19 @@
     },
     "store": {
       "title": "Deine Produkte erscheinen hier",
-      "text": "Füge einen Kurs, einen Download oder eine Session hinzu und er erscheint hier."
+      "text": "Füge einen Kurs, einen Download oder eine Session hinzu und es erscheint hier."
     },
     "testimonials": {
-      "title": "Noch keine Kundenstimmen",
-      "text": "Füge deine erste Kundenstimme über das Editor-Panel links hinzu."
+      "title": "Noch keine Erfahrungsberichte",
+      "text": "Füge deinen ersten Erfahrungsbericht über das Editor-Panel links hinzu."
     },
     "gallery": {
       "title": "Noch keine Bilder",
       "text": "Füge Bilder über das Editor-Panel links hinzu."
     },
     "plans": {
-      "title": "Keine Tarife verfügbar",
-      "text": "Derzeit sind keine Abo-Tarife verfügbar. Schau später noch einmal vorbei!"
+      "title": "Keine Mitgliedschaften verfügbar",
+      "text": "Derzeit sind keine Mitgliedschaften verfügbar. Schau später wieder vorbei!"
     },
     "page": "Diese Seite hat noch keinen Inhalt."
   },
@@ -662,7 +662,7 @@
     "video": "Video"
   },
   "checkout": {
-    "title": "Kasse",
+    "title": "Checkout",
     "andMore": "{title} und {count} weitere",
     "now": "Jetzt",
     "rightAfter": "Direkt danach",
@@ -679,18 +679,18 @@
   },
   "preview": {
     "comingSoon": "Demnächst verfügbar",
-    "paused": "Diese Seite macht gerade eine kurze Pause. Schau bald wieder vorbei.",
-    "launchingGated": "Diese Seite startet bald. Gib das Vorschau-Passwort ein, um einen Blick darauf zu werfen.",
-    "launching": "Diese Seite startet bald. Schau in Kürze wieder vorbei.",
+    "paused": "Diese Website macht gerade eine kurze Pause. Schau bald wieder vorbei.",
+    "launchingGated": "Diese Website startet bald. Gib das Vorschau-Passwort ein, um einen Blick darauf zu werfen.",
+    "launching": "Diese Website startet bald. Schau in Kürze wieder vorbei.",
     "field": "Vorschau-Passwort",
-    "incorrect": "Falsches Passwort. Versuch es noch einmal.",
+    "incorrect": "Falsches Passwort. Versuche es erneut.",
     "checking": "Wird geprüft…",
-    "enter": "Seite betreten",
-    "ownerLogin": "Inhaber der Seite? Melde dich an, um die Vorschau zu sehen"
+    "enter": "Website betreten",
+    "ownerLogin": "Gehört dir diese Website? Melde dich an, um die Vorschau zu sehen"
   },
   "headerCta": {
     "startCourse": "Kurs starten",
-    "bookSession": "Termin buchen",
+    "bookSession": "Session buchen",
     "join": "Beitreten",
     "getInTouch": "Kontakt aufnehmen"
   },
@@ -750,7 +750,7 @@
   },
   "unknownHost": {
     "title": "Website nicht gefunden",
-    "text": "Unter dieser Adresse gibt es keine Contentor-Website. Prüf den Link oder wende dich an den Inhaber der Website."
+    "text": "Unter dieser Adresse gibt es keine Contentor-Website. Prüfe den Link oder wende dich an die Betreiber der Website."
   },
   "email": {
     "defaults": {
@@ -772,7 +772,7 @@
       "profileBio": "Ein Satz über dich, in deinen eigenen Worten.",
       "profileBadge": "Creator",
       "quote": "„Ein Satz eines Teilnehmers, auf den du stolz bist.“",
-      "quoteBy": "— Name der Person",
+      "quoteBy": "– Name der Person",
       "itemButton": "Jetzt ansehen"
     },
     "unsubscribe": "Abbestellen"

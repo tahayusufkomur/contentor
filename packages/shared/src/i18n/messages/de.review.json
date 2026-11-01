@@ -1,4962 +1,4962 @@
 {
   "site.placeholder.heading": {
     "src": "a3089b7f",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.headline": {
     "src": "442250df",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.subheadline": {
     "src": "a3109be1",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.pageTitle": {
     "src": "015b7398",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.kicker": {
     "src": "4a31bf61",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.intro": {
     "src": "b4e6a310",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.text": {
     "src": "c3328c39",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.caption": {
     "src": "3428d97e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.label": {
     "src": "74341e3c",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.masthead": {
     "src": "8ff9880f",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.statement": {
     "src": "a72ca256",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.statementLine": {
     "src": "961e5e44",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.attribution": {
     "src": "a4d81396",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.yourName": {
     "src": "ab42293e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.creatorName": {
     "src": "43d7f3ec",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.buttonText": {
     "src": "2c1bff44",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.secondButton": {
     "src": "3066e7ed",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.linkText": {
     "src": "502f872d",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.smallLine": {
     "src": "7353041d",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.smallLineBadge": {
     "src": "6157b5cd",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.smallLineLocationLevel": {
     "src": "abca885e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.smallLineLocationFormat": {
     "src": "73d85d95",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.smallLineFormatAges": {
     "src": "0e347734",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.email": {
     "src": "e67b76aa",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.emailExample": {
     "src": "50e2b46e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.signature": {
     "src": "2f32be1d",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.clickToAddText": {
     "src": "bae5ec28",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.callToAction": {
     "src": "74291152",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.yourHeadline": {
     "src": "9f13632f",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.addSubheadline": {
     "src": "357b42db",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.announcement": {
     "src": "cf84a98d",
-    "reviewed": false
+    "reviewed": true
   },
   "site.placeholder.badge": {
     "src": "6d12c8ad",
-    "reviewed": false
+    "reviewed": true
   },
   "site.empty.courses.title": {
     "src": "90c6b12b",
-    "reviewed": false
+    "reviewed": true
   },
   "site.empty.courses.text": {
     "src": "7db8b939",
-    "reviewed": false
+    "reviewed": true
   },
   "site.empty.plans.title": {
     "src": "ffb66f2e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.empty.plans.text": {
     "src": "738d168d",
-    "reviewed": false
+    "reviewed": true
   },
   "site.empty.sessions.title": {
     "src": "a63be500",
-    "reviewed": false
+    "reviewed": true
   },
   "site.empty.sessions.text": {
     "src": "731a4e77",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sectionLabel.courses": {
     "src": "a16536d7",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sectionLabel.events": {
     "src": "c5497bca",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sectionLabel.pricing": {
     "src": "a0d9bbad",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sectionLabel.questions": {
     "src": "9a1fc173",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sectionLabel.moments": {
     "src": "ed0cbe45",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sectionLabel.photos": {
     "src": "c8b2e864",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sectionLabel.contact": {
     "src": "b37456c4",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sectionLabel.philosophy": {
     "src": "496e9438",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sectionLabel.benefits": {
     "src": "927f4067",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sectionLabel.howItWorks": {
     "src": "1dd6a17c",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sectionLabel.notes": {
     "src": "70440046",
-    "reviewed": false
+    "reviewed": true
   },
   "site.contact.email": {
     "src": "84add5b2",
-    "reviewed": false
+    "reviewed": true
   },
   "site.contact.studio": {
     "src": "5b23bd71",
-    "reviewed": false
+    "reviewed": true
   },
   "site.contact.office": {
     "src": "6c3a72ea",
-    "reviewed": false
+    "reviewed": true
   },
   "site.contact.location": {
     "src": "d219c681",
-    "reviewed": false
+    "reviewed": true
   },
   "site.contact.hours": {
     "src": "9e25a34e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.contact.name": {
     "src": "709a2322",
-    "reviewed": false
+    "reviewed": true
   },
   "site.contact.message": {
     "src": "68f4145f",
-    "reviewed": false
+    "reviewed": true
   },
   "site.contact.messagePlaceholder": {
     "src": "d9961547",
-    "reviewed": false
+    "reviewed": true
   },
   "site.contact.sending": {
     "src": "cf765512",
-    "reviewed": false
+    "reviewed": true
   },
   "site.contact.send": {
     "src": "c70a890d",
-    "reviewed": false
+    "reviewed": true
   },
   "site.contact.thanks": {
     "src": "dc064d35",
-    "reviewed": false
+    "reviewed": true
   },
   "site.contact.error": {
     "src": "9a3ea059",
-    "reviewed": false
+    "reviewed": true
   },
   "site.course.label": {
     "src": "d82b56ca",
-    "reviewed": false
+    "reviewed": true
   },
   "site.course.lessons": {
     "src": "21d81695",
-    "reviewed": false
+    "reviewed": true
   },
   "site.course.view": {
     "src": "3d9c195c",
-    "reviewed": false
+    "reviewed": true
   },
   "site.course.notFound": {
     "src": "8c75371c",
-    "reviewed": false
+    "reviewed": true
   },
   "site.course.notFoundText": {
     "src": "7b84828d",
-    "reviewed": false
+    "reviewed": true
   },
   "site.course.byInstructor": {
     "src": "e13a27df",
-    "reviewed": false
+    "reviewed": true
   },
   "site.course.totalDuration": {
     "src": "36a9b6c3",
-    "reviewed": false
+    "reviewed": true
   },
   "site.course.modules": {
     "src": "beb7f531",
-    "reviewed": false
+    "reviewed": true
   },
   "site.course.curriculum": {
     "src": "23364909",
-    "reviewed": false
+    "reviewed": true
   },
   "site.course.moduleTitle": {
     "src": "ce019b30",
-    "reviewed": false
+    "reviewed": true
   },
   "site.course.freePreview": {
     "src": "a63229f4",
-    "reviewed": false
+    "reviewed": true
   },
   "site.price.free": {
     "src": "75f52718",
-    "reviewed": false
+    "reviewed": true
   },
   "site.price.freeTrial": {
     "src": "22357ca6",
-    "reviewed": false
+    "reviewed": true
   },
   "site.price.membersOnly": {
     "src": "625ddbab",
-    "reviewed": false
+    "reviewed": true
   },
   "site.price.owned": {
     "src": "b62ff5cc",
-    "reviewed": false
+    "reviewed": true
   },
   "site.price.includedInMembership": {
     "src": "0d0052e7",
-    "reviewed": false
+    "reviewed": true
   },
   "site.price.buyFor": {
     "src": "b3ad4667",
-    "reviewed": false
+    "reviewed": true
   },
   "site.price.includedInSubscription": {
     "src": "4d101a78",
-    "reviewed": false
+    "reviewed": true
   },
   "site.price.paid": {
     "src": "dc9d4584",
-    "reviewed": false
+    "reviewed": true
   },
   "site.event.reserve": {
     "src": "187579e3",
-    "reviewed": false
+    "reviewed": true
   },
   "site.event.book": {
     "src": "f69f2330",
-    "reviewed": false
+    "reviewed": true
   },
   "site.event.inPerson": {
     "src": "fb95e850",
-    "reviewed": false
+    "reviewed": true
   },
   "site.event.onlineLive": {
     "src": "1ef6804c",
-    "reviewed": false
+    "reviewed": true
   },
   "site.event.reserveSpot": {
     "src": "f3825067",
-    "reviewed": false
+    "reviewed": true
   },
   "site.event.onlineLiveStream": {
     "src": "74e43c30",
-    "reviewed": false
+    "reviewed": true
   },
   "site.plan.subscribe": {
     "src": "d6981f74",
-    "reviewed": false
+    "reviewed": true
   },
   "site.plan.subscribed": {
     "src": "dd1242a8",
-    "reviewed": false
+    "reviewed": true
   },
   "site.plan.items": {
     "src": "f34cfa9c",
-    "reviewed": false
+    "reviewed": true
   },
   "site.plan.itemsIncluded": {
     "src": "41ca7e6c",
-    "reviewed": false
+    "reviewed": true
   },
   "site.plan.seeIncluded": {
     "src": "15e96563",
-    "reviewed": false
+    "reviewed": true
   },
   "site.plan.whatsIncluded": {
     "src": "0c0f4265",
-    "reviewed": false
+    "reviewed": true
   },
   "site.plan.includes": {
     "src": "db54974f",
-    "reviewed": false
+    "reviewed": true
   },
   "site.plan.about": {
     "src": "6b21fb79",
-    "reviewed": false
+    "reviewed": true
   },
   "site.plan.perMonth": {
     "src": "e9e0ceb5",
-    "reviewed": false
+    "reviewed": true
   },
   "site.plan.perYear": {
     "src": "22ed4564",
-    "reviewed": false
+    "reviewed": true
   },
   "site.plan.perYears": {
     "src": "cfca4b7c",
-    "reviewed": false
+    "reviewed": true
   },
   "site.plan.perMonths": {
     "src": "518a5dca",
-    "reviewed": false
+    "reviewed": true
   },
   "site.plan.notFound": {
     "src": "08a032b5",
-    "reviewed": false
+    "reviewed": true
   },
   "site.plan.notFoundText": {
     "src": "a184edd0",
-    "reviewed": false
+    "reviewed": true
   },
   "site.plan.allPlans": {
     "src": "34a5adb1",
-    "reviewed": false
+    "reviewed": true
   },
   "site.plan.whatsIncludedHeading": {
     "src": "2126f1e3",
-    "reviewed": false
+    "reviewed": true
   },
   "site.plan.noItems": {
     "src": "36a4d55d",
-    "reviewed": false
+    "reviewed": true
   },
   "site.plan.loginToSubscribe": {
     "src": "fda0b37e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.plan.subscriptionFailed": {
     "src": "02f076be",
-    "reviewed": false
+    "reviewed": true
   },
   "site.plan.bestValue": {
     "src": "ca89f1f7",
-    "reviewed": false
+    "reviewed": true
   },
   "site.plan.viewIncluded": {
     "src": "9b11f6da",
-    "reviewed": false
+    "reviewed": true
   },
   "site.plan.subscribedTo": {
     "src": "50a826c2",
-    "reviewed": false
+    "reviewed": true
   },
   "site.plan.subscribeFor": {
     "src": "bf8f607e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.table.lessons": {
     "src": "cb9ce97b",
-    "reviewed": false
+    "reviewed": true
   },
   "site.table.price": {
     "src": "3e8248e3",
-    "reviewed": false
+    "reviewed": true
   },
   "site.table.plan": {
     "src": "ae2f98a0",
-    "reviewed": false
+    "reviewed": true
   },
   "site.table.when": {
     "src": "769bb19e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.table.session": {
     "src": "f7f1997c",
-    "reviewed": false
+    "reviewed": true
   },
   "site.table.where": {
     "src": "525f61b6",
-    "reviewed": false
+    "reviewed": true
   },
   "site.table.fee": {
     "src": "c6e89c9c",
-    "reviewed": false
+    "reviewed": true
   },
   "site.table.date": {
     "src": "eb9a4bc1",
-    "reviewed": false
+    "reviewed": true
   },
   "site.cta.allCourses": {
     "src": "3664267e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.cta.fullCalendar": {
     "src": "e355219e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.cta.begin": {
     "src": "c3651ab2",
-    "reviewed": false
+    "reviewed": true
   },
   "site.step.label": {
     "src": "4dc54f80",
-    "reviewed": false
+    "reviewed": true
   },
   "site.step.labelColon": {
     "src": "2ec6d40d",
-    "reviewed": false
+    "reviewed": true
   },
   "site.rows.emptyCoursesText": {
     "src": "e4bdee8c",
-    "reviewed": false
+    "reviewed": true
   },
   "site.rows.emptyEventsTitle": {
     "src": "bcb0d132",
-    "reviewed": false
+    "reviewed": true
   },
   "site.rows.emptyEventsText": {
     "src": "c70e687b",
-    "reviewed": false
+    "reviewed": true
   },
   "site.rows.moreCourses": {
     "src": "91afcd4c",
-    "reviewed": false
+    "reviewed": true
   },
   "site.rows.comingUp": {
     "src": "f582e20e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.rows.startCourse": {
     "src": "4ee83113",
-    "reviewed": false
+    "reviewed": true
   },
   "site.rows.saveSpot": {
     "src": "b8d5fb19",
-    "reviewed": false
+    "reviewed": true
   },
   "site.neutral.proofEmptyTitle": {
     "src": "95f8d609",
-    "reviewed": false
+    "reviewed": true
   },
   "site.neutral.proofEmptyText": {
     "src": "d2fb87e1",
-    "reviewed": false
+    "reviewed": true
   },
   "site.neutral.inThePress": {
     "src": "1afbd031",
-    "reviewed": false
+    "reviewed": true
   },
   "site.neutral.playVideo": {
     "src": "4ef474a5",
-    "reviewed": false
+    "reviewed": true
   },
   "site.neutral.pauseVideo": {
     "src": "386beace",
-    "reviewed": false
+    "reviewed": true
   },
   "site.neutral.clipLabel": {
     "src": "0be610e5",
-    "reviewed": false
+    "reviewed": true
   },
   "site.neutral.noClipTitle": {
     "src": "d96b5217",
-    "reviewed": false
+    "reviewed": true
   },
   "site.neutral.noClipText": {
     "src": "2baad556",
-    "reviewed": false
+    "reviewed": true
   },
   "site.neutral.linkNoLoopTitle": {
     "src": "80111524",
-    "reviewed": false
+    "reviewed": true
   },
   "site.neutral.linkNoLoopText": {
     "src": "5db790bc",
-    "reviewed": false
+    "reviewed": true
   },
   "site.kinetic.emptyCoursesText": {
     "src": "53d2d2ba",
-    "reviewed": false
+    "reviewed": true
   },
   "site.kinetic.emptyEventsTitle": {
     "src": "2a72cc65",
-    "reviewed": false
+    "reviewed": true
   },
   "site.kinetic.emptyEventsText": {
     "src": "c5567407",
-    "reviewed": false
+    "reviewed": true
   },
   "site.kinetic.emptyPlansText": {
     "src": "f8e8141c",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.sectionBenefits": {
     "src": "3ed4ae57",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.sectionContact": {
     "src": "707da09e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.sectionEvents": {
     "src": "d227d551",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.sectionFaq": {
     "src": "fbd8a5f2",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.sectionPath": {
     "src": "ce59c636",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.sectionMoments": {
     "src": "e8a60384",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.sectionPricing": {
     "src": "8ef2ba2b",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.sectionStory": {
     "src": "f696463b",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.sectionCta": {
     "src": "eed51598",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.discipline": {
     "src": "fdb41a6e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.location": {
     "src": "e882ced6",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.trainingHours": {
     "src": "d701c796",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.inquiries": {
     "src": "703e5afb",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.messageSensei": {
     "src": "9bd2c4c9",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.tatamiEntry": {
     "src": "3dd26da8",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.reserveSpot": {
     "src": "d5090b9f",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.allCourses": {
     "src": "46454f31",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.fullCalendar": {
     "src": "053bec83",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.emptyCoursesText": {
     "src": "c79a4285",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.emptyEventsTitle": {
     "src": "3b747e31",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.emptyEventsText": {
     "src": "6386ac94",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.tier": {
     "src": "e9009770",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.planItems": {
     "src": "0fbc59e9",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.activeMembership": {
     "src": "2ddd1656",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.duesPolicy": {
     "src": "32f60a11",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.stepGrade": {
     "src": "75331292",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.belts.white.rank": {
     "src": "626f61c0",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.belts.white.grade": {
     "src": "5633922c",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.belts.yellow.rank": {
     "src": "9c89ad01",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.belts.yellow.grade": {
     "src": "e1769479",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.belts.orange.rank": {
     "src": "1d9d9f90",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.belts.orange.grade": {
     "src": "e1e535b6",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.belts.green.rank": {
     "src": "0c4fbd55",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.belts.green.grade": {
     "src": "a1207799",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.belts.blue.rank": {
     "src": "5f9cc384",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.belts.blue.grade": {
     "src": "008413d5",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.belts.brown.rank": {
     "src": "c7c9bef0",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.belts.brown.grade": {
     "src": "efc920c5",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.belts.black.rank": {
     "src": "4d2252ff",
-    "reviewed": false
+    "reviewed": true
   },
   "site.dojo.belts.black.grade": {
     "src": "efc920c5",
-    "reviewed": false
+    "reviewed": true
   },
   "site.ledger.from": {
     "src": "3f66052a",
-    "reviewed": false
+    "reviewed": true
   },
   "site.ledger.re": {
     "src": "e39422d2",
-    "reviewed": false
+    "reviewed": true
   },
   "site.manuscript.chapters": {
     "src": "034e2733",
-    "reviewed": false
+    "reviewed": true
   },
   "site.manuscript.deskStudy": {
     "src": "f53e9279",
-    "reviewed": false
+    "reviewed": true
   },
   "site.manuscript.response": {
     "src": "6e617e4f",
-    "reviewed": false
+    "reviewed": true
   },
   "site.manuscript.correspondence": {
     "src": "f3eecae0",
-    "reviewed": false
+    "reviewed": true
   },
   "site.manuscript.dearReader": {
     "src": "d57e00fb",
-    "reviewed": false
+    "reviewed": true
   },
   "site.manuscript.particulars": {
     "src": "a0449c1a",
-    "reviewed": false
+    "reviewed": true
   },
   "site.manuscript.replyByLetter": {
     "src": "c78c1038",
-    "reviewed": false
+    "reviewed": true
   },
   "site.manuscript.tableOfContents": {
     "src": "9730d432",
-    "reviewed": false
+    "reviewed": true
   },
   "site.manuscript.emptyCoursesText": {
     "src": "d69a29d0",
-    "reviewed": false
+    "reviewed": true
   },
   "site.manuscript.viewCatalogue": {
     "src": "6f5cd172",
-    "reviewed": false
+    "reviewed": true
   },
   "site.manuscript.invitation": {
     "src": "6306ef74",
-    "reviewed": false
+    "reviewed": true
   },
   "site.manuscript.programmeOfReadings": {
     "src": "1b4d5ce1",
-    "reviewed": false
+    "reviewed": true
   },
   "site.manuscript.reserveSeat": {
     "src": "4e7f6148",
-    "reviewed": false
+    "reviewed": true
   },
   "site.manuscript.emptyEventsTitle": {
     "src": "cb7cee6c",
-    "reviewed": false
+    "reviewed": true
   },
   "site.manuscript.emptyEventsText": {
     "src": "29082348",
-    "reviewed": false
+    "reviewed": true
   },
   "site.manuscript.viewProgramme": {
     "src": "2dfc5c6b",
-    "reviewed": false
+    "reviewed": true
   },
   "site.manuscript.authorLocation": {
     "src": "6508f287",
-    "reviewed": false
+    "reviewed": true
   },
   "site.manuscript.process": {
     "src": "12f4c13a",
-    "reviewed": false
+    "reviewed": true
   },
   "site.manuscript.galleryOfPlates": {
     "src": "1c633384",
-    "reviewed": false
+    "reviewed": true
   },
   "site.manuscript.subscriptions": {
     "src": "5697fd85",
-    "reviewed": false
+    "reviewed": true
   },
   "site.manuscript.orderOfSubscription": {
     "src": "afb2472e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.manuscript.subscriptionTerms": {
     "src": "a2ddcff3",
-    "reviewed": false
+    "reviewed": true
   },
   "site.manuscript.emptyPlansTitle": {
     "src": "a2643b6c",
-    "reviewed": false
+    "reviewed": true
   },
   "site.manuscript.emptyPlansText": {
     "src": "156d0c4d",
-    "reviewed": false
+    "reviewed": true
   },
   "site.manuscript.preface": {
     "src": "707ddefd",
-    "reviewed": false
+    "reviewed": true
   },
   "site.manuscript.chapter": {
     "src": "861749d5",
-    "reviewed": false
+    "reviewed": true
   },
   "site.manuscript.chapterColon": {
     "src": "8dceb1d9",
-    "reviewed": false
+    "reviewed": true
   },
   "site.manuscript.plate": {
     "src": "73de3b1e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.manuscript.volumesIncluded": {
     "src": "254fd961",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sprout.sendMessage": {
     "src": "dc2661ee",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sprout.activitiesAndCourses": {
     "src": "cf0cc7a9",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sprout.explore": {
     "src": "b965ae66",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sprout.emptyCoursesTitle": {
     "src": "a3720503",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sprout.emptyCoursesText": {
     "src": "560a6b7c",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sprout.allActivities": {
     "src": "a141e033",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sprout.joinUs": {
     "src": "077ec841",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sprout.event": {
     "src": "ad8919ac",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sprout.playdatesAndEvents": {
     "src": "836ddf6e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sprout.emptyEventsTitle": {
     "src": "6fcb25f8",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sprout.emptyEventsText": {
     "src": "a5d361dc",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sprout.seeFullCalendar": {
     "src": "87343056",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sprout.frequentlyAsked": {
     "src": "d790b402",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sprout.emptyPlansTitle": {
     "src": "66a15466",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sprout.emptyPlansText": {
     "src": "54232331",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sprout.aboutMe": {
     "src": "e3ba4ef3",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sprout.activitiesIncluded": {
     "src": "22dd6609",
-    "reviewed": false
+    "reviewed": true
   },
   "site.workshop.studioBench": {
     "src": "a5eabbec",
-    "reviewed": false
+    "reviewed": true
   },
   "site.workshop.studioHours": {
     "src": "11950660",
-    "reviewed": false
+    "reviewed": true
   },
   "site.workshop.inquirySlip": {
     "src": "69ab6e4b",
-    "reviewed": false
+    "reviewed": true
   },
   "site.workshop.emptyCoursesTitle": {
     "src": "fdfc7d30",
-    "reviewed": false
+    "reviewed": true
   },
   "site.workshop.emptyCoursesText": {
     "src": "1bee5431",
-    "reviewed": false
+    "reviewed": true
   },
   "site.workshop.makeThis": {
     "src": "018eea5e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.workshop.allProjects": {
     "src": "9af42c90",
-    "reviewed": false
+    "reviewed": true
   },
   "site.workshop.sessionDate": {
     "src": "3c2607b4",
-    "reviewed": false
+    "reviewed": true
   },
   "site.workshop.reserveBench": {
     "src": "76857bf1",
-    "reviewed": false
+    "reviewed": true
   },
   "site.workshop.emptyEventsTitle": {
     "src": "aa07a7ba",
-    "reviewed": false
+    "reviewed": true
   },
   "site.workshop.emptyEventsText": {
     "src": "5fc9b9e0",
-    "reviewed": false
+    "reviewed": true
   },
   "site.workshop.fullStudioCalendar": {
     "src": "3de17931",
-    "reviewed": false
+    "reviewed": true
   },
   "site.workshop.allKitMaterials": {
     "src": "35d3bc44",
-    "reviewed": false
+    "reviewed": true
   },
   "site.workshop.emptyPlansTitle": {
     "src": "75f5ccfc",
-    "reviewed": false
+    "reviewed": true
   },
   "site.workshop.emptyPlansText": {
     "src": "b9e5dc6a",
-    "reviewed": false
+    "reviewed": true
   },
   "site.workshop.signature": {
     "src": "a8d66d5e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.workshop.projectsIncluded": {
     "src": "1d83cc4c",
-    "reviewed": false
+    "reviewed": true
   },
   "site.workshop.kitNumber": {
     "src": "f5193823",
-    "reviewed": false
+    "reviewed": true
   },
   "site.workshop.project": {
     "src": "774bec65",
-    "reviewed": false
+    "reviewed": true
   },
   "site.workshop.part": {
     "src": "3f93c2aa",
-    "reviewed": false
+    "reviewed": true
   },
   "site.encore.venue": {
     "src": "67cd4061",
-    "reviewed": false
+    "reviewed": true
   },
   "site.encore.show": {
     "src": "d97d1ee3",
-    "reviewed": false
+    "reviewed": true
   },
   "site.encore.online": {
     "src": "c3e839df",
-    "reviewed": false
+    "reviewed": true
   },
   "site.encore.tickets": {
     "src": "5c622a51",
-    "reviewed": false
+    "reviewed": true
   },
   "site.encore.allDates": {
     "src": "69feaaf8",
-    "reviewed": false
+    "reviewed": true
   },
   "site.encore.photo": {
     "src": "912f25bb",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.rituals": {
     "src": "7b18078b",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.studioEmail": {
     "src": "5e5bd60c",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.atelierAddress": {
     "src": "2808fb90",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.consultationHours": {
     "src": "4d137f8f",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.studioContact": {
     "src": "73823feb",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.studioInquiries": {
     "src": "e50f7a9f",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.reachOut": {
     "src": "e0dedb91",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.treatments": {
     "src": "10914a42",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.emptyCoursesTitle": {
     "src": "4ec61689",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.emptyCoursesText": {
     "src": "914ac3e1",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.allTreatments": {
     "src": "d30756b9",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.scheduleAppointment": {
     "src": "e503bc83",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.chooseTime": {
     "src": "2fb431e2",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.bookAppointment": {
     "src": "528d77f8",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.appointment": {
     "src": "2d05c593",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.masterclasses": {
     "src": "5f919729",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.emptyEventsTitle": {
     "src": "18aa37ee",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.emptyEventsText": {
     "src": "fbc2fd23",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.viewFullCalendar": {
     "src": "a4fa1258",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.consultation": {
     "src": "54b87b92",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.bookSession": {
     "src": "bf464a0e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.learnMore": {
     "src": "824d76b1",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.studioLocationFormat": {
     "src": "020b5acd",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.routine": {
     "src": "482273d7",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.lookbook": {
     "src": "3d3d2388",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.momentsLookbook": {
     "src": "b6f2d2c3",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.membership": {
     "src": "53bc9670",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.seeDetails": {
     "src": "7e800abe",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.emptyPlansText": {
     "src": "2b415af0",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.story": {
     "src": "86b4ba2f",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.readMore": {
     "src": "ad086cf5",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.ritualsCount": {
     "src": "2e5de1b0",
-    "reviewed": false
+    "reviewed": true
   },
   "site.atelier.treatmentsIncluded": {
     "src": "86ece242",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sanctum.sacredGifts": {
     "src": "b12523e8",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sanctum.celestialDispatch": {
     "src": "eccd2002",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sanctum.sanctuaryAltar": {
     "src": "600663ab",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sanctum.hoursOfAlignment": {
     "src": "f69d11fe",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sanctum.inquiryOfTheStars": {
     "src": "383155b7",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sanctum.sacredPaths": {
     "src": "f7e4c964",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sanctum.emptyCoursesTitle": {
     "src": "1da1e0e3",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sanctum.emptyCoursesText": {
     "src": "437f7632",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sanctum.initiation": {
     "src": "98bb44b9",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sanctum.gatherings": {
     "src": "43ca0277",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sanctum.emptyEventsTitle": {
     "src": "8f8ee0e8",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sanctum.emptyEventsText": {
     "src": "1ca9e7cf",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sanctum.phase": {
     "src": "c4044b43",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sanctum.ritualSequence": {
     "src": "81f21b82",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sanctum.celestialVisions": {
     "src": "a42419e1",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sanctum.invocation": {
     "src": "6a9b4436",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sanctum.sanctuaryOfferings": {
     "src": "bb5d8624",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sanctum.initiated": {
     "src": "87c5ebdb",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sanctum.sacredPrivileges": {
     "src": "6794253f",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sanctum.emptyPlansTitle": {
     "src": "3f771f7e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sanctum.emptyPlansText": {
     "src": "09c7b4c9",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sanctum.originStory": {
     "src": "a0a644c6",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sanctum.explorePaths": {
     "src": "a77760a8",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sanctum.fullGatheringCalendar": {
     "src": "dd82e305",
-    "reviewed": false
+    "reviewed": true
   },
   "site.sanctum.offeringsIncluded": {
     "src": "a2cfc54a",
-    "reviewed": false
+    "reviewed": true
   },
   "site.tavola.whatsInIt": {
     "src": "42c4528c",
-    "reviewed": false
+    "reviewed": true
   },
   "site.tavola.kitchen": {
     "src": "018618c0",
-    "reviewed": false
+    "reviewed": true
   },
   "site.tavola.upcoming": {
     "src": "523baab9",
-    "reviewed": false
+    "reviewed": true
   },
   "site.tavola.menu": {
     "src": "57f5f5ef",
-    "reviewed": false
+    "reviewed": true
   },
   "site.grid.seeAllCourses": {
     "src": "eef0b9c1",
-    "reviewed": false
+    "reviewed": true
   },
   "site.grid.emptyCoursesTitle": {
     "src": "fa13e2be",
-    "reviewed": false
+    "reviewed": true
   },
   "site.grid.seeTheCalendar": {
     "src": "da589664",
-    "reviewed": false
+    "reviewed": true
   },
   "site.grid.emptyEventsText": {
     "src": "676bb31b",
-    "reviewed": false
+    "reviewed": true
   },
   "site.grid.billed": {
     "src": "763fe55e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.grid.emptyPlansText": {
     "src": "6c4e7675",
-    "reviewed": false
+    "reviewed": true
   },
   "site.grid.everyMonth": {
     "src": "7f3932f9",
-    "reviewed": false
+    "reviewed": true
   },
   "site.grid.everyYear": {
     "src": "cea537cd",
-    "reviewed": false
+    "reviewed": true
   },
   "site.grid.everyYears": {
     "src": "c15f9bea",
-    "reviewed": false
+    "reviewed": true
   },
   "site.grid.everyMonths": {
     "src": "3db745d1",
-    "reviewed": false
+    "reviewed": true
   },
   "site.trail.basecamp": {
     "src": "43d62322",
-    "reviewed": false
+    "reviewed": true
   },
   "site.trail.join": {
     "src": "e0d73143",
-    "reviewed": false
+    "reviewed": true
   },
   "site.trail.itemsIncluded": {
     "src": "765eb9ad",
-    "reviewed": false
+    "reviewed": true
   },
   "site.trail.allRoutes": {
     "src": "29a9dd7c",
-    "reviewed": false
+    "reviewed": true
   },
   "site.trail.allMeetups": {
     "src": "660be2d5",
-    "reviewed": false
+    "reviewed": true
   },
   "site.studiofloor.directEmail": {
     "src": "58d8eb9f",
-    "reviewed": false
+    "reviewed": true
   },
   "site.studiofloor.studioLocation": {
     "src": "38e94105",
-    "reviewed": false
+    "reviewed": true
   },
   "site.studiofloor.sessionHours": {
     "src": "5353a1d8",
-    "reviewed": false
+    "reviewed": true
   },
   "site.studiofloor.emptyCoursesText": {
     "src": "48a0fec6",
-    "reviewed": false
+    "reviewed": true
   },
   "site.studiofloor.emptyEventsText": {
     "src": "14700853",
-    "reviewed": false
+    "reviewed": true
   },
   "site.studiofloor.momentsReel": {
     "src": "f8668f15",
-    "reviewed": false
+    "reviewed": true
   },
   "site.studiofloor.seeIncludedSessions": {
     "src": "3ac25e46",
-    "reviewed": false
+    "reviewed": true
   },
   "site.studiofloor.emptyPlansText": {
     "src": "c136567e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.studiofloor.sessionsIncluded": {
     "src": "4861b8ef",
-    "reviewed": false
+    "reviewed": true
   },
   "site.studiofloor.viewFullTimetable": {
     "src": "5da4ff6a",
-    "reviewed": false
+    "reviewed": true
   },
   "site.photo.atmosphere": {
     "src": "22102637",
-    "reviewed": false
+    "reviewed": true
   },
   "site.maison.allSalons": {
     "src": "6a2035af",
-    "reviewed": false
+    "reviewed": true
   },
   "site.maison.atelier": {
     "src": "e105f808",
-    "reviewed": false
+    "reviewed": true
   },
   "site.maison.emptyEventsTitle": {
     "src": "1c77241a",
-    "reviewed": false
+    "reviewed": true
   },
   "site.maison.emptyEventsText": {
     "src": "9b88eeee",
-    "reviewed": false
+    "reviewed": true
   },
   "site.maison.look": {
     "src": "341a66cc",
-    "reviewed": false
+    "reviewed": true
   },
   "site.maison.pieces": {
     "src": "bfdc4d23",
-    "reviewed": false
+    "reviewed": true
   },
   "site.maison.requestSeat": {
     "src": "c6462a2f",
-    "reviewed": false
+    "reviewed": true
   },
   "site.maison.theCollection": {
     "src": "3e91c233",
-    "reviewed": false
+    "reviewed": true
   },
   "site.pop.emptyCoursesTitle": {
     "src": "3dc1ad78",
-    "reviewed": false
+    "reviewed": true
   },
   "site.pop.emptyCoursesText": {
     "src": "9275eb23",
-    "reviewed": false
+    "reviewed": true
   },
   "site.pop.emptyEventsTitle": {
     "src": "b488b5ca",
-    "reviewed": false
+    "reviewed": true
   },
   "site.pop.emptyEventsText": {
     "src": "92d0fde2",
-    "reviewed": false
+    "reviewed": true
   },
   "site.pop.emptyPlansTitle": {
     "src": "abfc6931",
-    "reviewed": false
+    "reviewed": true
   },
   "site.pop.emptyPlansText": {
     "src": "30f3b38f",
-    "reviewed": false
+    "reviewed": true
   },
   "site.primer.byTheEnd": {
     "src": "17ea80ad",
-    "reviewed": false
+    "reviewed": true
   },
   "site.primer.classroom": {
     "src": "958c43ff",
-    "reviewed": false
+    "reviewed": true
   },
   "site.terminal.emptyEventsTitle": {
     "src": "ee1409f8",
-    "reviewed": false
+    "reviewed": true
   },
   "site.terminal.emptyPlansText": {
     "src": "9b111453",
-    "reviewed": false
+    "reviewed": true
   },
   "site.terminal.open": {
     "src": "5fc7e38b",
-    "reviewed": false
+    "reviewed": true
   },
   "site.catalog.paid": {
     "src": "dc9d4584",
-    "reviewed": false
+    "reviewed": true
   },
   "site.catalog.myCourses": {
     "src": "ef8eb7e4",
-    "reviewed": false
+    "reviewed": true
   },
   "site.catalog.searchCourses": {
     "src": "a1b99647",
-    "reviewed": false
+    "reviewed": true
   },
   "site.catalog.noCourses": {
     "src": "51c41e59",
-    "reviewed": false
+    "reviewed": true
   },
   "site.catalog.adjustSearch": {
     "src": "34a8a584",
-    "reviewed": false
+    "reviewed": true
   },
   "site.catalog.noneYet": {
     "src": "07126185",
-    "reviewed": false
+    "reviewed": true
   },
   "site.filter.all": {
     "src": "6a720856",
-    "reviewed": false
+    "reviewed": true
   },
   "site.cart.added": {
     "src": "2bbdfe40",
-    "reviewed": false
+    "reviewed": true
   },
   "site.enroll.continueLearning": {
     "src": "acb708f6",
-    "reviewed": false
+    "reviewed": true
   },
   "site.enroll.startLearning": {
     "src": "91ad0a48",
-    "reviewed": false
+    "reviewed": true
   },
   "site.enroll.starting": {
     "src": "e5f58095",
-    "reviewed": false
+    "reviewed": true
   },
   "site.enroll.enrolling": {
     "src": "97469d60",
-    "reviewed": false
+    "reviewed": true
   },
   "site.enroll.free": {
     "src": "006d4e22",
-    "reviewed": false
+    "reviewed": true
   },
   "site.enroll.addToCart": {
     "src": "e9cdcea9",
-    "reviewed": false
+    "reviewed": true
   },
   "site.enroll.orBundle": {
     "src": "3ffafbc0",
-    "reviewed": false
+    "reviewed": true
   },
   "site.enroll.orSubscribe": {
     "src": "189ade53",
-    "reviewed": false
+    "reviewed": true
   },
   "site.enroll.viewAllPlans": {
     "src": "c879d5c8",
-    "reviewed": false
+    "reviewed": true
   },
   "site.enroll.comingSoon": {
     "src": "e4115be2",
-    "reviewed": false
+    "reviewed": true
   },
   "site.enroll.subscribed": {
     "src": "63d75381",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventType.liveSession": {
     "src": "73c925a5",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventType.liveStream": {
     "src": "f5715582",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventType.onsiteEvent": {
     "src": "47d494ba",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventType.inPersonEvent": {
     "src": "2c181fad",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventKind.liveSession": {
     "src": "8f1dfa30",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventKind.livestream": {
     "src": "bd638928",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventKind.zoom": {
     "src": "9b3cbed5",
-    "reviewed": false
+    "reviewed": true
   },
   "site.calendar.noUpcoming": {
     "src": "b488b5ca",
-    "reviewed": false
+    "reviewed": true
   },
   "site.calendar.checkBack": {
     "src": "2951a568",
-    "reviewed": false
+    "reviewed": true
   },
   "site.calendar.more": {
     "src": "7a7938b5",
-    "reviewed": false
+    "reviewed": true
   },
   "site.calendar.noEvents": {
     "src": "2d43ec7f",
-    "reviewed": false
+    "reviewed": true
   },
   "site.calendar.comingUpNext": {
     "src": "bd03ac68",
-    "reviewed": false
+    "reviewed": true
   },
   "site.calendar.today": {
     "src": "24345a14",
-    "reviewed": false
+    "reviewed": true
   },
   "site.calendar.selectedDay": {
     "src": "df96a6d7",
-    "reviewed": false
+    "reviewed": true
   },
   "site.calendar.loadFailed": {
     "src": "8ebca9d6",
-    "reviewed": false
+    "reviewed": true
   },
   "site.calendar.month": {
     "src": "082bc378",
-    "reviewed": false
+    "reviewed": true
   },
   "site.calendar.agenda": {
     "src": "891e9d6d",
-    "reviewed": false
+    "reviewed": true
   },
   "site.calendar.live": {
     "src": "65c821a5",
-    "reviewed": false
+    "reviewed": true
   },
   "site.calendar.text": {
     "src": "0109f9fc",
-    "reviewed": false
+    "reviewed": true
   },
   "site.calendar.listView": {
     "src": "88554406",
-    "reviewed": false
+    "reviewed": true
   },
   "site.calendar.upcomingEvents": {
     "src": "1d669368",
-    "reviewed": false
+    "reviewed": true
   },
   "site.events.noneScheduled": {
     "src": "4effd426",
-    "reviewed": false
+    "reviewed": true
   },
   "site.events.scheduleFirst": {
     "src": "536ae89d",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventPage.liveNow": {
     "src": "f7ebe74c",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventPage.ended": {
     "src": "90303d8d",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventPage.upcoming": {
     "src": "523baab9",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventPage.hasEnded": {
     "src": "00f305ca",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventPage.signInToJoin": {
     "src": "6b6b38fa",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventPage.freeSignIn": {
     "src": "60f30ab1",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventPage.membersSignIn": {
     "src": "dfb7cf46",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventPage.purchaseSignIn": {
     "src": "7c5d9f48",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventPage.canAttend": {
     "src": "452e64fd",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventPage.canAttendAddress": {
     "src": "3d9c0a87",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventPage.joinNow": {
     "src": "aa3a4dd9",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventPage.haveAccess": {
     "src": "e23afbf3",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventPage.notStarted": {
     "src": "b2dcf4f7",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventPage.subscribeForAccess": {
     "src": "7b1c0c7a",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventPage.getAccess": {
     "src": "25dda265",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventPage.purchaseOrSubscribeLive": {
     "src": "dbacaa13",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventPage.subscribeLive": {
     "src": "53eb113d",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventPage.getAccessNow": {
     "src": "4d0e4274",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventPage.notFound": {
     "src": "231b810d",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventPage.notFoundText": {
     "src": "99397068",
-    "reviewed": false
+    "reviewed": true
   },
   "site.page.home": {
     "src": "70f8bb9a",
-    "reviewed": false
+    "reviewed": true
   },
   "site.page.about": {
     "src": "6b21fb79",
-    "reviewed": false
+    "reviewed": true
   },
   "site.page.courses": {
     "src": "a16536d7",
-    "reviewed": false
+    "reviewed": true
   },
   "site.page.pricing": {
     "src": "a0d9bbad",
-    "reviewed": false
+    "reviewed": true
   },
   "site.page.faq": {
     "src": "03688ba6",
-    "reviewed": false
+    "reviewed": true
   },
   "site.page.contact": {
     "src": "b37456c4",
-    "reviewed": false
+    "reviewed": true
   },
   "site.page.events": {
     "src": "c5497bca",
-    "reviewed": false
+    "reviewed": true
   },
   "site.page.plans": {
     "src": "cf2e5f26",
-    "reviewed": false
+    "reviewed": true
   },
   "site.page.blog": {
     "src": "0b9d2b23",
-    "reviewed": false
+    "reviewed": true
   },
   "site.page.community": {
     "src": "bfd58ee3",
-    "reviewed": false
+    "reviewed": true
   },
   "site.page.calendar": {
     "src": "adab5090",
-    "reviewed": false
+    "reviewed": true
   },
   "site.page.blogWithBrand": {
     "src": "2a4aefc3",
-    "reviewed": false
+    "reviewed": true
   },
   "site.page.pricingOrPlans": {
     "src": "48d4384b",
-    "reviewed": false
+    "reviewed": true
   },
   "site.duration.hoursMinutes": {
     "src": "a7ea8308",
-    "reviewed": false
+    "reviewed": true
   },
   "site.duration.minutes": {
     "src": "b1603e91",
-    "reviewed": false
+    "reviewed": true
   },
   "site.blog.noPosts": {
     "src": "8c82b5ea",
-    "reviewed": false
+    "reviewed": true
   },
   "site.blog.contents": {
     "src": "5e58490a",
-    "reviewed": false
+    "reviewed": true
   },
   "site.blog.tableOfContents": {
     "src": "1a428989",
-    "reviewed": false
+    "reviewed": true
   },
   "site.blog.readTime": {
     "src": "2f8b14d0",
-    "reviewed": false
+    "reviewed": true
   },
   "site.blog.writtenBy": {
     "src": "1a21a627",
-    "reviewed": false
+    "reviewed": true
   },
   "site.blog.shareArticle": {
     "src": "2e97d710",
-    "reviewed": false
+    "reviewed": true
   },
   "site.blog.moreArticles": {
     "src": "1f7fa2c0",
-    "reviewed": false
+    "reviewed": true
   },
   "site.blog.shareOnX": {
     "src": "08aa2914",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventsPage.title": {
     "src": "1abcabd8",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventsPage.text": {
     "src": "20ab1a05",
-    "reviewed": false
+    "reviewed": true
   },
   "site.eventsPage.viewCalendar": {
     "src": "a13709a9",
-    "reviewed": false
+    "reviewed": true
   },
   "site.itemType.download": {
     "src": "a479c9c3",
-    "reviewed": false
+    "reviewed": true
   },
   "site.itemType.bundle": {
     "src": "23ed731b",
-    "reviewed": false
+    "reviewed": true
   },
   "site.itemType.event": {
     "src": "ad8919ac",
-    "reviewed": false
+    "reviewed": true
   },
   "site.store.title": {
     "src": "0d8a7046",
-    "reviewed": false
+    "reviewed": true
   },
   "site.store.text": {
     "src": "37019d22",
-    "reviewed": false
+    "reviewed": true
   },
   "site.store.searchItems": {
     "src": "e2c0a63f",
-    "reviewed": false
+    "reviewed": true
   },
   "site.store.subscriptionPlans": {
     "src": "1ef5e421",
-    "reviewed": false
+    "reviewed": true
   },
   "site.store.noItems": {
     "src": "2ab447eb",
-    "reviewed": false
+    "reviewed": true
   },
   "site.store.noItemsText": {
     "src": "05b7c999",
-    "reviewed": false
+    "reviewed": true
   },
   "site.store.loadFailed": {
     "src": "732398ad",
-    "reviewed": false
+    "reviewed": true
   },
   "site.store.addedToCart": {
     "src": "73cc9711",
-    "reviewed": false
+    "reviewed": true
   },
   "site.store.subscribed": {
     "src": "2c5a0e60",
-    "reviewed": false
+    "reviewed": true
   },
   "site.store.alreadySubscribed": {
     "src": "7f4b67ef",
-    "reviewed": false
+    "reviewed": true
   },
   "site.store.filter.courses": {
     "src": "a16536d7",
-    "reviewed": false
+    "reviewed": true
   },
   "site.store.filter.downloads": {
     "src": "a862c2b2",
-    "reviewed": false
+    "reviewed": true
   },
   "site.store.filter.liveSessions": {
     "src": "245bab9a",
-    "reviewed": false
+    "reviewed": true
   },
   "site.store.filter.liveStreams": {
     "src": "774988c2",
-    "reviewed": false
+    "reviewed": true
   },
   "site.store.filter.inPersonEvents": {
     "src": "08a2d73a",
-    "reviewed": false
+    "reviewed": true
   },
   "site.store.filter.bundles": {
     "src": "9a033a11",
-    "reviewed": false
+    "reviewed": true
   },
   "site.store.browse": {
     "src": "8b59eb98",
-    "reviewed": false
+    "reviewed": true
   },
   "site.store.addToCart": {
     "src": "38441910",
-    "reviewed": false
+    "reviewed": true
   },
   "site.nav.installApp": {
     "src": "e5f79aa1",
-    "reviewed": false
+    "reviewed": true
   },
   "site.nav.creatorStudio": {
     "src": "970b1683",
-    "reviewed": false
+    "reviewed": true
   },
   "site.nav.dashboard": {
     "src": "d87f47b4",
-    "reviewed": false
+    "reviewed": true
   },
   "site.nav.signOut": {
     "src": "61fd08ff",
-    "reviewed": false
+    "reviewed": true
   },
   "site.nav.signIn": {
     "src": "f8492cc1",
-    "reviewed": false
+    "reviewed": true
   },
   "site.nav.toggle": {
     "src": "1ec0b00d",
-    "reviewed": false
+    "reviewed": true
   },
   "site.nav.brandFallback": {
     "src": "ca4f9dcf",
-    "reviewed": false
+    "reviewed": true
   },
   "site.nav.loggedOut": {
     "src": "08b8cecf",
-    "reviewed": false
+    "reviewed": true
   },
   "site.nav.footer": {
     "src": "26c01e70",
-    "reviewed": false
+    "reviewed": true
   },
   "site.nav.pages": {
     "src": "600584c2",
-    "reviewed": false
+    "reviewed": true
   },
   "site.nav.follow": {
     "src": "66587a7a",
-    "reviewed": false
+    "reviewed": true
   },
   "site.nav.loginToContinue": {
     "src": "0d75824d",
-    "reviewed": false
+    "reviewed": true
   },
   "site.nav.getStarted": {
     "src": "bd2cb051",
-    "reviewed": false
+    "reviewed": true
   },
   "site.blockEmpty.video.title": {
     "src": "22e96901",
-    "reviewed": false
+    "reviewed": true
   },
   "site.blockEmpty.video.text": {
     "src": "7cfe5778",
-    "reviewed": false
+    "reviewed": true
   },
   "site.blockEmpty.logos.title": {
     "src": "d2385d66",
-    "reviewed": false
+    "reviewed": true
   },
   "site.blockEmpty.logos.text": {
     "src": "c9945f2d",
-    "reviewed": false
+    "reviewed": true
   },
   "site.blockEmpty.stats.title": {
     "src": "cbb2c5c1",
-    "reviewed": false
+    "reviewed": true
   },
   "site.blockEmpty.stats.text": {
     "src": "ea0be755",
-    "reviewed": false
+    "reviewed": true
   },
   "site.blockEmpty.faq.title": {
     "src": "24141bdc",
-    "reviewed": false
+    "reviewed": true
   },
   "site.blockEmpty.faq.text": {
     "src": "74bdb400",
-    "reviewed": false
+    "reviewed": true
   },
   "site.blockEmpty.events.title": {
     "src": "39a86977",
-    "reviewed": false
+    "reviewed": true
   },
   "site.blockEmpty.events.text": {
     "src": "22939791",
-    "reviewed": false
+    "reviewed": true
   },
   "site.blockEmpty.store.title": {
     "src": "53e1c288",
-    "reviewed": false
+    "reviewed": true
   },
   "site.blockEmpty.store.text": {
     "src": "84c8e57e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.blockEmpty.testimonials.title": {
     "src": "beed108d",
-    "reviewed": false
+    "reviewed": true
   },
   "site.blockEmpty.testimonials.text": {
     "src": "bc647cf8",
-    "reviewed": false
+    "reviewed": true
   },
   "site.blockEmpty.gallery.title": {
     "src": "bffd1eb5",
-    "reviewed": false
+    "reviewed": true
   },
   "site.blockEmpty.gallery.text": {
     "src": "5ef20d4f",
-    "reviewed": false
+    "reviewed": true
   },
   "site.blockEmpty.plans.title": {
     "src": "e5a3dc6c",
-    "reviewed": false
+    "reviewed": true
   },
   "site.blockEmpty.plans.text": {
     "src": "843822c7",
-    "reviewed": false
+    "reviewed": true
   },
   "site.blockEmpty.page": {
     "src": "321fc10c",
-    "reviewed": false
+    "reviewed": true
   },
   "site.editor.clickToEdit": {
     "src": "ca67c6fb",
-    "reviewed": false
+    "reviewed": true
   },
   "site.gallery.enlargeCaption": {
     "src": "0b52f158",
-    "reviewed": false
+    "reviewed": true
   },
   "site.gallery.enlarge": {
     "src": "fa9bd5ec",
-    "reviewed": false
+    "reviewed": true
   },
   "site.gallery.close": {
     "src": "bbfa773e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.gallery.previous": {
     "src": "46edf0f8",
-    "reviewed": false
+    "reviewed": true
   },
   "site.gallery.next": {
     "src": "eb89a789",
-    "reviewed": false
+    "reviewed": true
   },
   "site.testimonial.rated": {
     "src": "6d56253e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.banner.dismiss": {
     "src": "9c53340b",
-    "reviewed": false
+    "reviewed": true
   },
   "site.block.video": {
     "src": "bc17c1f0",
-    "reviewed": false
+    "reviewed": true
   },
   "site.checkout.title": {
     "src": "3ac8e9e5",
-    "reviewed": false
+    "reviewed": true
   },
   "site.checkout.andMore": {
     "src": "29281b61",
-    "reviewed": false
+    "reviewed": true
   },
   "site.checkout.now": {
     "src": "e3b82040",
-    "reviewed": false
+    "reviewed": true
   },
   "site.checkout.rightAfter": {
     "src": "607f6d89",
-    "reviewed": false
+    "reviewed": true
   },
   "site.checkout.anyTime": {
     "src": "d7854118",
-    "reviewed": false
+    "reviewed": true
   },
   "site.checkout.paySecurely": {
     "src": "37e2f564",
-    "reviewed": false
+    "reviewed": true
   },
   "site.checkout.opensInDashboard": {
     "src": "45b5c17a",
-    "reviewed": false
+    "reviewed": true
   },
   "site.checkout.opensInPlan": {
     "src": "8fbc6ead",
-    "reviewed": false
+    "reviewed": true
   },
   "site.checkout.cancelAnyTime": {
     "src": "8cb07a2a",
-    "reviewed": false
+    "reviewed": true
   },
   "site.announcements.loadError": {
     "src": "2c364dae",
-    "reviewed": false
+    "reviewed": true
   },
   "site.announcements.label": {
     "src": "06b01c44",
-    "reviewed": false
+    "reviewed": true
   },
   "site.announcements.empty": {
     "src": "c32aa8cd",
-    "reviewed": false
+    "reviewed": true
   },
   "site.preview.comingSoon": {
     "src": "e4115be2",
-    "reviewed": false
+    "reviewed": true
   },
   "site.preview.paused": {
     "src": "46d33ac2",
-    "reviewed": false
+    "reviewed": true
   },
   "site.preview.launchingGated": {
     "src": "1012f265",
-    "reviewed": false
+    "reviewed": true
   },
   "site.preview.launching": {
     "src": "52ad6242",
-    "reviewed": false
+    "reviewed": true
   },
   "site.preview.field": {
     "src": "6e598c2d",
-    "reviewed": false
+    "reviewed": true
   },
   "site.preview.incorrect": {
     "src": "d8f714b3",
-    "reviewed": false
+    "reviewed": true
   },
   "site.preview.checking": {
     "src": "820d6004",
-    "reviewed": false
+    "reviewed": true
   },
   "site.preview.enter": {
     "src": "43fe972d",
-    "reviewed": false
+    "reviewed": true
   },
   "site.preview.ownerLogin": {
     "src": "60cdc8d3",
-    "reviewed": false
+    "reviewed": true
   },
   "site.headerCta.startCourse": {
     "src": "a8701f06",
-    "reviewed": false
+    "reviewed": true
   },
   "site.headerCta.bookSession": {
     "src": "bf464a0e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.headerCta.join": {
     "src": "e0d73143",
-    "reviewed": false
+    "reviewed": true
   },
   "site.headerCta.getInTouch": {
     "src": "c49bb4c2",
-    "reviewed": false
+    "reviewed": true
   },
   "site.access.spanYear": {
     "src": "8c6f73cd",
-    "reviewed": false
+    "reviewed": true
   },
   "site.access.spanMonth": {
     "src": "ee213746",
-    "reviewed": false
+    "reviewed": true
   },
   "site.access.spanWeek": {
     "src": "c4341f00",
-    "reviewed": false
+    "reviewed": true
   },
   "site.access.spanDay": {
     "src": "e7c9e031",
-    "reviewed": false
+    "reviewed": true
   },
   "site.access.opensOn": {
     "src": "e67a54c8",
-    "reviewed": false
+    "reviewed": true
   },
   "site.access.opensAfterPurchase": {
     "src": "cbe3d254",
-    "reviewed": false
+    "reviewed": true
   },
   "site.access.accessUntilAfterPurchase": {
     "src": "9b3c4359",
-    "reviewed": false
+    "reviewed": true
   },
   "site.access.accessLength": {
     "src": "691a4181",
-    "reviewed": false
+    "reviewed": true
   },
   "site.access.accessUntil": {
     "src": "1a80c83a",
-    "reviewed": false
+    "reviewed": true
   },
   "site.access.lifetime": {
     "src": "c5981cd0",
-    "reviewed": false
+    "reviewed": true
   },
   "site.access.includedNow": {
     "src": "80d3f38e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.access.planOpensAfter": {
     "src": "765cdda9",
-    "reviewed": false
+    "reviewed": true
   },
   "site.access.planOpensAfterUntilInto": {
     "src": "64bf2b44",
-    "reviewed": false
+    "reviewed": true
   },
   "site.access.planOpensAfterUntilDate": {
     "src": "58941b55",
-    "reviewed": false
+    "reviewed": true
   },
   "site.access.planOpensOn": {
     "src": "726321aa",
-    "reviewed": false
+    "reviewed": true
   },
   "site.access.planOpensOnUntilInto": {
     "src": "9b059da0",
-    "reviewed": false
+    "reviewed": true
   },
   "site.access.planOpensOnUntilDate": {
     "src": "7bc6428c",
-    "reviewed": false
+    "reviewed": true
   },
   "site.access.planNowFor": {
     "src": "bc81b343",
-    "reviewed": false
+    "reviewed": true
   },
   "site.access.planNowUntilDate": {
     "src": "52c693e7",
-    "reviewed": false
+    "reviewed": true
   },
   "site.access.freeAfterThenUntil": {
     "src": "d31e37d2",
-    "reviewed": false
+    "reviewed": true
   },
   "site.access.freeFromThenUntil": {
     "src": "df89e86a",
-    "reviewed": false
+    "reviewed": true
   },
   "site.access.freeFirst": {
     "src": "fc9814d7",
-    "reviewed": false
+    "reviewed": true
   },
   "site.access.freeBetween": {
     "src": "be314212",
-    "reviewed": false
+    "reviewed": true
   },
   "site.access.freeUntil": {
     "src": "b7e8adab",
-    "reviewed": false
+    "reviewed": true
   },
   "site.access.freeFrom": {
     "src": "ea8408b0",
-    "reviewed": false
+    "reviewed": true
   },
   "site.access.freeAfter": {
     "src": "05c8d607",
-    "reviewed": false
+    "reviewed": true
   },
   "site.access.accessEnds": {
     "src": "3df1345b",
-    "reviewed": false
+    "reviewed": true
   },
   "site.access.opensForYou": {
     "src": "07e242d5",
-    "reviewed": false
+    "reviewed": true
   },
   "site.access.accessEnded": {
     "src": "6894e3cf",
-    "reviewed": false
+    "reviewed": true
   },
   "site.footer.builtWith": {
     "src": "2356313d",
-    "reviewed": false
+    "reviewed": true
   },
   "site.pushPreview.date": {
     "src": "60efb5b4",
-    "reviewed": false
+    "reviewed": true
   },
   "site.pushPreview.title": {
     "src": "d58ac0c2",
-    "reviewed": false
+    "reviewed": true
   },
   "site.pushPreview.body": {
     "src": "f190c98e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.pushPreview.now": {
     "src": "c9bc849a",
-    "reviewed": false
+    "reviewed": true
   },
   "site.setupSketch.studioName": {
     "src": "228fddbd",
-    "reviewed": false
+    "reviewed": true
   },
   "site.setupSketch.yourName": {
     "src": "ab42293e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.setupSketch.welcome": {
     "src": "4c8dcf2c",
-    "reviewed": false
+    "reviewed": true
   },
   "site.setupSketch.welcomeFallback": {
     "src": "3be14a7f",
-    "reviewed": false
+    "reviewed": true
   },
   "site.setupSketch.yourSite": {
     "src": "6dacd5ef",
-    "reviewed": false
+    "reviewed": true
   },
   "site.setupSketch.explore": {
     "src": "b965ae66",
-    "reviewed": false
+    "reviewed": true
   },
   "site.setupSketch.membership": {
     "src": "3fbc4e68",
-    "reviewed": false
+    "reviewed": true
   },
   "site.setupSketch.membershipPlain": {
     "src": "53bc9670",
-    "reviewed": false
+    "reviewed": true
   },
   "site.setupSketch.billing": {
     "src": "c33f21b9",
-    "reviewed": false
+    "reviewed": true
   },
   "site.meta.fallbackName": {
     "src": "ca4f9dcf",
-    "reviewed": false
+    "reviewed": true
   },
   "site.unknownHost.title": {
     "src": "6ba03ac6",
-    "reviewed": false
+    "reviewed": true
   },
   "site.unknownHost.text": {
     "src": "3cfdfb4f",
-    "reviewed": false
+    "reviewed": true
   },
   "site.email.defaults.message": {
     "src": "42115e91",
-    "reviewed": false
+    "reviewed": true
   },
   "site.email.defaults.headline": {
     "src": "c6eb798a",
-    "reviewed": false
+    "reviewed": true
   },
   "site.email.defaults.buttonLabel": {
     "src": "9a5ac23f",
-    "reviewed": false
+    "reviewed": true
   },
   "site.email.defaults.heroHeadline": {
     "src": "27119778",
-    "reviewed": false
+    "reviewed": true
   },
   "site.email.defaults.heroSupport": {
     "src": "e5413031",
-    "reviewed": false
+    "reviewed": true
   },
   "site.email.defaults.heroButton": {
     "src": "721a0a79",
-    "reviewed": false
+    "reviewed": true
   },
   "site.email.defaults.cardBadge": {
     "src": "6403f2b7",
-    "reviewed": false
+    "reviewed": true
   },
   "site.email.defaults.cardTitle": {
     "src": "499886a1",
-    "reviewed": false
+    "reviewed": true
   },
   "site.email.defaults.cardBody": {
     "src": "699f11ac",
-    "reviewed": false
+    "reviewed": true
   },
   "site.email.defaults.cardButton": {
     "src": "824d76b1",
-    "reviewed": false
+    "reviewed": true
   },
   "site.email.defaults.listFirst": {
     "src": "bc80adb3",
-    "reviewed": false
+    "reviewed": true
   },
   "site.email.defaults.listSecond": {
     "src": "9726732f",
-    "reviewed": false
+    "reviewed": true
   },
   "site.email.defaults.listThird": {
     "src": "120072ff",
-    "reviewed": false
+    "reviewed": true
   },
   "site.email.defaults.profileName": {
     "src": "ab42293e",
-    "reviewed": false
+    "reviewed": true
   },
   "site.email.defaults.profileRole": {
     "src": "ab3d8531",
-    "reviewed": false
+    "reviewed": true
   },
   "site.email.defaults.profileBio": {
     "src": "178e1d19",
-    "reviewed": false
+    "reviewed": true
   },
   "site.email.defaults.profileBadge": {
     "src": "817b79b0",
-    "reviewed": false
+    "reviewed": true
   },
   "site.email.defaults.quote": {
     "src": "4ff99834",
-    "reviewed": false
+    "reviewed": true
   },
   "site.email.defaults.quoteBy": {
     "src": "34e364fd",
-    "reviewed": false
+    "reviewed": true
   },
   "site.email.defaults.itemButton": {
     "src": "721a0a79",
-    "reviewed": false
+    "reviewed": true
   },
   "site.email.unsubscribe": {
     "src": "834cc0ee",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.plan.perMonth": {
     "src": "e9e0ceb5",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.plan.perYear": {
     "src": "22ed4564",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.plan.perYears": {
     "src": "cfca4b7c",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.plan.perMonths": {
     "src": "518a5dca",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.span.year": {
     "src": "8c6f73cd",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.span.month": {
     "src": "ee213746",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.span.week": {
     "src": "c4341f00",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.span.day": {
     "src": "e7c9e031",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.describe.freeAll": {
     "src": "e864f901",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.describe.free": {
     "src": "1649ba6d",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.describe.buy": {
     "src": "9b76b450",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.describe.buyKeep": {
     "src": "7a09c93e",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.describe.inPlans": {
     "src": "1c8b3e5b",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.describe.inPlansWindow": {
     "src": "a8e41690",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.describe.from": {
     "src": "d5ed7e8a",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.describe.until": {
     "src": "b798a191",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.pill.from": {
     "src": "11622483",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.pill.until": {
     "src": "5a3981a1",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.pill.buy.opensOn": {
     "src": "e67a54c8",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.pill.buy.forever": {
     "src": "2502483d",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.pill.link.now": {
     "src": "efac6f45",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.pill.link.closesOn": {
     "src": "67963658",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.pill.link.never": {
     "src": "180e0be2",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.pill.free.between": {
     "src": "e638b4a0",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.pill.free.always": {
     "src": "a91bcce8",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.problems.price": {
     "src": "27ae7492",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.problems.plans": {
     "src": "6c1a0f73",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.problems.none": {
     "src": "da06df2b",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.daysAria": {
     "src": "cf117048",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.daysRange": {
     "src": "67f13a52",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.always": {
     "src": "a91bcce8",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.untilDate": {
     "src": "00dcbdbc",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.betweenDates": {
     "src": "2f26e190",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.firstDays": {
     "src": "df283935",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.freeUntil": {
     "src": "48709c1d",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.fromTo": {
     "src": "598be835",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.freeFromAria": {
     "src": "312a3fe5",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.freeToAria": {
     "src": "a1d70602",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.firstDaysAfter": {
     "src": "dd39ae59",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.access": {
     "src": "2f81a22d",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.forever": {
     "src": "2502483d",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.customDays": {
     "src": "9bc22427",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.daysFromBuy": {
     "src": "8184ba1d",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.itOpens": {
     "src": "4cb3cc67",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.whileAfterBuy": {
     "src": "9a10e3fc",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.daysAfterBuy": {
     "src": "9e0ddf33",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.onDate": {
     "src": "62d53b71",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.opensRightAway": {
     "src": "f62faee6",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.opensLater": {
     "src": "48701f4a",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.opens": {
     "src": "54c374d4",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.rightAway": {
     "src": "efac6f45",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.afterWait": {
     "src": "7c4f81ad",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.daysOfMembership": {
     "src": "6f3a80e2",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.closes": {
     "src": "ab16b985",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.never": {
     "src": "80c3052d",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.afterTime": {
     "src": "056c0500",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.daysFromJoining": {
     "src": "c3d811a7",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.window.pickDate": {
     "src": "ded67515",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.title": {
     "src": "2f81a22d",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.subtitle": {
     "src": "a4c2d1cd",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.subOnlyFree": {
     "src": "04b48c02",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.keepOne": {
     "src": "315668e3",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.buyTitle": {
     "src": "1820b12d",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.buySub": {
     "src": "4ab80221",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.price": {
     "src": "3e8248e3",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.buyersKeep": {
     "src": "5075601c",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.buyNote": {
     "src": "27d13387",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.plansTitle": {
     "src": "d4be0111",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.plansSub": {
     "src": "8b34264f",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.ownerOnly": {
     "src": "dad5c2b6",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.offSale": {
     "src": "01b6ef32",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.membersGet": {
     "src": "fa8054bc",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.planNote": {
     "src": "1ff67536",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.newPlan": {
     "src": "0c848c16",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.thisSubscription": {
     "src": "3b6c5a39",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.planPerMonth": {
     "src": "5f8e2db8",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.planPerYear": {
     "src": "28a19337",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.planPerMonths": {
     "src": "ef249418",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.freeTitle": {
     "src": "75f52718",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.freeSub": {
     "src": "12526182",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.when": {
     "src": "769bb19e",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.freeCovers": {
     "src": "d9951063",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.freeWindowOpen": {
     "src": "ec78e14e",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.freeOutside": {
     "src": "6dffafe4",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.inBundle": {
     "src": "7ff6b774",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.inShort": {
     "src": "7b0a2234",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.nothingTicked": {
     "src": "4973ddd1",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.checkDatesPlan": {
     "src": "f89c5466",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.checkDatesBuyers": {
     "src": "35ef3a88",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.checkDatesFree": {
     "src": "95961ee3",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.freeOpensAfter.year": {
     "src": "3f693a37",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.freeOpensAfter.month": {
     "src": "d7fbd167",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.freeOpensAfter.week": {
     "src": "759e4d05",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.freeOpensAfter.day": {
     "src": "2e686d18",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.freeClosesAfter.year": {
     "src": "5e780997",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.freeClosesAfter.month": {
     "src": "2168e04d",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.freeClosesAfter.week": {
     "src": "592c3fb4",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.freeClosesAfter.day": {
     "src": "e9c3d05b",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.freeClosesUntil.year": {
     "src": "8ed276b4",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.freeClosesUntil.month": {
     "src": "0f4801df",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.freeClosesUntil.week": {
     "src": "ff7f3e6c",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.freeClosesUntil.day": {
     "src": "89f03a92",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.buyOpens.year": {
     "src": "5e69798b",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.buyOpens.month": {
     "src": "0236e79c",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.buyOpens.week": {
     "src": "2332e398",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.buyOpens.day": {
     "src": "202112c3",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.buyClosesAfter.year": {
     "src": "767d3636",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.buyClosesAfter.month": {
     "src": "fdfcf646",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.buyClosesAfter.week": {
     "src": "9d2f7539",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.buyClosesAfter.day": {
     "src": "5f59bb8a",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.buyClosesUntil.year": {
     "src": "6755e1b8",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.buyClosesUntil.month": {
     "src": "852e054c",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.buyClosesUntil.week": {
     "src": "ab4a4963",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.buyClosesUntil.day": {
     "src": "19799aa0",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.planOpens.year": {
     "src": "b4bc42cb",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.planOpens.month": {
     "src": "a31dc1ec",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.planOpens.week": {
     "src": "26ff8f10",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.planOpens.day": {
     "src": "c8f1d9a8",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.planClosesAfter.year": {
     "src": "a841cd05",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.planClosesAfter.month": {
     "src": "2bd84636",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.planClosesAfter.week": {
     "src": "81ecb183",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.planClosesAfter.day": {
     "src": "cb558f44",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.planClosesUntil.year": {
     "src": "83325aad",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.planClosesUntil.month": {
     "src": "0264118a",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.planClosesUntil.week": {
     "src": "edd89054",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.planClosesUntil.day": {
     "src": "c4da4f10",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.buyPillOpens.year": {
     "src": "157f5c68",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.buyPillOpens.month": {
     "src": "7a916c5a",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.buyPillOpens.week": {
     "src": "f613a778",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.buyPillOpens.day": {
     "src": "87d2a122",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.buyPillCloses.year": {
     "src": "46ffd314",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.buyPillCloses.month": {
     "src": "a3445832",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.buyPillCloses.week": {
     "src": "f1df6c5f",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.buyPillCloses.day": {
     "src": "1605a66d",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.linkPillOpens.year": {
     "src": "0a06e6cc",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.linkPillOpens.month": {
     "src": "a5ddd0fa",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.linkPillOpens.week": {
     "src": "48fe20a0",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.linkPillOpens.day": {
     "src": "90cd22fa",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.linkPillCloses.year": {
     "src": "38ca6d46",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.linkPillCloses.month": {
     "src": "bd57b8a1",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.linkPillCloses.week": {
     "src": "4c182262",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.linkPillCloses.day": {
     "src": "b706eb4e",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.freePillAfter.year": {
     "src": "d5366c8d",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.freePillAfter.month": {
     "src": "96fba0b7",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.freePillAfter.week": {
     "src": "3533382a",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.freePillAfter.day": {
     "src": "64757809",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.freePillFirst.year": {
     "src": "38ccc8c8",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.freePillFirst.month": {
     "src": "950d92e1",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.freePillFirst.week": {
     "src": "9497ac16",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.access.phrase.freePillFirst.day": {
     "src": "fa906906",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.contentPicker.loadFailed": {
     "src": "49e1c2ba",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.contentPicker.series": {
     "src": "2df63100",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.contentPicker.remove": {
     "src": "846aee9f",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.contentPicker.search": {
     "src": "a99cba28",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.contentPicker.none": {
     "src": "bf7d04c7",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.contentPicker.membersOnly": {
     "src": "625ddbab",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.contentPicker.types.all": {
     "src": "6a720856",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.contentPicker.types.course": {
     "src": "d82b56ca",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.contentPicker.types.download": {
     "src": "a479c9c3",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.contentPicker.types.live_class": {
     "src": "73c925a5",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.contentPicker.types.live_stream": {
     "src": "f5715582",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.contentPicker.types.onsite_event": {
     "src": "2c181fad",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.palette.theme": {
     "src": "67f2a0a9",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.palette.ink": {
     "src": "0480691e",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.palette.slate": {
     "src": "26d7b218",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.palette.forest": {
     "src": "f41c4e4d",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.palette.terracotta": {
     "src": "8be6e64e",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.palette.rose": {
     "src": "51ad0eae",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.palette.violet": {
     "src": "ddcd2f2e",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.palette.amber": {
     "src": "27a01d47",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.palette.ocean-fade": {
     "src": "239098a3",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.palette.sunset-fade": {
     "src": "113b4a48",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.palette.mint-fade": {
     "src": "7a16ee30",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.palette.berry-fade": {
     "src": "2f976128",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.palette.midnight-fade": {
     "src": "fb93414d",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.palette.gold-fade": {
     "src": "6f64f8d0",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.palette.sage": {
     "src": "c3bd776c",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.palette.clay": {
     "src": "e00d5664",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.palette.sky": {
     "src": "b3d97fd6",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.palette.plum": {
     "src": "cb92e50c",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.palette.sand": {
     "src": "b36fbc6e",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.palette.coral": {
     "src": "d27ca6c0",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.palette.pine": {
     "src": "456e097f",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.palette.mono": {
     "src": "c5c55338",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.palette.cocoa": {
     "src": "6517f8be",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.palette.lavender": {
     "src": "75c88f3a",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.iconGroup.wellness": {
     "src": "3ac645f1",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.iconGroup.fitness": {
     "src": "aae59f9d",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.iconGroup.music": {
     "src": "131260cb",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.iconGroup.education": {
     "src": "aaf87fe5",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.iconGroup.business": {
     "src": "d6663dda",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.iconGroup.creative": {
     "src": "20ccbc66",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.iconGroup.food": {
     "src": "35b25929",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.iconGroup.lifestyle": {
     "src": "ce77d621",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.vibe.Modern": {
     "src": "3a4e447e",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.vibe.Elegant": {
     "src": "4d459dfb",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.vibe.Bold": {
     "src": "19e07430",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.vibe.Playful": {
     "src": "66d1ddcf",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.logo.vibe.Minimal": {
     "src": "a711cca9",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.attachmentTooLarge": {
     "src": "b84603a9",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.compose.addRecipient": {
     "src": "c64c4d77",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.compose.sent": {
     "src": "1643ddeb",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.compose.sendFailed": {
     "src": "63ad26e0",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.compose.title": {
     "src": "1ed2e7b5",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.compose.to": {
     "src": "ae79ea1e",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.compose.subject": {
     "src": "8d183dbd",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.compose.button": {
     "src": "47da6f08",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.actions.close": {
     "src": "bbfa773e",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.actions.back": {
     "src": "b52b36b7",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.actions.cancel": {
     "src": "77dfd213",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.actions.delete": {
     "src": "f6fdbe48",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.actions.archive": {
     "src": "2621c6fd",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.actions.spam": {
     "src": "1c547bf5",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.actions.moveToInbox": {
     "src": "3d0700bd",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.time.justNow": {
     "src": "a7f8e7cc",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.time.minutes": {
     "src": "be206a61",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.time.hours": {
     "src": "f03ede1c",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.time.days": {
     "src": "bf1d74fd",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.emptyFolder": {
     "src": "7f420221",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.noSubject": {
     "src": "49b20da0",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.folder.inbox": {
     "src": "44caf746",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.folder.archived": {
     "src": "eddc813f",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.folder.spam": {
     "src": "d8628a52",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.deleteDialog.title": {
     "src": "7121a7a2",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.deleteDialog.text": {
     "src": "b60a6c30",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.loadFailed": {
     "src": "01db90c1",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.inboxFailed": {
     "src": "ceb0a51d",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.threadFailed": {
     "src": "3c839cbe",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.replySent": {
     "src": "5ce1bacd",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.replyFailed": {
     "src": "a72af58d",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.updateFailed": {
     "src": "f282c6d0",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.deleted": {
     "src": "e5ddacc4",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.deleteFailed": {
     "src": "556bb4cd",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.loading": {
     "src": "33ce4174",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.archived": {
     "src": "c3560c7a",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.movedToInbox": {
     "src": "a1cb734c",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.spamMarked": {
     "src": "4b5097c2",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.search": {
     "src": "8812cc37",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.clearSearch": {
     "src": "67300d0f",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.you": {
     "src": "905cb326",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.editor.placeholder": {
     "src": "e4c6097e",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.editor.replyPlaceholder": {
     "src": "dd081ea6",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.editor.maxFiles": {
     "src": "fc450392",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.editor.tooBig": {
     "src": "5594ae98",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.editor.uploadFailed": {
     "src": "832d0bef",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.editor.bold": {
     "src": "19e07430",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.editor.italic": {
     "src": "1616e2e5",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.editor.underline": {
     "src": "39773aa3",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.editor.bulletList": {
     "src": "660d9fbe",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.editor.numberedList": {
     "src": "8294ea4f",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.editor.quote": {
     "src": "309028a9",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.editor.link": {
     "src": "d0517071",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.editor.linkPrompt": {
     "src": "08738f6e",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.editor.attach": {
     "src": "137135db",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.editor.remove": {
     "src": "df7193a5",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.editor.ctrlEnter": {
     "src": "03089828",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.mailbox.editor.send": {
     "src": "9bc2575c",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.actions.dismiss": {
     "src": "70afe9ef",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.actions.close": {
     "src": "bbfa773e",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.actions.closePanel": {
     "src": "fa0b7b3a",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.actions.cancel": {
     "src": "77dfd213",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.actions.save": {
     "src": "efc007a3",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.actions.delete": {
     "src": "f6fdbe48",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.actions.create": {
     "src": "6e157c5d",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.actions.newItem": {
     "src": "b8df8db3",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.actions.editItem": {
     "src": "3358e4f3",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.errors.loadIndex": {
     "src": "de16720a",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.errors.loadModel": {
     "src": "e820de53",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.errors.loadRows": {
     "src": "9f3c334a",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.errors.action": {
     "src": "bb2ebaad",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.errors.save": {
     "src": "aefc6368",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.errors.delete": {
     "src": "99d69a1b",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.errors.request": {
     "src": "92a0d7d4",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.errors.requestStatus": {
     "src": "5681d22b",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.errors.upload": {
     "src": "144debaf",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.errors.uploadStatus": {
     "src": "930c149f",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.errors.invalidJson": {
     "src": "01ccb74f",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.index.title": {
     "src": "e5e429bc",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.index.intro": {
     "src": "3db3627a",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.list.empty": {
     "src": "8d6b3412",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.list.selectAll": {
     "src": "913afff1",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.list.selectRow": {
     "src": "b06c8554",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.gallery.add": {
     "src": "37014d28",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.gallery.drop": {
     "src": "57ece431",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.gallery.empty": {
     "src": "891b5aca",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.gallery.live": {
     "src": "65c821a5",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.gallery.off": {
     "src": "e3de5ab0",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.json.previous": {
     "src": "ffc04237",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.json.next": {
     "src": "7b48d8ed",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.json.label": {
     "src": "831e0c9e",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.json.deleteConfirm": {
     "src": "f543d759",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.json.invalid": {
     "src": "f1c8201c",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.json.expectedObject": {
     "src": "32529ef0",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.json.unknownFields": {
     "src": "af26faf7",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.form.deleteConfirm": {
     "src": "813b06eb",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.form.created": {
     "src": "dbc4c2ed",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.form.saved": {
     "src": "ce274707",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.form.deleted": {
     "src": "f95f2aae",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.field.readOnly": {
     "src": "76103137",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.field.uploadPng": {
     "src": "dfc69256",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.field.replacePng": {
     "src": "7228ee69",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.cell.yes": {
     "src": "fb360f9c",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.cell.no": {
     "src": "fd128635",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.page.searchPlaceholder": {
     "src": "23c1e079",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.page.stringFilter": {
     "src": "f38dcb2b",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.page.filterSearch": {
     "src": "f54fbca1",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.page.filterSearchLabel": {
     "src": "0127c74f",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.page.scrollLeft": {
     "src": "92bf32ac",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.page.scrollRight": {
     "src": "2c664db0",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.page.noMatches": {
     "src": "cd0af6cf",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.page.all": {
     "src": "6a720856",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.page.allCount": {
     "src": "0dd5c8d8",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.page.yes": {
     "src": "5397e058",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.page.no": {
     "src": "816c52fd",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.page.loadingMore": {
     "src": "35e3dc3d",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.page.selected": {
     "src": "bc67a440",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.page.count": {
     "src": "216a20a8",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.page.done": {
     "src": "e2bcda84",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.page.created": {
     "src": "dbc4c2ed",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.page.updated": {
     "src": "ece74466",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.adminKit.page.deleted": {
     "src": "f95f2aae",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.section.customHtml": {
     "src": "32d53e75",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.section.text": {
     "src": "c3328c39",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.section.box": {
     "src": "239ca576",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.section.heading": {
     "src": "a3089b7f",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.section.style": {
     "src": "99a0efc6",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.section.button": {
     "src": "794145f0",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.section.image": {
     "src": "50e19fda",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.section.size": {
     "src": "b7152342",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.section.divider": {
     "src": "912fc145",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.section.spacer": {
     "src": "f38bbbf9",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.section.columns": {
     "src": "cf723c59",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.section.profiles": {
     "src": "0c2a9300",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.section.hero": {
     "src": "17f5d4f0",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.section.card": {
     "src": "4d4ce73b",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.section.items": {
     "src": "44d25b5d",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.section.profile": {
     "src": "ff4fc027",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.section.brandHeader": {
     "src": "d21ea5b3",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.section.brandFooter": {
     "src": "4d457898",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.section.featuredItem": {
     "src": "36cb67b2",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.size": {
     "src": "b7152342",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.colour": {
     "src": "f28563a4",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.lineHeight": {
     "src": "65be5133",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.background": {
     "src": "64dd60fe",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.text": {
     "src": "c3328c39",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.level": {
     "src": "7c7f5d04",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.weight": {
     "src": "69c0b815",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.letterSpacing": {
     "src": "71ae715e",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.capitals": {
     "src": "ae37f693",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.label": {
     "src": "74341e3c",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.buttonColour": {
     "src": "9f2abaf6",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.labelColour": {
     "src": "14eebac0",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.textSize": {
     "src": "3cc6e124",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.cornerRadius": {
     "src": "c7a86e07",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.fullWidth": {
     "src": "8087e6de",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.innerPaddingSides": {
     "src": "32c656d8",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.innerPaddingVertical": {
     "src": "4e366f18",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.altText": {
     "src": "fa8d7a6c",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.linkOptional": {
     "src": "0744e3e9",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.edgeToEdge": {
     "src": "9acb17a1",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.width": {
     "src": "a58ddf50",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.thickness": {
     "src": "ad48f341",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.line": {
     "src": "ea967600",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.spaceAboveAndBelow": {
     "src": "504aae6f",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.height": {
     "src": "3f608b49",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.howMany": {
     "src": "503ce866",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.widths": {
     "src": "d8e4d9f4",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.gap": {
     "src": "b2464742",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.verticalAlignment": {
     "src": "eadf99ec",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.stackOnPhones": {
     "src": "50d5b66f",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.columnBackground": {
     "src": "da1886a3",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.columnCornerRadius": {
     "src": "0178ce4e",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.iconSize": {
     "src": "7a6728bd",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.icons": {
     "src": "edb8f6c1",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.spaceBetween": {
     "src": "b344e091",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.backgroundImage": {
     "src": "5eb0ff1a",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.headline": {
     "src": "442250df",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.supportingLine": {
     "src": "0e543ba3",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.buttonLabel": {
     "src": "347b2acc",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.buttonLink": {
     "src": "0058880a",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.shadeColour": {
     "src": "ab59a4ea",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.shadeStrength": {
     "src": "cb013591",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.headlineFont": {
     "src": "55c66bea",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.headlineSize": {
     "src": "f79aa6d7",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.headlineColour": {
     "src": "12d5f410",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.buttonLabelColour": {
     "src": "6c5dfec0",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.textAlignment": {
     "src": "ca9524f8",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.textPosition": {
     "src": "da4c81cd",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.title": {
     "src": "768e0c1c",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.emojiOnTop": {
     "src": "0a57ac66",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.emoji": {
     "src": "5090a9e7",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.badge": {
     "src": "6d12c8ad",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.badgeText": {
     "src": "effad6ac",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.button": {
     "src": "794145f0",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.cardColour": {
     "src": "dd1efde6",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.border": {
     "src": "5d10d3f4",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.borderColour": {
     "src": "eeffa837",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.titleFont": {
     "src": "14088da3",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.titleColour": {
     "src": "04129768",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.textColour": {
     "src": "d160595f",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.innerPadding": {
     "src": "183d4e8c",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.bulletColour": {
     "src": "743b59d8",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.layout": {
     "src": "972ad8d8",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.photo": {
     "src": "d01d9003",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.name": {
     "src": "709a2322",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.role": {
     "src": "c3f104d1",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.bio": {
     "src": "b31fc969",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.photoPosition": {
     "src": "69d2d4e0",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.photoSize": {
     "src": "c737ce53",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.nameColour": {
     "src": "e5a97b07",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.roleColour": {
     "src": "567faf60",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.bioColour": {
     "src": "c4ac1043",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.show": {
     "src": "d97d1ee3",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.logoHeight": {
     "src": "aa0ddd6d",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.socialProfiles": {
     "src": "7cce3842",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.address": {
     "src": "d70f93df",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.note": {
     "src": "2c924e30",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.feature": {
     "src": "f981e461",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.picture": {
     "src": "61852524",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.description": {
     "src": "55f8ebc8",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.field.priceOrDate": {
     "src": "6dffe336",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.placeholder.altTextExample": {
     "src": "a653198f",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.placeholder.noButton": {
     "src": "9f156f9c",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.placeholder.itemDetail": {
     "src": "588297d7",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.placeholder.footerNote": {
     "src": "34c4c607",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.hint.altTextHint": {
     "src": "9fed3eea",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.hint.customHtml": {
     "src": "95320d6f",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.hint.text": {
     "src": "798054fa",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.hint.brandHeader": {
     "src": "4d2367bd",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.hint.brandFooter": {
     "src": "700114fc",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.hint.addressMissing": {
     "src": "ba1dc935",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.hint.itemFreshWithMeta": {
     "src": "7b92bed0",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.hint.itemFresh": {
     "src": "671ba119",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.aria.network": {
     "src": "53ebc572",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.aria.removeProfile": {
     "src": "362a1984",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.aria.profileLink": {
     "src": "1d2db1e5",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.aria.bullet": {
     "src": "b98da0cc",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.aria.itemText": {
     "src": "20a2b53a",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.aria.itemDetail": {
     "src": "62bc95ed",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.aria.moveItemUp": {
     "src": "3b075ee2",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.aria.moveItemDown": {
     "src": "ccbb951b",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.aria.removeItem": {
     "src": "76ecba1f",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.option.regular": {
     "src": "8d4e4ef3",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.option.medium": {
     "src": "d404968e",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.option.semibold": {
     "src": "d0f518d7",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.option.bold": {
     "src": "19e07430",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.option.extraBold": {
     "src": "59f27d90",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.option.solid": {
     "src": "d0063586",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.option.dashed": {
     "src": "7b0a09ba",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.option.dotted": {
     "src": "14949230",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.option.top": {
     "src": "cae0435c",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.option.middle": {
     "src": "ced02810",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.option.bottom": {
     "src": "cce7f2f2",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.option.colour": {
     "src": "f28563a4",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.option.grey": {
     "src": "1ced325d",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.option.stacked": {
     "src": "9eafca46",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.option.inARow": {
     "src": "63d76288",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.option.left": {
     "src": "8ae1c34b",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.option.right": {
     "src": "954daa8b",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.option.logo": {
     "src": "83fce832",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.option.logoAndName": {
     "src": "df6a2ec5",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.option.squareMark": {
     "src": "35f6b734",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.option.nameOnly": {
     "src": "224e65ba",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.option.card": {
     "src": "4d4ce73b",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.option.row": {
     "src": "9bf7a8e8",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.option.compact": {
     "src": "1df39aa5",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.option.chooseFeature": {
     "src": "2199a256",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.option.unavailable": {
     "src": "7da6ae96",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.option.itemOf": {
     "src": "b9cab9fd",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.action.useMyProfiles": {
     "src": "af5bf4ac",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.action.addProfile": {
     "src": "fbc0fa9f",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.action.addItem": {
     "src": "fc1290c0",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.action.browseOffers": {
     "src": "6dc6854a",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.ratio.half": {
     "src": "95ebd9aa",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.ratio.thirdTwoThirds": {
     "src": "29bd50cf",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.ratio.twoThirdsThird": {
     "src": "0336fb43",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.ratio.full": {
     "src": "10b28a8c",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.ratio.thirds": {
     "src": "46ca2af6",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.kind.course": {
     "src": "d82b56ca",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.kind.live": {
     "src": "8f1dfa30",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.kind.stream": {
     "src": "d65e4dee",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.kind.zoom": {
     "src": "95c27c05",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.kind.onsite": {
     "src": "fb95e850",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.kind.event": {
     "src": "ad8919ac",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.kind.download": {
     "src": "a479c9c3",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.kind.post": {
     "src": "7858ac3f",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.kind.plan": {
     "src": "53bc9670",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.kind.page": {
     "src": "fb06270f",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.kind.subscription": {
     "src": "53bc9670",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.settings.kind.blogPost": {
     "src": "7858ac3f",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.colorToken.primary": {
     "src": "a9a96ec0",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.colorToken.primaryForeground": {
     "src": "21f9b2aa",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.colorToken.accent": {
     "src": "233064dd",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.colorToken.accentForeground": {
     "src": "016ad621",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.colorToken.foreground": {
     "src": "c3328c39",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.colorToken.muted": {
     "src": "dee48bca",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.colorToken.background": {
     "src": "64dd60fe",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.colorToken.surface": {
     "src": "cda05ca6",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.colorToken.border": {
     "src": "5d10d3f4",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.colorToken.inverse": {
     "src": "bbe73938",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.colorToken.inverseForeground": {
     "src": "91776ef8",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.alignment": {
     "src": "7f8c5176",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.left": {
     "src": "8ae1c34b",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.center": {
     "src": "a2391118",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.right": {
     "src": "954daa8b",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.numberValue": {
     "src": "e993f2fb",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.padding": {
     "src": "9c47ca55",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.top": {
     "src": "cae0435c",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.bottom": {
     "src": "cce7f2f2",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.paddingTop": {
     "src": "eeb6e0d7",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.paddingRight": {
     "src": "8b46e7bf",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.paddingBottom": {
     "src": "498c2a8b",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.paddingLeft": {
     "src": "1f360dda",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.none": {
     "src": "6eef6648",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.brandColour": {
     "src": "207b28d4",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.pickAnyColour": {
     "src": "2f02ccc2",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.hexValue": {
     "src": "113664f9",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.brandHeadingFont": {
     "src": "d769ec99",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.brandBodyFont": {
     "src": "4bcf6fe3",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.font": {
     "src": "b97c4d4c",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.link": {
     "src": "d0517071",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.linkPlaceholder": {
     "src": "e13d33a5",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.choosePageOrOffer": {
     "src": "36bdaa79",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.image": {
     "src": "50e19fda",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.replaceImage": {
     "src": "a7cf7b25",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.chooseImage": {
     "src": "6c406be5",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.controls.removeImage": {
     "src": "5f94b03c",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.panel.section.colours": {
     "src": "eb4e9125",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.panel.section.text": {
     "src": "c3328c39",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.panel.section.shape": {
     "src": "ea5c1a20",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.panel.field.pageBackground": {
     "src": "8ef08bf8",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.panel.field.emailBackground": {
     "src": "c118adc1",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.panel.field.textColour": {
     "src": "d160595f",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.panel.field.font": {
     "src": "b97c4d4c",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.panel.field.textSize": {
     "src": "3cc6e124",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.panel.field.width": {
     "src": "a58ddf50",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.panel.field.cornerRadius": {
     "src": "c7a86e07",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.panel.emailSettings": {
     "src": "180dd66f",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.panel.selectBlockHint": {
     "src": "6800a4b2",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.panel.tabAdd": {
     "src": "61cc55aa",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.panel.tabEdit": {
     "src": "5301648d",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.palette.yourContent": {
     "src": "c11514a6",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.palette.basics": {
     "src": "5fcebeef",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.palette.layout": {
     "src": "972ad8d8",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.palette.blocks": {
     "src": "54c45c03",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.palette.brand": {
     "src": "62b4aa57",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.palette.columns2": {
     "src": "484e0448",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.palette.columns3": {
     "src": "7d1cd5ab",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.palette.section": {
     "src": "f2c6b564",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.palette.quote": {
     "src": "309028a9",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.block.text": {
     "src": "c3328c39",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.block.heading": {
     "src": "a3089b7f",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.block.button": {
     "src": "794145f0",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.block.image": {
     "src": "50e19fda",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.block.divider": {
     "src": "912fc145",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.block.spacer": {
     "src": "f38bbbf9",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.block.columns": {
     "src": "cf723c59",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.block.social": {
     "src": "52e0b0a3",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.block.hero": {
     "src": "17f5d4f0",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.block.card": {
     "src": "4d4ce73b",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.block.list": {
     "src": "a1fffaaa",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.block.profile": {
     "src": "ff4fc027",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.block.html": {
     "src": "32d53e75",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.block.brandHeader": {
     "src": "d21ea5b3",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.block.brandFooter": {
     "src": "4d457898",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.block.item": {
     "src": "36cb67b2",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.region.header": {
     "src": "31341c6f",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.region.body": {
     "src": "718a7e8a",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.region.footer": {
     "src": "26c01e70",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.empty.header": {
     "src": "513d6268",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.empty.body": {
     "src": "b96f5295",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.empty.footer": {
     "src": "f0da0d83",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.empty.column": {
     "src": "44763b06",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.toolbar.dragToMove": {
     "src": "0d84b3e5",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.toolbar.moveBlock": {
     "src": "ca5da03c",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.toolbar.moveUp": {
     "src": "b4f57cd0",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.toolbar.moveDown": {
     "src": "260ff8ae",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.toolbar.duplicate": {
     "src": "972d5737",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.toolbar.deleteThis": {
     "src": "654bb99f",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.toolbar.confirmDelete": {
     "src": "c9f2829e",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.toolbar.keepIt": {
     "src": "d9f36924",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.toolbar.cancelDelete": {
     "src": "c7c4de08",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.toolbar.delete": {
     "src": "f6fdbe48",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.text": {
     "src": "c3328c39",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.heading": {
     "src": "a3089b7f",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.button": {
     "src": "794145f0",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.buttonLabel": {
     "src": "347b2acc",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.chooseImage": {
     "src": "6c406be5",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.spacer": {
     "src": "f38bbbf9",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.socialEmpty": {
     "src": "3fb6f910",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.htmlNote": {
     "src": "17a828a8",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.itemGone": {
     "src": "84994d04",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.itemPick": {
     "src": "e85af993",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.itemChoose": {
     "src": "c3b69e66",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.headline": {
     "src": "442250df",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.heroHeadline": {
     "src": "1c3f38ce",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.supportingLine": {
     "src": "cdd35833",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.heroSubheading": {
     "src": "b18fe03d",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.heroButton": {
     "src": "38902ca3",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.badge": {
     "src": "6d12c8ad",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.cardHeading": {
     "src": "8d689310",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.shortDescription": {
     "src": "5284b1f0",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.cardText": {
     "src": "602fc552",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.cardButton": {
     "src": "488d0944",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.listItem": {
     "src": "8709df24",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.choosePhoto": {
     "src": "90bd2810",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.name": {
     "src": "709a2322",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.role": {
     "src": "c3f104d1",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.shortBio": {
     "src": "dfbfc8ce",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.canvas.bio": {
     "src": "b31fc969",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.toolbar.undoHint": {
     "src": "b35df2eb",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.toolbar.undo": {
     "src": "39fc7212",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.toolbar.redoHint": {
     "src": "95914ad2",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.toolbar.redo": {
     "src": "471b94d4",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.toolbar.previewSize": {
     "src": "ea238910",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.toolbar.desktop": {
     "src": "532c67fe",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.toolbar.phone": {
     "src": "77064d52",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.toolbar.mode": {
     "src": "a7b93d21",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.toolbar.edit": {
     "src": "5301648d",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.toolbar.preview": {
     "src": "f1fbb2b4",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.toolbar.addBlocks": {
     "src": "11d0841f",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.toolbar.blockSettings": {
     "src": "a11ff58a",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.preview.failed": {
     "src": "e6dbee19",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.preview.retry": {
     "src": "042c862e",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.preview.loading": {
     "src": "589bd4e4",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.preview.title": {
     "src": "a991b7e6",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.text.placeholder": {
     "src": "2ceb3a53",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.text.format.bold": {
     "src": "19e07430",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.text.format.italic": {
     "src": "1616e2e5",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.text.format.underline": {
     "src": "39773aa3",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.text.format.link": {
     "src": "d0517071",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.text.format.bulletedList": {
     "src": "dd870cfc",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.text.format.numberedList": {
     "src": "8294ea4f",
-    "reviewed": false
+    "reviewed": true
   },
   "studio.emailEditor.text.format.insertFirstName": {
     "src": "ea0587cf",
-    "reviewed": false
+    "reviewed": true
   }
 }

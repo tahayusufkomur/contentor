@@ -3,10 +3,10 @@
   "subtitle": "Teste Starter 14 Tage kostenlos. Keine versteckten Gebühren, und du kannst jederzeit kündigen.",
   "popular": "Beliebt",
   "cta": "Jetzt starten",
-  "ctaProcessing": "Wird verarbeitet...",
+  "ctaProcessing": "Wird verarbeitet…",
   "errors": {
     "priceNotAvailable": "Preise in deiner Währung sind noch nicht verfügbar. Bitte wende dich an den Support.",
-    "generic": "Beim Starten des Bezahlvorgangs ist etwas schiefgelaufen. Bitte versuch es noch einmal."
+    "generic": "Beim Starten des Checkouts ist etwas schiefgelaufen. Bitte versuche es erneut."
   },
   "periods": {
     "monthly": "/Monat"
@@ -14,7 +14,7 @@
   "plans": {
     "starter": {
       "name": "Starter",
-      "price": "$19.90",
+      "price": "19,90 $",
       "period": "/Monat",
       "description": "Für wachsende Creator, die bereit sind, ihr Geschäft auszubauen.",
       "features": {
@@ -24,7 +24,7 @@
         "live": "Live-Sessions",
         "branding": "Eigenes Branding",
         "campaigns": "E-Mail-Kampagnen (1.000/Monat)",
-        "fee": "8 % Transaktionsgebühr",
+        "fee": "8 % Transaktionsgebühr",
         "domain": "Eigene Domain"
       },
       "included": [
@@ -40,7 +40,7 @@
     },
     "pro": {
       "name": "Pro",
-      "price": "49,90 $",
+      "price": "49,90 $",
       "period": "/Monat",
       "description": "Für etablierte Unternehmen, die alles brauchen.",
       "features": {
@@ -50,7 +50,7 @@
         "live": "Live-Sessions & Streaming",
         "domain": "Eigene Domain",
         "campaigns": "E-Mail-Kampagnen (5.000/Monat)",
-        "fee": "6 % Transaktionsgebühr",
+        "fee": "6 % Transaktionsgebühr",
         "support": "Priorisierter Support",
         "branding": "Eigenes Branding"
       },
@@ -79,14 +79,14 @@
     "support": "Support"
   },
   "compare": {
-    "included": "{plan}: {feature} inklusive",
-    "notIncluded": "{plan}: {feature} nicht inklusive",
+    "included": "{plan}: {feature} enthalten",
+    "notIncluded": "{plan}: {feature} nicht enthalten",
     "dynamic": {
       "studentsUnlimited": "Unbegrenzte Teilnehmer",
       "students": "Bis zu {count, number} Teilnehmer",
       "storageUnlimited": "Unbegrenzter Speicherplatz",
       "storage": "{count, number} GB Speicherplatz",
-      "fee": "{pct, number}% Transaktionsgebühr",
+      "fee": "{pct, number} % Transaktionsgebühr",
       "campaigns": "E-Mail-Kampagnen",
       "campaignsLimit": "E-Mail-Kampagnen ({count, number}/Monat)"
     }
@@ -96,19 +96,19 @@
     "items": {
       "switch": {
         "q": "Kann ich den Tarif wechseln?",
-        "a": "Ja. Schreib uns und wir stellen deinen Tarif um, die Abrechnung erfolgt anteilig. Du kannst jederzeit in deinem Creator-Studio kündigen."
+        "a": "Ja. Schreibe uns, und wir stellen deinen Tarif um, die Abrechnung erfolgt anteilig. Du kannst jederzeit in deinem Creator-Studio kündigen."
       },
       "trial": {
         "q": "Gibt es eine kostenlose Testphase?",
-        "a": "Ja. Starter ist 14 Tage lang kostenlos. Du hinterlegst eine Karte, wenn du deine Website erstellst, und die erste Abbuchung erfolgt am Ende der Testphase, sofern du nicht vorher kündigst. Während der Testphase funktioniert alles aus Starter außer dem Verkaufen, das freigeschaltet wird, sobald dein Tarif beginnt."
+        "a": "Ja. Starter ist 14 Tage lang kostenlos. Du hinterlegst eine Karte, wenn du deine Website erstellst, und die erste Abbuchung erfolgt am Ende der Testphase, sofern du nicht vorher kündigst. Während der Testphase funktioniert alles in Starter außer dem Verkauf, der freigeschaltet wird, sobald dein Tarif beginnt."
       },
       "payments": {
         "q": "Welche Zahlungsmethoden akzeptiert ihr?",
-        "a": "Alle gängigen Kredit- und Debitkarten, abgewickelt über Stripe. Zahlungen deiner Teilnehmer gehen direkt auf dein eigenes Stripe-Konto — wir verwahren dein Geld nie."
+        "a": "Alle gängigen Kredit- und Debitkarten, abgewickelt über Stripe. Zahlungen deiner Teilnehmer gehen direkt auf dein eigenes Stripe-Konto – wir verwahren dein Geld nie."
       },
       "limits": {
         "q": "Was passiert, wenn ich die Limits meines Tarifs überschreite?",
-        "a": "Wir benachrichtigen dich, wenn du dich deinen Limits näherst. Du kannst jederzeit upgraden, um mehr Kapazität zu erhalten, ohne Daten zu verlieren."
+        "a": "Wir benachrichtigen dich, wenn du dich deinen Limits näherst. Du kannst jederzeit auf einen höheren Tarif wechseln, um mehr Kapazität zu erhalten, ohne Daten zu verlieren."
       }
     }
   },
@@ -122,13 +122,13 @@
   "comingSoonNote": "Wir stellen gerade die lokalen Preise fertig. Schau bald wieder vorbei.",
   "trialCta": "Kostenlos testen",
   "meta": {
-    "title": "Preise — Contentor",
+    "title": "Preise – Contentor",
     "description": "Teste Starter 14 Tage lang kostenlos. Keine versteckten Gebühren und du kannst jederzeit kündigen."
   },
   "labels": {
     "questions": "Fragen"
   },
   "checkout": {
-    "asideTitle": "Alles, was du lehrst, an einem Ort"
+    "asideTitle": "Alles, was du anbietest, an einem Ort"
   }
 }

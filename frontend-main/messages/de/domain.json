@@ -1,6 +1,6 @@
 {
   "registrant": {
-    "intro": "Domain-Registrare benötigen die Kontaktdaten des Inhabers, um eine Domain zu registrieren. Wir verwenden sie nur für die Registrierung.",
+    "intro": "Domain-Registrare benötigen die Kontaktdaten der Person, der die Domain gehört, um sie zu registrieren. Wir verwenden sie nur für die Registrierung.",
     "firstName": "Vorname",
     "lastName": "Nachname",
     "company": "Unternehmen (optional)",
@@ -21,10 +21,10 @@
     "forSite": "Für <name>{name}</name> ({domain})"
   },
   "wizard": {
-    "registering": "<name>{domain}</name> wird registriert — {price} / Jahr.",
+    "registering": "<name>{domain}</name> wird registriert – {price} / Jahr.",
     "continueToPayment": "Weiter zur Zahlung",
     "redirecting": "Weiterleitung zur sicheren Zahlung…",
-    "checkoutFailed": "Bezahlvorgang konnte nicht gestartet werden"
+    "checkoutFailed": "Checkout konnte nicht gestartet werden"
   },
   "manage": {
     "live": "Live",

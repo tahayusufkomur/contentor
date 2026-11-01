@@ -7,12 +7,12 @@
     "setupFailed": "Einrichtung fehlgeschlagen"
   },
   "plan": "Tarif",
-  "freePlan": "Kostenlos",
+  "freePlan": "Free",
   "openStudio": "Studio öffnen",
   "preview": "Vorschau",
   "newPlatform": "Neue Plattform",
   "emptyTitle": "Starte deine erste Plattform",
-  "emptyBody": "Erstelle ein wunderschön gestaltetes Studio für deine Kurse, Live-Sessions und E-Mail-Kampagnen — alles unter deiner eigenen Marke.",
+  "emptyBody": "Erstelle ein wunderschön gestaltetes Studio für deine Kurse, Live-Sessions und E-Mail-Kampagnen – alles unter deiner eigenen Marke.",
   "greeting": "Hallo, {name}",
   "greetingFallback": "Dein Studio",
   "title": "Deine Plattformen",
@@ -23,30 +23,30 @@
     "deleted": "{name} wurde gelöscht.",
     "failed": "Diese Plattform konnte nicht gelöscht werden. Versuche es erneut.",
     "confirmTitle": "{name} löschen?",
-    "confirmBody": "Dadurch werden die Website, ihre Kurse, Klassen, Teilnehmer und Dateien dauerhaft gelöscht und <strong>{slug}</strong> freigegeben. Das kann nicht rückgängig gemacht werden.",
+    "confirmBody": "Dadurch werden die Website, ihre Kurse, Live-Sessions, Teilnehmer und Dateien dauerhaft gelöscht und <strong>{slug}</strong> freigegeben. Das kann nicht rückgängig gemacht werden.",
     "typeToConfirm": "Gib <mono>{slug}</mono> ein, um zu bestätigen",
     "deleting": "Wird gelöscht…",
     "confirm": "Plattform löschen",
     "blocked": {
-      "paid_plan": "Kündige zuerst den kostenpflichtigen Tarif — kostenpflichtige Plattformen können nicht gelöscht werden.",
+      "paid_plan": "Kündige zuerst den kostenpflichtigen Tarif – kostenpflichtige Plattformen können nicht gelöscht werden.",
       "payments_connected": "Diese Plattform hat ein verknüpftes Zahlungskonto. Kontaktiere den Support, um es zu entfernen.",
       "custom_domain": "Entferne zuerst die eigene Domain.",
-      "provisioning": "Wird noch eingerichtet — versuche es in ein paar Minuten erneut.",
+      "provisioning": "Wird noch eingerichtet – versuche es in ein paar Minuten erneut.",
       "not_deletable": "Diese Plattform kann nicht gelöscht werden."
     }
   },
   "customDomain": "Eigene Domain",
   "publish": {
     "liveTitle": "Live für alle",
-    "hiddenTitle": "Ausgeblendet — nur Vorschau",
+    "hiddenTitle": "Ausgeblendet – nur Vorschau",
     "liveHint": "Deine Website ist öffentlich.",
-    "hiddenHint": "Besucher sehen eine Vorschauseite, bis du veröffentlichst.",
+    "hiddenHint": "Besucher sehen eine Vorschau-Sperre, bis du veröffentlichst.",
     "gateLabel": "Vorschau-Passwort",
     "gateSet": "· festgelegt",
     "gateNew": "Neues Passwort festlegen",
     "gateAdd": "Passwort hinzufügen",
     "save": "Speichern",
     "gateHint": "Teile dieses Passwort, damit andere vor dem Start eine Vorschau sehen können. Lass es leer und speichere, um es zu entfernen.",
-    "failed": "Konnte nicht gespeichert werden. Versuche es erneut."
+    "failed": "Speichern fehlgeschlagen. Versuche es erneut."
   }
 }

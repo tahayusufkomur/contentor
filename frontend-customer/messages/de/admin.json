@@ -27,7 +27,7 @@
     "items": {
       "home": "Start",
       "courses": "Kurse",
-      "liveEvents": "Sessions & Events",
+      "liveEvents": "Sessions & Veranstaltungen",
       "downloads": "Downloads",
       "students": "Personen",
       "communityFeed": "Community",
@@ -41,10 +41,10 @@
       "settings": "Allgemein",
       "plan": "Dein Tarif",
       "media": "Medien",
-      "studio": "Fotostudio",
+      "studio": "Foto-Studio",
       "messages": "Nachrichten",
       "reels": "Reels",
-      "videoStudio": "Videostudio"
+      "videoStudio": "Video-Studio"
     },
     "more": "+ {count} weitere"
   },
@@ -69,7 +69,7 @@
       "send": "Wird gern weitergeschickt",
       "funny": "Lustig",
       "hook": "Starker Hook",
-      "insight": "Speichernswert"
+      "insight": "Zum Speichern"
     },
     "found": "{count, plural, one {# neue Idee ist} other {# neue Ideen sind}} bereit.",
     "failed": "In diesem Video wurden keine Ideen gefunden.",
@@ -99,11 +99,11 @@
       "transcribing": "Wird transkribiert…",
       "picking": "Momente werden gesucht…",
       "framing": "Bildausschnitt wird gewählt…",
-      "covering": "Titelbilder werden ausgewählt…",
+      "covering": "Cover werden ausgewählt…",
       "transcribingHint": "Zuerst wird jedes Wort des Videos aufgeschrieben. Bei einem langen Video dauert das ein paar Minuten.",
       "pickingHint": "Das Transkript wird nach Momenten durchsucht, die fesseln und für sich allein stehen.",
       "framingHint": "Wir ermitteln, wo du im Bild bist, damit der Clip dich im Blick behält.",
-      "coveringHint": "Für jedes Titelbild werden die Einzelbilder ausgewählt, auf denen du am besten aussiehst."
+      "coveringHint": "Für jedes Cover werden die Standbilder ausgewählt, auf denen du am besten aussiehst."
     },
     "preview": {
       "label": "Vorschau des Reels",
@@ -123,19 +123,19 @@
       "tryAgain": "Erneut versuchen",
       "making": "Video wird erstellt…",
       "download": "Download",
-      "downloadCover": "Titelbild",
+      "downloadCover": "Cover",
       "openStudio": "Im Studio öffnen",
       "makeHint": "Die Vorschau ist live: Erstelle das Video, wenn alles passt.",
       "makingHint": "Das dauert etwa eine Minute. Du kannst währenddessen weiterbearbeiten.",
       "staleHint": "Du hast das Reel geändert, seit sein Video erstellt wurde.",
-      "readyHint": "Bereit zum Posten. Lade auch das Titelbild herunter, als Vorschaubild für deinen Beitrag.",
+      "readyHint": "Bereit zum Posten. Lade auch das Cover herunter, als Vorschaubild für deinen Beitrag.",
       "noRender": "Das Erstellen von Videodateien ist für diese Website noch nicht aktiviert.",
       "made": "Dein Reel ist bereit zum Herunterladen.",
       "notMade": "Das Video konnte nicht erstellt werden. Versuche es erneut.",
       "theFile": "Videodatei abspielen",
-      "cover": "Titelbild",
-      "coverHint": "Die erste Sekunde des Reels und das Bild, das du als sein Titelbild postest.",
-      "hook": "Aufhänger",
+      "cover": "Cover",
+      "coverHint": "Die erste Sekunde des Reels und das Bild, das du als sein Cover postest.",
+      "hook": "Hook",
       "hookHint": "Setze *Sternchen* um das Wort, um es hervorzuheben.",
       "design": "Design",
       "designs": {
@@ -212,14 +212,14 @@
       "panelsLabel": "Studio-Bereiche",
       "panels": {
         "words": "Text",
-        "cover": "Titelbild",
+        "cover": "Cover",
         "captions": "Untertitel",
         "frame": "Bildausschnitt",
         "extras": "Extras",
         "post": "Beitrag"
       },
       "tracks": {
-        "cover": "Titelbild",
+        "cover": "Cover",
         "video": "Video",
         "captions": "Untertitel",
         "photos": "Fotos",
@@ -241,7 +241,7 @@
       "remove": "Entfernen",
       "zoomIn": "Vergrößern",
       "zoomOut": "Verkleinern",
-      "zoom": "Timeline-Zoom",
+      "zoom": "Zoom der Zeitleiste",
       "fit": "Reel einpassen",
       "stageHint": "Zieh die Untertitel nach oben oder unten oder das Bild zur Seite. Klick zum Abspielen oder Pausieren.",
       "frame": {
@@ -271,16 +271,16 @@
     "subtitle": "Was deine Teilnehmer bei dir kaufen können.",
     "tabs": {
       "products": "Produkte",
-      "bundles": "Pakete",
+      "bundles": "Bundles",
       "plans": "Mitgliedschaften",
       "payments": "Zahlungen"
     },
     "bundles": {
       "draft": "Entwurf",
-      "new": "Neues Paket",
+      "new": "Neues Bundle",
       "name": "Name",
       "description": "Beschreibung",
-      "items": "Paketinhalte",
+      "items": "Bundle-Inhalte",
       "itemsHint": "Was Teilnehmer zusammen zu einem Preis bekommen.",
       "publish": "Veröffentlichen",
       "publishing": "Wird veröffentlicht…",
@@ -288,20 +288,20 @@
       "draftHint": "Ein Entwurf ist für Teilnehmer unsichtbar, bis du ihn veröffentlichst.",
       "empty": "Noch keine Bundles",
       "emptyHint": "Erstelle ein Bundle, um Produkte zu einem reduzierten Preis zu bündeln.",
-      "itemFallback": "Artikel {id}",
+      "itemFallback": "Produkt {id}",
       "needPrice": "Gib einen Preis über 0 ein.",
       "updated": "Bundle erfolgreich aktualisiert.",
       "updateError": "Bundle konnte nicht aktualisiert werden. Bitte versuche es erneut.",
       "publishError": "Das Bundle konnte nicht veröffentlicht werden.",
-      "needItem": "Bitte wähle mindestens einen Artikel für das Bundle aus.",
+      "needItem": "Bitte wähle mindestens ein Produkt für das Bundle aus.",
       "edit": "Bundle bearbeiten",
-      "editSubtitle": "Aktualisiere die Details und Artikel dieses Bundles.",
+      "editSubtitle": "Aktualisiere die Details und Produkte dieses Bundles.",
       "details": "Bundle-Details",
       "detailsHint": "Grundlegende Informationen zu deinem Bundle.",
-      "namePlaceholder": "z. B. Starterpaket",
-      "descriptionPlaceholder": "Beschreibe, was in diesem Bundle enthalten ist...",
-      "originalPrice": "Originalpreis (Summe der Artikel)",
-      "itemsTitle": "Bundle-Artikel",
+      "namePlaceholder": "z. B. Starter-Bundle",
+      "descriptionPlaceholder": "Beschreibe, was in diesem Bundle enthalten ist…",
+      "originalPrice": "Originalpreis (Summe der Produkte)",
+      "itemsTitle": "Bundle-Produkte",
       "itemsHint2": "Wähle die Inhalte aus, die dieses Bundle enthalten soll.",
       "saving": "Wird gespeichert…",
       "saveChanges": "Änderungen speichern",
@@ -398,7 +398,7 @@
   "settingsHub": {
     "title": "Weitere Einstellungen",
     "brand": "Website-Name, Logo und Look",
-    "menu": "Website-Menü und Header-Button",
+    "menu": "Website-Menü und Button in der Kopfzeile",
     "community": "Community ein- oder ausschalten und ihre Willkommensnachricht",
     "assistant": "Der Assistent, den deine Teilnehmer sehen",
     "autopilot": "Blog-Autopilot",
@@ -415,7 +415,7 @@
       "history": "Verlauf"
     },
     "noChangesYet": "Noch keine Änderungen – alles, was dein Assistent übernimmt, erscheint hier.",
-    "placeholder": "Bitte um einen Kurs, eine Live-Session, eine Änderung an deiner Website…",
+    "placeholder": "Frag nach einem Kurs, einer Live-Session oder einer Änderung an deiner Website…",
     "startersTitle": "Probier es auf dieser Seite aus",
     "undo": "Rückgängig",
     "undoing": "Wird rückgängig gemacht…",
@@ -430,18 +430,18 @@
       ],
       "courses": [
         "Schlag mir einen Kurs vor, den ich als Nächstes hinzufügen könnte",
-        "Füge den Kursen ohne Titelbild ein Titelbild hinzu",
+        "Füge Kursen ohne Cover eins hinzu",
         "Welche Kurse sind noch Entwürfe?"
       ],
       "course": [
         "Füge diesem Kurs ein Modul hinzu",
         "Schreib die Beschreibung dieses Kurses neu",
-        "Gib diesem Kurs ein neues Titelbild",
+        "Gib diesem Kurs ein neues Cover",
         "Ist dieser Kurs bereit zur Veröffentlichung?"
       ],
       "events": [
-        "Plane eine wöchentliche Einheit für die nächsten 4 Wochen",
-        "Füge meinen anstehenden Veranstaltungen Titelbilder hinzu",
+        "Plane eine wöchentliche Live-Session für die nächsten 4 Wochen",
+        "Füge meinen anstehenden Veranstaltungen Cover hinzu",
         "Was steht als Nächstes in meinem Kalender?"
       ],
       "blog": [
@@ -450,7 +450,7 @@
         "Welche Beiträge sind noch Entwürfe?"
       ],
       "announcements": [
-        "Entwirf eine Ankündigung für meine nächste Einheit",
+        "Entwirf eine Ankündigung für meine nächste Live-Session",
         "Entwirf eine Begrüßung für neue Teilnehmer",
         "Entwirf eine Erinnerung an meinen neuesten Kurs"
       ],
@@ -465,12 +465,12 @@
         "Wie viel sollte ich für einen Kurs verlangen?"
       ],
       "media": [
-        "Füge den Kursen ohne Titelbild ein Titelbild hinzu",
-        "Füge meinen anstehenden Veranstaltungen Titelbilder hinzu",
+        "Füge Kursen ohne Cover eins hinzu",
+        "Füge meinen anstehenden Veranstaltungen Cover hinzu",
         "Setze ein neues Foto auf meine Startseite"
       ]
     },
-    "undoFailed": "Das hat nicht geklappt. Bitte versuch es noch einmal.",
+    "undoFailed": "Das hat nicht geklappt. Bitte versuche es erneut.",
     "you": "Du"
   },
   "team": {
@@ -512,7 +512,7 @@
       ],
       "content": [
         "Entwirf einen Kurs aus einer Idee",
-        "Plane einen wöchentlichen Kurstermin für die nächsten 4 Wochen",
+        "Plane eine wöchentliche Live-Session für die nächsten 4 Wochen",
         "Welche Kurse sind noch Entwürfe?"
       ],
       "marketing": [
@@ -528,7 +528,7 @@
       "finance": [
         "Wie liefen die Verkäufe diesen Monat?",
         "Wie viel sollte ich für meinen nächsten Kurs verlangen?",
-        "Wie bekomme ich mein Geld?"
+        "Wie werde ich bezahlt?"
       ],
       "assistant": [
         "Was sollte ich als Nächstes tun?",
@@ -546,7 +546,7 @@
     "subtitle": "Ein Chat-Helfer auf deiner Website, der mit deinen Inhalten antwortet und Passendes empfiehlt.",
     "enable": "Assistenten auf meiner Website anzeigen",
     "enableHint": "Wenn das aktiviert ist, sehen Besucher und Teilnehmer eine Chat-Blase auf deiner Website.",
-    "enableFailed": "Das konnte nicht geändert werden. Bitte versuch es noch einmal.",
+    "enableFailed": "Das konnte nicht geändert werden. Bitte versuche es erneut.",
     "upsellTitle": "Hol dir einen Website-Assistenten für deine Teilnehmer",
     "upsellBody": "Der Assistent beantwortet die Fragen deiner Teilnehmer und empfiehlt deine Kurse – in kostenpflichtigen Tarifen enthalten.",
     "upsellCta": "Tarife ansehen",
@@ -557,7 +557,7 @@
     "suggestionPlaceholder": "z. B. Wie fange ich an?",
     "save": "Speichern",
     "saved": "Gespeichert.",
-    "saveFailed": "Speichern fehlgeschlagen. Bitte versuch es noch einmal.",
+    "saveFailed": "Speichern fehlgeschlagen. Bitte versuche es erneut.",
     "usage": "{used} von {cap} Fragen in diesem Monat genutzt",
     "knowledgeTitle": "Trainiere deinen Assistenten",
     "knowledgeHint": "Füge Antworten auf Fragen hinzu, die deine Teilnehmer stellen. Der Assistent nutzt nur, was du hier schreibst, und deine veröffentlichten Inhalte.",
@@ -566,10 +566,10 @@
     "knowledgeSave": "Eintrag speichern",
     "knowledgeLimit": "Du hast das Limit von {max} Einträgen erreicht.",
     "knowledgeEmpty": "Du hast deinem Assistenten noch nichts beigebracht.",
-    "knowledgeSaveFailed": "Dieser Eintrag konnte nicht gespeichert werden. Bitte versuch es noch einmal.",
-    "knowledgeDeleteFailed": "Dieser Eintrag konnte nicht gelöscht werden. Bitte versuch es noch einmal.",
+    "knowledgeSaveFailed": "Dieser Eintrag konnte nicht gespeichert werden. Bitte versuche es erneut.",
+    "knowledgeDeleteFailed": "Dieser Eintrag konnte nicht gelöscht werden. Bitte versuche es erneut.",
     "entryTitle": "Thema oder Frage",
-    "entryTitlePlaceholder": "z. B. Rückerstattungen",
+    "entryTitlePlaceholder": "z. B. Erstattungen",
     "entryContent": "Antwort",
     "entryContentPlaceholder": "Was soll der Assistent sagen?",
     "entryEnabled": "Aktiv",
@@ -586,13 +586,13 @@
     "showMore": "Mehr anzeigen",
     "showLess": "Weniger anzeigen",
     "loadMore": "Mehr laden",
-    "loadFailed": "Laden fehlgeschlagen. Bitte versuch es noch einmal.",
+    "loadFailed": "Laden fehlgeschlagen. Bitte versuche es erneut.",
     "previewTitle": "Probier es selbst aus",
     "previewHint": "Teste hier Antworten – das funktioniert auch, wenn der Assistent ausgeschaltet ist, und verbraucht keine deiner monatlichen Fragen.",
     "previewPlaceholder": "Stell eine Frage…",
     "previewSend": "Senden",
     "previewThinking": "Denkt nach…",
-    "previewError": "Etwas ist schiefgelaufen – bitte versuch es noch einmal.",
+    "previewError": "Etwas ist schiefgelaufen – bitte versuche es erneut.",
     "empty": "Noch keine Unterhaltungen.",
     "convTitle": "Unterhaltungen",
     "convHint": "Sieh dir an, was Besucher deinen Assistenten fragen – und schalte dich ein, wenn eine menschliche Antwort besser ist.",
@@ -631,7 +631,7 @@
     "deleteConfirm": "Diesen Beitrag löschen? Das kann nicht rückgängig gemacht werden.",
     "upgradeTitle": "KI-Blogschreiben ist eine kostenpflichtige Funktion",
     "upgradeBody": "Wechsle zu Starter (5 KI-Beiträge/Monat) oder Pro (30 KI-Beiträge/Monat) und lass Contentor für dich schreiben.",
-    "upgrade": "Upgraden",
+    "upgrade": "Tarif wechseln",
     "editorSave": "Speichern",
     "editorPublish": "Veröffentlichen",
     "editorUnpublish": "Veröffentlichung aufheben",
@@ -664,13 +664,13 @@
     "nextRun": "Nächster Beitrag: {date}",
     "frequencyWeekly": "Wöchentlich",
     "frequencyMonthly": "Monatlich",
-    "coverLabel": "Titelbild",
-    "coverChange": "Titelbild ändern",
-    "coverChoose": "Titelbild auswählen",
+    "coverLabel": "Cover",
+    "coverChange": "Cover ändern",
+    "coverChoose": "Cover auswählen",
     "coverRemove": "Entfernen",
     "libraryTab": "Fotobibliothek",
     "libraryUpload": "Hochladen",
-    "libraryUploadFailed": "Das Foto wurde nicht hochgeladen. Bitte versuch es noch einmal.",
+    "libraryUploadFailed": "Das Foto wurde nicht hochgeladen. Bitte versuche es erneut.",
     "librarySearch": "Bilder suchen…",
     "libraryEmpty": "Keine Bilder gefunden.",
     "libraryMore": "Mehr anzeigen",
@@ -726,22 +726,22 @@
     "deleteSuccess": "Unterhaltung gelöscht.",
     "loadError": "Posteingang konnte nicht geladen werden.",
     "loadConvError": "Diese Unterhaltung konnte nicht geladen werden.",
-    "sendError": "Die Nachricht konnte nicht gesendet werden. Bitte versuch es erneut.",
-    "replyError": "Antwort konnte nicht gesendet werden. Bitte versuch es erneut.",
-    "archiveError": "Archivieren fehlgeschlagen. Bitte versuch es erneut.",
-    "spamError": "Markieren als Spam fehlgeschlagen. Bitte versuch es erneut.",
-    "deleteError": "Löschen fehlgeschlagen. Bitte versuch es erneut.",
+    "sendError": "Die Nachricht konnte nicht gesendet werden. Bitte versuche es erneut.",
+    "replyError": "Antwort konnte nicht gesendet werden. Bitte versuche es erneut.",
+    "archiveError": "Archivieren fehlgeschlagen. Bitte versuche es erneut.",
+    "spamError": "Markieren als Spam fehlgeschlagen. Bitte versuche es erneut.",
+    "deleteError": "Löschen fehlgeschlagen. Bitte versuche es erneut.",
     "fillFields": "Bitte fülle alle Felder aus.",
     "banner": {
       "pick": "Wähle deine E-Mail-Adresse, damit Teilnehmer dir schreiben können und ihre Nachrichten direkt hier in deinem Posteingang landen.",
-      "upgrade": "Deine Nachrichten werden von <b>{email}</b> gesendet, worauf Teilnehmer nicht antworten können. Upgrade deinen Tarif, um deine eigene Adresse zu erhalten und ihre E-Mails direkt hier zu empfangen.",
+      "upgrade": "Deine Nachrichten werden von <b>{email}</b> gesendet, worauf Teilnehmer nicht antworten können. Wechsle auf einen höheren Tarif, um deine eigene Adresse zu erhalten und ihre E-Mails direkt hier zu empfangen.",
       "choose": "Meine Adresse wählen",
       "plans": "Tarife ansehen",
       "dismiss": "Schließen"
     }
   },
   "setup": {
-    "title": "Bring deine Website online",
+    "title": "Bring deine Website live",
     "progressLabel": "{done} von {total} erledigt",
     "bubbleLabel": "Einrichtungsleitfaden",
     "openFull": "Einrichtungsleitfaden öffnen",
@@ -750,7 +750,7 @@
     "niceToHave": "Optional",
     "markDone": "Als erledigt markieren",
     "markUndone": "Als nicht erledigt markieren",
-    "celebrateTitle": "Du bist online! 🎉",
+    "celebrateTitle": "Du bist live! 🎉",
     "celebrateBody": "Alles ist eingerichtet. Teile deine Website mit deinen Teilnehmern!",
     "copyLink": "Link zu deiner Website kopieren",
     "copied": "Link kopiert!",
@@ -758,7 +758,7 @@
       "site": "Deine Website",
       "content": "Deine Inhalte",
       "business": "Bezahlt werden",
-      "live": "Online gehen",
+      "live": "Live gehen",
       "extras": "Optional"
     },
     "items": {
@@ -767,7 +767,7 @@
         "description": "Gestalte das, was Besucher zuerst sehen, ganz nach deinem Geschmack."
       },
       "page_about": {
-        "title": "Über-mich-Seite",
+        "title": "Über-uns-Seite",
         "description": "Erzähl deine Geschichte in deinen eigenen Worten."
       },
       "page_courses": {
@@ -776,7 +776,7 @@
       },
       "page_pricing": {
         "title": "Preisseite",
-        "description": "Sieh dir die Tarife an, die deine Teilnehmer sehen werden."
+        "description": "Sieh dir die Mitgliedschaften an, die deine Teilnehmer sehen werden."
       },
       "page_faq": {
         "title": "FAQ-Seite",
@@ -850,15 +850,15 @@
       "countCourses": "{count} Kurse",
       "countDownloads": "{count} Downloads",
       "countLive": "{count} Live-Sessions",
-      "countPlans": "{count} Tarife",
-      "countBundles": "{count} Pakete",
+      "countPlans": "{count} Mitgliedschaften",
+      "countBundles": "{count} Bundles",
       "countVideos": "{count} Videos",
       "countPhotos": "{count} Fotos",
       "keepNote": "Alles, was du bearbeitet hast, bleibt erhalten.",
       "confirm": "Demo-Inhalte entfernen",
       "cancel": "Abbrechen",
       "success": "Demo-Inhalte entfernt",
-      "error": "Etwas ist schiefgelaufen – es wurde nichts entfernt. Bitte versuch es noch einmal."
+      "error": "Etwas ist schiefgelaufen – es wurde nichts entfernt. Bitte versuche es erneut."
     },
     "tabs": {
       "checklist": "Einrichtung",
@@ -871,10 +871,10 @@
       "placeholder": "Stell eine Frage…",
       "send": "Senden",
       "thinking": "Denkt nach…",
-      "error": "Etwas ist schiefgelaufen – bitte versuch es noch einmal.",
+      "error": "Etwas ist schiefgelaufen – bitte versuche es erneut.",
       "unavailable": "Der Hilfe-Chat ist gerade nicht verfügbar. Du erreichst uns unter support@contentor.app.",
       "quota": "Du hast dein Hilfe-Chat-Kontingent für diesen Monat aufgebraucht. In der Zwischenzeit erreichst du uns unter support@contentor.app.",
-      "suggestPayouts": "Wie bekomme ich mein Geld?",
+      "suggestPayouts": "Wie werde ich bezahlt?",
       "suggestPublish": "Wie finden Teilnehmer meine Website?",
       "suggestStudents": "Wie melden sich Teilnehmer an?",
       "suggestPlans": "Was ist in den Tarifen enthalten?",
@@ -896,7 +896,7 @@
     "defaultLocaleLabel": "Standardsprache für Teilnehmer",
     "defaultLocaleDescription": "Neue Teilnehmer übernehmen diese Sprache bei ihrem ersten Besuch. Jeder Teilnehmer kann seine Einstellung selbst ändern.",
     "saved": "Gespeichert.",
-    "saveFailed": "Speichern fehlgeschlagen. Bitte versuch es noch einmal.",
+    "saveFailed": "Speichern fehlgeschlagen. Bitte versuche es erneut.",
     "yourLanguage": "Deine Sprache",
     "yourLanguageHint": "Die Sprache deines Creator-Studios und dessen, was wir dir schreiben. Die Sprache deiner Teilnehmer wird separat eingestellt.",
     "siteLanguage": "Website-Sprache",
@@ -915,11 +915,11 @@
     "currency": "Währung",
     "nextBillingDate": "Nächstes Abrechnungsdatum",
     "provider": "Anbieter",
-    "freeNotice": "Kostenloser Tarif: 10 Teilnehmer, 1 GB, nur kostenlose Inhalte. Führe ein Upgrade durch, um Kurse zu verkaufen und Live-Sessions zu veranstalten.",
+    "freeNotice": "Kostenloser Tarif: 10 Teilnehmer, 1 GB, nur kostenlose Inhalte. Wechsle auf einen höheren Tarif, um Kurse zu verkaufen und Live-Sessions zu veranstalten.",
     "cancelsOn": "Das Abonnement endet am {date}.",
-    "checkoutCanceled": "Der Bezahlvorgang wurde abgebrochen. Dein Tarif wurde nicht geändert.",
+    "checkoutCanceled": "Der Checkout wurde abgebrochen. Dein Tarif wurde nicht geändert.",
     "noData": "Keine Abonnementdaten verfügbar.",
-    "error": "Abonnement konnte nicht geladen werden. Bitte versuch es noch einmal.",
+    "error": "Abonnement konnte nicht geladen werden. Bitte versuche es erneut.",
     "status": {
       "free": "Kostenlos",
       "none": "Kein Tarif",
@@ -930,8 +930,8 @@
       "canceled": "Gekündigt"
     },
     "trialEnds": "Testphase endet",
-    "trialNotice": "Deine kostenlose Testphase endet am {date}. Dann wird deine Karte belastet, außer du kündigst vorher. Der Verkauf startet, sobald dein Tarif beginnt.",
-    "noneNotice": "Noch kein Tarif, deshalb ist deine Website für Besucher verborgen. Alles, was du erstellt hast, bleibt erhalten: Wähle unten einen Tarif, um sie wieder sichtbar zu machen.",
+    "trialNotice": "Deine kostenlose Testphase endet am {date}. Dann wird deine Karte belastet, es sei denn, du kündigst vorher. Der Verkauf startet, sobald dein Tarif beginnt.",
+    "noneNotice": "Noch kein Tarif, deshalb ist deine Website für Besucher verborgen. Alles, was du erstellt hast, bleibt erhalten: Wähle unten einen Tarif, um deine Website wieder sichtbar zu machen.",
     "startNow": "Meinen Tarif jetzt starten",
     "starting": "Dein Tarif wird gestartet…",
     "startNowFailed": "Deine Karte konnte noch nicht belastet werden. Kläre das mit deiner Bank und versuche es erneut.",
@@ -951,7 +951,7 @@
       "switchViaSupport": "Für einen Wechsel den Support kontaktieren",
       "downgrade": "Für ein Downgrade den Support kontaktieren",
       "comingSoonInCurrency": "Bald in {currency} verfügbar",
-      "processing": "Wird verarbeitet...",
+      "processing": "Wird verarbeitet…",
       "error": "Der Checkout konnte nicht gestartet werden. Bitte versuche es erneut.",
       "limits": {
         "students": "{n} Teilnehmer",
@@ -960,7 +960,7 @@
         "campaignEmails": "{n} Kampagnen-E-Mails/Monat",
         "sell": "Kostenpflichtige Inhalte verkaufen und Zahlungen über Stripe erhalten",
         "live": "Live-Sessions",
-        "fee": "{n} % Transaktionsgebühr auf Verkäufe",
+        "fee": "{n} % Transaktionsgebühr auf Verkäufe",
         "aiBlog": "{n} KI-Blogbeiträge/Monat"
       },
       "tryAgain": "Erneut versuchen",
@@ -975,13 +975,13 @@
     },
     "event": {
       "label": "Beschreibe eine Session oder eine Reihe und der Assistent plant sie ein",
-      "placeholder": "z. B. eine Live-Flow-Klasse jeden Dienstag um 18:00 Uhr, 6 Wochen lang"
+      "placeholder": "z. B. eine Live-Flow-Session jeden Dienstag um 18:00 Uhr, 6 Wochen lang"
     },
     "submit": "Entwurf erstellen",
     "working": "Entwurf wird erstellt…",
     "wait": "Der Assistent erstellt den Entwurf. Das dauert ein paar Sekunden.",
     "resting": "Der Assistent macht gerade eine Pause. Du kannst es trotzdem von Hand erstellen.",
-    "failed": "Das hat nicht geklappt. Versuch es noch einmal oder erstelle es von Hand."
+    "failed": "Das hat nicht geklappt. Versuche es erneut oder erstelle es von Hand."
   },
   "media": {
     "subtitle": "Die Fotos und Videos, die du auf deiner Website, in Kursen und in Beiträgen verwendest.",
@@ -1157,7 +1157,7 @@
           "badge": "das Badge",
           "text": "den ausgewählten Text",
           "shape": "die ausgewählte Form",
-          "icon": "das ausgewählte Symbol",
+          "icon": "das ausgewählte Icon",
           "qr": "die Quadrate des QR-Codes"
         },
         "fonts": "Schriftarten",
@@ -1209,7 +1209,7 @@
         "expand": "Auf {size} erweitern",
         "costs": "{count, plural, one {Verbraucht dein letztes neues Foto in diesem Monat.} other {Verbraucht 1 deiner # verbleibenden neuen Fotos in diesem Monat.}}",
         "usedUp": "Du hast deine neuen Fotos für diesen Monat aufgebraucht.",
-        "failed": "Dieses Foto konnte nicht geändert werden. Versuch es noch mal.",
+        "failed": "Dieses Foto konnte nicht geändert werden. Versuche es erneut.",
         "erase": "Entfernen",
         "eraseLabel": "Was soll weg?",
         "erasePlaceholder": "Die Kaffeetasse auf dem Tisch",
@@ -1217,14 +1217,14 @@
         "changeLabel": "Was soll sich ändern?",
         "changePlaceholder": "Warmes Abendlicht hinter mir",
         "toolsOff": "Die Foto-Tools sind für diese Website noch nicht aktiviert.",
-        "tooMany": "Das sind viele Hintergründe in dieser Stunde. Versuch es später noch mal."
+        "tooMany": "Das sind viele Hintergründe in dieser Stunde. Versuche es später erneut."
       },
       "layouts": {
         "styles": "Vier Stile für dieses Cover",
         "show": "Zeig mir vier Stile",
         "more": "Vier weitere",
         "drawing": "Vier Stile werden gezeichnet…",
-        "failed": "Die Stile konnten nicht gezeichnet werden. Versuch es noch mal."
+        "failed": "Die Stile konnten nicht gezeichnet werden. Versuche es erneut."
       }
     },
     "editor": {
@@ -1303,7 +1303,7 @@
       },
       "badge": "Badge",
       "badgeShows": "Anzeigen",
-      "badgeDeleted": "Vom Titelbild entfernt",
+      "badgeDeleted": "Vom Cover entfernt",
       "badges": {
         "none": "Keins",
         "new": "Neu",
@@ -1320,7 +1320,7 @@
       "suggest": "Vorschlagen",
       "suggestMore": "Drei weitere",
       "suggesting": "Einen Moment…",
-      "suggestFailed": "Es kamen keine Vorschläge zurück. Versuch es noch einmal."
+      "suggestFailed": "Es kamen keine Vorschläge zurück. Versuche es erneut."
     },
     "photos": {
       "yours": "Deine",
@@ -1364,7 +1364,7 @@
         "badge": "Badge",
         "text": "Text",
         "shape": "Form",
-        "icon": "Symbol",
+        "icon": "Icon",
         "qr": "QR-Code"
       },
       "font": "Schriftart",
@@ -1439,7 +1439,7 @@
       "markColour": "Wortfarbe",
       "flip": "Spiegeln",
       "editPhoto": "Foto bearbeiten",
-      "icon": "Symbol",
+      "icon": "Icon",
       "qrLink": "Link",
       "qrSquares": "Farbe der Quadrate",
       "qrGround": "Farbe hinter den Quadraten",
@@ -1489,7 +1489,7 @@
     "download": {
       "label": "Download",
       "making": "Datei wird erstellt…",
-      "failed": "Die Datei konnte nicht erstellt werden. Versuch es noch einmal.",
+      "failed": "Die Datei konnte nicht erstellt werden. Versuche es erneut.",
       "jpeg": "Als JPG (kleinere Datei)",
       "for": {
         "card": "Karten deiner Website",
@@ -1519,7 +1519,7 @@
     "emailDown": "Gestaltete E-Mails konnten gerade nicht geladen werden. Die Nachrichten unten sind vollständig; E-Mails werden beim nächsten Besuch wieder angezeigt.",
     "untitled": "Ohne Titel",
     "review": "Prüfen & senden",
-    "removeError": "Das hat nicht geklappt. Bitte versuch es noch einmal.",
+    "removeError": "Das hat nicht geklappt. Bitte versuche es erneut.",
     "channel": {
       "app": "In der App",
       "appEmail": "In der App und per E-Mail",
@@ -1538,7 +1538,7 @@
       "scheduled": "wird {when} versendet",
       "sending": "unterwegs",
       "announcement": "{recipients, plural, one {# Teilnehmer} other {# Teilnehmer}} · {reached} gelesen",
-      "email": "{reached} von {recipients} zugestellt{failed, plural, =0 {} one { · # fehlgeschlagen} other { · # fehlgeschlagen}}"
+      "email": "{reached} von {recipients} zugestellt{failed, plural, =0 {} other { · # fehlgeschlagen}}"
     },
     "action": {
       "cancel": "Abbrechen",
@@ -1567,10 +1567,10 @@
         "ios": "iPhone oder iPad",
         "android": "Android",
         "desktop": "Computer",
-        "push": "Handy-Benachrichtigungen an"
+        "push": "Smartphone-Benachrichtigungen an"
       },
       "preview": {
-        "caption": "So sieht es auf dem Handy aus"
+        "caption": "So sieht es auf dem Smartphone aus"
       },
       "templateNamePrompt": "Benenne diese Vorlage:",
       "templateSaved": "Vorlage gespeichert",
@@ -1580,7 +1580,7 @@
       "recurringCreated": "Wiederkehrende Nachricht erstellt",
       "scheduledToast": "Nachricht geplant",
       "sentToast": "Nachricht gesendet",
-      "draftCleanup": "Gesendet, aber der Entwurf, aus dem sie überprüft wurde, konnte nicht entfernt werden.",
+      "draftCleanup": "Gesendet, aber der geprüfte Entwurf konnte nicht entfernt werden.",
       "sendError": "Ankündigung konnte nicht gesendet werden",
       "send": {
         "recurring": "Wiederkehrend erstellen",
@@ -1592,7 +1592,7 @@
         "schedule": "Wird geplant…",
         "now": "Wird gesendet…"
       },
-      "reviewing": "Entwurf wird überprüft — es wird nichts gesendet, bis du unten bestätigst.",
+      "reviewing": "Entwurf wird überprüft – es wird nichts gesendet, bis du unten bestätigst.",
       "startFromTemplate": "Mit einer Vorlage starten",
       "saveAsTemplate": "Als Vorlage speichern",
       "saving": "Wird gespeichert…",
@@ -1601,10 +1601,10 @@
       "bodyPlaceholder": "Ankündigungstext schreiben…",
       "change": "Ändern",
       "removeLink": "Link entfernen",
-      "addLink": "Link hinzufügen (optional) — wohin das Antippen der Ankündigung führt",
+      "addLink": "Link hinzufügen (optional) – wohin das Antippen der Ankündigung führt",
       "reach": {
         "counting": "Es wird berechnet, wer dies erhält…",
-        "nobody": "Keine Teilnehmer entsprechen diesen Filtern — niemand wird diese Nachricht erhalten.",
+        "nobody": "Keine Teilnehmer entsprechen diesen Filtern – niemand wird diese Nachricht erhalten.",
         "withPush": "Geht an <b>{audience}</b> {audience, plural, one {Teilnehmer} other {Teilnehmer}} in ihrem Feed · <b>{push}</b> erhalten auch eine Benachrichtigung auf dem Smartphone",
         "noPush": "Geht an <b>{audience}</b> {audience, plural, one {Teilnehmer} other {Teilnehmer}} in ihrem Feed · noch niemand hat Smartphone-Benachrichtigungen aktiviert"
       },
@@ -1722,7 +1722,7 @@
       "opening": "Wird geöffnet",
       "blank": "Leer",
       "blankHint": "Deine Kopf- und Fußzeile, sonst noch nichts.",
-      "designerPlaceholder": "Oder frag den Designer: “lade meine Teilnehmer zum neuen Morgenkurs ein, herzlich und kurz”…",
+      "designerPlaceholder": "Oder frag den Designer: „lade meine Teilnehmer zur neuen Morgen-Session ein, herzlich und kurz“…",
       "feature": "Hervorheben (bis zu {max})"
     },
     "templates": {
@@ -1733,11 +1733,11 @@
       "new": "Neue Vorlage",
       "fromDesigner": "Eine neue Vorlage vom Designer",
       "kindPrompt": "Welche Art von E-Mail willst du damit verschicken?",
-      "briefPlaceholder": "z. B. Ein monatlicher Newsletter: ein kurzer Gruß von mir, mein neuester Artikel und mein nächster Kurs.",
+      "briefPlaceholder": "z. B. Ein monatlicher Newsletter: ein kurzer Gruß von mir, mein neuester Artikel und meine nächste Session.",
       "notNow": "Nicht jetzt",
       "empty": "Noch keine Vorlagen. Erstelle eine neue oder frag den Designer.",
       "duplicated": "Dupliziert.",
-      "confirmDelete": "“{name}” löschen?",
+      "confirmDelete": "„{name}“ löschen?",
       "editNamed": "{name} bearbeiten",
       "opening": "Wird geöffnet…",
       "writeEmail": "E-Mail schreiben",
@@ -1756,7 +1756,7 @@
         "sat": "Jeden Samstag um {time}",
         "sun": "Jeden Sonntag um {time}"
       },
-      "monthly": "Monatlich an Tag {day} um {time}",
+      "monthly": "Monatlich am {day}. um {time}",
       "loadError": "Wiederkehrende Ankündigungen konnten nicht geladen werden.",
       "empty": "Noch keine wiederkehrenden Ankündigungen.",
       "updateError": "Aktualisierung fehlgeschlagen",
@@ -1770,7 +1770,7 @@
     },
     "templateList": {
       "loadError": "Vorlagen konnten nicht geladen werden.",
-      "empty": "Noch keine gespeicherten Vorlagen. Verwende beim Verfassen “Als Vorlage speichern”.",
+      "empty": "Noch keine gespeicherten Vorlagen. Verwende beim Verfassen „Als Vorlage speichern“.",
       "confirmDelete": "Diese Vorlage löschen?",
       "deleted": "Gelöscht",
       "deleteError": "Löschen fehlgeschlagen"
@@ -1815,7 +1815,7 @@
     "kinds": {
       "live": {
         "label": "Live-Session",
-        "hint": "Ein Gruppenkurs oder ein 1:1-Gespräch in einem Videoraum, direkt im Browser. Keine zusätzliche Software.",
+        "hint": "Eine Gruppen-Session oder ein 1:1-Gespräch in einem Videoraum, direkt im Browser. Keine zusätzliche Software.",
         "titlePlaceholder": "z. B. Freitags-Flow-Session"
       },
       "stream": {
@@ -1840,8 +1840,8 @@
     "when": "Wann",
     "whenHint": "Lass das Feld leer, um es als Entwurf zu behalten, den deine Teilnehmer nicht sehen.",
     "timesIn": "Zeiten sind in {zone} angegeben.",
-    "cover": "Titelbild",
-    "coverHint": "Jede Session mit dem Namen „{title}“ bekommt dieses Titelbild.",
+    "cover": "Cover",
+    "coverHint": "Jede Session mit dem Namen „{title}“ bekommt dieses Cover.",
     "zoomLink": "Zoom-Link",
     "location": "Ort",
     "locationPlaceholder": "z. B. Studio A, Innenstadt",
@@ -1876,11 +1876,11 @@
     "trialHint": "Jeder kann kostenlos an der ersten Session teilnehmen. Alle anderen Sessions behalten ihren Preis.",
     "trialOn": "Die kostenlose Session findet am {when} statt. Alle anderen Sessions behalten ihren Preis.",
     "trialHelpTerm": "Was ist eine kostenlose Probestunde?",
-    "trialHelp": "Mit einer Probestunde kann jemand ausprobieren, was du unterrichtest, bevor er bezahlt. Nur die erste Session ist kostenlos, und jeder kann daran teilnehmen. Jede weitere Session wird zu deinem üblichen Preis verkauft. Du kannst die Probestunde jederzeit ausschalten, dann gilt für diese Session wieder ihr Preis.",
+    "trialHelp": "Mit einer Probestunde können Interessierte ausprobieren, was du anbietest, bevor sie bezahlen. Nur die erste Session ist kostenlos, und jeder kann daran teilnehmen. Jede weitere Session wird zu deinem üblichen Preis verkauft. Du kannst die Probestunde jederzeit ausschalten, dann gilt für diese Session wieder ihr Preis.",
     "trialTurnedOn": "Erledigt. Die erste Session ist eine kostenlose Probestunde.",
     "trialTurnedOff": "Erledigt. Für die erste Session gilt wieder ihr Preis.",
     "trialError": "Die kostenlose Probestunde konnte nicht geändert werden. Bitte versuche es erneut.",
-    "held": "Entwurf: Deine Teilnehmer sehen ihn noch nicht. Beim Veröffentlichen werden alle anstehenden Sessions davon angezeigt.",
+    "held": "Entwurf: Deine Teilnehmer sehen es noch nicht. Beim Veröffentlichen werden alle anstehenden Sessions davon angezeigt.",
     "heldPast": "Wähle zuerst ein Datum in der Zukunft.",
     "publish": "Veröffentlichen",
     "publishing": "Wird veröffentlicht…",
@@ -1893,11 +1893,11 @@
     "end": "Beenden",
     "ending": "Wird beendet…",
     "stopped": "Beendet.",
-    "startError": "Konnte nicht gestartet werden. Bitte versuch es noch einmal.",
-    "stopError": "Konnte nicht beendet werden. Bitte versuch es noch einmal.",
+    "startError": "Konnte nicht gestartet werden. Bitte versuche es erneut.",
+    "stopError": "Konnte nicht beendet werden. Bitte versuche es erneut.",
     "openZoom": "Zoom öffnen",
     "deleted": "{count, plural, one {# gelöscht} other {# gelöscht}}.",
-    "deleteRefused": "{count, plural, one {# konnte nicht gelöscht werden} other {# konnten nicht gelöscht werden}}. Nur der Inhaber der Website kann eine Session oder Veranstaltung löschen."
+    "deleteRefused": "{count, plural, one {# konnte nicht gelöscht werden} other {# konnten nicht gelöscht werden}}. Nur wer die Website besitzt, kann eine Session oder Veranstaltung löschen."
   },
   "focus": {
     "startIt": "Loslegen",
@@ -1936,18 +1936,18 @@
         "thinking": "Ich denke über deine Mitgliedschaft nach…",
         "writing": "Name und Beschreibung werden geschrieben…",
         "handOver": {
-          "access": "{name} hier: Lass uns den Preis festlegen."
+          "access": "Hier ist {name}: Lass uns den Preis festlegen."
         }
       },
       "bundle": {
         "new": "Neues Bundle",
         "continue": "Mach mit deinem Bundle weiter: {title}",
-        "tooFew": "Ein Bundle braucht mindestens zwei Angebote, die du verkaufst. Gib zuerst zwei davon einen Preis.",
+        "tooFew": "Ein Bundle braucht mindestens zwei Produkte, die du verkaufst. Gib zuerst zwei davon einen Preis.",
         "fillMyself": "Selbst ausfüllen",
         "thinking": "Ich denke über dein Bundle nach…",
         "writing": "Name und Beschreibung werden geschrieben…",
         "handOver": {
-          "access": "{name} ist da: Legen wir jetzt den Preis fest."
+          "access": "Hier ist {name}: Lass uns den Preis festlegen."
         }
       },
       "post": {
@@ -1958,8 +1958,8 @@
         "copyFailed": "Der Beitrag ist nicht angekommen.",
         "thinking": "Ich denke über deinen Beitrag nach…",
         "refused": {
-          "upgrade_required": "Das Schreiben von Beiträgen für dich gibt es nur in einem kostenpflichtigen Tarif. Schreib ihn selbst oder führe ein Upgrade durch.",
-          "quota_exhausted": "Deine KI-Beiträge für diesen Monat sind aufgebraucht. Schreib ihn selbst oder führe ein Upgrade durch, um mehr zu bekommen.",
+          "upgrade_required": "Das Schreiben von Beiträgen für dich gibt es nur in einem kostenpflichtigen Tarif. Schreibe ihn selbst oder wechsle auf einen höheren Tarif.",
+          "quota_exhausted": "Deine KI-Beiträge für diesen Monat sind aufgebraucht. Schreibe ihn selbst oder wechsle auf einen höheren Tarif, um mehr zu bekommen.",
           "disabled": "KI-Schreiben ist gerade nicht verfügbar. Schreib ihn selbst.",
           "budget": "KI-Schreiben ist gerade nicht verfügbar. Schreib ihn selbst."
         }
@@ -2029,7 +2029,7 @@
     "announcementFailed": "Ich konnte die Ankündigung nicht schreiben.",
     "handOver": {
       "cover": "Hier ist {name}: Lass uns dein Cover gestalten.",
-      "access": "Hier ist {name}: Lass uns festlegen, wie die Teilnehmer darauf zugreifen.",
+      "access": "Hier ist {name}: Lass uns festlegen, wie deine Teilnehmer Zugang bekommen.",
       "finish": "Hier ist {name}: Lass es uns veröffentlichen."
     }
   },
@@ -2048,8 +2048,8 @@
     "replace": "Wähle eine andere Datei aus oder zieh sie hierher, um sie zu ersetzen",
     "titleFirst": "Gib zuerst einen Titel ein.",
     "uploaded": "Datei hochgeladen",
-    "uploadFailed": "Die Datei wurde nicht hochgeladen. Versuch es noch einmal.",
-    "progress": "{pct} % hochgeladen",
+    "uploadFailed": "Die Datei wurde nicht hochgeladen. Versuche es erneut.",
+    "progress": "{pct} % hochgeladen",
     "tags": "Tags",
     "create": "Erstellen",
     "save": "Speichern",
@@ -2057,23 +2057,23 @@
     "created": "Download erstellt",
     "saved": "Download gespeichert",
     "saveError": "Download konnte nicht gespeichert werden",
-    "accessNotSaved": "Gespeichert, aber wie Teilnehmer ihn erhalten, wurde nicht gespeichert.",
+    "accessNotSaved": "Gespeichert, aber die Zugangseinstellungen wurden nicht gespeichert.",
     "draft": "Entwurf",
     "publish": "Veröffentlichen",
     "publishing": "Wird veröffentlicht…",
     "published": "Veröffentlicht. Teilnehmer finden ihn jetzt auf deiner Website.",
     "publishError": "Der Download konnte nicht veröffentlicht werden.",
-    "subtitle": "Verwalte Dateien zum Herunterladen für deine Teilnehmer.",
+    "subtitle": "Verwalte Download-Dateien für deine Teilnehmer.",
     "empty": "Keine Dateien hochgeladen. Lade deine erste Datei hoch, um loszulegen.",
     "deletedMany": "Dateien gelöscht",
     "deletedOne": "Datei gelöscht",
     "col": {
       "size": "Größe",
       "downloads": "Downloads",
-      "access": "Zugriff"
+      "access": "Zugang"
     },
     "count": "{count, plural, one {# Download} other {# Downloads}}",
-    "confirmDelete": "\"{title}\" löschen? Das kann nicht rückgängig gemacht werden.",
+    "confirmDelete": "„{title}“ löschen? Das kann nicht rückgängig gemacht werden.",
     "deleteError": "Datei konnte nicht gelöscht werden",
     "openError": "Die Datei konnte nicht geöffnet werden",
     "openFile": "Datei öffnen"
@@ -2086,8 +2086,8 @@
     "closeMenu": "Menü schließen",
     "creator": "Creator",
     "signOut": "Abmelden",
-    "signingOut": "Wird abgemeldet...",
-    "signOutTitle": "{name} — Abmelden"
+    "signingOut": "Wird abgemeldet…",
+    "signOutTitle": "{name} – Abmelden"
   },
   "community": {
     "tabs": {
@@ -2113,7 +2113,7 @@
     "modFeed": {
       "enableFirst": "Aktiviere die Community zuerst in den Einstellungen.",
       "offTitle": "Community ist nicht aktiviert",
-      "offHint": "Aktiviere die Community oben im Einstellungen-Tab, um mit dem Posten und Moderieren zu beginnen.",
+      "offHint": "Aktiviere die Community oben im Tab „Einstellungen“, um mit dem Posten und Moderieren zu beginnen.",
       "pinned": "Oben im Feed angepinnt.",
       "confirmRemovePost": "Diesen Beitrag aus der Community entfernen?",
       "postRemoved": "Beitrag entfernt.",
@@ -2125,7 +2125,7 @@
     "members": {
       "banned": "Gesperrt",
       "mutedUntil": "Stummgeschaltet bis {date}",
-      "needsApproval": "Beiträge erfordern Genehmigung",
+      "needsApproval": "Beiträge brauchen Freigabe",
       "active": "Aktiv",
       "actionFailed": "Aktion fehlgeschlagen.",
       "actions": "Mitgliederaktionen",
@@ -2139,7 +2139,7 @@
       "muted": "{name} für 7 Tage stummgeschaltet.",
       "mute": "Für 7 Tage stummschalten",
       "approvalOff": "Beiträge werden wieder sofort veröffentlicht.",
-      "approvalOn": "Die nächsten Beiträge warten auf deine Genehmigung.",
+      "approvalOn": "Die nächsten Beiträge warten auf deine Freigabe.",
       "stopReview": "Beiträge nicht mehr überprüfen",
       "reviewFirst": "Beiträge zuerst überprüfen",
       "loadError": "Mitglieder konnten nicht geladen werden.",
@@ -2151,7 +2151,7 @@
     "reports": {
       "contentRemoved": "Inhalt entfernt.",
       "contentKept": "Inhalt beibehalten.",
-      "resolveError": "Meldung konnte nicht aufgelöst werden.",
+      "resolveError": "Die Meldung konnte nicht bearbeitet werden.",
       "reasons": {
         "spam": "Spam",
         "inappropriate": "Unangemessen",
@@ -2165,7 +2165,7 @@
       "remove": "Entfernen",
       "keeping": "Wird beibehalten…",
       "keep": "Beibehalten",
-      "postApproved": "Beitrag genehmigt.",
+      "postApproved": "Beitrag freigegeben.",
       "postRemoved": "Beitrag entfernt.",
       "updateError": "Der Beitrag konnte nicht aktualisiert werden.",
       "approving": "Wird freigegeben…",
@@ -2197,8 +2197,8 @@
     "sort": {
       "newest": "Neueste",
       "oldest": "Älteste",
-      "nameAsc": "Name A-Z",
-      "nameDesc": "Name Z-A",
+      "nameAsc": "Name A–Z",
+      "nameDesc": "Name Z–A",
       "largest": "Größte",
       "smallest": "Kleinste",
       "longest": "Längste",
@@ -2211,7 +2211,7 @@
       "date": "Datum",
       "name": "Name",
       "price": "Preis",
-      "items": "Elemente"
+      "items": "Produkte"
     },
     "status": {
       "published": "Veröffentlicht",
@@ -2237,7 +2237,7 @@
       "storage": "Speicherplatz",
       "storageHint": "Belegt"
     },
-    "liveEvent": "Live-Event",
+    "liveEvent": "Live-Session",
     "message": "Nachricht"
   },
   "payouts": {
@@ -2269,17 +2269,17 @@
     "enabled": "Aktiviert",
     "pendingBadge": "Ausstehend",
     "trialTitle": "Auszahlungen werden freigeschaltet, sobald dein Tarif beginnt",
-    "upgradeTitle": "Upgraden, um mit dem Verkauf zu beginnen",
+    "upgradeTitle": "Wechsle auf einen höheren Tarif, um mit dem Verkauf zu beginnen",
     "trialBody": "In einer kostenlosen Testphase können keine Zahlungen angenommen werden. Starte deinen Tarif jetzt, um Stripe zu verbinden und zu verkaufen, oder baue dein Angebot weiter auf und verkaufe, sobald deine Testphase endet.",
-    "upgradeBody": "Um bezahlt zu werden, ist ein kostenpflichtiger Tarif mit einem aktiven Abonnement erforderlich. Im kostenlosen Tarif muss alles, was du anbietest, kostenlos sein — keine Auszahlungen, kostenpflichtigen Inhalte oder Abonnements.",
+    "upgradeBody": "Um bezahlt zu werden, ist ein kostenpflichtiger Tarif mit einem aktiven Abonnement erforderlich. Im kostenlosen Tarif muss alles, was du anbietest, kostenlos sein – keine Auszahlungen, keine kostenpflichtigen Inhalte, keine Abonnements.",
     "startPlan": "Meinen Tarif jetzt starten",
     "viewPlans": "Tarife ansehen",
     "redirecting": "Weiterleitung…"
   },
   "students": {
-    "subtitle": "Alle, die beigetreten sind, wofür sie eingeschrieben sind und wie weit sie sind.",
+    "subtitle": "Alle, die beigetreten sind, wofür sie eingeschrieben sind und wie weit sie gekommen sind.",
     "empty": "Keine Teilnehmer gefunden.",
-    "confirmDelete": "{count, plural, one {# Teilnehmer} other {# Teilnehmer}} löschen? Ihre Konten, Einschreibungen und der Zahlungsverlauf werden dauerhaft entfernt. Kündige zuerst alle Mitgliedschaften, für die sie bezahlen: Das Löschen stoppt die Abbuchungen nicht.",
+    "confirmDelete": "{count, plural, one {# Teilnehmer} other {# Teilnehmer}} löschen? Deren Konten, Einschreibungen und der Zahlungsverlauf werden dauerhaft entfernt. Kündige zuerst alle Mitgliedschaften, für die sie bezahlen: Das Löschen stoppt die Abbuchungen nicht.",
     "deleted": "Teilnehmer gelöscht",
     "col": {
       "student": "Teilnehmer",
@@ -2303,18 +2303,18 @@
         "one_time": "einmalig",
         "subscription": "Abonnement"
       },
-      "noLineItems": "Abonnement-Abbuchung (keine Einzelposten).",
+      "noLineItems": "Abbuchung für das Abonnement (keine Einzelposten).",
       "refunded": "Erstattet",
       "refund": "Erstatten",
-      "itemRefunded": "Artikel erstattet.",
+      "itemRefunded": "Produkt erstattet.",
       "refundError": "Erstattung fehlgeschlagen. Bitte versuche es erneut.",
       "cancel": "Abbrechen",
       "refunding": "Wird erstattet…",
       "confirmRefund": "Erstattung bestätigen"
     },
     "drawer": {
-      "grantOk": "Kurszugriff erfolgreich gewährt!",
-      "grantError": "Kurszugriff konnte nicht gewährt werden",
+      "grantOk": "Kurszugang erfolgreich gewährt!",
+      "grantError": "Kurszugang konnte nicht gewährt werden",
       "coursesError": "Kurse konnten nicht geladen werden. Bitte versuche es erneut.",
       "na": "k. A.",
       "unnamed": "Unbenannter Teilnehmer",
@@ -2334,13 +2334,13 @@
       "dmTitle": "Direktnachricht senden",
       "dmText": "Verfasse eine persönliche E-Mail oder In-App-Nachricht.",
       "dmButton": "E-Mail-Nachricht verfassen",
-      "payTitle": "Zahlungs- & Rückerstattungsverlauf",
-      "payText": "Sieh dir Transaktionen an, verwalte Rechnungen oder veranlasse Rückerstattungen.",
+      "payTitle": "Zahlungs- & Erstattungsverlauf",
+      "payText": "Sieh dir Transaktionen an, verwalte Rechnungen oder veranlasse Erstattungen.",
       "payButton": "Transaktionen anzeigen",
       "studentId": "Teilnehmer-ID: #{id}",
       "modalTitle": "Kostenlosen Kurszugang gewähren",
       "selectCourse": "Kurs auswählen:",
-      "loadingCourses": "Kurse werden geladen...",
+      "loadingCourses": "Kurse werden geladen…",
       "duration": "Für wie lange:",
       "forever": "Für immer",
       "month1": "1 Monat",
@@ -2353,9 +2353,9 @@
     }
   },
   "courseForm": {
-    "createdNoAccess": "Kurs erstellt, aber wie Teilnehmer ihn erhalten, wurde nicht gespeichert. {reason}",
+    "createdNoAccess": "Kurs erstellt, aber die Zugangseinstellungen wurden nicht gespeichert. {reason}",
     "published": "Kurs veröffentlicht",
-    "savedDraft": "Kurs als Entwurf gespeichert — füge Lektionen hinzu und veröffentliche ihn dann",
+    "savedDraft": "Kurs als Entwurf gespeichert – füge Lektionen hinzu und veröffentliche ihn dann",
     "saved": "Kurs gespeichert",
     "createFailed": "Kurs konnte nicht erstellt werden",
     "saveFailed": "Kurs konnte nicht gespeichert werden",
@@ -2370,22 +2370,22 @@
     "lessonDeleted": "Lektion gelöscht",
     "lessonDeleteFailed": "Lektion konnte nicht gelöscht werden",
     "settingsTitle": "Kurseinstellungen",
-    "settingsHint": "Aktualisiere Kursdetails, Preisgestaltung und Veröffentlichung.",
+    "settingsHint": "Aktualisiere Kursdetails, Preise und Veröffentlichung.",
     "title": "Titel",
     "titlePlaceholder": "z. B. Einführung in die Fotografie",
     "description": "Beschreibung",
-    "descriptionPlaceholder": "Beschreibe, was Teilnehmer lernen werden...",
+    "descriptionPlaceholder": "Beschreibe, was Teilnehmer lernen werden…",
     "thumbnail": "Vorschaubild",
     "chooseThumbnail": "Vorschaubild auswählen",
     "publishNow": "Sofort veröffentlichen",
     "publishedLabel": "Veröffentlicht",
     "filters": "Filter",
     "filtersHint": "Optionale Kategorien (Niveau, Stil…), nach denen Teilnehmer deine Kurse filtern können.",
-    "tags": "Schlagwörter",
+    "tags": "Tags",
     "saving": "Wird gespeichert…",
     "saveChanges": "Änderungen speichern",
     "curriculum": "Curriculum",
-    "curriculumCreateHint": "Füge jetzt Module und Lektionen hinzu — alles wird gemeinsam in einem Schritt erstellt.",
+    "curriculumCreateHint": "Füge jetzt Module und Lektionen hinzu – alles wird gemeinsam in einem Schritt erstellt.",
     "curriculumHint": "Organisiere deinen Kurs in Module und Lektionen.",
     "moduleTitle": "Modul {n}: {title}",
     "video": "Video",
@@ -2439,21 +2439,21 @@
     "selectAllItems": "Alle {count, plural, one {# Element} other {# Elemente}} auswählen",
     "deselectAll": "Alle abwählen",
     "selectAll": "Alle auswählen",
-    "search": "Suchen..."
+    "search": "Suchen…"
   },
   "inlineEdit": {
-    "saving": "Speichern…"
+    "saving": "Wird gespeichert…"
   },
   "mediaPicker": {
     "uploadFailed": "Upload fehlgeschlagen. Bitte versuche es erneut.",
     "upload": "Hochladen",
-    "progress": "{percent}% hochgeladen"
+    "progress": "{percent} % hochgeladen"
   },
   "videoPicker": {
     "choose": "Video auswählen",
     "urlPlaceholder": "YouTube-, Vimeo- oder direkte Video-URL",
     "title": "Wähle ein Video",
-    "search": "Videos suchen...",
+    "search": "Videos suchen…",
     "empty": "Noch keine Videos.",
     "noMatch": "Keine Videos entsprechen deiner Suche."
   },
@@ -2463,15 +2463,15 @@
   },
   "filterPicker": {
     "option": "Option",
-    "noOptions": "Noch keine Optionen — füge eine hinzu.",
+    "noOptions": "Noch keine Optionen – füge eine hinzu.",
     "newOption": "Neue {name}-Option",
     "add": "Hinzufügen",
     "newFilterName": "Neuer Filtername (z. B. Level)",
     "newFilter": "Neuer Filter",
     "deleteFailed": "Filter konnte nicht gelöscht werden",
     "deleteAria": "{name}-Filter löschen",
-    "confirmDeleteCourse": "Den Filter \"{name}\" und alle seine Optionen löschen? Er wird aus jedem Kurs entfernt.",
-    "confirmDeleteEvent": "Den Filter \"{name}\" und alle seine Optionen löschen? Er wird aus jeder Veranstaltung entfernt."
+    "confirmDeleteCourse": "Den Filter „{name}“ und alle seine Optionen löschen? Er wird aus jedem Kurs entfernt.",
+    "confirmDeleteEvent": "Den Filter „{name}“ und alle seine Optionen löschen? Er wird aus jeder Veranstaltung entfernt."
   },
   "tagFilter": {
     "label": "Tags:",
@@ -2480,7 +2480,7 @@
   "tagInput": {
     "remove": "{name}-Tag entfernen",
     "placeholder": "Tag hinzufügen…",
-    "create": "“{name}” erstellen"
+    "create": "„{name}“ erstellen"
   },
   "publish": {
     "requirementsUnmet": "Schließe die erforderlichen Einrichtungsschritte ab, bevor du veröffentlichst.",
@@ -2496,26 +2496,26 @@
     "shareInstall": "Installationsanleitung teilen",
     "inviteStudents": "Lade deine ersten Teilnehmer ein",
     "done": "Fertig",
-    "siteLive": "Deine Seite ist live",
-    "publishSite": "Veröffentliche deine Seite",
-    "liveStatus": "<live>● Live</live> — Teilnehmer können deine Seite finden und installieren.",
+    "siteLive": "Deine Website ist live",
+    "publishSite": "Veröffentliche deine Website",
+    "liveStatus": "<live>● Live</live> – Teilnehmer können deine Website finden und installieren.",
     "copyLink": "Link kopieren",
     "unpublishing": "Veröffentlichung wird aufgehoben…",
     "unpublish": "Veröffentlichung aufheben",
-    "hidden": "Deine Seite ist hinter einer Vorschau-Sperre verborgen. Veröffentliche sie, damit Teilnehmer sie finden und installieren können.",
+    "hidden": "Deine Website ist hinter einer Vorschau-Sperre verborgen. Veröffentliche sie, damit Teilnehmer sie finden und installieren können.",
     "finishFirst": "Erledige dies zuerst, um zu veröffentlichen:",
     "publishing": "Wird veröffentlicht…",
     "finishSteps": "Schließe die erforderlichen Einrichtungsschritte ab, um zu veröffentlichen",
-    "publishGoLive": "Seite veröffentlichen — live gehen",
+    "publishGoLive": "Website veröffentlichen – live gehen",
     "previewLink": "Vorschau-Link:",
     "pw": "Vorschau-Passwort",
-    "pwIsSet": "Vorschau-Passwort — festgelegt",
+    "pwIsSet": "Vorschau-Passwort – festgelegt",
     "pwChange": "Passwort ändern",
     "pwSet": "Passwort festlegen",
     "saving": "Wird gespeichert…",
     "clearing": "Wird gelöscht…",
     "clear": "Löschen",
-    "pwHint": "Teile den Vorschau-Link + das Passwort, damit andere die Seite sehen können, bevor du sie veröffentlichst.",
+    "pwHint": "Teile den Vorschau-Link + das Passwort, damit andere die Website sehen können, bevor du sie veröffentlichst.",
     "blockers": {
       "plan": "Wähle einen Tarif",
       "look": "Füge dein Logo hinzu",
@@ -2523,47 +2523,47 @@
       "first_event": "Plane deine erste Live-Session oder Veranstaltung",
       "first_blog_post": "Veröffentliche deinen ersten Blogbeitrag",
       "payouts": "Verbinde Zahlungen, um kostenpflichtige Inhalte zu verkaufen",
-      "payoutsTrial": "Kostenpflichtige Inhalte warten auf den Start deines Tarifs — starte ihn jetzt, oder behalte sie als Entwurf",
-      "payoutsFreePlan": "Kostenpflichtige Inhalte erfordern einen Tarif — wähle einen, oder behalte sie als Entwurf"
+      "payoutsTrial": "Kostenpflichtige Inhalte warten auf den Start deines Tarifs – starte ihn jetzt oder behalte sie als Entwurf",
+      "payoutsFreePlan": "Kostenpflichtige Inhalte erfordern einen Tarif – wähle einen oder behalte sie als Entwurf"
     },
     "close": "Schließen"
   },
   "monetize": {
-    "trialing": "Der Verkauf wird freigeschaltet, sobald dein Tarif startet — du kannst dies als Entwurf speichern. <link>Starte ihn jetzt</link>",
-    "freePlan": "Der Verkauf erfordert den Starter-Tarif — du kannst dies als Entwurf speichern. <link>Tarife ansehen</link>",
-    "noPayouts": "Teilnehmer können noch nichts kaufen — <link>richte Auszahlungen ein</link>, um mit dem Verkaufen zu beginnen."
+    "trialing": "Der Verkauf wird freigeschaltet, sobald dein Tarif startet – du kannst dies als Entwurf speichern. <link>Starte ihn jetzt</link>",
+    "freePlan": "Der Verkauf erfordert den Starter-Tarif – du kannst dies als Entwurf speichern. <link>Tarife ansehen</link>",
+    "noPayouts": "Teilnehmer können noch nichts kaufen – <link>richte Auszahlungen ein</link>, um mit dem Verkauf zu beginnen."
   },
   "paused": {
-    "title": "Wähle einen Tarif, um deine Seite zu öffnen",
-    "hint": "Bis dahin sehen Besucher eine “Bald wieder da”-Seite. Alles, was du aufgebaut hast, bleibt erhalten und ist wieder da, sobald du startest."
+    "title": "Wähle einen Tarif, um deine Website zu öffnen",
+    "hint": "Bis dahin sehen Besucher eine „Bald wieder da“-Seite. Alles, was du aufgebaut hast, bleibt erhalten und ist wieder da, sobald du startest."
   },
   "usage": {
     "title": "App-Nutzung (30 Tage)",
     "installed": "Teilnehmer haben die App installiert",
-    "pwaShare": "PWA {pct}%",
-    "webShare": "Web {pct}%",
+    "pwaShare": "PWA {pct} %",
+    "webShare": "Web {pct} %",
     "dayTitle": "{day}: {pwa} PWA / {web} Web",
     "none": "Noch keine App-Aktivität."
   },
   "calendar": {
     "loadError": "Kalendereinträge konnten nicht geladen werden.",
     "subtitle": "Deine Sessions, E-Mails und Blogbeiträge, nach Datum.",
-    "newSession": "Session oder Event",
+    "newSession": "Session oder Veranstaltung",
     "newEmail": "Gestaltete E-Mail",
-    "newBlog": "Blogartikel",
+    "newBlog": "Blogbeitrag",
     "allItems": "Alle Einträge ({count})",
     "filter": {
-      "live": "Live-Events",
+      "live": "Live-Sessions",
       "email": "E-Mail-Broadcasts",
       "blog": "Blogbeiträge"
     },
     "month": "Monat",
     "week": "Woche",
     "today": "Heute",
-    "empty": "Keine geplanten Inhalte in diesem Zeitraum. Erstelle ein Live-Event, einen Broadcast oder einen Blogbeitrag, damit er hier erscheint.",
+    "empty": "Keine geplanten Inhalte in diesem Zeitraum. Erstelle eine Live-Session, einen Broadcast oder einen Blogbeitrag, damit sie hier erscheinen.",
     "itemCount": "{count, plural, one {# Eintrag} other {# Einträge}}",
     "category": {
-      "live": "Live-Event",
+      "live": "Live-Session",
       "email": "E-Mail-Broadcast",
       "blog": "Blogbeitrag"
     },
@@ -2580,7 +2580,7 @@
     },
     "statusLabel": "Status:",
     "close": "Schließen",
-    "manageLive": "Live-Event verwalten",
+    "manageLive": "Live-Session verwalten",
     "manageEmail": "E-Mail-Broadcast verwalten",
     "manageBlog": "Blogbeitrag verwalten",
     "manageOther": "Verwalten"
@@ -2593,7 +2593,7 @@
       "designerDone": "Der Designer ist fertig",
       "designerDoneUndo": "Der Designer ist fertig. Rückgängig nimmt es zurück.",
       "testSent": "Test an {email} gesendet",
-      "savedAsTemplate": "In deinen Vorlagen als “{name}” gespeichert",
+      "savedAsTemplate": "In deinen Vorlagen als „{name}“ gespeichert",
       "templates": "Vorlagen",
       "messages": "Nachrichten",
       "templateName": "Vorlagenname",
@@ -2613,8 +2613,8 @@
       "onlyThisBlock": "Der Designer ändert nur diesen Block",
       "askWhole": "Zur gesamten E-Mail fragen",
       "askDesigner": "Frag den Designer",
-      "askBlockPlaceholder": "Frag den Designer zu diesem Block: “wärmer”, “kürzer”, “ein Foto hinzufügen”…",
-      "askPlaceholder": "Frag den Designer: “mach es wärmer”, “füge meine nächste Live-Session hinzu”, “kürzer, mit einem Button”…",
+      "askBlockPlaceholder": "Frag den Designer zu diesem Block: „wärmer“, „kürzer“, „ein Foto hinzufügen“…",
+      "askPlaceholder": "Frag den Designer: „mach es wärmer“, „füge meine nächste Live-Session hinzu“, „kürzer, mit einem Button“…",
       "asking": "Wird gefragt…",
       "ask": "Fragen",
       "choosePhoto": "Foto auswählen",
@@ -2642,9 +2642,9 @@
       "individual": "Einzelne Teilnehmer",
       "selectCourses": "Kurse auswählen",
       "noCourses": "Keine Kurse gefunden.",
-      "searchStudents": "Teilnehmer suchen...",
+      "searchStudents": "Teilnehmer suchen…",
       "noStudents": "Keine Teilnehmer gefunden.",
-      "counting": "Empfänger werden gezählt...",
+      "counting": "Empfänger werden gezählt…",
       "count": "{count, plural, one {# Empfänger} other {# Empfänger}}",
       "allActive": "Alle aktiven Teilnehmer",
       "selectAbove": "Empfänger oben auswählen"
@@ -2655,15 +2655,15 @@
       "taken": "Diese Adresse ist bereits vergeben. Versuche es mit einer anderen.",
       "reserved_local_part": "Diese Adresse ist reserviert. Versuche es mit einer anderen.",
       "invalid_local_part": "Nur Buchstaben, Zahlen, Punkte, Bindestriche und Unterstriche sind erlaubt.",
-      "upgrade_required": "Upgrade deinen Tarif, um eine Adresse zu beanspruchen.",
+      "upgrade_required": "Wechsle auf einen höheren Tarif, um eine Adresse zu sichern.",
       "feature_unavailable": "Benutzerdefinierte Adressen sind derzeit nicht verfügbar."
     },
     "onlyChars": "Nur Buchstaben, Zahlen, Punkte, Bindestriche und Unterstriche sind erlaubt.",
     "saveFailed": "Konnte nicht gespeichert werden. Bitte versuche es erneut.",
     "emailSaved": "E-Mail-Adresse gespeichert.",
     "prefixEmpty": "E-Mail-Präfix darf nicht leer sein.",
-    "settingsSaved": "Postfach-Einstellungen gespeichert.",
-    "settingsError": "Fehler beim Speichern der Postfach-Einstellungen. Bitte versuche es erneut.",
+    "settingsSaved": "Postfacheinstellungen gespeichert.",
+    "settingsError": "Die Postfacheinstellungen konnten nicht gespeichert werden. Bitte versuche es erneut.",
     "yourAddress": "Deine E-Mail-Adresse",
     "claimText": "Wähle eine Adresse auf {domain}. Teilnehmer können dir dorthin schreiben und ihre Nachrichten landen in deinem Posteingang.",
     "chooseAddress": "Wähle deine Adresse",
@@ -2671,11 +2671,11 @@
     "active": "Aktive Adresse: <m>{email}</m>",
     "saving": "Wird gespeichert…",
     "saveAddress": "Adresse speichern",
-    "customDomain": "Möchtest du eine gebrandete Adresse auf deiner eigenen Domain (wie <m>info@yourdomain.com</m>)? Kontaktiere den Support, um eine eigene Domain hinzuzufügen.",
+    "customDomain": "Möchtest du eine Adresse mit deinem Branding auf deiner eigenen Domain (wie <m>info@yourdomain.com</m>)? Kontaktiere den Support, um eine eigene Domain hinzuzufügen.",
     "title": "Postfach",
     "freeText": "Lege eine benutzerdefinierte E-Mail-Adresse für deine Plattform fest.",
     "sendingFrom": "Du sendest derzeit von:",
-    "upgradeText": "Upgrade auf einen kostenpflichtigen Tarif, um deine eigene E-Mail-Adresse zu erhalten — Teilnehmer können dir schreiben und ihre Nachrichten landen direkt in deinem Posteingang.",
+    "upgradeText": "Wechsle auf einen kostenpflichtigen Tarif, um deine eigene E-Mail-Adresse zu erhalten – Teilnehmer können dir schreiben und ihre Nachrichten landen direkt in deinem Posteingang.",
     "domainText": "Wähle deine E-Mail-Adresse und aktiviere deinen Posteingang, um Nachrichten von Teilnehmern zu erhalten.",
     "enable": "Posteingang aktivieren",
     "enableText": "Wenn aktiviert, können Teilnehmer Nachrichten an deine Adresse senden.",
@@ -2692,11 +2692,11 @@
       "editLogo": "Logo bearbeiten",
       "createLogo": "Logo erstellen",
       "darkMode": "Dark Mode für Besucher erlauben",
-      "darkModeHint": "Zeigt einen Hell/Dunkel-Schalter im öffentlichen Header an und hält die dunkle Farbpalette verfügbar."
+      "darkModeHint": "Zeigt einen Hell/Dunkel-Schalter in der öffentlichen Kopfzeile an und hält die dunkle Farbpalette verfügbar."
     },
     "toolbar": {
       "drag": "Ziehen zum Neuanordnen",
-      "reorder": "Block “{label}” neu anordnen",
+      "reorder": "Block „{label}“ neu anordnen",
       "confirmDelete": "Löschen bestätigen",
       "delete": "Block löschen",
       "cancel": "Abbrechen"
@@ -2711,9 +2711,9 @@
     "redo": "Wiederholen (⌘⇧Z)",
     "cx": {
       "failure": {
-        "disabled": "KI-Design ist derzeit nicht verfügbar. Bitte versuche es später noch einmal.",
+        "disabled": "KI-Design ist derzeit nicht verfügbar. Bitte versuche es später erneut.",
         "upgrade_required": "Eigene Abschnitte sind in den kostenpflichtigen Tarifen enthalten.",
-        "quota_exhausted": "Du hast die KI-Änderungen für diesen Monat aufgebraucht. Sie werden nächsten Monat erneuert.",
+        "quota_exhausted": "Du hast die KI-Änderungen für diesen Monat aufgebraucht. Nächsten Monat stehen sie wieder zur Verfügung.",
         "error": "Das konnte ich nicht erstellen. Versuche, es etwas anders zu beschreiben."
       },
       "missing": "Noch nicht möglich: {missing}. Ich habe das Nächstbeste erstellt.",
@@ -2733,12 +2733,12 @@
       "uploading": "Wird hochgeladen…",
       "replace": "Logo ersetzen",
       "upload": "Logo hochladen",
-      "uploaded": "{pct}% hochgeladen"
+      "uploaded": "{pct} % hochgeladen"
     },
     "look": {
       "original": "Original",
       "title": "Look",
-      "hint": "Layouts, Farben und Schriftarten für jede Seite.",
+      "hint": "Layouts, Farben und Schriften für jede Seite.",
       "change": "Look ändern",
       "error": "Der Look konnte nicht geändert werden. Versuche es erneut.",
       "dialog": "Ändere deinen Look",
@@ -2804,7 +2804,7 @@
       "saveError": "Deine Änderungen konnten nicht gespeichert werden. Bitte versuche es erneut.",
       "editSite": "Website bearbeiten",
       "saving": "Wird gespeichert",
-      "exit": "Bearbeitungsmodus verlassen — Vorschau deiner Website",
+      "exit": "Bearbeitungsmodus verlassen – Vorschau deiner Website",
       "done": "Fertig",
       "collapse": "Bedienfeld einklappen",
       "tabSite": "Website",
@@ -2855,7 +2855,7 @@
       "moveDown": "Nach unten verschieben",
       "moveUpAria": "{name} nach oben verschieben",
       "moveDownAria": "{name} nach unten verschieben",
-      "linkFallback": "link",
+      "linkFallback": "Link",
       "labelPlaceholder": "Beschriftung",
       "removeLink": "Link entfernen",
       "addSuggestion": {
@@ -2865,9 +2865,9 @@
       "addLink": "Link hinzufügen",
       "cta": "CTA-Button",
       "ctaPlaceholder": "Button-Text",
-      "showLogin": "Login-Button anzeigen",
-      "showLoginHint": "\"Anmelden\"-Link in der Navigation anzeigen",
-      "showInstall": "\"App installieren\" anzeigen",
+      "showLogin": "Button „Anmelden“ anzeigen",
+      "showLoginHint": "Link „Anmelden“ in der Navigation anzeigen",
+      "showInstall": "„App installieren“ anzeigen",
       "showInstallHint": "Besucher zur Installation deiner Website als App weiterleiten"
     },
     "link": {
@@ -2875,33 +2875,33 @@
       "tab": {
         "pages": "Seiten",
         "courses": "Kurse",
-        "events": "Events",
+        "events": "Veranstaltungen",
         "custom": "Eigene URL"
       },
       "page": {
         "home": "Startseite",
         "about": "Über uns",
         "courses": "Kurse",
-        "pricing": "Preise / Tarife",
+        "pricing": "Preise / Mitgliedschaften",
         "faq": "FAQ",
         "contact": "Kontakt",
         "calendar": "Kalender",
-        "events": "Events",
-        "store": "Store"
+        "events": "Veranstaltungen",
+        "store": "Shop"
       },
       "search": {
         "pages": "Seiten suchen…",
         "courses": "Kurse suchen…",
-        "events": "Events suchen…"
+        "events": "Veranstaltungen suchen…"
       },
       "coursesError": "Kurse konnten nicht geladen werden. Bitte versuche es erneut.",
-      "eventsError": "Events konnten nicht geladen werden. Bitte versuche es erneut.",
+      "eventsError": "Veranstaltungen konnten nicht geladen werden. Bitte versuche es erneut.",
       "enterUrl": "URL oder Pfad eingeben",
-      "urlPlaceholder": "/pfad oder https://…",
+      "urlPlaceholder": "/path oder https://…",
       "useLink": "Diesen Link verwenden",
-      "noMatches": "Keine Treffer für “{query}”.",
+      "noMatches": "Keine Treffer für „{query}“.",
       "noCourses": "Noch keine Kurse.",
-      "noEvents": "Noch keine Events."
+      "noEvents": "Noch keine Veranstaltungen."
     },
     "templates": {
       "delete": "Vorlage löschen",
@@ -2931,7 +2931,7 @@
       "chooseImage": "Bild auswählen",
       "noText": "Noch kein Text.",
       "editText": "Text bearbeiten",
-      "pathPlaceholder": "/pfad oder https://…",
+      "pathPlaceholder": "/path oder https://…",
       "chooseLink": "Eine Seite oder Inhalte auswählen",
       "browse": "Durchsuchen",
       "noFilters": "Noch keine Filter. Erstelle Filter in deinem Creator-Studio, um sie hier anzuzeigen.",
@@ -2939,7 +2939,7 @@
       "itemNumber": "{name} {number}",
       "addItem": {
         "image": "Bild hinzufügen",
-        "testimonial": "Testimonial hinzufügen",
+        "testimonial": "Erfahrungsbericht hinzufügen",
         "question": "Frage hinzufügen",
         "stat": "Statistik hinzufügen",
         "logo": "Logo hinzufügen",
@@ -2947,7 +2947,7 @@
         "step": "Schritt hinzufügen",
         "photo": "Foto hinzufügen",
         "quote": "Zitat hinzufügen",
-        "number": "Nummer hinzufügen",
+        "number": "Zahl hinzufügen",
         "name": "Name hinzufügen"
       },
       "addItemGeneric": "Element hinzufügen"
@@ -2958,7 +2958,7 @@
         "richText": "Text",
         "imageText": "Bild + Text",
         "gallery": "Galerie",
-        "testimonials": "Testimonials",
+        "testimonials": "Erfahrungsberichte",
         "faq": "FAQ",
         "cta": "Call-to-Action",
         "stats": "Statistiken",
@@ -2967,10 +2967,10 @@
         "banner": "Banner",
         "contact": "Kontaktformular",
         "courseGrid": "Kurse",
-        "pricingPlans": "Preistarife",
+        "pricingPlans": "Mitgliedschaften",
         "upcomingEvents": "Kommende Veranstaltungen",
         "storeProducts": "Shop-Produkte",
-        "cx": "Benutzerdefinierter Abschnitt"
+        "cx": "Eigener Abschnitt"
       },
       "layout": {
         "centeredFullBleed": "Zentriert (vollflächiges Bild)",
@@ -2983,7 +2983,7 @@
         "stacked": "Gestapelt",
         "card": "Karte",
         "grid": "Raster",
-        "masonry": "Mauerwerk",
+        "masonry": "Mosaik",
         "carousel": "Karussell",
         "cards": "Karten",
         "largeQuote": "Großes Zitat",
@@ -3033,7 +3033,7 @@
       },
       "item": {
         "image": "Bild",
-        "testimonial": "Testimonial",
+        "testimonial": "Erfahrungsbericht",
         "question": "Frage",
         "stat": "Statistik",
         "logo": "Logo",
@@ -3041,7 +3041,7 @@
         "step": "Schritt",
         "photo": "Foto",
         "quote": "Zitat",
-        "number": "Nummer",
+        "number": "Zahl",
         "name": "Name"
       },
       "field": {
@@ -3058,7 +3058,7 @@
         "imagePosition": "Bildposition (Nebeneinander)",
         "images": "Bilder",
         "caption": "Bildunterschrift",
-        "testimonials": "Testimonials",
+        "testimonials": "Erfahrungsberichte",
         "name": "Name",
         "role": "Rolle / Unternehmen",
         "quote": "Zitat",
@@ -3092,7 +3092,7 @@
         "filterFacets": "Filterfacetten",
         "subheading": "Unterüberschrift",
         "maxEvents": "Max. Veranstaltungen",
-        "showCovers": "Titelbilder anzeigen",
+        "showCovers": "Cover anzeigen",
         "maxProducts": "Max. Produkte"
       },
       "family": {
@@ -3105,7 +3105,7 @@
         "moments": "Momente",
         "pricing": "Preise",
         "faq": "FAQ",
-        "cta": "Handlungsaufruf",
+        "cta": "Call-to-Action",
         "contact": "Kontakt",
         "events": "Kommende Veranstaltungen",
         "proof": "Belege",
@@ -3152,9 +3152,9 @@
         "location": "Standort",
         "hoursResponseTime": "Öffnungszeiten / Antwortzeit",
         "showContactForm": "Kontaktformular anzeigen",
-        "clientWords": "Kundenstimmen",
+        "clientWords": "Erfahrungsberichte",
         "whatTheySaid": "Was sie gesagt haben",
-        "theirFirstName": "Dein Vorname",
+        "theirFirstName": "Vorname der Person",
         "numbers": "Zahlen",
         "number": "Zahl",
         "whatItCounts": "Was gezählt wird",
@@ -3166,9 +3166,9 @@
       },
       "sectionHelp": {
         "proof": {
-          "quotes": "Nur Worte, die ein Kunde wirklich gesagt hat, mit seiner Erlaubnis.",
+          "quotes": "Nur Worte, die jemand wirklich gesagt hat, mit Erlaubnis dieser Person.",
           "numbers": "Nur Zahlen, hinter denen du stehen kannst.",
-          "press": "Wo über dich berichtet wurde, so wie sie sich selbst nennen."
+          "press": "Wo über dich berichtet wurde, so, wie sich die Medien selbst nennen."
         },
         "video": {
           "video": "Ein kurzer Clip aus deiner Bibliothek. Er wird stummgeschaltet in einer Schleife abgespielt."
@@ -3178,7 +3178,7 @@
       "template": {
         "homeClassic": {
           "name": "Klassisch",
-          "description": "Hero-Bereich, Kurse, Erfahrungsberichte und eine abschließende Handlungsaufforderung."
+          "description": "Hero-Bereich, Kurse, Erfahrungsberichte und ein abschließender Call-to-Action."
         },
         "homeStoryteller": {
           "name": "Geschichtenerzähler",
@@ -3186,15 +3186,15 @@
         },
         "homeMinimal": {
           "name": "Minimal",
-          "description": "Ein aufgeräumter Hero-Bereich und eine einzelne Handlungsaufforderung."
+          "description": "Ein aufgeräumter Hero-Bereich und ein einzelner Call-to-Action."
         },
         "aboutFounder": {
-          "name": "Gründergeschichte",
+          "name": "Gründungsgeschichte",
           "description": "Eine Einleitung, eine persönliche Biografie mit Foto und Statistiken zur Glaubwürdigkeit."
         },
         "pricingPlansFaq": {
-          "name": "Tarife & Fragen",
-          "description": "Deine Tarife, gefolgt von einer kurzen FAQ."
+          "name": "Mitgliedschaften & Fragen",
+          "description": "Deine Mitgliedschaften, gefolgt von einer kurzen FAQ."
         },
         "contactSimple": {
           "name": "Kontakt aufnehmen",
@@ -3214,24 +3214,24 @@
       "thisSection": "diesen Abschnitt"
     },
     "builder": {
-      "coverError": "Dieses Titelbild konnte nicht verwendet werden. Probier ein anderes.",
-      "coverCurrent": "Aktuelles Titelbild",
-      "coverUse": "Dieses Titelbild verwenden",
+      "coverError": "Dieses Cover konnte nicht verwendet werden. Probier ein anderes.",
+      "coverCurrent": "Aktuelles Cover",
+      "coverUse": "Dieses Cover verwenden",
       "kicker": {
         "course": "Dein erster Kurs",
         "event": "Deine erste Live-Session",
         "onsite": "Deine erste Präsenzveranstaltung"
       },
-      "changingCover": "Titelbild wird geändert…",
+      "changingCover": "Cover wird geändert…",
       "pickTime": "Wähle eine Uhrzeit",
       "descriptionDrafted": "Aus deinen Antworten wird eine kurze Beschreibung entworfen.",
       "pickTopic": "Wähle ein Thema, und hier nimmt es Gestalt an.",
-      "tiersIntro": "Teilnehmer wählen die, die zu ihnen passt. Du kannst Mitgliedschaften jederzeit hinzufügen oder ändern.",
+      "tiersIntro": "Teilnehmer wählen die Mitgliedschaft, die zu ihnen passt. Du kannst Mitgliedschaften jederzeit hinzufügen oder ändern.",
       "tiersEmpty": "Deine Mitgliedschaften",
       "tiersHint": "Wähle eine oder mehrere Mitgliedschaften aus, dann erscheinen sie hier."
     },
     "sketch": {
-      "preview": "Live-Vorschau des Kopfbereichs deiner Website",
+      "preview": "Live-Vorschau der Kopfzeile deiner Website",
       "device": "Vorschaugerät",
       "desktop": "Desktop",
       "mobile": "Mobil + Menü",
@@ -3266,8 +3266,8 @@
         "club": "Der Club",
         "library": "Kursbibliothek",
         "price": "{sign}{price} pro Monat",
-        "coversLive": "Umfasst: Jede Live-Session",
-        "coversCourses": "Umfasst: Jeden Kurs"
+        "coversLive": "Umfasst: jede Live-Session",
+        "coversCourses": "Umfasst: jeden Kurs"
       },
       "access": {
         "title": "Alles, was du erstellst",
@@ -3289,13 +3289,13 @@
         "lessons": "<b>Lektionen</b> sind die Videos in jedem Modul."
       },
       "live": {
-        "title": "Abendstunde am Dienstag",
+        "title": "Session am Dienstagabend",
         "when": "Dienstags, 19 Uhr",
         "join": "Teilnehmen"
       },
       "inbox": {
         "name": "Anna",
-        "message": "Hi! Ist die Dienstagsstunde auch für absolute Anfänger okay?"
+        "message": "Hi! Ist die Session am Dienstag auch ohne Vorkenntnisse okay?"
       }
     },
     "starter": {
@@ -3373,7 +3373,7 @@
       "ends": "Ende",
       "endsHint": "Leer lassen für unbegrenzte Laufzeit",
       "sessionTime": "Session-Zeit {n}",
-      "classTime": "Kurszeit {n}",
+      "classTime": "Session-Zeit {n}",
       "removeDayTime": "Diesen Tag und diese Uhrzeit entfernen",
       "removeTime": "Diese Uhrzeit entfernen",
       "addTime": "Uhrzeit hinzufügen",
@@ -3393,17 +3393,17 @@
       "look": "Stelle deine Startseite fertig"
     },
     "turnError": {
-      "brand_taken": "Dieser Name ist bereits vergeben. Versuch einen anderen.",
+      "brand_taken": "Dieser Name ist bereits vergeben. Versuche einen anderen.",
       "brand_unusable": "Verwende Buchstaben oder Zahlen im Namen deiner Website.",
-      "invalid_handle": "Dieser Handle sieht nicht richtig aus. Verwende deinen Handle, z. B. @mira.yoga, oder füge den Link zu deinem Profil ein.",
+      "invalid_handle": "Dieser Nutzername sieht nicht richtig aus. Verwende deinen Nutzernamen, z. B. @mira.yoga, oder füge den Link zu deinem Profil ein.",
       "invalid_schedule": "Wähle mindestens einen Tag und eine Uhrzeit für die Session.",
       "unknown_logo": "Dieses Logo ist nicht mehr verfügbar. Wähle ein anderes.",
       "unknown_style": "Dieser Look ist nicht mehr verfügbar. Wähle einen anderen.",
-      "trial_unavailable": "Für eine kostenlose Testphase brauchst du einen wöchentlichen Kurs mit Preis und mindestens zwei Terminen.",
-      "other": "Das hat nicht geklappt. Deine Antwort ist noch da, versuch es also gleich noch einmal."
+      "trial_unavailable": "Für eine kostenlose Testphase brauchst du eine wöchentliche Live-Session mit Preis und mindestens zwei Terminen.",
+      "other": "Das hat nicht geklappt. Deine Antwort ist noch da, versuche es also gleich erneut."
     },
     "editor": {
-      "saveError": "Deine letzte Änderung konnte nicht gespeichert werden. Versuch es noch einmal.",
+      "saveError": "Deine letzte Änderung konnte nicht gespeichert werden. Versuche es erneut.",
       "aria": "{page, select, home {Deine Startseite bearbeiten} about {Deine Über-uns-Seite bearbeiten} courses {Deine Kursseite bearbeiten} pricing {Deine Preisseite bearbeiten} faq {Deine FAQ-Seite bearbeiten} contact {Deine Kontaktseite bearbeiten} events {Deine Veranstaltungsseite bearbeiten} other {Deine {page}-Seite bearbeiten}}",
       "title": "{page, select, home {Deine Startseite bearbeiten} about {Deine Über-uns-Seite bearbeiten} courses {Deine Kursseite bearbeiten} pricing {Deine Preisseite bearbeiten} faq {Deine FAQ-Seite bearbeiten} contact {Deine Kontaktseite bearbeiten} events {Deine Veranstaltungsseite bearbeiten} other {Deine {page}-Seite bearbeiten}}",
       "hint": "Ändere alles auf der Seite. Deine Änderungen werden automatisch gespeichert.",
@@ -3426,7 +3426,7 @@
       "lead": "So bekommst du dein Geld.",
       "title": "Lass dich von deinen Teilnehmern bezahlen",
       "body": "Zahlungen laufen über Stripe und gehen direkt auf dein Bankkonto. Du bestätigst, wer du bist und wohin das Geld gehen soll. Das dauert etwa fünf Minuten.",
-      "ownerOnly": "Nur der Inhaber des Studios kann Auszahlungen verbinden. Überspring diesen Schritt vorerst; der Inhaber kann Stripe später unter Auszahlungen verbinden.",
+      "ownerOnly": "Nur die Person, der das Studio gehört, kann Auszahlungen verbinden. Überspringe diesen Schritt vorerst; sie kann Stripe später unter Auszahlungen verbinden.",
       "connected": "Auszahlungen sind verbunden",
       "needsDetails": "Stripe braucht noch ein paar Angaben, bevor du Zahlungen annehmen kannst.",
       "opening": "Stripe wird geöffnet…",
@@ -3462,23 +3462,23 @@
     },
     "goLive": {
       "paymentPending": "Deine Zahlung wird noch bestätigt. Wenn sie durchgegangen ist, lade diese Seite in einer Minute neu.",
-      "checkoutError": "Der Checkout konnte nicht geöffnet werden. Versuch es noch einmal.",
-      "cardError": "Deine Karte konnte noch nicht belastet werden. Kläre das mit deiner Bank und versuch es noch einmal.",
-      "startError": "Dein Tarif konnte nicht gestartet werden. Versuch es noch einmal.",
-      "holdError": "Deine kostenpflichtigen Angebote konnten nicht zurückgehalten werden. Versuch es noch einmal.",
+      "checkoutError": "Der Checkout konnte nicht geöffnet werden. Versuche es erneut.",
+      "cardError": "Deine Karte konnte noch nicht belastet werden. Kläre das mit deiner Bank und versuche es erneut.",
+      "startError": "Dein Tarif konnte nicht gestartet werden. Versuche es erneut.",
+      "holdError": "Deine kostenpflichtigen Produkte konnten nicht zurückgehalten werden. Versuche es erneut.",
       "blockedToast": "Ein paar Dinge müssen noch erledigt werden, bevor du live gehst.",
-      "publishError": "Deine Website konnte nicht veröffentlicht werden. Versuch es noch einmal.",
+      "publishError": "Deine Website konnte nicht veröffentlicht werden. Versuche es erneut.",
       "asideTitle": "Als Nächstes geht deine Website live",
       "built": "Was ich erstellt habe",
       "confirming": "Dein Tarif wird bestätigt…",
       "finishing": "Deine Seiten werden fertiggestellt…",
       "holding": "Sie werden zurückgehalten…",
       "sellLater": "Jetzt live gehen, später verkaufen",
-      "sellLaterHint": "Wenn du jetzt live gehst, bleiben deine Preise erhalten: Kostenpflichtige Angebote warten als Entwürfe und gehen automatisch in den Verkauf, sobald du Zahlungen annehmen kannst.",
+      "sellLaterHint": "Wenn du jetzt live gehst, bleiben deine Preise erhalten: Kostenpflichtige Produkte warten als Entwürfe und gehen automatisch in den Verkauf, sobald du Zahlungen annehmen kannst.",
       "trial": {
         "title": "{days, plural, one {Starte deine #-tägige kostenlose Testphase} other {Starte deine #-tägige kostenlose Testphase}}",
-        "body": "{plan} ist bis {date} kostenlos. Hinterlege jetzt deine Karte: Wenn du vorher jederzeit kündigst, wird dir nichts berechnet. Du kommst direkt hierher zurück.",
-        "bodyPrice": "{plan} ist bis {date} kostenlos, danach {price} pro Monat. Hinterlege jetzt deine Karte: Wenn du vorher jederzeit kündigst, wird dir nichts berechnet. Du kommst direkt hierher zurück.",
+        "body": "{plan} ist bis {date} kostenlos. Hinterlege jetzt deine Karte: Du kannst bis dahin jederzeit kündigen, dann wird dir nichts berechnet. Du kommst direkt hierher zurück.",
+        "bodyPrice": "{plan} ist bis {date} kostenlos, danach {price} pro Monat. Hinterlege jetzt deine Karte: Du kannst bis dahin jederzeit kündigen, dann wird dir nichts berechnet. Du kommst direkt hierher zurück.",
         "start": "Kostenlose Testphase starten"
       },
       "start": {
@@ -3501,11 +3501,11 @@
       "heldHint": "Wähle jederzeit in deinem Dashboard einen Tarif und richte Auszahlungen ein; dann gehen sie automatisch in den Verkauf.",
       "goLive": "Live gehen",
       "going": "Wird live geschaltet…",
-      "keepEditing": "Du kannst deine Website auch nach dem Livegang weiter bearbeiten.",
+      "keepEditing": "Du kannst deine Website auch bearbeiten, nachdem sie live gegangen ist.",
       "qa": {
         "checking": "Ein letzter Blick auf jede Seite",
         "looked": "{count, plural, one {Ich habe mir deine Seite angesehen} other {Ich habe mir alle # Seiten angesehen}}",
-        "checkingBody": "Auf Desktop und Smartphone, im hellen und dunklen Modus, damit beim Livegang nichts merkwürdig aussieht. Du musst nicht auf mich warten.",
+        "checkingBody": "Auf Desktop und Smartphone, im hellen und dunklen Modus, damit nichts schief aussieht, wenn du live gehst. Du musst nicht auf mich warten.",
         "fixedBody": "Auf Desktop und Smartphone, im hellen und dunklen Modus. Dabei habe ich einiges aufgeräumt:",
         "plainBody": "Auf Desktop und Smartphone, im hellen und dunklen Modus."
       },
@@ -3513,20 +3513,20 @@
       "stepMinutes": "etwa {minutes} Min."
     },
     "draft": {
-      "stuck": "{kind, select, course {Dein Kurs braucht viel länger als normal. Versuch es noch einmal oder überspring ihn vorerst und füge ihn später hinzu.} event {Deine Live-Session braucht viel länger als normal. Versuch es noch einmal oder überspring sie vorerst und füge sie später hinzu.} onsite {Deine Präsenzveranstaltung braucht viel länger als normal. Versuch es noch einmal oder überspring sie vorerst und füge sie später hinzu.} other {Dein Kurs braucht viel länger als normal. Versuch es noch einmal oder überspring ihn vorerst und füge ihn später hinzu.}}",
+      "stuck": "{kind, select, course {Dein Kurs braucht viel länger als normal. Versuche es erneut oder überspringe ihn vorerst und füge ihn später hinzu.} event {Deine Live-Session braucht viel länger als normal. Versuche es erneut oder überspringe sie vorerst und füge sie später hinzu.} onsite {Deine Präsenzveranstaltung braucht viel länger als normal. Versuche es erneut oder überspringe sie vorerst und füge sie später hinzu.} other {Dein Kurs braucht viel länger als normal. Versuche es erneut oder überspringe ihn vorerst und füge ihn später hinzu.}}",
       "retry": "Erneut versuchen",
       "waiting": "Live-Sessions gibt es mit einem kostenpflichtigen Tarif. Wenn du live gehst, biete ich dir einen an, und deine erste Live-Session wird entworfen, sobald er aktiv ist.",
-      "failed": "{kind, select, course {Ich konnte deinen Kurs diesmal nicht entwerfen. Schreib mir unten, worum es gehen soll, dann versuche ich es noch einmal, oder überspring ihn vorerst.} event {Ich konnte deine Live-Session diesmal nicht entwerfen. Schreib mir unten, worum es gehen soll, dann versuche ich es noch einmal, oder überspring sie vorerst.} onsite {Ich konnte deine Präsenzveranstaltung diesmal nicht entwerfen. Schreib mir unten, worum es gehen soll, dann versuche ich es noch einmal, oder überspring sie vorerst.} other {Ich konnte deinen Kurs diesmal nicht entwerfen. Schreib mir unten, worum es gehen soll, dann versuche ich es noch einmal, oder überspring ihn vorerst.}}",
+      "failed": "{kind, select, course {Ich konnte deinen Kurs diesmal nicht entwerfen. Schreib mir unten, worum es gehen soll, dann versuche ich es erneut, oder überspringe ihn vorerst.} event {Ich konnte deine Live-Session diesmal nicht entwerfen. Schreib mir unten, worum es gehen soll, dann versuche ich es erneut, oder überspringe sie vorerst.} onsite {Ich konnte deine Präsenzveranstaltung diesmal nicht entwerfen. Schreib mir unten, worum es gehen soll, dann versuche ich es erneut, oder überspringe sie vorerst.} other {Ich konnte deinen Kurs diesmal nicht entwerfen. Schreib mir unten, worum es gehen soll, dann versuche ich es erneut, oder überspringe ihn vorerst.}}",
       "drafting": "{kind, select, course {Dein erster Kurs wird entworfen…} event {Deine erste Live-Session wird entworfen…} onsite {Deine erste Präsenzveranstaltung wird entworfen…} other {Dein erster Kurs wird entworfen…}}",
       "usually": "Meist in weniger als einer Minute fertig.",
-      "coverError": "Dieses Titelbild konnte nicht verwendet werden. Probier ein anderes.",
-      "changingCover": "Titelbild wird geändert…",
-      "pickCover": "Titelbild auswählen",
-      "coverCurrent": "Aktuelles Titelbild",
-      "coverUse": "Dieses Titelbild verwenden",
+      "coverError": "Dieses Cover konnte nicht verwendet werden. Probier ein anderes.",
+      "changingCover": "Cover wird geändert…",
+      "pickCover": "Cover auswählen",
+      "coverCurrent": "Aktuelles Cover",
+      "coverUse": "Dieses Cover verwenden",
       "kicker": "{kind, select, course {Dein erster Kurs} event {Deine erste Live-Session} onsite {Deine erste Präsenzveranstaltung} other {Dein erster Kurs}}",
       "repeats": "Wiederholung: {repeats}",
-      "trialChip": "Erste Session ist ein kostenloses Probetraining",
+      "trialChip": "Erste Session ist eine kostenlose Probestunde",
       "includedIn": "Enthalten in {name}",
       "rewriting": "{kind, select, course {Dein Kurs wird mit deinen Änderungen neu geschrieben…} event {Deine Live-Session wird mit deinen Änderungen neu geschrieben…} onsite {Deine Präsenzveranstaltung wird mit deinen Änderungen neu geschrieben…} other {Dein Kurs wird mit deinen Änderungen neu geschrieben…}}",
       "rewritingShort": "{kind, select, course {Dein Kurs wird neu geschrieben…} event {Deine Live-Session wird neu geschrieben…} onsite {Deine Präsenzveranstaltung wird neu geschrieben…} other {Dein Kurs wird neu geschrieben…}}",
@@ -3535,29 +3535,29 @@
         "course": {
           "0": "Module werden skizziert",
           "1": "Lektionen werden geschrieben",
-          "2": "Titelbild wird ausgewählt"
+          "2": "Cover wird ausgewählt"
         },
         "event": {
           "0": "Session wird geplant",
           "1": "Passender Termin wird gesucht",
-          "2": "Titelbild wird ausgewählt"
+          "2": "Cover wird ausgewählt"
         }
       },
       "trial": {
-        "title": "Erste Session als kostenloses Probetraining anbieten?",
+        "title": "Erste Session als kostenlose Probestunde anbieten?",
         "body": "Jeder kann kostenlos daran teilnehmen. Alle anderen Sessions behalten ihren Preis.",
-        "help": "Was ist ein kostenloses Probetraining?",
-        "tip": "Mit einem Probetraining können Interessierte ausprobieren, was du unterrichtest, bevor sie bezahlen. Nur deine erste Session ist kostenlos, und jeder kann daran teilnehmen. Alle folgenden Sessions werden zu deinem üblichen Preis verkauft. Du kannst es jederzeit ausschalten.",
-        "example": "Jede Session kostet {price}. Die erste ist ein kostenloses Probetraining, und alle anderen Sessions kosten weiterhin {price}."
+        "help": "Was ist eine kostenlose Probestunde?",
+        "tip": "Mit einer Probestunde können Interessierte ausprobieren, was du anbietest, bevor sie bezahlen. Nur deine erste Session ist kostenlos, und jeder kann daran teilnehmen. Alle folgenden Sessions werden zu deinem üblichen Preis verkauft. Du kannst sie jederzeit ausschalten.",
+        "example": "Jede Session kostet {price}. Die erste ist eine kostenlose Probestunde, und alle anderen Sessions kosten weiterhin {price}."
       }
     },
     "bio": {
       "label": "Oder schreib über deine Arbeit",
       "why": "Je mehr du uns erzählst, desto mehr klingt deine Website nach dir. Geh am besten auf Folgendes ein:",
       "include": {
-        "0": "Was du unterrichtest und wen du unterrichtest",
+        "0": "Was du anbietest und für wen",
         "1": "Dein Werdegang und deine Zertifizierungen",
-        "2": "Dein Unterrichtsstil",
+        "2": "Deine Arbeitsweise",
         "3": "Wie viele Jahre du das schon machst",
         "4": "Was dich von anderen unterscheidet"
       },
@@ -3572,9 +3572,9 @@
     "share": {
       "fileType": "Ich kann PDF-, Text- und Markdown-Dateien lesen. Probier eine davon aus oder füge stattdessen den Text ein.",
       "fileSize": "Diese Datei ist zu groß. Sie muss kleiner als 5 MB sein, oder du fügst stattdessen den Text ein.",
-      "unavailable": "Ich konnte die Datei gerade nicht lesen. Versuch es in einer Minute noch einmal.",
+      "unavailable": "Ich konnte die Datei gerade nicht lesen. Versuche es in einer Minute erneut.",
       "finished": "Die Einrichtung ist abgeschlossen, daher kann ich das nicht mehr hinzufügen.",
-      "other": "Das hat nicht geklappt. Versuch es gleich noch einmal."
+      "other": "Das hat nicht geklappt. Versuche es gleich erneut."
     },
     "opening": {
       "chooseFile": "Datei auswählen",
@@ -3606,11 +3606,11 @@
       "firstName": "Dein Vorname (optional)",
       "thinking": "Ich überlege mir Namen…",
       "getIdeas": "Ideen holen",
-      "noIdeas": "Mir sind gerade keine Namen eingefallen. Versuch es gleich noch einmal.",
+      "noIdeas": "Mir sind gerade keine Namen eingefallen. Versuche es gleich erneut.",
       "tapOne": "Tippe auf einen, um ihn zu verwenden:"
     },
     "photos": {
-      "heic": "HEIC-Fotos lassen sich in den meisten Browsern nicht öffnen. Speichere es als JPEG und füge es erneut hinzu.",
+      "heic": "HEIC-Fotos lassen sich in den meisten Browsern nicht öffnen. Speichere das Foto als JPEG und füge es erneut hinzu.",
       "formats": "Hier sind nur Fotos im Format JPG, PNG, WebP und AVIF möglich.",
       "tooBig": "Dieses Foto ist größer als 25 MB.",
       "coverage": {
@@ -3626,16 +3626,16 @@
         "added": "Hinzugefügt"
       },
       "answer": "{count, plural, one {Mein eigenes Foto} other {Meine eigenen # Fotos}}",
-      "stockAnswer": "Wähl Fotos für mich aus",
+      "stockAnswer": "Wähle Fotos für mich aus",
       "uploadFailed": "Das Hochladen hat nicht geklappt. Entferne das Foto und füge es erneut hinzu.",
       "mostHere": "Mehr kann ich hier nicht annehmen: {max, plural, one {# Foto} other {# Fotos}}.",
       "onlyFirst": "Nur die ersten {room} wurden hinzugefügt: Mehr als {max, plural, one {# Foto} other {# Fotos}} kann ich hier nicht annehmen.",
       "fileProblem": "{name}: {problem}",
-      "removeError": "Das Foto konnte nicht entfernt werden. Versuch es erneut unter Medien.",
+      "removeError": "Das Foto konnte nicht entfernt werden. Versuche es erneut unter Medien.",
       "addAria": "Fotos hinzufügen",
       "addMore": "Weitere Fotos hinzufügen",
       "addYour": "Füge deine Fotos hinzu",
-      "drop": "Zieh sie hierher oder wähle sie aus. JPG, PNG, WebP oder AVIF, jeweils bis zu 25 MB. Ich mache jedes Foto leicht genug fürs Web, also lade ruhig die Originalgröße hoch.",
+      "drop": "Ziehe sie hierher oder wähle sie aus. JPG, PNG, WebP oder AVIF, jeweils bis zu 25 MB. Ich mache jedes Foto leicht genug fürs Web, also lade ruhig die Originalgröße hoch.",
       "listAria": "Deine Fotos",
       "removeAria": "{title} entfernen",
       "small": "Klein: wirkt unscharf, wenn groß angezeigt",
@@ -3655,12 +3655,12 @@
         "paid_plan": "Diese Website hat einen kostenpflichtigen Tarif und kann daher hier nicht gelöscht werden.",
         "payments_connected": "Diese Website hat ein verbundenes Zahlungskonto. Wende dich an den Support, um es zu entfernen.",
         "custom_domain": "Entferne zuerst die eigene Domain.",
-        "provisioning": "Deine Website wird noch erstellt. Versuch es in ein paar Minuten erneut.",
+        "provisioning": "Deine Website wird noch erstellt. Versuche es in ein paar Minuten erneut.",
         "setup_finished": "Die Einrichtung ist bereits abgeschlossen. Lösche die Website über dein Dashboard."
       },
-      "cancelError": "Die Einrichtung konnte nicht abgebrochen werden. Versuch es erneut.",
+      "cancelError": "Die Einrichtung konnte nicht abgebrochen werden. Versuche es erneut.",
       "savedLogout": "Alles ist gespeichert. Wir haben dir einen Link per E-Mail geschickt, damit du dort weitermachen kannst, wo du aufgehört hast.",
-      "linkError": "Dein Link konnte nicht gesendet werden. Versuch es erneut.",
+      "linkError": "Dein Link konnte nicht gesendet werden. Versuche es erneut.",
       "savedLogin": "Alles ist gespeichert. Melde dich jederzeit an, um weiterzumachen.",
       "label": "Einrichtungsmenü",
       "saved": "Automatisch gespeichert",
@@ -3683,11 +3683,11 @@
     "flow": {
       "unavailable": "Die geführte Einrichtung ist für diese Website noch nicht verfügbar.",
       "undone": "Änderung rückgängig gemacht",
-      "undoError": "Das konnte nicht rückgängig gemacht werden. Versuch es noch einmal.",
+      "undoError": "Das konnte nicht rückgängig gemacht werden. Versuche es erneut.",
       "undo": "Rückgängig",
-      "editPartial": "Geändert: {titles}. Der Rest hat nicht geklappt. Frag noch einmal, um es abzuschließen.",
+      "editPartial": "Geändert: {titles}. Der Rest hat nicht geklappt. Frag erneut, um es abzuschließen.",
       "editDone": "Erledigt: {titles}.",
-      "saveError": "Das konnte nicht gespeichert werden. Versuch es noch einmal.",
+      "saveError": "Das konnte nicht gespeichert werden. Versuche es erneut.",
       "undoing": "Änderung wird rückgängig gemacht…",
       "prev": "Vorherige Frage",
       "next": "Nächste Frage",
@@ -3749,7 +3749,7 @@
       "continueCount": "Mit {count} fortfahren",
       "selectAll": "Alle auswählen",
       "deselectAll": "Alle abwählen",
-      "pickForMe": "Wähl für mich",
+      "pickForMe": "Für mich auswählen",
       "pickForMeHint": "Unsicher? Ich wähle anhand deiner Antworten aus.",
       "changeCourse": "Oder sag mir, was ich ändern soll, z. B. „mach es sechs Wochen lang“ oder „ein anderes Foto“…",
       "changeEvent": "Oder sag mir, was ich ändern soll, z. B. „mach es eine Stunde lang“ oder „ein anderes Foto“…",
@@ -3760,7 +3760,7 @@
     "look": {
       "original": "Original",
       "colours": "{label}-Farben",
-      "logoLoadError": "Weitere Logos konnten nicht geladen werden. Versuch es noch einmal.",
+      "logoLoadError": "Weitere Logos konnten nicht geladen werden. Versuche es erneut.",
       "suggested": "Empfohlen",
       "pick": "<b>{label}</b> ist unsere Empfehlung. {reason}",
       "filter": "Looks filtern",
@@ -3781,14 +3781,14 @@
       "menuPages": "Seiten im Menü deiner Kopfzeile",
       "tapToggle": "Tippe zum Hinzufügen oder Entfernen",
       "headerElements": "Elemente der Kopfzeile",
-      "ctaButton": "Schaltfläche „{label}“",
-      "transparent": "Transparent über dem Titelbild",
+      "ctaButton": "„{label}“-Button",
+      "transparent": "Transparent über dem Hero",
       "wordmarkAnswer": "Nur mein Name, als Text",
       "wordmark": "Nur mein Name",
       "uploadedAnswer": "Mein eigenes Logo",
       "upload": "Eigenes hochladen",
       "showOthers": "Zeig mir andere",
-      "uploadError": "Dein Logo konnte nicht hochgeladen werden. Versuch es noch einmal.",
+      "uploadError": "Dein Logo konnte nicht hochgeladen werden. Versuche es erneut.",
       "emailTitle": "{label}-E-Mail",
       "asPage": "{label}, als Seite",
       "seeOthers": "Andere Looks ansehen",
@@ -3810,18 +3810,18 @@
       "useLogo": "Dieses Logo verwenden",
       "close": "Logo-Studio schließen",
       "startOverConfirm": "Neu beginnen? Dadurch werden dein Briefing und dein gespeicherter Fortschritt gelöscht.",
-      "refineFailed": "Das Design konnte nicht verfeinert werden – versuch es noch einmal.",
+      "refineFailed": "Das Design konnte nicht verfeinert werden – versuche es erneut.",
       "unreachable": "Das Design-Studio ist gerade nicht erreichbar.",
       "uploadFailed": "Hochladen fehlgeschlagen",
       "saveFailed": "Das Logo konnte nicht gespeichert werden – du kannst stattdessen eine Datei hochladen.",
       "replaceConfirm": "Deinen aktuellen Entwurf ersetzen? Deine Änderungen im Editor gehen dabei verloren.",
-      "useFailed": "Dieses Logo konnte nicht verwendet werden – versuch es noch einmal.",
+      "useFailed": "Dieses Logo konnte nicht verwendet werden – versuche es erneut.",
       "iconOnly": "Dein Icon ist fertig, aber die KI-Kombination aus Icon und Schrift wurde nicht abgeschlossen – gestalte den Text im Editor.",
-      "similarFailed": "Es konnte kein ähnliches Logo gestaltet werden – versuch es noch einmal.",
+      "similarFailed": "Es konnte kein ähnliches Logo gestaltet werden – versuche es erneut.",
       "gettingReady": "Dein Logo wird vorbereitet…",
       "similar": {
         "disabled": "KI-Design ist gerade nicht verfügbar.",
-        "upgrade_required": "Upgrade deinen Tarif, um mit KI zu gestalten.",
+        "upgrade_required": "Wechsle auf einen höheren Tarif, um mit KI zu gestalten.",
         "quota_exhausted": "Du hast deine KI-Design-Durchgänge für diesen Monat aufgebraucht.",
         "unreachable": "Das Design-Studio ist gerade nicht erreichbar.",
         "empty": "Die KI konnte dieses Logo nicht zeichnen – probier ein anderes."
@@ -3829,7 +3829,7 @@
     },
     "brief": {
       "title": "Erzähl uns von deiner Marke",
-      "intro": "Daraus machen wir eine ganze Wand voller Logo-Ideen, aus denen du wählen und die du feinabstimmen kannst.",
+      "intro": "Daraus machen wir eine ganze Wand voller Logo-Ideen, aus denen du wählen und die du verfeinern kannst.",
       "brandName": "Markenname",
       "niche": "Was bietest du an?",
       "nichePlaceholder": "z. B. Yoga, Fitness, Musik, Kochen…",
@@ -3846,7 +3846,7 @@
         "Elegant": "Elegant",
         "Playful": "Verspielt",
         "Organic": "Organisch",
-        "Tech": "Technik"
+        "Tech": "Technisch"
       },
       "show": "Meine Logo-Ideen anzeigen",
       "startOver": "Neu beginnen"
@@ -3860,11 +3860,11 @@
     },
     "editor": {
       "kitNoSvg": "Die Schriftarten konnten nicht geladen werden, daher enthält das Kit nur PNGs (kein SVG).",
-      "kitFailed": "Das Brand-Kit konnte nicht erstellt werden – bitte versuche es erneut.",
+      "kitFailed": "Das Marken-Kit konnte nicht erstellt werden – bitte versuche es erneut.",
       "browserTab": "Browser-Tab",
-      "appIcon": "App-Symbol",
+      "appIcon": "App-Icon",
       "building": "Wird erstellt…",
-      "downloadKit": "Brand-Kit herunterladen (.zip)",
+      "downloadKit": "Marken-Kit herunterladen (.zip)",
       "kitContents": "PNGs für hell & dunkel, Favicon-Größen und ein Vektor-SVG."
     },
     "entrance": {
@@ -3872,7 +3872,7 @@
       "readyMadeHint": "Komplette Logo-Ideen für deine Marke – kostenlos nutzbar und anpassbar.",
       "designWithAi": "Mit KI gestalten",
       "aiHint": "Beschreibe deinen Stil und lass die KI ein individuelles Logo gestalten.",
-      "aiUpgradeHint": "Führe ein Upgrade durch, um mit KI ein individuelles Logo zu gestalten."
+      "aiUpgradeHint": "Wechsle auf einen höheren Tarif, um mit KI ein individuelles Logo zu gestalten."
     },
     "gallery": {
       "empty": "Noch keine fertigen Logos – probiere stattdessen „Mit KI gestalten“.",
@@ -3883,20 +3883,20 @@
     "chat": {
       "step": {
         "describe": "Beschreiben",
-        "icon": "Symbol",
+        "icon": "Icon",
         "name": "Name",
         "tagline": "Slogan"
       },
       "notice": {
-        "quota_exhausted": "Du hast deine KI-Design-Runden für diesen Monat aufgebraucht. Nächsten Monat gibt es neue.",
+        "quota_exhausted": "Du hast deine KI-Design-Durchgänge für diesen Monat aufgebraucht. Nächsten Monat gibt es neue.",
         "disabled": "KI-Design ist vorübergehend nicht verfügbar.",
         "upgrade_required": "KI-Design ist in kostenpflichtigen Tarifen enthalten.",
-        "error": "Diese Runde konnte nicht gestaltet werden – versuche es erneut."
+        "error": "Dieser Durchgang konnte nicht gestaltet werden – versuche es erneut."
       },
       "phase": {
         "designing": "Konzepte werden skizziert",
         "illustrating": "Bildmarken werden gezeichnet",
-        "tracing": "Umwandlung in Vektoren"
+        "tracing": "Wird in Vektoren umgewandelt"
       },
       "pick": "Dieses wählen",
       "useTagline": "„{tagline}“ verwenden",
@@ -3915,19 +3915,19 @@
       "differentOptions": "Andere Optionen anzeigen",
       "turnsLeft": "{count, plural, one {Noch # KI-Design-Durchgang in diesem Monat.} other {Noch # KI-Design-Durchgänge in diesem Monat.}}",
       "describeTitle": "Beschreibe dein Wunschlogo",
-      "describeHint": "Ein, zwei Sätze reichen völlig – eine Stimmung, ein Symbol, Farben, die du magst oder vermeiden möchtest. Oder überspring das, und wir schlagen dir Konzepte auf Basis deiner Marke vor.",
-      "describePlaceholder": "z. B. ein ruhiges, minimalistisches Zeichen – vielleicht ein Blatt oder ein Sonnenaufgang, warme erdige Grüntöne, nichts Steifes",
+      "describeHint": "Ein, zwei Sätze reichen völlig – eine Stimmung, ein Symbol, Farben, die du magst oder vermeiden möchtest. Oder überspringe das, und wir schlagen dir Konzepte auf Basis deiner Marke vor.",
+      "describePlaceholder": "z. B. eine ruhige, minimalistische Bildmarke – vielleicht ein Blatt oder ein Sonnenaufgang, warme erdige Grüntöne, nichts Steifes",
       "designing": "Wird gestaltet…",
       "generate": "Konzepte erstellen",
       "skip": "Überspringen, zeig mir einfach Ideen",
-      "upgrade": "Upgraden"
+      "upgrade": "Tarif wechseln"
     },
     "refine": {
       "title": "Frag den KI-Designer",
       "quota": "Du hast deine KI-Verfeinerungen für diesen Monat aufgebraucht. Nächsten Monat gibt es neue.",
       "unavailable": "Die KI-Verfeinerung ist vorübergehend nicht verfügbar.",
-      "placeholder": "z. B. wärmere Farben, ein runderes Zeichen, hochwertiger",
-      "redraw": "Icon neu zeichnen (Zeichen komplett neu beginnen)",
+      "placeholder": "z. B. wärmere Farben, eine rundere Bildmarke, hochwertiger",
+      "redraw": "Icon neu zeichnen (Bildmarke komplett neu aufbauen)",
       "refining": "Wird verfeinert…",
       "refine": "Verfeinern",
       "left": "{count, plural, one {Noch # KI-Verfeinerung in diesem Monat.} other {Noch # KI-Verfeinerungen in diesem Monat.}}"
@@ -3942,8 +3942,8 @@
       "taglineOptional": "Slogan (optional)",
       "layout": {
         "label": "Anordnung",
-        "horizontal": "Zeichen + Name",
-        "horizontal_reversed": "Name + Zeichen",
+        "horizontal": "Bildmarke + Name",
+        "horizontal_reversed": "Name + Bildmarke",
         "stacked": "Gestapelt",
         "emblem": "Emblem",
         "name_only": "Nur Name"
@@ -4003,17 +4003,17 @@
           "knot": "Abstrakter Knoten",
           "grid": "Abstraktes Raster"
         },
-        "shuffle": "Klick erneut, um die Form neu zu mischen.",
+        "shuffle": "Klicke erneut, um die Form neu zu mischen.",
         "style": {
           "outline": "Kontur",
           "solid": "Gefüllt"
         },
-        "color": "Farbe des Zeichens",
+        "color": "Farbe der Bildmarke",
         "solid": "Einfarbig",
         "gradient": "Verlauf",
-        "gradientEnd": "Endfarbe des Verlaufs im Zeichen",
+        "gradientEnd": "Endfarbe des Verlaufs in der Bildmarke",
         "gradientAngle": "Verlaufswinkel",
-        "aiColors": "Von der KI gezeichnete Zeichenfarben",
+        "aiColors": "Farben der KI-gezeichneten Bildmarke",
         "secondaryColor": "Sekundärfarbe",
         "secondary": "Sekundär",
         "accentColor": "Akzentfarbe",
@@ -4043,7 +4043,7 @@
     "confirm": "Übernehmen",
     "applying": "Wird übernommen…",
     "applyAll": "Alle übernehmen",
-    "appliedAll": "{count, plural, one {# Änderung angewendet} other {# Änderungen angewendet}}",
+    "appliedAll": "{count, plural, one {# Änderung übernommen} other {# Änderungen übernommen}}",
     "appliedPartial": "{done} von {total} Änderungen übernommen – eine ist fehlgeschlagen",
     "dismiss": "Verwerfen",
     "applied": "Fertig – deine Website wurde aktualisiert",
@@ -4058,8 +4058,8 @@
     "undoStale": "Es gibt eine neuere Änderung – mach sie unter „Letzte Änderungen“ rückgängig.",
     "undoChanged": "Es wurde seitdem geändert oder veröffentlicht und deshalb so belassen.",
     "removeSelection": "Auswahl entfernen",
-    "resting": "Der Assistent macht gerade Pause – bitte versuch es etwas später noch einmal.",
-    "error": "Etwas ist schiefgelaufen. Bitte versuch es noch einmal.",
+    "resting": "Der Assistent macht gerade Pause – bitte versuche es etwas später erneut.",
+    "error": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
     "pageNames": {
       "home": "Startseite",
       "about": "Über uns",
@@ -4098,7 +4098,7 @@
     "attach": "Foto anhängen",
     "removeAttachment": "Foto entfernen",
     "attachTooLarge": "Das Foto ist zu groß (max. 10 MB).",
-    "attachFailed": "Das Foto konnte nicht hochgeladen werden. Bitte versuche es noch einmal.",
+    "attachFailed": "Das Foto konnte nicht hochgeladen werden. Bitte versuche es erneut.",
     "attachedOnly": "(hat ein Foto gesendet)",
     "creatingPhoto": "Dein Foto wird erstellt…",
     "dictate": "Sprechen statt tippen",
@@ -4108,6 +4108,6 @@
     "stop": "Stoppen",
     "stopping": "Wird gestoppt…",
     "stopped": "Gestoppt. Es wird nichts weiter geändert.",
-    "failed": "Das hat nicht geklappt. Versuche es noch einmal."
+    "failed": "Das hat nicht geklappt. Versuche es erneut."
   }
 }

@@ -1,14 +1,14 @@
 {
   "hero": {
     "pill": "<b>Gründungs-Creator</b>: Wir richten alles persönlich mit dir ein",
-    "title": "Du bist der Experte. <accent>Wir sind dein ganzes Team.</accent>",
-    "lead": "Contentor arbeitet wie ein Team hinter dir. Es baut deine Website, gewinnt Teilnehmer, sorgt dafür, dass sie wiederkommen, und dass du bezahlt wirst.",
+    "title": "Das Fachwissen hast du. <accent>Wir sind dein ganzes Team.</accent>",
+    "lead": "Contentor arbeitet wie ein Team hinter dir. Es baut deine Website, gewinnt Teilnehmer, sorgt dafür, dass sie wiederkommen und du bezahlt wirst.",
     "cta": "Kostenlos testen",
     "secondary": "Lerne dein Team kennen",
     "trust": {
       "trial": "14 Tage kostenlos",
       "cancel": "Jederzeit kündbar",
-      "time": "An einem Nachmittag online"
+      "time": "An einem Nachmittag live"
     },
     "you": "Du",
     "youText": "einfach erschaffen",
@@ -27,7 +27,7 @@
     "title": "Gemacht für Creator.",
     "lead": "Yoga, Kraftsport, Musik, Sprachen, Kochen und mehr. Jedes Handwerk bekommt einen eigenen Look, und du machst ihn zu deinem.",
     "galleryLabel": "Coaching-Nischen und ihre Looks",
-    "renderAlt": "Handyvorschau einer Creator-Website im Look {look}",
+    "renderAlt": "Smartphone-Vorschau einer Creator-Website im Look {look}",
     "niches": {
       "journal": "Yoga-Creator",
       "kinetic": "Kraftsport-Creator",
@@ -134,7 +134,7 @@
     "keep": "Dir bleiben jeden Monat",
     "yearly": "{amount} pro Jahr",
     "gross": "Deine Teilnehmer zahlen",
-    "fee": "Unsere Gebühr ({pct}%)",
+    "fee": "Unsere Gebühr ({pct} %)",
     "planCost": "Dein Tarif",
     "note": "Vor der Kartengebühr von Stripe. Eine Schätzung, kein Versprechen.",
     "fallback": "Sieh dir die Tarife und ihre Gebühren an",
@@ -144,8 +144,8 @@
   "founder": {
     "eyebrow": "Die Person hinter deinem Team",
     "title": "Ich richte alles persönlich mit dir ein.",
-    "text": "Ich bin Görkem. Ich unterrichte Face Yoga in Berlin und betreibe mein eigenes Online-Studio mit Live-Kursen, Programmen und Mitgliedern – ich weiß also, wo die Tools im Weg stehen. Wenn du als Gründungs-Creator dabei bist, bekommst du mich: Ich richte deine Website, deine Kurse und deine Zahlungen gemeinsam mit dir ein, eins zu eins, und du kannst mir jederzeit schreiben, wenn du nicht weiterkommst.",
-    "signature": "Görkem Hancı, hat Contentor gegründet",
+    "text": "Ich bin Görkem. Ich unterrichte Face Yoga in Berlin und betreibe mein eigenes Online-Studio mit Live-Sessions, Programmen und Mitgliedern – ich weiß also, wo die Tools im Weg stehen. Wenn du als Gründungs-Creator dabei bist, bekommst du mich: Ich richte deine Website, deine Kurse und deine Zahlungen gemeinsam mit dir ein, eins zu eins, und du kannst mir jederzeit schreiben, wenn du nicht weiterkommst.",
+    "signature": "Görkem Hancı, Gründer von Contentor",
     "offer": {
       "title": "Gründungs-Creator",
       "text": "Für unsere ersten 20 Creator:",
@@ -155,7 +155,7 @@
           "text": "Ein Call, in dem wir gemeinsam deine Website, deine Kurse und deine Zahlungen aufsetzen. Du bringst die Inhalte mit."
         },
         "discount": {
-          "title": "50 % Rabatt für 12 Monate",
+          "title": "50 % Rabatt für 12 Monate",
           "text": "Gründungspreise für Starter oder Pro – dein ganzes erstes Jahr lang."
         },
         "migration": {
@@ -174,7 +174,7 @@
   "start": {
     "pricing": {
       "title": "Teste Starter 14 Tage kostenlos.",
-      "text": "Bau deine Website auf, lade Teilnehmer ein und halte Live-Sessions ab, bevor du etwas bezahlst. Der Verkauf startet, sobald dein Tarif beginnt. Kündige jederzeit vor der ersten Abbuchung.",
+      "text": "Baue deine Website auf, lade Teilnehmer ein und halte Live-Sessions ab, bevor du etwas bezahlst. Der Verkauf startet, sobald dein Tarif beginnt. Kündige jederzeit vor der ersten Abbuchung.",
       "cta": "Alle Tarife vergleichen"
     },
     "faq": {
@@ -190,15 +190,15 @@
         },
         "payments": {
           "q": "Wie funktionieren Zahlungen?",
-          "a": "Der Verkauf startet, sobald dein Tarif beginnt. Wir sind direkt mit Stripe verbunden: Zahlungen gehen direkt auf dein eigenes Stripe-Konto, abzüglich einer kleinen Transaktionsgebühr (8 % bei Starter, 6 % bei Pro) – wir verwahren dein Geld also nie. Du kannst Kurse einmalig verkaufen oder wiederkehrende Abos anbieten."
+          "a": "Der Verkauf startet, sobald dein Tarif beginnt. Wir sind direkt mit Stripe verbunden: Zahlungen gehen direkt auf dein eigenes Stripe-Konto, abzüglich einer kleinen Transaktionsgebühr (8 % bei Starter, 6 % bei Pro) – wir verwahren dein Geld also nie. Du kannst Kurse einmalig verkaufen oder wiederkehrende Abonnements anbieten."
         },
         "customDomain": {
           "q": "Kann ich meine eigene Domain nutzen?",
-          "a": "Ja — im Pro-Tarif kannst du deine eigene Domain verbinden. Und in jedem kostenpflichtigen Tarif läuft deine Plattform komplett unter deiner Marke: Deine Teilnehmer sehen Contentor nie."
+          "a": "Ja – im Pro-Tarif kannst du deine eigene Domain verbinden. Und in jedem kostenpflichtigen Tarif läuft deine Plattform komplett unter deiner Marke: Deine Teilnehmer sehen Contentor nie."
         },
         "migration": {
           "q": "Kann ich von einer anderen Plattform umziehen?",
-          "a": "Ja. Die meisten Creator bauen ihre Kurse mit unserem Baukasten nach und laden ihre Teilnehmer innerhalb eines Tages per E-Mail ein. Als Gründungs-Creator bekommst du beim Umzug persönliche Unterstützung von uns — tatkräftig und kostenlos."
+          "a": "Ja. Die meisten Creator bauen ihre Kurse mit unserem Baukasten nach und laden ihre Teilnehmer innerhalb eines Tages per E-Mail ein. Als Gründungs-Creator bekommst du beim Umzug persönliche Unterstützung von uns – tatkräftig und kostenlos."
         },
         "contract": {
           "q": "Gibt es eine lange Vertragslaufzeit?",
@@ -217,46 +217,46 @@
     "title": "Frag Contentor",
     "bubbleLabel": "Hilfe-Chat öffnen",
     "close": "Schließen",
-    "intro": "Fragen zu Contentor? Frag einfach — Preise, Auszahlungen, Funktionen, alles.",
+    "intro": "Fragen zu Contentor? Frag einfach – Preise, Auszahlungen, Funktionen, alles.",
     "placeholder": "Stell eine Frage…",
     "send": "Senden",
-    "thinking": "Denke nach…",
-    "error": "Etwas ist schiefgelaufen — bitte versuch es noch einmal.",
+    "thinking": "Ich denke nach…",
+    "error": "Etwas ist schiefgelaufen – bitte versuche es erneut.",
     "suggestPrice": "Was kostet Contentor?",
     "suggestPayouts": "Wie funktionieren Auszahlungen?",
     "suggestDomain": "Kann ich meine eigene Domain nutzen?",
     "rateUp": "Hilfreich",
     "rateDown": "Nicht hilfreich",
     "talkToHuman": "Mit einem Menschen sprechen",
-    "humanRequestedLine": "Du hast nach einem Menschen gefragt — wir wurden benachrichtigt und melden uns gleich hier.",
+    "humanRequestedLine": "Du hast nach einem Menschen gefragt – wir wurden benachrichtigt und melden uns gleich hier.",
     "agentJoined": "{name} ist dem Chat beigetreten",
     "assistantResumed": "Der Assistent ist zurück",
     "humanModeNotice": "Du chattest mit {name}"
   },
   "meta": {
-    "title": "Contentor — Du bist der Experte. Wir sind dein gesamtes Team.",
-    "description": "Contentor funktioniert wie ein Team hinter dir: Es baut deine Seite auf, bringt Teilnehmer, sorgt dafür, dass sie wiederkommen, und sorgt dafür, dass du bezahlt wirst. Teste es 14 Tage lang kostenlos."
+    "title": "Contentor – Das Fachwissen hast du. Wir sind dein ganzes Team.",
+    "description": "Contentor funktioniert wie ein Team hinter dir: Es baut deine Website auf, gewinnt Teilnehmer, sorgt dafür, dass sie wiederkommen und du bezahlt wirst. Teste es 14 Tage lang kostenlos."
   },
   "blogMeta": {
-    "title": "Blog — Contentor",
+    "title": "Blog – Contentor",
     "description": "Leitfäden und Ideen für Creator, die mit Contentor ein Online-Business aufbauen."
   },
   "blog": {
     "title": "Blog",
-    "empty": "Noch keine Beiträge."
+    "empty": "Noch keine Blogbeiträge."
   },
   "scenes": {
     "play": "Animation abspielen",
     "pause": "Animation pausieren",
     "found": {
       "askedGoogle": "Bei Google gefragt",
-      "query": "why are my hips so tight after sitting",
+      "query": "warum sind meine Hüften nach dem Sitzen so verspannt",
       "resultUrl": "{site} › Artikel",
       "resultTitle": "Warum sich deine Hüften nach einem Tag am Schreibtisch verspannt anfühlen",
       "resultSnippet": "Sitzen verkürzt die Vorderseite der Hüften. Hier erfährst du, was das bedeutet, und die Zwei-Minuten-Lösung.",
       "askedChatGpt": "Auf ChatGPT gefragt",
       "question": "Wo finde ich Online-Yoga für steife Büroangestellte?",
-      "answer": "Probier {coach} aus. Sie bietet langsame Vinyasa- und Yin-Klassen für Menschen an, die den ganzen Tag am Schreibtisch sitzen, mit Live-Klassen und einem sanften Kurs für verspannte Rücken.",
+      "answer": "Probier {coach} aus. Sie bietet langsames Vinyasa und Yin für Menschen an, die den ganzen Tag am Schreibtisch sitzen, mit Live-Sessions und einem sanften Kurs für verspannte Rücken.",
       "newStudent": "Neuer Teilnehmer",
       "joined": "{student} ist der Plattform von {coach} beigetreten"
     },
@@ -265,7 +265,7 @@
       "asleep": "{coach} schläft",
       "askAssistant": "Frag den Assistenten von {coach}",
       "question": "Mein unterer Rücken tut nach langen Tagen am Schreibtisch weh. Wo fange ich an?",
-      "reply": "Starte mit A Kinder Back: kurze, sanfte Einheiten, gemacht für Schreibtisch-Tage. Du kannst Lektion eins heute Abend machen.",
+      "reply": "Starte mit A Kinder Back: kurze, sanfte Lektionen, gemacht für Schreibtisch-Tage. Du kannst Lektion eins heute Abend machen.",
       "course": "A Kinder Back",
       "courseMeta": "Kurs · <num>{price}</num>",
       "paid": "Bezahlt",

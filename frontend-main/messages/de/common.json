@@ -16,7 +16,7 @@
     "label": "Sprache"
   },
   "footer": {
-    "tagline": "Die Plattform, mit der Content-Creator ihr Fachwissen zu Geld machen.",
+    "tagline": "Die Plattform, mit der Creator ihr Fachwissen zu Geld machen.",
     "product": "Produkt",
     "company": "Unternehmen",
     "legal": "Rechtliches",
@@ -30,7 +30,7 @@
     "loading": "Wird geladen",
     "somethingWrong": "Etwas ist schiefgelaufen",
     "tryAgain": "Erneut versuchen",
-    "loadFailed": "Diese Seite konnte nicht geladen werden. Bitte versuch es erneut.",
+    "loadFailed": "Diese Seite konnte nicht geladen werden. Bitte versuche es erneut.",
     "playVideo": "Video abspielen",
     "pauseVideo": "Video pausieren",
     "theme": {
@@ -41,16 +41,16 @@
       "dimMode": "Gedimmter Modus",
       "darkMode": "Dunkler Modus",
       "cycleAria": "Design: {current}. Zu {next} wechseln",
-      "cycleTitle": "Design: {current} — klicken für {next}",
+      "cycleTitle": "Design: {current} – klicken für {next}",
       "switchToLight": "Zum hellen Modus wechseln",
       "switchToDark": "Zum dunklen Modus wechseln"
     },
     "readingProgress": "Lesefortschritt"
   },
   "checkout": {
-    "dialog": "Kasse",
+    "dialog": "Checkout",
     "close": "Schließen",
-    "loading": "Kasse wird geladen",
+    "loading": "Checkout wird geladen",
     "today": "Heute",
     "everyMonthAfter": "Danach monatlich",
     "renews": "Die Verlängerung erfolgt automatisch. Du kannst jederzeit unter Abrechnung kündigen.",
@@ -63,7 +63,7 @@
     "beginsAtFallback": "{name} beginnt zum monatlichen Preis."
   },
   "meta": {
-    "ogAlt": "Contentor — ein Creator filmt zu Hause einen Yogakurs, Kamera und Licht aufgebaut",
-    "postTitle": "{title} — Contentor"
+    "ogAlt": "Contentor – ein Creator filmt zu Hause einen Yogakurs, Kamera und Licht aufgebaut",
+    "postTitle": "{title} – Contentor"
   }
 }
