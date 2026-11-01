@@ -341,10 +341,13 @@ test.describe("creator", () => {
     const decide = guide.getByRole("button", { name: q.pickForMe, exact: true });
     // A tile is structural (the first of the options grid), whatever words it carries.
     const tile = guide.locator("h1 ~ div.grid > button").first();
-    // "Continue", "Continue with your note" and "Continue with N" (the picks ticked).
-    const cont = guide.getByRole("button", {
-      name: new RegExp(`^(${escape(q.continue)}|${escape(q.continueNote)}|${escape(q.continueCount).replace("\\{count\\}", "\\d+")})$`),
-    });
+    // "Continue", "Continue with your note" and "Continue with N" (the picks ticked). The real button: after a
+    // pick, a sticky copy of it shows while it is scrolled out of view.
+    const cont = guide
+      .getByRole("button", {
+        name: new RegExp(`^(${escape(q.continue)}|${escape(q.continueNote)}|${escape(q.continueCount).replace("\\{count\\}", "\\d+")})$`),
+      })
+      .and(guide.locator("#setup-continue"));
     // The social-accounts question wants a handle for each network ticked.
     const handles = guide.getByPlaceholder(new RegExp(`${escape(sf.socials.placeholder.replace("{site}", ""))}$`));
     // The time-zone question opens on the browser's own zone: Continue takes it.

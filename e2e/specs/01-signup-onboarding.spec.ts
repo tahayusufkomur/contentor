@@ -92,7 +92,8 @@ test("signup lands in /setup and the interview ends in a published site", async 
   const busy = guide.getByText(/Thinking…|Still thinking|Making that change|Finishing your pages|Confirming your plan/);
   const decide = guide.getByRole("button", { name: "Pick for me", exact: true });
   const tile = guide.locator("h1 ~ div.grid > button").first();
-  const cont = guide.getByRole("button", { name: /^Continue/ });
+  // The real button: after a pick, a sticky copy of it shows while it is scrolled out of view.
+  const cont = guide.getByRole("button", { name: /^Continue/ }).and(guide.locator("#setup-continue"));
   // The social-accounts question wants a handle for each network ticked.
   const handles = guide.getByPlaceholder(/yourname or @yourname$/);
   // The time-zone question opens on the browser's own zone: Continue takes it.
