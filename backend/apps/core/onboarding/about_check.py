@@ -179,7 +179,8 @@ def analyze(text: str) -> dict:
 
     # The cache first: provisioning re-reads the About step's analysis, and a
     # hub health probe that blips in between must not throw it away.
-    key = "about-analyze:3:" + hashlib.sha256(clean.encode()).hexdigest()
+    # Keyed on the language too: the summary is written in the creator's.
+    key = f"about-analyze:4:{languages.creator_language()}:" + hashlib.sha256(clean.encode()).hexdigest()
     if (hit := cache.get(key)) is not None:
         return _described(hit)
     if not ai_compose.compose_available():

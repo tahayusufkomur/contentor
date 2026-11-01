@@ -324,7 +324,7 @@ def _run(system, user, job_id, spent) -> list:
         if kind == "delta":
             text += payload
             if "}" in payload:
-                ops, _ = parse_ops(text, final=False)
+                ops, _rest = parse_ops(text, final=False)
                 if len(ops) > seen:
                     seen = len(ops)
                     _progress(job_id, activity(ops[-1]))

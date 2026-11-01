@@ -54,17 +54,18 @@ export async function fetchPlatformPost(
   }
 }
 
-/** Whether a language has any post: the header shows its Blog link only then. */
+/** Whether a language has any post: the header shows its Blog link only then.
+ *  Unsure (an error) counts as yes: a link to an empty blog beats a lost one. */
 export async function platformBlogHasPosts(language: string): Promise<boolean> {
   try {
     const res = await fetch(
       `${POSTS_URL}?language=${encodeURIComponent(language)}&page_size=1`,
       { next: { revalidate: 300 }, signal: AbortSignal.timeout(8000) },
     );
-    if (!res.ok) return false;
+    if (!res.ok) return true;
     return ((await res.json()).count ?? 0) > 0;
   } catch {
-    return false;
+    return true;
   }
 }
 

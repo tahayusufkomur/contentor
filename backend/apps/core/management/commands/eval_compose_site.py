@@ -141,7 +141,9 @@ class Command(BaseCommand):
             config.enabled_modules = overrides["enabled_modules"]
             config.style = style
             config.default_locale = brief.get("language", "en")
-            config.pages = sc.skeleton_pages(style, niche=niche, brand_name=brand, description=description)
+            config.pages = sc.skeleton_pages(
+                style, niche=niche, brand_name=brand, description=description, language=config.default_locale
+            )
             config.setup_flow = {}
             config.save()
         cache.delete(f"tenant:{tenant.schema_name}:config")
@@ -150,7 +152,7 @@ class Command(BaseCommand):
 
         tenant.refresh_from_db()
         coach = sc._coach_data(tenant, brand)
-        ctx = sc._ctx(coach["niche"], brand, coach["description"])
+        ctx = sc._ctx(coach["niche"], brand, coach["description"], language=brief.get("language", "en"))
         with tenant_context(tenant):
             config = TenantConfig.objects.first()
         builds = (config.setup_flow or {}).get("page_builds") or {}

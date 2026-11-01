@@ -333,12 +333,11 @@ def retrieve_receipt_url(*, account_id: str, payment_intent_id: str) -> str:
 def set_customer_locale(*, customer_id: str, stripe_locale: str, account_id: str = "") -> None:
     """Make Stripe's own receipts for this customer follow `stripe_locale` (best effort).
     No `account_id`: the customer is on the platform account (a creator's plan checkout)."""
-    stripe = _client()
     try:
-        stripe.Customer.modify(
+        _client().Customer.modify(
             customer_id, preferred_locales=[stripe_locale], **({"stripe_account": account_id} if account_id else {})
         )
-    except stripe.StripeError:  # a receipt's language is never worth failing the webhook
+    except Exception:  # noqa: BLE001 — a receipt's language is never worth failing the webhook
         logger.warning("could not set preferred locale: account=%s customer=%s", account_id, customer_id, exc_info=True)
 
 
