@@ -43,8 +43,9 @@
     color: var(--muted-foreground);
   }
   /* A placeholder longer than its field ends in an ellipsis instead of being
-     cut mid-word (long German hints on a phone). */
-  input::placeholder {
+     cut mid-word (long German hints on a phone). Chrome ignores text-overflow
+     on ::placeholder itself, so it goes on the input. */
+  input:placeholder-shown {
     text-overflow: ellipsis;
   }
 }

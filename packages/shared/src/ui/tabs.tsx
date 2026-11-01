@@ -40,12 +40,23 @@ function Tabs({
   );
 }
 
+// Bring a tab into view by scrolling only its list, and only when the list
+// overflows. scrollIntoView would also scroll the window to a tab below the fold.
+function revealInList(list: HTMLElement, trigger: HTMLElement) {
+  if (list.scrollWidth <= list.clientWidth) return;
+  const l = list.getBoundingClientRect();
+  const t = trigger.getBoundingClientRect();
+  if (t.left < l.left) list.scrollLeft += t.left - l.left;
+  else if (t.right > l.right) list.scrollLeft += t.right - l.right;
+}
+
 function TabsList({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
+      data-tabs-list=""
       className={cn(
         // A long language can make the tabs wider than the screen: the list scrolls
         // sideways (justify-start keeps its first tab reachable) instead of running
@@ -68,8 +79,9 @@ function TabsTrigger({
   const active = ctx.value === value;
   // On a narrow screen the list scrolls: bring the open tab into view.
   React.useEffect(() => {
-    if (active)
-      ref.current?.scrollIntoView?.({ inline: "nearest", block: "nearest" });
+    const trigger = ref.current;
+    const list = trigger?.closest<HTMLElement>("[data-tabs-list]");
+    if (active && trigger && list) revealInList(list, trigger);
   }, [active]);
 
   return (
@@ -105,4 +117,4 @@ function TabsContent({
   );
 }
 
-export { Tabs, TabsList, TabsTrigger, TabsContent };
+export { Tabs, TabsList, TabsTrigger, TabsContent, revealInList };

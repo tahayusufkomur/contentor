@@ -441,7 +441,7 @@ export function UnifiedCalendar({ initialItems = [] }: UnifiedCalendarProps) {
                     } ${today ? "bg-primary/5 font-semibold" : ""}`}
                   >
                     {/* Date header inside cell */}
-                    <div className="flex flex-wrap items-center justify-between gap-x-1 px-1 mb-1">
+                    <div className="flex max-md:flex-wrap items-center justify-between gap-x-1 px-1 mb-1">
                       <span
                         className={`inline-flex items-center justify-center text-xs h-5 w-5 rounded-full ${
                           today
