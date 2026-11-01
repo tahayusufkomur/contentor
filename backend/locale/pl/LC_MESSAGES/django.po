@@ -5563,7 +5563,7 @@ msgstr[2] "%(count)d wybranych uczestników"
 
 #: apps/email_campaigns/tasks.py
 msgid "there"
-msgstr "Cześć"
+msgstr "przyjacielu"
 
 #: apps/email_campaigns/tasks.py
 #, python-format
