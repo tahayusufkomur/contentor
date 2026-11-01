@@ -8,7 +8,7 @@
     "hello": "Cześć",
     "withName": "{greeting}, {name}",
     "overview": "Oto przegląd twojej witryny.",
-    "whatsLeft": "Oto, co zostało do uruchomienia twojej witryny.",
+    "whatsLeft": "Oto, co zostało do opublikowania twojej witryny.",
     "look": "{look} · {palette}"
   },
   "badges": {
@@ -25,7 +25,7 @@
       "settings": "Ustawienia"
     },
     "items": {
-      "home": "Start",
+      "home": "Główna",
       "courses": "Kursy",
       "liveEvents": "Sesje i wydarzenia",
       "downloads": "Pliki do pobrania",
@@ -55,7 +55,7 @@
     "yours": "Twoje rolki",
     "ideas": {
       "title": "Pomysły",
-      "description": "W każdym przesłanym filmie wyszukujemy momenty, które mogą się rozejść: takie, które ludzie przesyłają dalej, zabawne i z mocnym haczykiem. Każdy z nich ma już gotową okładkę. Wykorzystaj te, które ci się podobają.",
+      "description": "W każdym przesłanym filmie szukamy momentów, które mogą rozejść się po sieci: takich, które ludzie przesyłają dalej, zabawnych i z mocnym haczykiem. Każdy z nich ma już gotową okładkę. Wykorzystaj te, które ci się podobają.",
       "find": "Znajdź pomysły",
       "more": "Znajdź więcej pomysłów",
       "none": "Nie ma jeszcze pomysłów dla tego filmu.",
@@ -111,7 +111,7 @@
       "pause": "Wstrzymaj",
       "seek": "Przejdź do miejsca w rolce",
       "mute": "Wycisz",
-      "unmute": "Wyłącz wyciszenie"
+      "unmute": "Włącz dźwięk"
     },
     "editor": {
       "back": "Wszystkie rolki",
@@ -189,7 +189,7 @@
       "cleanAudio": "Oczyść dźwięk",
       "cutaways": "Zdjęcia na klipie",
       "noIdeas": "Brak pomysłów na zdjęcia do tego momentu",
-      "endCard": "Plansza końcowa z adresem twojej strony i jej kodem QR",
+      "endCard": "Plansza końcowa z twoją witryną i jej kodem QR",
       "endText": "Tekst planszy końcowej",
       "post": "Tekst posta",
       "postHint": "To, co wklejasz pod rolką, gdy ją publikujesz.",
@@ -235,7 +235,7 @@
       "pause": "Wstrzymaj",
       "undo": "Cofnij",
       "redo": "Ponów",
-      "split": "Podziel w miejscu głowicy",
+      "split": "Podziel w miejscu wskaźnika odtwarzania",
       "cutOut": "Wytnij",
       "putBack": "Przywróć",
       "remove": "Usuń",
@@ -288,20 +288,20 @@
       "draftHint": "Wersja robocza jest ukryta przed uczestnikami, dopóki jej nie opublikujesz.",
       "empty": "Brak pakietów",
       "emptyHint": "Utwórz pakiet, aby zgrupować produkty w obniżonej cenie.",
-      "itemFallback": "Pozycja {id}",
+      "itemFallback": "Element {id}",
       "needPrice": "Dodaj cenę wyższą niż 0.",
       "updated": "Pakiet został zaktualizowany.",
       "updateError": "Nie udało się zaktualizować pakietu. Spróbuj ponownie.",
       "publishError": "Nie udało się opublikować pakietu.",
-      "needItem": "Wybierz co najmniej jedną pozycję do pakietu.",
+      "needItem": "Wybierz co najmniej jeden element do pakietu.",
       "edit": "Edytuj pakiet",
-      "editSubtitle": "Zaktualizuj szczegóły i pozycje tego pakietu.",
+      "editSubtitle": "Zaktualizuj szczegóły i elementy tego pakietu.",
       "details": "Szczegóły pakietu",
       "detailsHint": "Podstawowe informacje o twoim pakiecie.",
       "namePlaceholder": "np. Pakiet startowy",
-      "descriptionPlaceholder": "Opisz, co zawiera ten pakiet...",
-      "originalPrice": "Cena pierwotna (suma pozycji)",
-      "itemsTitle": "Pozycje pakietu",
+      "descriptionPlaceholder": "Opisz, co zawiera ten pakiet…",
+      "originalPrice": "Cena pierwotna (suma elementów)",
+      "itemsTitle": "Elementy pakietu",
       "itemsHint2": "Wybierz treści, które mają się znaleźć w tym pakiecie.",
       "saving": "Zapisywanie…",
       "saveChanges": "Zapisz zmiany",
@@ -320,7 +320,7 @@
       "formSubtitle": "Cykliczna opłata, która odblokowuje wybrane przez ciebie treści.",
       "details": "Szczegóły",
       "name": "Nazwa",
-      "namePlaceholder": "np. Karnet studyjny",
+      "namePlaceholder": "np. Dostęp do studia",
       "description": "Opis",
       "descriptionPlaceholder": "Co otrzymują członkowie",
       "price": "Cena ({currency})",
@@ -397,8 +397,8 @@
   },
   "settingsHub": {
     "title": "Więcej ustawień",
-    "brand": "Nazwa strony, logo i wygląd",
-    "menu": "Menu strony i przycisk w nagłówku",
+    "brand": "Nazwa witryny, logo i wygląd",
+    "menu": "Menu witryny i przycisk w nagłówku",
     "community": "Włączanie i wyłączanie społeczności oraz wiadomość powitalna",
     "assistant": "Asystent widoczny dla twoich uczestników",
     "autopilot": "Autopilot bloga",
@@ -415,7 +415,7 @@
       "history": "Historia"
     },
     "noChangesYet": "Nie ma jeszcze zmian — tutaj pojawi się wszystko, co wprowadzi twój asystent.",
-    "placeholder": "Poproś o kurs, sesję na żywo, zmianę na stronie…",
+    "placeholder": "Poproś o kurs, sesję na żywo, zmianę w witrynie…",
     "startersTitle": "Wypróbuj na tej stronie",
     "undo": "Cofnij",
     "undoing": "Cofanie…",
@@ -431,7 +431,7 @@
       "courses": [
         "Zaproponuj kolejny kurs do dodania",
         "Dodaj okładki do kursów, które ich nie mają",
-        "Które kursy są wciąż szkicami?"
+        "Które kursy są wciąż wersjami roboczymi?"
       ],
       "course": [
         "Dodaj moduł do tego kursu",
@@ -440,17 +440,17 @@
         "Czy ten kurs jest gotowy do publikacji?"
       ],
       "events": [
-        "Zaplanuj cotygodniowe zajęcia na najbliższe 4 tygodnie",
+        "Zaplanuj cotygodniową sesję na żywo na najbliższe 4 tygodnie",
         "Dodaj okładki do moich nadchodzących wydarzeń",
-        "Co mam najbliżej w kalendarzu?"
+        "Co mam następne w kalendarzu?"
       ],
       "blog": [
         "Zaproponuj trzy pomysły na wpisy dla moich uczestników",
         "Przygotuj szkic wpisu o moim najnowszym kursie",
-        "Które wpisy są wciąż szkicami?"
+        "Które wpisy są wciąż wersjami roboczymi?"
       ],
       "announcements": [
-        "Przygotuj szkic ogłoszenia o moich najbliższych zajęciach",
+        "Przygotuj szkic ogłoszenia o mojej następnej sesji na żywo",
         "Przygotuj szkic powitania dla nowych uczestników",
         "Przygotuj szkic przypomnienia o moim najnowszym kursie"
       ],
@@ -496,7 +496,7 @@
         "job": "Uczestnicy, społeczność i skrzynka odbiorcza"
       },
       "finance": {
-        "name": "Strateg Finansowy",
+        "name": "Strateg finansowy",
         "job": "Ceny, członkostwa, sprzedaż i wypłaty"
       },
       "assistant": {
@@ -512,8 +512,8 @@
       ],
       "content": [
         "Przygotuj szkic kursu na podstawie pomysłu",
-        "Zaplanuj cotygodniowe zajęcia na najbliższe 4 tygodnie",
-        "Które kursy są wciąż szkicami?"
+        "Zaplanuj cotygodniową sesję na żywo na najbliższe 4 tygodnie",
+        "Które kursy są wciąż wersjami roboczymi?"
       ],
       "marketing": [
         "Zaproponuj trzy pomysły na artykuły dla moich uczestników",
@@ -527,11 +527,11 @@
       ],
       "finance": [
         "Jak poszła sprzedaż w tym miesiącu?",
-        "Ile powinienem brać za mój następny kurs?",
-        "Jak otrzymam wypłatę?"
+        "Jaką cenę ustalić za mój następny kurs?",
+        "Jak otrzymuję wypłaty?"
       ],
       "assistant": [
-        "Co powinienem zrobić teraz?",
+        "Co mam zrobić dalej?",
         "Kto w moim zespole czym się zajmuje?",
         "Jak minął ten tydzień?"
       ]
@@ -577,11 +577,11 @@
     "deleteConfirm": "Usunąć ten wpis? Asystent od razu przestanie z niego korzystać.",
     "transcriptsTitle": "Ostatnie rozmowy",
     "transcriptsHint": "O co pytali odwiedzający i uczestnicy oraz co odpowiedział asystent.",
-    "transcriptSourceSite": "Asystent strony",
+    "transcriptSourceSite": "Asystent witryny",
     "transcriptSourceHelp": "Zapytaj Contentor",
     "transcriptPreviewBadge": "Twój podgląd",
-    "ratingUp": "Osoba odwiedzająca oceniła to jako pomocne.",
-    "ratingDown": "Osoba odwiedzająca oceniła to jako niepomocne.",
+    "ratingUp": "Odwiedzający uznał to za pomocne.",
+    "ratingDown": "Odwiedzający uznał to za niepomocne.",
     "addToKnowledge": "Dodaj do wiedzy",
     "showMore": "Pokaż więcej",
     "showLess": "Pokaż mniej",
@@ -626,7 +626,7 @@
     "writeWithAi": "Napisz z AI",
     "creditsLeft": "Wpisy AI pozostałe w tym miesiącu: {remaining} z {limit}",
     "aiBadge": "AI",
-    "draft": "Szkic",
+    "draft": "Wersja robocza",
     "published": "Opublikowany",
     "deleteConfirm": "Usunąć ten wpis? Tej operacji nie można cofnąć.",
     "upgradeTitle": "Pisanie wpisów z AI to funkcja płatna",
@@ -642,7 +642,7 @@
     "editorTags": "Tagi",
     "editorExcerpt": "Zajawka",
     "editorMeta": "Opis meta",
-    "viewOnSite": "Zobacz na stronie",
+    "viewOnSite": "Zobacz w witrynie",
     "regenerate": "Wygeneruj ponownie",
     "regenerateConfirm": "Wygenerować ten wpis od nowa? To zużyje 1 kredyt AI i zastąpi obecny tekst.",
     "generateTitle": "Napisz z AI",
@@ -741,7 +741,7 @@
     }
   },
   "setup": {
-    "title": "Uruchom swoją witrynę",
+    "title": "Opublikuj swoją witrynę",
     "progressLabel": "Ukończono {done} z {total}",
     "bubbleLabel": "Przewodnik konfiguracji",
     "openFull": "Otwórz przewodnik konfiguracji",
@@ -750,15 +750,15 @@
     "niceToHave": "Warto dodać",
     "markDone": "Oznacz jako ukończone",
     "markUndone": "Oznacz jako nieukończone",
-    "celebrateTitle": "Twoja witryna działa! 🎉",
+    "celebrateTitle": "Twoja witryna jest opublikowana! 🎉",
     "celebrateBody": "Wszystko gotowe. Udostępnij swoją witrynę uczestnikom!",
     "copyLink": "Skopiuj link do swojej witryny",
     "copied": "Link skopiowany!",
     "groups": {
       "site": "Twoja witryna",
       "content": "Twoje treści",
-      "business": "Płatności",
-      "live": "Uruchomienie",
+      "business": "Wypłaty",
+      "live": "Publikacja",
       "extras": "Warto dodać"
     },
     "items": {
@@ -767,7 +767,7 @@
         "description": "Spraw, by to, co odwiedzający widzą jako pierwsze, było naprawdę twoje."
       },
       "page_about": {
-        "title": "Strona „O mnie”",
+        "title": "Strona „O nas”",
         "description": "Opowiedz swoją historię własnymi słowami."
       },
       "page_courses": {
@@ -803,7 +803,7 @@
         "description": "Usuń przykładowe kursy, zdjęcia i filmy."
       },
       "payouts": {
-        "title": "Ustaw, jak otrzymujesz płatności",
+        "title": "Skonfiguruj, jak otrzymujesz wypłaty",
         "description": "Podłącz wypłaty, aby uczestnicy mogli u ciebie kupować."
       },
       "start_selling": {
@@ -811,7 +811,7 @@
         "description": "Twoje ceny są zapisane. Gdy będziesz mieć plan i wypłaty, wstrzymane produkty same trafią do sprzedaży."
       },
       "publish": {
-        "title": "Opublikuj swoją stronę",
+        "title": "Opublikuj swoją witrynę",
         "description": "Włącz przełącznik, kiedy zechcesz pokazać się światu."
       },
       "first_download": {
@@ -828,25 +828,25 @@
       },
       "first_blog_post": {
         "title": "Napisz swój pierwszy wpis na blogu",
-        "description": "Udostępnij artykuł — sekcja Blog pojawi się na twojej stronie po opublikowaniu pierwszego wpisu."
+        "description": "Udostępnij artykuł — sekcja Blog pojawi się w twojej witrynie po opublikowaniu pierwszego wpisu."
       },
       "first_community_post": {
         "title": "Przywitaj się w swojej społeczności",
         "description": "Opublikuj wiadomość powitalną, aby nowi członkowie trafiali do aktywnego miejsca."
       },
       "share_site": {
-        "title": "Udostępnij swoją stronę",
+        "title": "Udostępnij swoją witrynę",
         "description": "Skopiuj link i wyślij go swoim uczestnikom."
       },
       "studio_email": {
-        "title": "Wybierz adres e-mail swojej strony",
+        "title": "Wybierz adres e-mail swojej witryny",
         "description": "Zdobądź własny adres do korespondencji z uczestnikami."
       }
     },
     "demoBadge": "Demo",
     "erase": {
       "title": "Usunąć treści demonstracyjne?",
-      "body": "To usunie przykładowe treści dodane do twojej strony na start:",
+      "body": "To usunie przykładowe treści dodane do twojej witryny na start:",
       "countCourses": "Kursy: {count}",
       "countDownloads": "Pliki do pobrania: {count}",
       "countLive": "Sesje na żywo: {count}",
@@ -867,15 +867,15 @@
     "help": {
       "title": "Zapytaj Contentor",
       "bubbleLabel": "Otwórz czat pomocy",
-      "intro": "Zapytaj mnie o cokolwiek dotyczącego twojej strony Contentor — znam twoją konfigurację.",
+      "intro": "Zapytaj mnie o cokolwiek dotyczącego twojej witryny Contentor — znam twoją konfigurację.",
       "placeholder": "Zadaj pytanie…",
       "send": "Wyślij",
       "thinking": "Myślę…",
       "error": "Coś poszło nie tak — spróbuj ponownie.",
       "unavailable": "Czat pomocy jest teraz niedostępny. Możesz napisać do nas na support@contentor.app.",
       "quota": "Limit czatu pomocy na ten miesiąc został wykorzystany. W międzyczasie napisz do nas na support@contentor.app.",
-      "suggestPayouts": "Jak otrzymam wypłatę?",
-      "suggestPublish": "Jak uczestnicy znajdą moją stronę?",
+      "suggestPayouts": "Jak otrzymuję wypłaty?",
+      "suggestPublish": "Jak uczestnicy znajdą moją witrynę?",
       "suggestStudents": "Jak uczestnicy się logują?",
       "suggestPlans": "Co zawierają plany?",
       "rateUp": "Pomocne",
@@ -899,9 +899,9 @@
     "saveFailed": "Nie udało się zapisać. Spróbuj ponownie.",
     "yourLanguage": "Twój język",
     "yourLanguageHint": "Język twojego Studia twórcy i tego, co do ciebie piszemy. Język twoich uczestników ustawia się osobno.",
-    "siteLanguage": "Język strony",
-    "siteLanguageHint": "Język, który twoi uczestnicy widzą na twojej stronie. Możesz go zmienić, dopóki twoja strona nie zostanie opublikowana.",
-    "siteLanguageLocked": "Twoja strona jest opublikowana, więc jej język pozostaje bez zmian.",
+    "siteLanguage": "Język witryny",
+    "siteLanguageHint": "Język, który twoi uczestnicy widzą w twojej witrynie. Możesz go zmienić, dopóki twoja witryna nie zostanie opublikowana.",
+    "siteLanguageLocked": "Twoja witryna jest opublikowana, więc jej język pozostaje bez zmian.",
     "subtitle": "Skonfiguruj ogólne ustawienia swojej witryny.",
     "saving": "Zapisywanie…",
     "saveChanges": "Zapisz zmiany",
@@ -915,7 +915,7 @@
     "currency": "Waluta",
     "nextBillingDate": "Data następnej płatności",
     "provider": "Dostawca",
-    "freeNotice": "Plan darmowy: 10 uczestników, 1 GB, tylko darmowe treści. Przejdź na wyższy plan, aby sprzedawać kursy i prowadzić sesje na żywo.",
+    "freeNotice": "Plan bezpłatny: 10 uczestników, 1 GB, tylko bezpłatne treści. Przejdź na wyższy plan, aby sprzedawać kursy i prowadzić sesje na żywo.",
     "cancelsOn": "Subskrypcja zostanie anulowana dnia {date}.",
     "checkoutCanceled": "Płatność została anulowana. Twój plan nie został zmieniony.",
     "noData": "Brak danych subskrypcji.",
@@ -924,22 +924,22 @@
       "free": "Bezpłatna",
       "none": "Brak planu",
       "incomplete": "W przygotowaniu",
-      "trialing": "Okres próbny",
+      "trialing": "Bezpłatny okres próbny",
       "active": "Aktywna",
       "past_due": "Zaległa płatność",
-      "canceled": "Anulowany"
+      "canceled": "Anulowana"
     },
     "trialEnds": "Koniec okresu próbnego",
-    "trialNotice": "Twój bezpłatny okres próbny kończy się {date}. Wtedy obciążymy twoją kartę, chyba że wcześniej anulujesz. Sprzedaż ruszy, gdy zacznie się twój plan.",
-    "noneNotice": "Nie masz jeszcze planu, więc twoja strona jest ukryta przed odwiedzającymi. Cała twoja praca jest zachowana: wybierz plan poniżej, aby ją przywrócić.",
+    "trialNotice": "Twój bezpłatny okres próbny kończy się {date}. Wtedy obciążymy twoją kartę, chyba że wcześniej zrezygnujesz. Sprzedaż ruszy, gdy zacznie się twój plan.",
+    "noneNotice": "Nie masz jeszcze planu, więc twoja witryna jest ukryta przed odwiedzającymi. Cała twoja praca jest zachowana: wybierz plan poniżej, aby ją przywrócić.",
     "startNow": "Uruchom mój plan teraz",
     "starting": "Uruchamiamy twój plan…",
     "startNowFailed": "Nie udało się jeszcze obciążyć twojej karty. Sprawdź to w swoim banku i spróbuj ponownie.",
-    "cancelTrial": "Anuluj okres próbny",
-    "cancelPlan": "Anuluj plan",
+    "cancelTrial": "Zrezygnuj z okresu próbnego",
+    "cancelPlan": "Zrezygnuj z planu",
     "keepPlan": "Zachowaj mój plan",
-    "confirmCancelTrial": "Anulować okres próbny? Nie pobierzemy żadnej opłaty, a okres próbny skończy się {date}.",
-    "confirmCancelPlan": "Anulować plan? Pozostanie aktywny do {date}.",
+    "confirmCancelTrial": "Zrezygnować z okresu próbnego? Nie pobierzemy żadnej opłaty, a okres próbny skończy się {date}.",
+    "confirmCancelPlan": "Zrezygnować z planu? Pozostanie aktywny do {date}.",
     "actionError": "Nie udało się zaktualizować planu. Spróbuj ponownie.",
     "changePlan": {
       "title": "Zmień plan",
@@ -947,21 +947,21 @@
       "upgradeTo": "Przejdź na {plan}",
       "choose": "Wybierz {plan}",
       "startTrial": "Rozpocznij {days}-dniowy bezpłatny okres próbny",
-      "trialNote": "Za darmo przez {days} dni, potem płatność co miesiąc. Możesz anulować w każdej chwili przed jego końcem.",
+      "trialNote": "Bezpłatnie przez {days} dni, potem płatność co miesiąc. Możesz zrezygnować w dowolnym momencie przed upływem tego czasu.",
       "switchViaSupport": "Skontaktuj się z pomocą, aby zmienić plan",
       "downgrade": "Skontaktuj się z pomocą, aby przejść na niższy plan",
       "comingSoonInCurrency": "Wkrótce dostępne w {currency}",
-      "processing": "Przetwarzanie...",
+      "processing": "Przetwarzanie…",
       "error": "Nie udało się rozpocząć płatności. Spróbuj ponownie.",
       "limits": {
-        "students": "Do {n} uczestników",
+        "students": "Limit uczestników: {n}",
         "storage": "{n} GB przestrzeni dyskowej",
         "streamingHours": "{n} godz. transmisji/mies.",
-        "campaignEmails": "Do {n} e-maili w kampaniach/mies.",
+        "campaignEmails": "Limit e-maili w kampaniach: {n}/mies.",
         "sell": "Sprzedawaj płatne treści i otrzymuj płatności przez Stripe",
         "live": "Sesje na żywo",
-        "fee": "{n}% opłaty transakcyjnej od sprzedaży",
-        "aiBlog": "Do {n} wpisów na blogu z AI/mies."
+        "fee": "{n}% prowizji transakcyjnej od sprzedaży",
+        "aiBlog": "Limit wpisów na blogu z AI: {n}/mies."
       },
       "tryAgain": "Spróbuj ponownie",
       "planForSite": "{plan} dla twojej witryny"
@@ -984,13 +984,13 @@
     "failed": "Nie udało się. Spróbuj ponownie albo utwórz to ręcznie."
   },
   "media": {
-    "subtitle": "Zdjęcia i filmy, których używasz na swojej stronie, w kursach i we wpisach.",
+    "subtitle": "Zdjęcia i filmy, których używasz w swojej witrynie, w kursach i we wpisach.",
     "photos": "Zdjęcia",
     "videos": "Filmy",
     "mine": "Moje zdjęcia",
     "contentor": "Zdjęcia Contentor",
     "emptyMine": "Nie masz jeszcze własnych zdjęć. Upuść je powyżej, aby je dodać.",
-    "emptyContentor": "Nie ma jeszcze zdjęć Contentor. Tutaj pojawią się zdjęcia wybrane z biblioteki dla twojej strony.",
+    "emptyContentor": "Nie ma jeszcze zdjęć Contentor. Tutaj pojawią się zdjęcia wybrane z biblioteki dla twojej witryny.",
     "shape": {
       "label": "Kształt",
       "any": "Dowolny kształt",
@@ -1016,7 +1016,7 @@
     },
     "untitled": "Bez tytułu",
     "untitledPhoto": "Zdjęcie bez tytułu",
-    "untitledVideo": "Wideo bez tytułu",
+    "untitledVideo": "Film bez tytułu",
     "lightbox": "Lightbox",
     "emptyVideos": "Nie ma jeszcze żadnych filmów. Prześlij film, aby zacząć.",
     "uploaded": "Przesłano",
@@ -1028,7 +1028,7 @@
       "date": "Data",
       "actions": "Działania",
       "duration": "Czas trwania",
-      "video": "Wideo"
+      "video": "Film"
     },
     "field": {
       "title": "Tytuł",
@@ -1040,7 +1040,7 @@
       "copyCdnUrl": "Skopiuj adres URL CDN",
       "copyCdnLink": "Skopiuj link CDN",
       "copyEmbed": "Skopiuj kod osadzenia HTML",
-      "copyVideoEmbed": "Skopiuj kod osadzenia wideo",
+      "copyVideoEmbed": "Skopiuj kod osadzenia filmu",
       "editDetails": "Edytuj szczegóły",
       "makeReels": "Utwórz rolki"
     },
@@ -1052,20 +1052,20 @@
       "photosDeleted": "Usunięto zdjęcia",
       "photoDeleted": "Usunięto zdjęcie",
       "photoDeleteFailed": "Nie udało się usunąć zdjęcia",
-      "videoUpdated": "Zaktualizowano wideo",
-      "videoUpdateFailed": "Nie udało się zaktualizować wideo",
-      "cdnVideoCopied": "Skopiowano adres URL wideo CDN!",
-      "videoEmbedCopied": "Skopiowano kod osadzenia wideo HTML!",
-      "videosDeleted": "Usunięto pliki wideo",
-      "videoDeleted": "Usunięto wideo",
-      "videoDeleteFailed": "Nie udało się usunąć wideo"
+      "videoUpdated": "Zaktualizowano film",
+      "videoUpdateFailed": "Nie udało się zaktualizować filmu",
+      "cdnVideoCopied": "Skopiowano adres URL filmu w CDN!",
+      "videoEmbedCopied": "Skopiowano kod HTML do osadzenia filmu!",
+      "videosDeleted": "Usunięto filmy",
+      "videoDeleted": "Usunięto film",
+      "videoDeleteFailed": "Nie udało się usunąć filmu"
     },
     "lightboxModal": {
       "urlCopied": "Skopiowano adres URL CDN do schowka!",
       "embedCopied": "Skopiowano kod osadzenia HTML do schowka!",
       "types": {
         "photo": "zdjęcie",
-        "video": "wideo"
+        "video": "film"
       },
       "size": "Rozmiar: {size}",
       "duration": "Czas trwania: {time}",
@@ -1085,7 +1085,7 @@
       "designed": "Zaprojektowana",
       "photo": "Zdjęcie",
       "none": "Brak okładki",
-      "draft": "Szkic czeka"
+      "draft": "Wersja robocza czeka"
     },
     "sessions": "{count, plural, one {# sesja} few {# sesje} many {# sesji} other {# sesji}}",
     "notPublished": "Nieopublikowane",
@@ -1154,10 +1154,10 @@
           "label": "etykietę",
           "title": "tytuł",
           "subtitle": "podtytuł",
-          "badge": "plakietka",
+          "badge": "plakietkę",
           "text": "zaznaczony tekst",
           "shape": "zaznaczony kształt",
-          "icon": "zaznaczona ikona",
+          "icon": "zaznaczoną ikonę",
           "qr": "kwadraty kodu QR"
         },
         "fonts": "Czcionki",
@@ -1180,7 +1180,7 @@
         "filters": "Filtry",
         "grades": {
           "none": "Oryginał",
-          "site": "Twoja strona",
+          "site": "Twoja witryna",
           "mono": "Czarno-biały",
           "soft": "Delikatny",
           "tint": "Zabarwiony",
@@ -1205,7 +1205,7 @@
         },
         "tools": "Narzędzia do zdjęć",
         "cutout": "Usuń tło",
-        "cutoutHint": "Za darmo. Trwa około 20 sekund, a okładka zmieni się na Wycięcie. Twoje zdjęcie zostanie w Mediach.",
+        "cutoutHint": "Bezpłatnie. Trwa około 20 sekund, a okładka zmieni się na Wycięcie. Twoje zdjęcie zostanie w Multimediach.",
         "expand": "Rozszerz do formatu {size}",
         "costs": "{count, plural, one {Zużywa ostatnie nowe zdjęcie, które zostało ci w tym miesiącu.} few {Zużywa 1 z # nowych zdjęć, które zostały ci w tym miesiącu.} many {Zużywa 1 z # nowych zdjęć, które zostały ci w tym miesiącu.} other {Zużywa 1 z # nowych zdjęć, które zostały ci w tym miesiącu.}}",
         "usedUp": "Nowe zdjęcia na ten miesiąc są już wykorzystane.",
@@ -1231,7 +1231,7 @@
       "courseCover": "Okładka kursu",
       "downloadCover": "Okładka pliku do pobrania",
       "coverLine": "{cover} · {notice}",
-      "eventCover": "{kind} – okładka wspólna dla wszystkich sesji o tym tytule",
+      "eventCover": "{kind} — okładka wspólna dla wszystkich sesji o tym tytule",
       "untitled": "Bez tytułu",
       "waiting": "Dopóki nie zachowasz tej okładki, {target} będzie mieć dotychczasową.",
       "isKept": "Tej okładki używa teraz {title}. Aby ją zmienić, edytuj kopię.",
@@ -1246,7 +1246,7 @@
       "undo": "Cofnij",
       "redo": "Ponów",
       "discard": "Odrzuć",
-      "discardTitle": "Odrzucić ten szkic?",
+      "discardTitle": "Odrzucić tę wersję roboczą?",
       "discardBody": "{title} zachowa obecną okładkę.",
       "discardCancel": "Edytuj dalej",
       "keep": {
@@ -1263,7 +1263,7 @@
       "label": "Etykieta",
       "labelPlaceholder": {
         "course": "np. 4-tygodniowy kurs",
-        "download": "np. Darmowy poradnik",
+        "download": "np. Bezpłatny poradnik",
         "event": "np. Sesja na żywo"
       },
       "title": "Tytuł",
@@ -1307,7 +1307,7 @@
       "badges": {
         "none": "Brak",
         "new": "Nowość",
-        "date": "Najbliższy termin",
+        "date": "Następny termin",
         "live": "Na żywo",
         "text": "Własny tekst"
       },
@@ -1449,7 +1449,7 @@
         "map-pin": "Miejsce",
         "video": "Wideo",
         "mic": "Mikrofon",
-        "users": "Ludzie",
+        "users": "Osoby",
         "user": "Osoba",
         "heart": "Serce",
         "star": "Gwiazda",
@@ -1492,7 +1492,7 @@
       "failed": "Nie udało się utworzyć tego pliku. Spróbuj ponownie.",
       "jpeg": "Jako JPG (mniejszy plik)",
       "for": {
-        "card": "Karty na twojej stronie",
+        "card": "Karty w twojej witrynie",
         "wide": "Miniatura na YouTube",
         "banner": "Obraz nagłówka",
         "post": "Kwadratowy post",
@@ -1515,7 +1515,7 @@
       "templates": "Szablony"
     },
     "empty": "Nic jeszcze nie wysłano",
-    "emptyHint": "Wiadomość trafia do twoich uczestników w aplikacji, a jeśli zaznaczysz pole – także e-mailem.",
+    "emptyHint": "Wiadomość trafia do twoich uczestników w aplikacji, a jeśli zaznaczysz pole — także e-mailem.",
     "emailDown": "Nie udało się teraz wczytać zaprojektowanych e-maili. Poniższe wiadomości są kompletne; e-maile pojawią się ponownie przy następnej wizycie.",
     "untitled": "Bez tytułu",
     "review": "Sprawdź i wyślij",
@@ -1537,7 +1537,7 @@
       "draft": "jeszcze nie wysłano",
       "scheduled": "wysyłka {when}",
       "sending": "w drodze",
-      "announcement": "{recipients, plural, one {# uczestnik} few {# uczestników} many {# uczestników} other {# uczestnika}} · przeczytało: {reached}",
+      "announcement": "{recipients, plural, one {# uczestnik} few {# uczestnicy} many {# uczestników} other {# uczestnika}} · przeczytało: {reached}",
       "email": "Dostarczono {reached} z {recipients}{failed, plural, =0 {} one { · nie dostarczono: #} few { · nie dostarczono: #} many { · nie dostarczono: #} other { · nie dostarczono: #}}"
     },
     "action": {
@@ -1563,7 +1563,7 @@
         "title": "Kto ją dostanie",
         "narrow": "Tylko niektórzy uczestnicy",
         "app": "Mają zainstalowaną twoją aplikację",
-        "browser": "Korzystają ze strony internetowej",
+        "browser": "Korzystają z witryny",
         "ios": "iPhone lub iPad",
         "android": "Android",
         "desktop": "Komputer",
@@ -1728,7 +1728,7 @@
     "templates": {
       "defaultName": "Nowy szablon",
       "title": "Szablony e-maili",
-      "subtitle": "Każdy e-mail, który piszesz, powstaje na bazie jednego z nich. Twoje logo, kolory i stopka są zgodne z twoją marką.",
+      "subtitle": "Każdy e-mail, który piszesz, powstaje na bazie jednego z nich. Twoje logo, kolory i stopka dopasowują się do twojej marki.",
       "creating": "Tworzenie…",
       "new": "Nowy szablon",
       "fromDesigner": "Nowy szablon od Projektanta",
@@ -1770,7 +1770,7 @@
     },
     "templateList": {
       "loadError": "Nie udało się załadować szablonów.",
-      "empty": "Nie masz jeszcze zapisanych szablonów. Użyj “Zapisz jako szablon” podczas tworzenia.",
+      "empty": "Nie masz jeszcze zapisanych szablonów. Użyj „Zapisz jako szablon” podczas tworzenia.",
       "confirmDelete": "Usunąć ten szablon?",
       "deleted": "Usunięto",
       "deleteError": "Nie udało się usunąć"
@@ -1815,7 +1815,7 @@
     "kinds": {
       "live": {
         "label": "Sesja na żywo",
-        "hint": "Zajęcia grupowe lub rozmowa 1-1 w pokoju wideo, prosto w przeglądarce. Bez dodatkowego oprogramowania.",
+        "hint": "Sesja grupowa lub rozmowa 1-1 w pokoju wideo, prosto w przeglądarce. Bez dodatkowego oprogramowania.",
         "titlePlaceholder": "np. Piątkowa sesja flow"
       },
       "stream": {
@@ -1871,15 +1871,15 @@
     "saved": "Zapisano.",
     "saveError": "Nie udało się zapisać. Sprawdź pola i spróbuj ponownie.",
     "accessNotSaved": "Zapisano, ale sposób uzyskania dostępu nie został zapisany.",
-    "trial": "Bezpłatne zajęcia próbne",
-    "trialTitle": "Ustawić pierwszą sesję jako bezpłatne zajęcia próbne?",
+    "trial": "Bezpłatna sesja próbna",
+    "trialTitle": "Ustawić pierwszą sesję jako bezpłatną sesję próbną?",
     "trialHint": "Każdy może dołączyć do pierwszej sesji za darmo. Pozostałe sesje zachowują swoją cenę.",
     "trialOn": "Bezpłatna sesja odbędzie się {when}. Pozostałe sesje zachowują swoją cenę.",
-    "trialHelpTerm": "Czym są bezpłatne zajęcia próbne?",
-    "trialHelp": "Zajęcia próbne pozwalają komuś wypróbować to, czego uczysz, zanim zapłaci. Bezpłatna jest tylko pierwsza sesja i każdy może do niej dołączyć. Każda kolejna sesja jest sprzedawana w twojej zwykłej cenie. Możesz to wyłączyć w dowolnym momencie, a ta sesja wróci do swojej ceny.",
-    "trialTurnedOn": "Gotowe. Pierwsza sesja to bezpłatne zajęcia próbne.",
+    "trialHelpTerm": "Czym jest bezpłatna sesja próbna?",
+    "trialHelp": "Sesja próbna pozwala komuś wypróbować to, co oferujesz, zanim zapłaci. Bezpłatna jest tylko pierwsza sesja i każdy może do niej dołączyć. Każda kolejna sesja jest sprzedawana w twojej zwykłej cenie. Możesz to wyłączyć w dowolnym momencie, a ta sesja wróci do swojej ceny.",
+    "trialTurnedOn": "Gotowe. Pierwsza sesja to bezpłatna sesja próbna.",
     "trialTurnedOff": "Gotowe. Pierwsza sesja wróciła do swojej ceny.",
-    "trialError": "Nie udało się zmienić bezpłatnych zajęć próbnych. Spróbuj ponownie.",
+    "trialError": "Nie udało się zmienić bezpłatnej sesji próbnej. Spróbuj ponownie.",
     "held": "Wersja robocza: twoi uczestnicy jeszcze tego nie widzą. Publikacja pokaże wszystkie nadchodzące sesje.",
     "heldPast": "Najpierw wybierz przyszłą datę.",
     "publish": "Opublikuj",
@@ -1936,18 +1936,18 @@
         "thinking": "Zastanawiam się nad twoim członkostwem…",
         "writing": "Piszę nazwę i opis…",
         "handOver": {
-          "access": "Mamy {name}: ustalmy cenę."
+          "access": "Tu {name}: ustalmy cenę."
         }
       },
       "bundle": {
         "new": "Nowy pakiet",
         "continue": "Kontynuuj swój pakiet: {title}",
-        "tooFew": "Pakiet musi zawierać co najmniej dwie pozycje, które sprzedajesz. Najpierw ustal cenę dla dwóch z nich.",
+        "tooFew": "Pakiet musi zawierać co najmniej dwa produkty, które sprzedajesz. Najpierw ustal cenę dla dwóch z nich.",
         "fillMyself": "Wypełnię samodzielnie",
         "thinking": "Zastanawiam się nad twoim pakietem…",
         "writing": "Piszę nazwę i opis…",
         "handOver": {
-          "access": "Oto {name}: ustalmy jego cenę."
+          "access": "Tu {name}: ustalmy cenę."
         }
       },
       "post": {
@@ -1983,8 +1983,8 @@
     "tryAgain": "Spróbuj ponownie",
     "stop": "Zatrzymaj",
     "startSelling": "Zacznij sprzedawać",
-    "published": "Opublikowano. Uczestnicy mogą już to znaleźć na twojej stronie.",
-    "kept": "Zapisano jako szkic.",
+    "published": "Opublikowano. Uczestnicy mogą już to znaleźć w twojej witrynie.",
+    "kept": "Zapisano jako wersję roboczą.",
     "saveLeave": "Zapisz i wyjdź",
     "allDetails": "Wszystkie szczegóły",
     "writing": "pisanie",
@@ -1995,7 +1995,7 @@
     "writingDescriptions": "piszę opisy lekcji",
     "descriptionCount": "{done} z {total}",
     "descriptionsNote": "Piszę krótki opis do filmu każdej lekcji. Każdy z nich możesz edytować na stronie.",
-    "descriptionsFailed": "Części opisów lekcji nie udało się przygotować.",
+    "descriptionsFailed": "Nie udało się przygotować części opisów lekcji.",
     "cover": "Okładka",
     "drafting": "przygotowuję projekty okładek",
     "coverStyle": {
@@ -2009,7 +2009,7 @@
     "yours": "Twoje",
     "upload": "Prześlij",
     "makingPhoto": "Tworzę twoje zdjęcie…",
-    "photoFailed": "Nie udało się utworzyć twojego zdjęcia. Wybierz jedno z tych tutaj lub prześlij własne.",
+    "photoFailed": "Nie udało się utworzyć twojego zdjęcia. Wybierz jedno stąd lub prześlij własne.",
     "photoUnavailable": "Nie można użyć tego zdjęcia. Wybierz inne.",
     "useCover": "Użyj tej okładki",
     "moreStyles": "Cztery kolejne style",
@@ -2061,7 +2061,7 @@
     "draft": "Wersja robocza",
     "publish": "Opublikuj",
     "publishing": "Publikowanie…",
-    "published": "Opublikowano. Uczestnicy mogą go teraz znaleźć na twojej stronie.",
+    "published": "Opublikowano. Uczestnicy mogą go teraz znaleźć w twojej witrynie.",
     "publishError": "Nie udało się opublikować pliku do pobrania.",
     "subtitle": "Zarządzaj plikami do pobrania dla swoich uczestników.",
     "empty": "Brak przesłanych plików. Prześlij pierwszy plik, aby zacząć.",
@@ -2086,7 +2086,7 @@
     "closeMenu": "Zamknij menu",
     "creator": "Twórca",
     "signOut": "Wyloguj się",
-    "signingOut": "Wylogowywanie...",
+    "signingOut": "Wylogowywanie…",
     "signOutTitle": "{name} — Wyloguj się"
   },
   "community": {
@@ -2118,7 +2118,7 @@
       "confirmRemovePost": "Usunąć ten post ze społeczności?",
       "postRemoved": "Post usunięty.",
       "confirmBan": "Zablokować {name} w społeczności? Ta osoba nie będzie mogła niczego zobaczyć ani opublikować.",
-      "banned": "{name} jest zablokowany.",
+      "banned": "Zablokowano: {name}.",
       "confirmRemoveComment": "Usunąć ten komentarz?",
       "commentRemoved": "Komentarz usunięty."
     },
@@ -2151,7 +2151,7 @@
     "reports": {
       "contentRemoved": "Treść została usunięta.",
       "contentKept": "Treść została zachowana.",
-      "resolveError": "Nie udało się rozwiązać zgłoszenia.",
+      "resolveError": "Nie udało się rozpatrzyć zgłoszenia.",
       "reasons": {
         "spam": "Spam",
         "inappropriate": "Nieodpowiednie",
@@ -2249,7 +2249,7 @@
     "country": "Gdzie znajduje się siedziba twojej firmy?",
     "countryHint": "Stripe ustawia to jednorazowo dla twojego konta do wypłat i nie można tego później zmienić.",
     "connect": "Połącz ze Stripe",
-    "paymentsOn": "Płatności przyjmowane",
+    "paymentsOn": "Przyjmowanie płatności",
     "paymentsOff": "Płatności nie są jeszcze włączone",
     "payoutsOn": "Wypłaty na konto bankowe włączone",
     "payoutsOff": "Wypłaty nie są jeszcze włączone",
@@ -2261,17 +2261,17 @@
     "netPayout": "Wypłata netto",
     "grossSales": "Sprzedaż brutto",
     "salesCount": "{count, plural, one {# sprzedaż} few {# sprzedaże} many {# sprzedaży} other {# sprzedaży}}",
-    "platformFees": "Opłaty platformy",
+    "platformFees": "Prowizje platformy",
     "refunded": "Zwrócone",
     "pending": "W drodze na twoje konto bankowe:",
     "available": "Dostępne:",
-    "earningsNote": "Wypłata netto to twoja część po odliczeniu opłaty platformy. Stripe przelewa saldo na twoje konto bankowe.",
+    "earningsNote": "Wypłata netto to twoja część po odliczeniu prowizji platformy. Stripe przelewa saldo na twoje konto bankowe.",
     "enabled": "Włączone",
     "pendingBadge": "Oczekujące",
     "trialTitle": "Wypłaty będą dostępne po rozpoczęciu twojego planu",
-    "upgradeTitle": "Zmień plan, aby zacząć sprzedawać",
+    "upgradeTitle": "Przejdź na wyższy plan, aby zacząć sprzedawać",
     "trialBody": "W bezpłatnym okresie próbnym nie można przyjmować płatności. Rozpocznij plan teraz, aby połączyć Stripe i sprzedawać, albo twórz dalej i zacznij sprzedawać po zakończeniu okresu próbnego.",
-    "upgradeBody": "Aby otrzymywać płatności, potrzebujesz płatnego planu z aktywną subskrypcją. W darmowym planie wszystko, co oferujesz, musi być bezpłatne — bez wypłat, płatnych treści i subskrypcji.",
+    "upgradeBody": "Aby otrzymywać płatności, potrzebujesz płatnego planu z aktywną subskrypcją. W bezpłatnym planie wszystko, co oferujesz, musi być bezpłatne — bez wypłat, płatnych treści i subskrypcji.",
     "startPlan": "Rozpocznij mój plan teraz",
     "viewPlans": "Zobacz plany",
     "redirecting": "Przekierowywanie…"
@@ -2317,30 +2317,30 @@
       "grantError": "Nie udało się przyznać dostępu do kursu",
       "coursesError": "Nie udało się załadować kursów. Spróbuj ponownie.",
       "na": "N/D",
-      "unnamed": "Nienazwany uczestnik",
-      "joined": "Dołączenie: {date}",
+      "unnamed": "Uczestnik bez nazwy",
+      "joined": "Data dołączenia: {date}",
       "tabOverview": "Przegląd",
-      "tabActions": "Szybkie Akcje",
+      "tabActions": "Szybkie akcje",
       "membership": "Członkostwo",
       "free": "Bezpłatne",
       "noMembership": "Brak aktywnego członkostwa.",
-      "enrolled": "Zapisane Kursy ({count})",
-      "notEnrolled": "Nie zapisano jeszcze na żaden kurs.",
-      "lessonsDone": "{total, plural, one {{done} z # ukończonej lekcji} few {{done} z # ukończonych lekcji} many {{done} z # ukończonych lekcji} other {{done} z # ukończonych lekcji}}",
+      "enrolled": "Zapisane kursy ({count})",
+      "notEnrolled": "Ta osoba nie jest jeszcze zapisana na żaden kurs.",
+      "lessonsDone": "{total, plural, one {Ukończono {done} z # lekcji} few {Ukończono {done} z # lekcji} many {Ukończono {done} z # lekcji} other {Ukończono {done} z # lekcji}}",
       "done": "Gotowe",
-      "grantTitle": "Przyznaj Dostęp Do Kursu",
+      "grantTitle": "Przyznaj dostęp do kursu",
       "grantText": "Zapisz tego uczestnika na kurs ręcznie, bez pobierania opłat.",
-      "grantButton": "Przyznaj Zapis Na Kurs",
-      "dmTitle": "Wyślij Wiadomość Bezpośrednią",
+      "grantButton": "Przyznaj zapis na kurs",
+      "dmTitle": "Wyślij wiadomość bezpośrednią",
       "dmText": "Napisz osobistą wiadomość e-mail lub wiadomość w aplikacji.",
-      "dmButton": "Napisz Wiadomość E-mail",
-      "payTitle": "Historia Płatności I Zwrotów",
+      "dmButton": "Napisz wiadomość e-mail",
+      "payTitle": "Historia płatności i zwrotów",
       "payText": "Przeglądaj transakcje, zarządzaj fakturami lub zlecaj zwroty.",
-      "payButton": "Wyświetl Transakcje",
-      "studentId": "ID Uczestnika: #{id}",
-      "modalTitle": "Przyznaj Bezpłatny Dostęp Do Kursu",
-      "selectCourse": "Wybierz Kurs:",
-      "loadingCourses": "Ładowanie kursów...",
+      "payButton": "Zobacz transakcje",
+      "studentId": "ID uczestnika: #{id}",
+      "modalTitle": "Przyznaj bezpłatny dostęp do kursu",
+      "selectCourse": "Wybierz kurs:",
+      "loadingCourses": "Ładowanie kursów…",
       "duration": "Na jak długo:",
       "forever": "Na zawsze",
       "month1": "1 miesiąc",
@@ -2349,7 +2349,7 @@
       "untilDate": "Do określonej daty",
       "lastDay": "Ostatni dzień dostępu",
       "granting": "Przyznawanie…",
-      "confirmGrant": "Potwierdź Przyznanie"
+      "confirmGrant": "Potwierdź przyznanie"
     }
   },
   "courseForm": {
@@ -2374,7 +2374,7 @@
     "title": "Tytuł",
     "titlePlaceholder": "np. Wprowadzenie do fotografii",
     "description": "Opis",
-    "descriptionPlaceholder": "Opisz, czego nauczą się uczestnicy...",
+    "descriptionPlaceholder": "Opisz, czego nauczą się uczestnicy…",
     "thumbnail": "Miniatura",
     "chooseThumbnail": "Wybierz miniaturę",
     "publishNow": "Opublikuj natychmiast",
@@ -2406,8 +2406,8 @@
     "writeContent": "Kliknij, aby napisać treść lekcji…",
     "captions": {
       "waiting": {
-        "label": "Napisy nierozpoczęte",
-        "hint": "Napisy rozpoczną się same w ciągu kilku minut."
+        "label": "Napisy jeszcze się nie zaczęły",
+        "hint": "Napisy ruszą same w ciągu kilku minut."
       },
       "working": {
         "label": "Napisy w toku",
@@ -2418,7 +2418,7 @@
         "hint": "Uczestnicy mogą włączyć napisy i czytać transkrypcję pod wideo."
       },
       "failed": {
-        "label": "Napisy nie powiodły się",
+        "label": "Nie udało się utworzyć napisów",
         "hint": "Nie udało się utworzyć napisów na podstawie dźwięku z tego wideo. Zastąpienie wideo spowoduje ponowną próbę."
       }
     },
@@ -2431,15 +2431,15 @@
   "mediaBrowser": {
     "loadError": "Nie udało się załadować elementów. Spróbuj ponownie.",
     "confirmAction": "{action} {count, plural, one {# element} few {# elementy} many {# elementów} other {# elementów}}? Tego nie można cofnąć.",
-    "allSelected": "Wszystkie {count, plural, one {# element} few {# elementy} many {# elementów} other {# elementów}} zaznaczone",
-    "selected": "{count, plural, one {# wybrany} few {# wybrane} many {# wybranych} other {# wybranych}}",
+    "allSelected": "{count, plural, one {Zaznaczono # element} few {Zaznaczono wszystkie # elementy} many {Zaznaczono wszystkie # elementów} other {Zaznaczono wszystkie # elementu}}",
+    "selected": "{count, plural, one {Zaznaczono: #} few {Zaznaczono: #} many {Zaznaczono: #} other {Zaznaczono: #}}",
     "actions": "Działania",
     "clearSelection": "Wyczyść zaznaczenie",
-    "pageSelected": "Wszystkie {count, plural, one {# element} few {# elementy} many {# elementów} other {# elementu}} na tej stronie są zaznaczone.",
-    "selectAllItems": "Zaznacz wszystkie {count, plural, one {# element} few {# elementy} many {# elementów} other {# elementu}}",
+    "pageSelected": "{count, plural, one {Zaznaczono wszystkie elementy na tej stronie: #.} few {Zaznaczono wszystkie elementy na tej stronie: #.} many {Zaznaczono wszystkie elementy na tej stronie: #.} other {Zaznaczono wszystkie elementy na tej stronie: #.}}",
+    "selectAllItems": "{count, plural, one {Zaznacz wszystkie elementy (#)} few {Zaznacz wszystkie elementy (#)} many {Zaznacz wszystkie elementy (#)} other {Zaznacz wszystkie elementy (#)}}",
     "deselectAll": "Odznacz wszystko",
     "selectAll": "Zaznacz wszystko",
-    "search": "Szukaj..."
+    "search": "Szukaj…"
   },
   "inlineEdit": {
     "saving": "Zapisywanie…"
@@ -2447,13 +2447,13 @@
   "mediaPicker": {
     "uploadFailed": "Przesyłanie nie powiodło się. Spróbuj ponownie.",
     "upload": "Prześlij",
-    "progress": "{percent}% przesłano"
+    "progress": "Przesłano {percent}%"
   },
   "videoPicker": {
     "choose": "Wybierz film",
     "urlPlaceholder": "YouTube, Vimeo lub bezpośredni adres URL filmu",
     "title": "Wybierz film",
-    "search": "Szukaj filmów...",
+    "search": "Szukaj filmów…",
     "empty": "Nie ma jeszcze filmów.",
     "noMatch": "Żaden film nie pasuje do twojego wyszukiwania."
   },
@@ -2470,8 +2470,8 @@
     "newFilter": "Nowy filtr",
     "deleteFailed": "Nie udało się usunąć filtra",
     "deleteAria": "Usuń filtr {name}",
-    "confirmDeleteCourse": "Usunąć filtr \"{name}\" i wszystkie jego opcje? Zostanie usunięty z każdego kursu.",
-    "confirmDeleteEvent": "Usunąć filtr \"{name}\" i wszystkie jego opcje? Zostanie usunięty z każdego wydarzenia."
+    "confirmDeleteCourse": "Usunąć filtr „{name}” i wszystkie jego opcje? Zostanie usunięty z każdego kursu.",
+    "confirmDeleteEvent": "Usunąć filtr „{name}” i wszystkie jego opcje? Zostanie usunięty z każdego wydarzenia."
   },
   "tagFilter": {
     "label": "Tagi:",
@@ -2480,33 +2480,33 @@
   "tagInput": {
     "remove": "Usuń tag {name}",
     "placeholder": "Dodaj tag…",
-    "create": "Utwórz “{name}”"
+    "create": "Utwórz „{name}”"
   },
   "publish": {
     "requirementsUnmet": "Ukończ wymagane kroki konfiguracji przed publikacją.",
     "wrong": "Coś poszło nie tak. Spróbuj ponownie.",
-    "confirmUnpublish": "Twoja strona będzie ukryta przed uczestnikami, dopóki nie opublikujesz jej ponownie.",
+    "confirmUnpublish": "Twoja witryna będzie ukryta przed uczestnikami, dopóki nie opublikujesz jej ponownie.",
     "pwSaved": "Zapisano hasło podglądu",
     "pwCleared": "Wyczyszczono hasło podglądu",
     "linkCopied": "Skopiowano link",
     "installCopied": "Skopiowano link do przewodnika instalacji",
-    "live": "Jesteś na żywo! 🎉",
-    "liveHint": "Twoja strona jest publiczna. Udostępnij link swoim uczestnikom:",
+    "live": "Witryna opublikowana! 🎉",
+    "liveHint": "Twoja witryna jest publiczna. Udostępnij link swoim uczestnikom:",
     "copy": "Kopiuj",
-    "shareInstall": "Udostępnij instrukcję instalacji",
+    "shareInstall": "Udostępnij przewodnik instalacji",
     "inviteStudents": "Zaproś swoich pierwszych uczestników",
     "done": "Gotowe",
-    "siteLive": "Twoja strona działa na żywo",
-    "publishSite": "Opublikuj swoją stronę",
-    "liveStatus": "<live>● Na żywo</live> — uczestnicy mogą znaleźć i zainstalować twoją stronę.",
+    "siteLive": "Twoja witryna jest opublikowana",
+    "publishSite": "Opublikuj swoją witrynę",
+    "liveStatus": "<live>● Opublikowana</live> — uczestnicy mogą znaleźć i zainstalować twoją witrynę.",
     "copyLink": "Kopiuj link",
     "unpublishing": "Cofanie publikacji…",
     "unpublish": "Cofnij publikację",
-    "hidden": "Twoja strona jest ukryta za bramką podglądu. Opublikuj ją, aby uczestnicy mogli ją znaleźć i zainstalować.",
-    "finishFirst": "Ukończ je najpierw, aby opublikować:",
+    "hidden": "Twoja witryna jest ukryta za bramką podglądu. Opublikuj ją, aby uczestnicy mogli ją znaleźć i zainstalować.",
+    "finishFirst": "Aby opublikować, najpierw ukończ:",
     "publishing": "Publikowanie…",
     "finishSteps": "Ukończ wymagane kroki konfiguracji, aby opublikować",
-    "publishGoLive": "Opublikuj stronę — przejdź na żywo",
+    "publishGoLive": "Opublikuj witrynę",
     "previewLink": "Link do podglądu:",
     "pw": "Hasło do podglądu",
     "pwIsSet": "Hasło do podglądu — ustawione",
@@ -2515,7 +2515,7 @@
     "saving": "Zapisywanie…",
     "clearing": "Czyszczenie…",
     "clear": "Wyczyść",
-    "pwHint": "Udostępnij link do podglądu + hasło, aby inni mogli zobaczyć stronę, zanim ją opublikujesz.",
+    "pwHint": "Udostępnij link do podglądu + hasło, aby inni mogli zobaczyć witrynę, zanim ją opublikujesz.",
     "blockers": {
       "plan": "Wybierz plan",
       "look": "Dodaj swoje logo",
@@ -2534,15 +2534,15 @@
     "noPayouts": "Uczestnicy nie mogą jeszcze kupować — <link>skonfiguruj wypłaty</link>, aby zacząć sprzedawać."
   },
   "paused": {
-    "title": "Wybierz plan, aby otworzyć swoją stronę",
-    "hint": "Dopóki tego nie zrobisz, odwiedzający widzą stronę “wkrótce wracamy”. Wszystko, co zostało przez ciebie zbudowane, jest zachowane i powróci w momencie, gdy zaczniesz."
+    "title": "Wybierz plan, aby otworzyć swoją witrynę",
+    "hint": "Dopóki tego nie zrobisz, odwiedzający widzą stronę „wkrótce wracamy”. Wszystko, co zostało zbudowane, zostaje zachowane i wraca, gdy tylko zaczniesz."
   },
   "usage": {
-    "title": "Adopcja aplikacji (30 dni)",
+    "title": "Korzystanie z aplikacji (30 dni)",
     "installed": "uczestników zainstalowało aplikację",
     "pwaShare": "PWA {pct}%",
-    "webShare": "Sieć {pct}%",
-    "dayTitle": "{day}: {pwa} PWA / {web} Sieć",
+    "webShare": "Przeglądarka {pct}%",
+    "dayTitle": "{day}: {pwa} PWA / {web} przeglądarka",
     "none": "Brak jeszcze aktywności w aplikacji."
   },
   "calendar": {
@@ -2570,7 +2570,7 @@
     "status": {
       "scheduled": "zaplanowane",
       "published": "opublikowane",
-      "draft": "szkic",
+      "draft": "wersja robocza",
       "completed": "ukończone",
       "live": "na żywo",
       "ended": "zakończone",
@@ -2593,7 +2593,7 @@
       "designerDone": "Projektant skończył",
       "designerDoneUndo": "Projektant skończył. Cofnięcie przywraca poprzedni stan.",
       "testSent": "Wysłano test na adres {email}",
-      "savedAsTemplate": "Zapisano w twoich szablonach jako “{name}”",
+      "savedAsTemplate": "Zapisano w twoich szablonach jako „{name}”",
       "templates": "Szablony",
       "messages": "Wiadomości",
       "templateName": "Nazwa szablonu",
@@ -2613,8 +2613,8 @@
       "onlyThisBlock": "Projektant zmienia tylko ten blok",
       "askWhole": "Zapytaj o cały e-mail",
       "askDesigner": "Zapytaj Projektanta",
-      "askBlockPlaceholder": "Zapytaj Projektanta o ten blok: “cieplej”, “krócej”, “dodaj zdjęcie”…",
-      "askPlaceholder": "Zapytaj Projektanta: “zrób cieplej”, “dodaj moją kolejną sesję na żywo”, “krócej, z jednym przyciskiem”…",
+      "askBlockPlaceholder": "Zapytaj Projektanta o ten blok: „cieplej”, „krócej”, „dodaj zdjęcie”…",
+      "askPlaceholder": "Zapytaj Projektanta: „zrób cieplej”, „dodaj moją kolejną sesję na żywo”, „krócej, z jednym przyciskiem”…",
       "asking": "Wysyłanie zapytania…",
       "ask": "Zapytaj",
       "choosePhoto": "Wybierz zdjęcie",
@@ -2632,19 +2632,19 @@
       "today": "Dzisiaj: {title}",
       "offers": "Twoje oferty i strony",
       "noMatch": "Nic nie pasuje.",
-      "none": "Jeszcze nic nie opublikowano. Twoje kursy, sesje i artykuły pojawią się tutaj, gdy będą aktywne.",
+      "none": "Jeszcze nic nie opublikowano. Twoje kursy, sesje i artykuły pojawią się tutaj, gdy zostaną opublikowane.",
       "close": "Zamknij"
     },
     "recipients": {
       "title": "Odbiorcy",
       "all": "Wszyscy uczestnicy",
       "course": "Według kursu",
-      "individual": "Pojedynczy uczestnicy",
+      "individual": "Poszczególni uczestnicy",
       "selectCourses": "Wybierz kursy",
       "noCourses": "Nie znaleziono kursów.",
-      "searchStudents": "Szukaj uczestników...",
+      "searchStudents": "Szukaj uczestników…",
       "noStudents": "Nie znaleziono uczestników.",
-      "counting": "Liczenie odbiorców...",
+      "counting": "Liczenie odbiorców…",
       "count": "{count, plural, one {# odbiorca} few {# odbiorcy} many {# odbiorców} other {# odbiorców}}",
       "allActive": "Wszyscy aktywni uczestnicy",
       "selectAbove": "Wybierz odbiorców powyżej"
@@ -2655,8 +2655,8 @@
       "taken": "Ten adres jest już zajęty. Spróbuj innego.",
       "reserved_local_part": "Ten adres jest zarezerwowany. Spróbuj innego.",
       "invalid_local_part": "Dozwolone są tylko litery, cyfry, kropki, myślniki i podkreślenia.",
-      "upgrade_required": "Zmień plan na wyższy, aby uzyskać adres.",
-      "feature_unavailable": "Niestandardowe adresy nie są w tej chwili dostępne."
+      "upgrade_required": "Przejdź na wyższy plan, aby uzyskać adres.",
+      "feature_unavailable": "Własne adresy nie są w tej chwili dostępne."
     },
     "onlyChars": "Dozwolone są tylko litery, cyfry, kropki, myślniki i podkreślenia.",
     "saveFailed": "Nie udało się zapisać. Spróbuj ponownie.",
@@ -2673,13 +2673,13 @@
     "saveAddress": "Zapisz adres",
     "customDomain": "Chcesz mieć markowy adres we własnej domenie (jak <m>info@yourdomain.com</m>)? Skontaktuj się ze wsparciem, aby dodać własną domenę.",
     "title": "Skrzynka pocztowa",
-    "freeText": "Ustaw niestandardowy adres e-mail dla swojej platformy.",
+    "freeText": "Ustaw własny adres e-mail dla swojej platformy.",
     "sendingFrom": "Aktualnie wysyłasz z:",
     "upgradeText": "Przejdź na płatny plan, aby uzyskać własny adres e-mail — uczestnicy będą mogli pisać do ciebie, a ich wiadomości trafią prosto do twojej skrzynki odbiorczej.",
     "domainText": "Wybierz swój adres e-mail i włącz skrzynkę odbiorczą, aby otrzymywać wiadomości od uczestników.",
     "enable": "Włącz skrzynkę odbiorczą",
     "enableText": "Po włączeniu uczestnicy mogą wysyłać wiadomości na twój adres.",
-    "saveChanges": "Zapisz Zmiany"
+    "saveChanges": "Zapisz zmiany"
   },
   "owner": {
     "blockForm": {
@@ -2687,7 +2687,7 @@
     },
     "brand": {
       "name": "Nazwa marki",
-      "namePlaceholder": "Moja Platforma",
+      "namePlaceholder": "Moja platforma",
       "logo": "Logo",
       "editLogo": "Edytuj logo",
       "createLogo": "Utwórz logo",
@@ -2696,7 +2696,7 @@
     },
     "toolbar": {
       "drag": "Przeciągnij, aby zmienić kolejność",
-      "reorder": "Zmień kolejność bloku “{label}”",
+      "reorder": "Zmień kolejność bloku „{label}”",
       "confirmDelete": "Potwierdź usunięcie",
       "delete": "Usuń blok",
       "cancel": "Anuluj"
@@ -2733,7 +2733,7 @@
       "uploading": "Przesyłanie…",
       "replace": "Zastąp logo",
       "upload": "Prześlij logo",
-      "uploaded": "{pct}% przesłano"
+      "uploaded": "Przesłano {pct}%"
     },
     "look": {
       "original": "Oryginalny",
@@ -2825,7 +2825,7 @@
         "events": "Wydarzenia"
       },
       "notEditable": "Tej strony nie można edytować w kreatorze. Wybierz stronę powyżej, aby edytować jej treść.",
-      "open": "Edytuj swoją stronę"
+      "open": "Edytuj swoją witrynę"
     },
     "navbar": {
       "layout": "Układ",
@@ -2866,9 +2866,9 @@
       "cta": "Przycisk CTA",
       "ctaPlaceholder": "Tekst przycisku",
       "showLogin": "Pokaż przycisk logowania",
-      "showLoginHint": "Wyświetl link \"Zaloguj się\" w nawigacji",
-      "showInstall": "Pokaż \"Zainstaluj aplikację\"",
-      "showInstallHint": "Odsyłaj odwiedzających do instalacji twojej strony jako aplikacji"
+      "showLoginHint": "Wyświetl link „Zaloguj się” w nawigacji",
+      "showInstall": "Pokaż „Zainstaluj aplikację”",
+      "showInstallHint": "Odsyłaj odwiedzających do instalacji twojej witryny jako aplikacji"
     },
     "link": {
       "title": "Wybierz link",
@@ -2899,7 +2899,7 @@
       "enterUrl": "Wpisz adres URL lub ścieżkę",
       "urlPlaceholder": "/ścieżka lub https://…",
       "useLink": "Użyj tego linku",
-      "noMatches": "Brak wyników dla “{query}”.",
+      "noMatches": "Brak wyników dla „{query}”.",
       "noCourses": "Nie ma jeszcze kursów.",
       "noEvents": "Nie ma jeszcze wydarzeń."
     },
@@ -2934,7 +2934,7 @@
       "pathPlaceholder": "/ścieżka lub https://…",
       "chooseLink": "Wybierz stronę lub treść",
       "browse": "Przeglądaj",
-      "noFilters": "Nie ma jeszcze filtrów. Utwórz filtry w swoim Studio twórcy, aby je tutaj wyświetlić.",
+      "noFilters": "Nie ma jeszcze filtrów. Utwórz filtry w swoim Studiu twórcy, aby je tutaj wyświetlić.",
       "item": "Element",
       "itemNumber": "{name} {number}",
       "addItem": {
@@ -2956,7 +2956,7 @@
       "block": {
         "hero": "Sekcja główna",
         "richText": "Tekst",
-        "imageText": "Obraz + Tekst",
+        "imageText": "Obraz + tekst",
         "gallery": "Galeria",
         "testimonials": "Opinie",
         "faq": "FAQ",
@@ -3029,7 +3029,7 @@
         "secondaryButton": "Opcjonalny drugi przycisk (z obrysem).",
         "video": "Wklej link do YouTube/Vimeo lub wybierz wideo z biblioteki.",
         "dismissible": "Dodaje znak X, dzięki czemu odwiedzający mogą to zamknąć; ich wybór jest zapamiętywany.",
-        "filterFacets": "Wybierz, które filtry pojawią się jako aspekty, według których odwiedzający mogą przeglądać."
+        "filterFacets": "Wybierz, które filtry mają być widoczne jako opcje przeglądania dla odwiedzających."
       },
       "item": {
         "image": "Obraz",
@@ -3072,7 +3072,7 @@
         "stats": "Statystyki",
         "value": "Wartość",
         "label": "Etykieta",
-        "logos": "Logotypy",
+        "logos": "Loga",
         "logo": "Logo",
         "altText": "Tekst alternatywny",
         "video": "Wideo",
@@ -3081,15 +3081,15 @@
         "link": "Link",
         "dismissible": "Zezwól odwiedzającym na zamknięcie",
         "intro": "Tekst wprowadzający",
-        "submitLabel": "Etykieta przycisku przesyłania",
-        "successMessage": "Komunikat o sukcesie",
+        "submitLabel": "Tekst przycisku wysyłania",
+        "successMessage": "Wiadomość o sukcesie",
         "maxCourses": "Maks. liczba kursów (0 = wszystkie)",
         "columns": "Kolumny",
         "cardStyle": "Styl karty",
         "showFilters": "Pokaż wyszukiwanie i filtry",
         "showPrice": "Pokaż cenę",
         "showMeta": "Pokaż twórcę i lekcje",
-        "filterFacets": "Fasety filtrów",
+        "filterFacets": "Opcje filtrowania",
         "subheading": "Podtytuł",
         "maxEvents": "Maks. liczba wydarzeń",
         "showCovers": "Pokaż zdjęcia okładkowe",
@@ -3122,7 +3122,7 @@
         "secondButtonLink": "Link drugiego przycisku",
         "smallLineEGLocationOrFormat": "Krótki wiersz (np. lokalizacja lub format)",
         "mainPhoto": "Zdjęcie główne",
-        "detailPhoto": "Zdjęcie detalu",
+        "detailPhoto": "Zdjęcie szczegółu",
         "thirdPhotoSomeLayouts": "Trzecie zdjęcie (niektóre układy)",
         "fourthPhotoSomeLayouts": "Czwarte zdjęcie (niektóre układy)",
         "heading": "Nagłówek",
@@ -3139,9 +3139,9 @@
         "photo": "Zdjęcie",
         "howMany": "Ile",
         "steps": "Kroki",
-        "statement": "Wypowiedź",
-        "attributionCreatorName": "Przypisanie (nazwa twórcy)",
-        "atmospherePhoto": "Zdjęcie klimatyczne",
+        "statement": "Deklaracja",
+        "attributionCreatorName": "Autor wypowiedzi (nazwa twórcy)",
+        "atmospherePhoto": "Zdjęcie nastrojowe",
         "caption": "Podpis",
         "photos": "Zdjęcia",
         "questions": "Pytania",
@@ -3178,7 +3178,7 @@
       "template": {
         "homeClassic": {
           "name": "Klasyczny",
-          "description": "Hero, kursy, opinie i końcowe wezwanie do działania."
+          "description": "Sekcja główna, kursy, opinie i końcowe wezwanie do działania."
         },
         "homeStoryteller": {
           "name": "Narrator",
@@ -3186,7 +3186,7 @@
         },
         "homeMinimal": {
           "name": "Minimalistyczny",
-          "description": "Przejrzysta sekcja hero i pojedyncze wezwanie do działania."
+          "description": "Przejrzysta sekcja główna i pojedyncze wezwanie do działania."
         },
         "aboutFounder": {
           "name": "Historia założyciela",
@@ -3210,7 +3210,7 @@
     },
     "frame": {
       "reload": "Odśwież podgląd",
-      "title": "Podgląd strony",
+      "title": "Podgląd witryny",
       "thisSection": "ta sekcja"
     },
     "builder": {
@@ -3231,10 +3231,10 @@
       "tiersHint": "Wybierz jedno lub więcej członkostw, a pojawią się tutaj."
     },
     "sketch": {
-      "preview": "Podgląd nagłówka na żywo na twojej stronie",
+      "preview": "Podgląd nagłówka na żywo w twojej witrynie",
       "device": "Urządzenie podglądu",
       "desktop": "Komputer",
-      "mobile": "Telefon + Menu",
+      "mobile": "Telefon + menu",
       "toggleMenu": "Przełącz podgląd menu mobilnego",
       "noLinks": "Nie wybrano linków menu"
     },
@@ -3272,7 +3272,7 @@
       "access": {
         "title": "Wszystko, co tworzysz",
         "who": "Kto może to otworzyć",
-        "free": "Za darmo",
+        "free": "Bezpłatnie",
         "sold": "Sprzedawane osobno",
         "member": "W ramach członkostwa",
         "ticked": ", zaznaczone",
@@ -3289,7 +3289,7 @@
         "lessons": "<b>Lekcje</b> to filmy w każdym module."
       },
       "live": {
-        "title": "Wtorkowe zajęcia wieczorne",
+        "title": "Wtorkowa sesja wieczorna",
         "when": "We wtorki, 19:00",
         "join": "Dołącz"
       },
@@ -3310,7 +3310,7 @@
     },
     "activity": {
       "building": "{page, select, home {Tworzę twoją stronę główną: {stage}} about {Tworzę twoją stronę „O nas”: {stage}} courses {Tworzę twoją stronę „Kursy”: {stage}} pricing {Tworzę twoją stronę „Cennik”: {stage}} faq {Tworzę twoją stronę „FAQ”: {stage}} contact {Tworzę twoją stronę „Kontakt”: {stage}} events {Tworzę twoją stronę „Wydarzenia”: {stage}} other {Tworzę twoją stronę „{page}”: {stage}}}",
-      "drafting": "Przygotowujemy {kind, select, course {twój pierwszy kurs} event {twoją pierwszą sesję na żywo} onsite {twoje pierwsze wydarzenie stacjonarne} post {twój pierwszy artykuł} other {{kind}}}",
+      "drafting": "Przygotowuję {kind, select, course {twój pierwszy kurs} event {twoją pierwszą sesję na żywo} onsite {twoje pierwsze wydarzenie stacjonarne} post {twój pierwszy artykuł} other {{kind}}}",
       "more": "{first} · jeszcze {count} w drodze",
       "stage": {
         "planning": "planuję układ",
@@ -3323,7 +3323,7 @@
       "pageReady": "{page, select, home {Twoja strona główna jest gotowa. Rzuć okiem.} about {Twoja strona „O nas” jest gotowa. Rzuć okiem.} courses {Twoja strona „Kursy” jest gotowa. Rzuć okiem.} pricing {Twoja strona „Cennik” jest gotowa. Rzuć okiem.} faq {Twoja strona „FAQ” jest gotowa. Rzuć okiem.} contact {Twoja strona „Kontakt” jest gotowa. Rzuć okiem.} events {Twoja strona „Wydarzenia” jest gotowa. Rzuć okiem.} other {Twoja strona „{page}” jest gotowa. Rzuć okiem.}}",
       "pageFailed": "{page, select, home {Nie udało mi się dokończyć twojej strony głównej, więc na razie zostaje jej pierwsza wersja.} about {Nie udało mi się dokończyć twojej strony „O nas”, więc na razie zostaje jej pierwsza wersja.} courses {Nie udało mi się dokończyć twojej strony „Kursy”, więc na razie zostaje jej pierwsza wersja.} pricing {Nie udało mi się dokończyć twojej strony „Cennik”, więc na razie zostaje jej pierwsza wersja.} faq {Nie udało mi się dokończyć twojej strony „FAQ”, więc na razie zostaje jej pierwsza wersja.} contact {Nie udało mi się dokończyć twojej strony „Kontakt”, więc na razie zostaje jej pierwsza wersja.} events {Nie udało mi się dokończyć twojej strony „Wydarzenia”, więc na razie zostaje jej pierwsza wersja.} other {Nie udało mi się dokończyć twojej strony „{page}”, więc na razie zostaje jej pierwsza wersja.}}",
       "draftDone": {
-        "course": "Szkic twojego pierwszego kursu jest gotowy. Dodaję go do twojej strony Kursy.",
+        "course": "Szkic twojego pierwszego kursu jest gotowy. Dodaję go do twojej strony „Kursy”.",
         "event": "Twoja pierwsza sesja na żywo jest już w kalendarzu.",
         "onsite": "Twoje pierwsze wydarzenie stacjonarne jest już w kalendarzu.",
         "post": "Szkic twojego pierwszego artykułu jest gotowy."
@@ -3343,7 +3343,7 @@
     "page": {
       "name": {
         "home": "Strona główna",
-        "about": "O mnie",
+        "about": "O nas",
         "courses": "Kursy",
         "pricing": "Cennik",
         "faq": "FAQ",
@@ -3373,7 +3373,7 @@
       "ends": "Koniec",
       "endsHint": "Zostaw puste, jeśli ma trwać bez końca",
       "sessionTime": "Godzina sesji {n}",
-      "classTime": "Termin zajęć {n}",
+      "classTime": "Godzina sesji {n}",
       "removeDayTime": "Usuń ten dzień i godzinę",
       "removeTime": "Usuń tę godzinę",
       "addTime": "Dodaj godzinę",
@@ -3387,7 +3387,7 @@
     "blockers": {
       "plan": "Rozpocznij bezpłatny okres próbny",
       "first_course": "Opublikuj swój pierwszy kurs",
-      "payouts": "Skonfiguruj wypłaty",
+      "payouts": "Podłącz wypłaty",
       "first_event": "Zaplanuj swoją pierwszą sesję na żywo",
       "first_blog_post": "Opublikuj swój pierwszy artykuł",
       "look": "Dokończ swoją stronę główną"
@@ -3397,9 +3397,9 @@
       "brand_unusable": "Użyj liter lub cyfr w nazwie swojej witryny.",
       "invalid_handle": "Ta nazwa użytkownika wygląda na niepoprawną. Wpisz swoją nazwę użytkownika, np. @mira.yoga, albo wklej link do swojego profilu.",
       "invalid_schedule": "Wybierz co najmniej jeden dzień i godzinę sesji.",
-      "unknown_logo": "Ten logotyp nie jest już dostępny. Wybierz inny.",
+      "unknown_logo": "To logo nie jest już dostępne. Wybierz inne.",
       "unknown_style": "Ten wygląd nie jest już dostępny. Wybierz inny.",
-      "trial_unavailable": "Bezpłatny okres próbny wymaga cotygodniowych zajęć z ustaloną ceną i co najmniej dwiema sesjami.",
+      "trial_unavailable": "Bezpłatny okres próbny wymaga cotygodniowej sesji z ustaloną ceną i co najmniej dwóch terminów.",
       "other": "Nie udało się. Twoja odpowiedź wciąż tu jest, więc spróbuj ponownie za chwilę."
     },
     "editor": {
@@ -3426,7 +3426,7 @@
       "lead": "Oto jak dostajesz pieniądze.",
       "title": "Otrzymuj płatności od swoich uczestników",
       "body": "Płatności obsługuje Stripe, a pieniądze trafiają prosto do twojego banku. Potwierdzisz swoją tożsamość i wskażesz, dokąd mają trafiać pieniądze. Zajmie to około pięciu minut.",
-      "ownerOnly": "Tylko właściciel studia może podłączyć wypłaty. Na razie pomiń ten krok; właściciel może później połączyć Stripe w sekcji Wypłaty.",
+      "ownerOnly": "Tylko właściciel witryny może podłączyć wypłaty. Na razie pomiń ten krok; właściciel może później połączyć Stripe w sekcji Wypłaty.",
       "connected": "Wypłaty są podłączone",
       "needsDetails": "Stripe potrzebuje jeszcze kilku informacji, zanim zaczniesz przyjmować płatności.",
       "opening": "Otwieranie Stripe…",
@@ -3462,10 +3462,10 @@
     },
     "goLive": {
       "paymentPending": "Twoja płatność jest wciąż potwierdzana. Jeśli przeszła, odśwież tę stronę za minutę.",
-      "checkoutError": "Nie udało się otworzyć płatności. Spróbuj ponownie.",
+      "checkoutError": "Nie udało się otworzyć strony płatności. Spróbuj ponownie.",
       "cardError": "Nie udało się jeszcze obciążyć twojej karty. Sprawdź to w swoim banku i spróbuj ponownie.",
-      "startError": "Nie udało się uruchomić twojego planu. Spróbuj ponownie.",
-      "holdError": "Nie udało się wstrzymać twoich płatnych pozycji. Spróbuj ponownie.",
+      "startError": "Nie udało się rozpocząć twojego planu. Spróbuj ponownie.",
+      "holdError": "Nie udało się wstrzymać twoich płatnych produktów. Spróbuj ponownie.",
       "blockedToast": "Przed publikacją musisz dokończyć kilka rzeczy.",
       "publishError": "Nie udało się opublikować twojej witryny. Spróbuj ponownie.",
       "asideTitle": "Następny krok: publikacja twojej witryny",
@@ -3474,11 +3474,11 @@
       "finishing": "Kończę twoje strony…",
       "holding": "Wstrzymuję je…",
       "sellLater": "Opublikuj teraz, sprzedawaj później",
-      "sellLaterHint": "Jeśli opublikujesz teraz, twoje ceny zostaną zachowane: płatne pozycje poczekają jako wersje robocze i same trafią do sprzedaży, gdy tylko płatności będą dostępne.",
+      "sellLaterHint": "Jeśli opublikujesz teraz, twoje ceny zostaną zachowane: płatne produkty poczekają jako wersje robocze i same trafią do sprzedaży, gdy tylko płatności będą dostępne.",
       "trial": {
         "title": "{days, plural, one {Rozpocznij #-dniowy bezpłatny okres próbny} few {Rozpocznij #-dniowy bezpłatny okres próbny} many {Rozpocznij #-dniowy bezpłatny okres próbny} other {Rozpocznij #-dniowy bezpłatny okres próbny}}",
-        "body": "Plan {plan} jest bezpłatny do {date}. Dodaj teraz kartę: jeśli anulujesz przed tym terminem, nie pobierzemy żadnej opłaty. Od razu wrócisz tutaj.",
-        "bodyPrice": "Plan {plan} jest bezpłatny do {date}, potem kosztuje {price} miesięcznie. Dodaj teraz kartę: jeśli anulujesz przed tym terminem, nie pobierzemy żadnej opłaty. Od razu wrócisz tutaj.",
+        "body": "Plan {plan} jest bezpłatny do {date}. Dodaj teraz kartę: jeśli zrezygnujesz przed tym terminem, nie pobierzemy żadnej opłaty. Od razu wrócisz tutaj.",
+        "bodyPrice": "Plan {plan} jest bezpłatny do {date}, potem kosztuje {price} miesięcznie. Dodaj teraz kartę: jeśli zrezygnujesz przed tym terminem, nie pobierzemy żadnej opłaty. Od razu wrócisz tutaj.",
         "start": "Rozpocznij bezpłatny okres próbny"
       },
       "start": {
@@ -3488,20 +3488,20 @@
         "bodyEnd": "W okresie próbnym nie można przyjmować płatności. Rozpocznij plan {plan} już dziś, aby od razu sprzedawać, albo opublikuj teraz i zacznij sprzedawać, gdy okres próbny skończy się {end}.",
         "bodyPriceEnd": "W okresie próbnym nie można przyjmować płatności. Rozpocznij plan {plan} już dziś, aby od razu sprzedawać ({price} miesięcznie), albo opublikuj teraz i zacznij sprzedawać, gdy okres próbny skończy się {end}.",
         "now": "Rozpocznij mój plan teraz",
-        "starting": "Uruchamiam twój plan…"
+        "starting": "Rozpoczynam twój plan…"
       },
       "plan": {
-        "title": "Aby sprzedawać na swojej stronie, wybierz {name}",
+        "title": "Aby sprzedawać w swojej witrynie, wybierz {name}",
         "body": "Płatne kursy i sesje na żywo wymagają planu {name}. Od razu wrócisz tutaj.",
         "bodyPrice": "Płatne kursy i sesje na żywo wymagają planu {name} ({price} miesięcznie). Od razu wrócisz tutaj.",
         "choose": "Wybierz {name}"
       },
       "ready": "Gotowe, kiedy tylko zechcesz",
       "held": "Czekają z twoimi cenami, aż zaczniesz sprzedawać:",
-      "heldHint": "Wybierz plan i skonfiguruj wypłaty w panelu w dowolnym momencie; same trafią do sprzedaży.",
+      "heldHint": "Wybierz plan i podłącz wypłaty w panelu w dowolnym momencie; same trafią do sprzedaży.",
       "goLive": "Opublikuj",
       "going": "Publikuję…",
-      "keepEditing": "Po publikacji nadal możesz edytować swoją stronę.",
+      "keepEditing": "Po publikacji nadal możesz edytować swoją witrynę.",
       "qa": {
         "checking": "Ostatni raz przeglądam każdą stronę",
         "looked": "{count, plural, one {Twoja strona została przejrzana} few {Wszystkie # strony zostały przejrzane} many {Wszystkie # stron zostało przejrzanych} other {Wszystkie # strony zostały przejrzane}}",
@@ -3515,7 +3515,7 @@
     "draft": {
       "stuck": "{kind, select, course {Tworzenie twojego kursu trwa znacznie dłużej, niż powinno. Spróbuj ponownie albo na razie go pomiń i dodaj później.} event {Tworzenie twojej sesji na żywo trwa znacznie dłużej, niż powinno. Spróbuj ponownie albo na razie ją pomiń i dodaj później.} onsite {Tworzenie twojego wydarzenia stacjonarnego trwa znacznie dłużej, niż powinno. Spróbuj ponownie albo na razie je pomiń i dodaj później.} other {Tworzenie twojego kursu trwa znacznie dłużej, niż powinno. Spróbuj ponownie albo na razie go pomiń i dodaj później.}}",
       "retry": "Spróbuj ponownie",
-      "waiting": "Sesje na żywo są dostępne w płatnym planie. Gdy opublikujesz stronę, zaproponuję ci taki plan, a szkic twojej pierwszej sesji powstanie, gdy tylko plan zostanie aktywowany.",
+      "waiting": "Sesje na żywo są dostępne w płatnym planie. Gdy opublikujesz witrynę, zaproponuję ci taki plan, a szkic twojej pierwszej sesji powstanie, gdy tylko plan zostanie aktywowany.",
       "failed": "{kind, select, course {Tym razem nie udało mi się przygotować szkicu twojego kursu. Napisz poniżej, czego ma dotyczyć, a spróbuję ponownie, albo na razie go pomiń.} event {Tym razem nie udało mi się przygotować szkicu twojej sesji na żywo. Napisz poniżej, czego ma dotyczyć, a spróbuję ponownie, albo na razie ją pomiń.} onsite {Tym razem nie udało mi się przygotować szkicu twojego wydarzenia stacjonarnego. Napisz poniżej, czego ma dotyczyć, a spróbuję ponownie, albo na razie je pomiń.} other {Tym razem nie udało mi się przygotować szkicu twojego kursu. Napisz poniżej, czego ma dotyczyć, a spróbuję ponownie, albo na razie go pomiń.}}",
       "drafting": "{kind, select, course {Przygotowuję szkic twojego pierwszego kursu…} event {Przygotowuję szkic twojej pierwszej sesji na żywo…} onsite {Przygotowuję szkic twojego pierwszego wydarzenia stacjonarnego…} other {Przygotowuję szkic twojego pierwszego kursu…}}",
       "usually": "Zwykle gotowe w niecałą minutę.",
@@ -3526,7 +3526,7 @@
       "coverUse": "Użyj tej okładki",
       "kicker": "{kind, select, course {Twój pierwszy kurs} event {Twoja pierwsza sesja na żywo} onsite {Twoje pierwsze wydarzenie stacjonarne} other {Twój pierwszy kurs}}",
       "repeats": "Powtarzanie: {repeats}",
-      "trialChip": "Pierwsza sesja to bezpłatne zajęcia próbne",
+      "trialChip": "Pierwsza sesja to bezpłatna sesja próbna",
       "includedIn": "Dostępne w ramach {name}",
       "rewriting": "{kind, select, course {Przepisuję twój kurs, uwzględniając twoje zmiany…} event {Przepisuję twoją sesję na żywo, uwzględniając twoje zmiany…} onsite {Przepisuję twoje wydarzenie stacjonarne, uwzględniając twoje zmiany…} other {Przepisuję twój kurs, uwzględniając twoje zmiany…}}",
       "rewritingShort": "{kind, select, course {Przepisuję twój kurs…} event {Przepisuję twoją sesję na żywo…} onsite {Przepisuję twoje wydarzenie stacjonarne…} other {Przepisuję twój kurs…}}",
@@ -3544,27 +3544,27 @@
         }
       },
       "trial": {
-        "title": "Ustawić pierwszą sesję jako bezpłatne zajęcia próbne?",
-        "body": "Każdy może dołączyć do niej za darmo. Wszystkie pozostałe sesje zachowują swoją cenę.",
-        "help": "Czym są bezpłatne zajęcia próbne?",
-        "tip": "Zajęcia próbne pozwalają komuś sprawdzić, czego uczysz, zanim zapłaci. Bezpłatna jest tylko twoja pierwsza sesja i każdy może do niej dołączyć. Każda kolejna sesja jest sprzedawana w twojej zwykłej cenie. Możesz to wyłączyć w dowolnej chwili.",
-        "example": "Każda sesja kosztuje {price}. Pierwsza to bezpłatne zajęcia próbne, a każda kolejna sesja nadal kosztuje {price}."
+        "title": "Ustawić pierwszą sesję jako bezpłatną sesję próbną?",
+        "body": "Każdy może dołączyć do niej bezpłatnie. Wszystkie pozostałe sesje zachowują swoją cenę.",
+        "help": "Czym jest bezpłatna sesja próbna?",
+        "tip": "Sesja próbna pozwala komuś wypróbować to, co oferujesz, zanim zapłaci. Bezpłatna jest tylko twoja pierwsza sesja i każdy może do niej dołączyć. Każda kolejna sesja jest sprzedawana w twojej zwykłej cenie. Możesz to wyłączyć w dowolnej chwili.",
+        "example": "Każda sesja kosztuje {price}. Pierwsza to bezpłatna sesja próbna, a każda kolejna sesja nadal kosztuje {price}."
       }
     },
     "bio": {
       "label": "Albo napisz o swojej pracy",
-      "why": "Im więcej nam opowiesz, tym bardziej twoja strona będzie brzmieć jak ty. Postaraj się opisać:",
+      "why": "Im więcej nam opowiesz, tym bardziej twoja witryna będzie brzmieć jak ty. Postaraj się opisać:",
       "include": {
-        "0": "Czego uczysz i kogo uczysz",
+        "0": "Co oferujesz i z kim pracujesz",
         "1": "Twoje doświadczenie i certyfikaty",
-        "2": "Twój styl nauczania",
+        "2": "Twój styl pracy",
         "3": "Od ilu lat się tym zajmujesz",
         "4": "Co cię wyróżnia"
       },
-      "placeholder": "Prowadzę zajęcia z … dla … Mam przygotowanie jako … i uczę od … lat. Moje zajęcia są … a wyróżnia je …",
+      "placeholder": "Prowadzę zajęcia z … dla … Mam przygotowanie jako … i uczę od … lat. Moje zajęcia są …, a wyróżnia je …",
       "exampleLink": "Zobacz przykład",
       "example": "Uczę jogi vinyasa i pracy z oddechem początkujących oraz zapracowanych pracowników biurowych, online i stacjonarnie na Brooklynie. Mam za sobą 500-godzinny program szkoleniowy i uczę od 10 lat, odkąd wypalenie zawodowe w korporacji przywiodło mnie do jogi. Moje zajęcia są spokojne, ciepłe i praktyczne: małe grupy, zero popisywania się i zawsze łatwiejszy wariant każdej pozycji. Uczestnicy mówią, że wyróżnia mnie to, że uczę ich samodzielnej praktyki.",
-      "nudge": "To dobry początek. Kilka zdań więcej o twoim doświadczeniu i o tym, co cię wyróżnia, sprawi, że twoja strona będzie lepsza."
+      "nudge": "To dobry początek. Kilka zdań więcej o twoim doświadczeniu i o tym, co cię wyróżnia, sprawi, że twoja witryna będzie lepsza."
     },
     "answer": {
       "youSaid": "Twoja odpowiedź: <b>{answer}</b>"
@@ -3631,7 +3631,7 @@
       "mostHere": "Więcej nie mogę tu przyjąć: {max, plural, one {# zdjęcie} few {# zdjęcia} many {# zdjęć} other {# zdjęcia}}.",
       "onlyFirst": "Dodano tylko pierwsze {room}: {max, plural, one {# zdjęcie to} few {# zdjęcia to} many {# zdjęć to} other {# zdjęcia to}} maksimum, jakie mogę tu przyjąć.",
       "fileProblem": "{name}: {problem}",
-      "removeError": "Nie udało się usunąć tego zdjęcia. Spróbuj ponownie w sekcji Media.",
+      "removeError": "Nie udało się usunąć tego zdjęcia. Spróbuj ponownie w sekcji Multimedia.",
       "addAria": "Dodaj zdjęcia",
       "addMore": "Dodaj więcej zdjęć",
       "addYour": "Dodaj swoje zdjęcia",
@@ -3644,7 +3644,7 @@
       "addToContinue": "Dodaj zdjęcie, aby kontynuować",
       "keep": "Zachowaj te zdjęcia",
       "continue": "{count, plural, one {Kontynuuj z moim zdjęciem} few {Kontynuuj z moimi zdjęciami (#)} many {Kontynuuj z moimi zdjęciami (#)} other {Kontynuuj z moimi zdjęciami (#)}}",
-      "private": "Twoje zdjęcia pozostają twoje i są używane tylko w twojej witrynie. W każdej chwili możesz je dodać, podmienić lub usunąć w sekcji Media.",
+      "private": "Twoje zdjęcia pozostają twoje i są używane tylko w twojej witrynie. W każdej chwili możesz je dodać, podmienić lub usunąć w sekcji Multimedia.",
       "bringAria": "Co przygotować",
       "bring": "Co przygotować",
       "bringHow": "Od 10 do 20 zdjęć wystarczy na całą witrynę. Mniej też wystarczy: resztę uzupełnię zdjęciami pasującymi do tego, czym się zajmujesz.",
@@ -3707,9 +3707,9 @@
     },
     "compose": {
       "stage": {
-        "0": "Wybieramy układ",
-        "1": "Piszemy twoje teksty",
-        "2": "Szukamy twoich zdjęć"
+        "0": "Wybieram układ",
+        "1": "Piszę twoje teksty",
+        "2": "Szukam twoich zdjęć"
       },
       "title": "{page, select, home {Tworzę twoją stronę główną} about {Tworzę twoją stronę „O nas”} courses {Tworzę twoją stronę „Kursy”} pricing {Tworzę twoją stronę „Cennik”} faq {Tworzę twoją stronę „FAQ”} contact {Tworzę twoją stronę „Kontakt”} events {Tworzę twoją stronę „Wydarzenia”} other {Tworzę twoją stronę „{page}”}}"
     },
@@ -3733,7 +3733,7 @@
       "placeProblem": "Dodaj nazwę miejsca.",
       "addressProblem": "Dodaj adres z ulicą i numerem.",
       "emailProblem": "To nie wygląda na adres e-mail.",
-      "phoneProblem": "Dodaj numer z kierunkowym kraju, np. +49 170 1234567.",
+      "phoneProblem": "Dodaj numer z kodem kraju, np. +49 170 1234567.",
       "priceProblem": "Dodaj cenę miesięczną, np. 19.",
       "stillThinking": "Wciąż myślę. Twoja witryna powstaje w tym samym czasie, więc może to potrwać nieco dłużej.",
       "thinking": "Myślę…",
@@ -3741,7 +3741,7 @@
       "continue": "Dalej",
       "looksGood": "Wygląda dobrze, dalej",
       "finishSentence": "Dokończ zdanie",
-      "addPrice": "Dodaj cenę dla każdej pozycji",
+      "addPrice": "Dodaj cenę dla każdego z nich",
       "pickMany": "Wybierz wszystkie pasujące",
       "pickOne": "Wybierz jedną opcję, aby przejść dalej",
       "keepAnswer": "Zachowaj tę odpowiedź",
@@ -3871,7 +3871,7 @@
       "readyMade": "Gotowe logo",
       "readyMadeHint": "Kompletne pomysły na logo dla twojej marki — do bezpłatnego wykorzystania i dopracowania.",
       "designWithAi": "Zaprojektuj z AI",
-      "aiHint": "Opisz swój styl i pozwól AI stworzyć unikalne logo.",
+      "aiHint": "Opisz swój klimat i pozwól AI stworzyć unikalne logo.",
       "aiUpgradeHint": "Przejdź na wyższy plan, aby zaprojektować unikalne logo z AI."
     },
     "gallery": {
@@ -3899,21 +3899,21 @@
         "tracing": "Konwertowanie na wektory"
       },
       "pick": "Wybierz to",
-      "useTagline": "Użyj \"{tagline}\"",
+      "useTagline": "Użyj „{tagline}”",
       "soFar": "Twoje dotychczasowe logo",
       "picksHere": "Twoje wybory będą się tu pojawiać na bieżąco.",
-      "cancelled": "Anulowano — to wykorzystało jedną z twoich tur projektowania.",
+      "cancelled": "Anulowano — to zużyło jedną z twoich prób projektowania.",
       "unreachable": "Nie udało się teraz połączyć ze studiem projektowym.",
       "ideas": "Pomysły",
       "stepsLabel": "Kroki projektowania",
-      "title": "Projektuj z AI",
+      "title": "Zaprojektuj z AI",
       "reviewing": "Przeglądanie własnej pracy…",
-      "cancelNote": "Anulowanie nadal zużywa 1 turę.",
+      "cancelNote": "Anulowanie nadal zużywa 1 próbę.",
       "preparing": "Przygotowywanie opcji…",
       "changePlaceholder": "Opisz zmianę dla tego kroku… (np. bardziej geometryczne, mniej zabawne)",
       "send": "Wyślij",
       "differentOptions": "Pokaż inne opcje",
-      "turnsLeft": "{count, plural, one {Pozostała # tura projektowania AI w tym miesiącu.} few {Pozostały # tury projektowania AI w tym miesiącu.} many {Pozostało # tur projektowania AI w tym miesiącu.} other {Pozostało # tury projektowania AI w tym miesiącu.}}",
+      "turnsLeft": "{count, plural, one {Pozostała # próba projektowania AI w tym miesiącu.} few {Pozostały # próby projektowania AI w tym miesiącu.} many {Pozostało # prób projektowania AI w tym miesiącu.} other {Pozostało # próby projektowania AI w tym miesiącu.}}",
       "describeTitle": "Opisz logo, jakiego chcesz",
       "describeHint": "Wystarczy zdanie lub dwa — nastrój, symbol, kolory do uwzględnienia lub unikania. Albo to pomiń, a zaproponujemy koncepcje na podstawie twojej marki.",
       "describePlaceholder": "np. spokojny, minimalistyczny znak — może liść lub wschód słońca, ciepłe ziemiste zielenie, nic korporacyjnego",
@@ -3924,7 +3924,7 @@
     },
     "refine": {
       "title": "Zapytaj projektanta AI",
-      "quota": "Limit ulepszeń AI na ten miesiąc został wykorzystany. Więcej w przyszłym miesiącu.",
+      "quota": "Limit poprawek AI na ten miesiąc został wykorzystany. Więcej w przyszłym miesiącu.",
       "unavailable": "Dopracowywanie z AI jest tymczasowo niedostępne.",
       "placeholder": "np. cieplejsze kolory, bardziej okrągły znak, bardziej prestiżowy",
       "redraw": "Narysuj ikonę na nowo (zacznij znak od zera)",
@@ -3935,7 +3935,7 @@
     "panel": {
       "undo": "Cofnij",
       "redo": "Ponów",
-      "getIdeas": "Uzyskaj nowe pomysły",
+      "getIdeas": "Zobacz nowe pomysły",
       "clickToEdit": "Kliknij dowolną część swojego logo w podglądzie, aby edytować ją bezpośrednio.",
       "name": "Nazwa",
       "tagline": "Slogan",
@@ -3973,7 +3973,7 @@
       "case": {
         "label": "Wielkość liter",
         "none": "Jak wpisano",
-        "titleCase": "Jak w Tytułach",
+        "titleCase": "Każdy Wyraz Wielką Literą",
         "upper": "WIELKIE LITERY"
       },
       "letterSpacing": "Odstępy między literami",
@@ -3982,11 +3982,11 @@
       "colorHex": "Kolor {hex}",
       "customColor": "Niestandardowy kolor",
       "mark": {
-        "title": "Sygnet",
-        "aiDrawn": "Sygnet narysowany przez AI",
+        "title": "Znak",
+        "aiDrawn": "Znak narysowany przez AI",
         "designedInSetup": "Zaprojektowany podczas konfiguracji",
-        "generatedHint": "To logo zostało zaprojektowane dla ciebie podczas konfiguracji. Wybierz inne w Konfiguracja → Logo lub wybierz sygnet poniżej, aby zacząć od nowa.",
-        "customHint": "Wybierz inny sygnet poniżej, aby go zamienić, lub użyj elementów sterowania kolorem, aby zmienić jego kolor.",
+        "generatedHint": "To logo zostało zaprojektowane dla ciebie podczas konfiguracji. Wybierz inne w sekcji Konfiguracja → Logo lub wybierz znak poniżej, aby zacząć od nowa.",
+        "customHint": "Wybierz inny znak poniżej, aby go zamienić, lub użyj opcji koloru, aby zmienić jego kolor.",
         "initials": {
           "plain": "{initials} Prosty",
           "monogram": "{initials} Monogram",
@@ -4008,12 +4008,12 @@
           "outline": "Kontur",
           "solid": "Wypełnienie"
         },
-        "color": "Kolor sygnetu",
+        "color": "Kolor znaku",
         "solid": "Jednolity",
         "gradient": "Gradient",
-        "gradientEnd": "Kolor końcowy gradientu sygnetu",
+        "gradientEnd": "Kolor końcowy gradientu znaku",
         "gradientAngle": "Kąt gradientu",
-        "aiColors": "Kolory sygnetu narysowanego przez AI",
+        "aiColors": "Kolory znaku narysowanego przez AI",
         "secondaryColor": "Kolor dodatkowy",
         "secondary": "Dodatkowy",
         "accentColor": "Kolor akcentu",

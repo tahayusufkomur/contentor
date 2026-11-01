@@ -1,7 +1,7 @@
 {
   "language": "Język",
   "status": {
-    "live": "Na żywo",
+    "live": "Opublikowana",
     "settingUp": "Konfigurowanie",
     "pending": "Oczekujące",
     "setupFailed": "Konfiguracja nie powiodła się"
@@ -23,13 +23,13 @@
     "deleted": "Usunięto {name}.",
     "failed": "Nie udało się usunąć tej platformy. Spróbuj ponownie.",
     "confirmTitle": "Usunąć {name}?",
-    "confirmBody": "To trwale usunie stronę, jej kursy, zajęcia, uczestników i pliki oraz zwolni <strong>{slug}</strong>. Tej operacji nie można cofnąć.",
+    "confirmBody": "To trwale usunie witrynę, jej kursy, sesje, uczestników i pliki oraz zwolni <strong>{slug}</strong>. Tej operacji nie można cofnąć.",
     "typeToConfirm": "Wpisz <mono>{slug}</mono>, aby potwierdzić",
     "deleting": "Usuwanie…",
     "confirm": "Usuń platformę",
     "blocked": {
-      "paid_plan": "Najpierw anuluj płatny plan — płatnych platform nie można usunąć.",
-      "payments_connected": "Ta platforma ma połączone konto płatności. Skontaktuj się ze wsparciem, aby je usunąć.",
+      "paid_plan": "Najpierw zrezygnuj z płatnego planu — płatnych platform nie można usunąć.",
+      "payments_connected": "Ta platforma ma połączone konto płatności. Skontaktuj się z pomocą techniczną, aby je usunąć.",
       "custom_domain": "Najpierw usuń własną domenę.",
       "provisioning": "Nadal trwa konfiguracja — spróbuj ponownie za kilka minut.",
       "not_deletable": "Tej platformy nie można usunąć."
@@ -39,14 +39,14 @@
   "publish": {
     "liveTitle": "Widoczna dla wszystkich",
     "hiddenTitle": "Ukryta — tylko podgląd",
-    "liveHint": "Twoja strona jest publiczna.",
+    "liveHint": "Twoja witryna jest publiczna.",
     "hiddenHint": "Odwiedzający widzą ekran podglądu, dopóki jej nie opublikujesz.",
     "gateLabel": "Hasło podglądu",
     "gateSet": "· ustawione",
     "gateNew": "Ustaw nowe hasło",
     "gateAdd": "Dodaj hasło",
     "save": "Zapisz",
-    "gateHint": "Udostępnij to hasło, aby umożliwić innym podgląd przed uruchomieniem. Pozostaw puste i zapisz, aby je usunąć.",
+    "gateHint": "Udostępnij to hasło, aby umożliwić innym podgląd przed publikacją. Zostaw pole puste i zapisz, aby je usunąć.",
     "failed": "Nie udało się zapisać. Spróbuj ponownie."
   }
 }

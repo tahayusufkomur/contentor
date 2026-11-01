@@ -2,8 +2,8 @@
   "default": {
     "hero": {
       "heading": "Witaj",
-      "subheading": "Krótkie, chwytliwe hasło.",
-      "ctaText": "Rozpocznij"
+      "subheading": "Krótki, chwytliwy slogan.",
+      "ctaText": "Zacznij teraz"
     },
     "richText": {
       "heading": "Nagłówek"
@@ -85,7 +85,7 @@
       "steps": [
         {
           "title": "Wybierz",
-          "text": "Wybierz kurs lub sesję, która ci odpowiada."
+          "text": "Wybierz kurs lub sesję, które ci odpowiadają."
         },
         {
           "title": "Dołącz",
@@ -125,7 +125,7 @@
     },
     "cta": {
       "heading": "Czas zacząć?",
-      "ctaLabel": "Rozpocznij"
+      "ctaLabel": "Zacznij teraz"
     },
     "contact": {
       "heading": "Skontaktuj się",
@@ -155,7 +155,7 @@
       },
       "imageText": {
         "heading": "O mnie",
-        "body": "Cześć! Te kursy powstały, aby podzielić się tym, co sprawdziło się u setek uczestników — i pomóc ci dotrzeć do celu szybciej, ze wsparciem na każdym kroku."
+        "body": "Cześć, jestem twoim prowadzącym. Te kursy powstały, aby podzielić się tym, co sprawdziło się u setek uczestników — i pomóc ci dotrzeć do celu szybciej, ze wsparciem na każdym kroku."
       },
       "testimonials": {
         "heading": "Co mówią uczestnicy",
@@ -196,7 +196,7 @@
         "buttonText": "Dołącz teraz"
       },
       "stats": {
-        "heading": "Zaufanie uczestników",
+        "heading": "Uczestnicy nam ufają",
         "items": [
           {
             "value": "500+",
@@ -207,7 +207,7 @@
             "label": "Godziny wideo"
           },
           {
-            "value": "4.9★",
+            "value": "4,9★",
             "label": "Średnia ocen"
           }
         ]
@@ -221,7 +221,7 @@
         "intro": "Masz pytanie lub chcesz nawiązać współpracę? Wyślij wiadomość, a wkrótce się odezwę."
       },
       "gallery": {
-        "heading": "Wygląd od środka"
+        "heading": "Zajrzyj do środka"
       },
       "logos": {
         "heading": "Pisali o nas w"
@@ -233,8 +233,8 @@
         "heading": "Odkryj programy"
       },
       "pricingPlans": {
-        "heading": "Plany & cennik",
-        "subheading": "Wybierz plan dopasowany do tego, gdzie teraz jesteś — zmień na wyższy w dowolnym momencie."
+        "heading": "Plany i cennik",
+        "subheading": "Wybierz plan dopasowany do tego, gdzie teraz jesteś — w każdej chwili możesz przejść na wyższy."
       },
       "upcomingEvents": {
         "heading": "Nadchodzące sesje na żywo"
@@ -245,20 +245,20 @@
     },
     "yoga": {
       "hero": {
-        "heading": "Znajdź Swoją Równowagę Dzięki Jodze",
+        "heading": "Znajdź swoją równowagę dzięki jodze",
         "subheading": "Odmień swoje ciało i umysł dzięki prowadzonym praktykom jogi — bez względu na to, czy dopiero zaczynasz, czy masz już doświadczenie.",
-        "ctaText": "Przeglądaj Programy"
+        "ctaText": "Przeglądaj programy"
       },
       "richText": {
-        "heading": "Dlaczego Warto Praktykować Ze Mną?",
+        "heading": "Dlaczego warto praktykować ze mną?",
         "body": "Każda lekcja łączy uważną pracę z oddechem z bezpiecznym, precyzyjnym ustawieniem ciała, dzięki czemu możesz budować regularną praktykę we własnym tempie. Rozwiń matę i razem budujmy siłę oraz spokój."
       },
       "imageText": {
-        "heading": "O Mnie",
+        "heading": "O mnie",
         "body": "Mam certyfikat nauczania jogi i od ponad 12 lat uczę w tradycjach Hatha, Vinyasa i Ashtanga. Wierzę, że joga to podróż w głąb siebie — spotkanie ze sobą na macie ze współczuciem, oddechem i intencją."
       },
       "testimonials": {
-        "heading": "Co Mówią Uczestnicy",
+        "heading": "Co mówią uczestnicy",
         "items": [
           {
             "name": "Priya R.",
@@ -275,10 +275,10 @@
         ]
       },
       "faq": {
-        "heading": "Najczęściej Zadawane Pytania",
+        "heading": "Często zadawane pytania",
         "items": [
           {
-            "q": "Czy muszę być rozciągnięty, aby zacząć jogę?",
+            "q": "Czy muszę być gibki, aby zacząć jogę?",
             "a": "Zdecydowanie nie! Elastyczność to rezultat jogi, a nie warunek wstępny. Nasz kurs dla początkujących zaczyna się od łagodnych ruchów i modyfikacji, dzięki czemu możesz bezpiecznie ćwiczyć na każdym poziomie."
           },
           {
@@ -293,10 +293,10 @@
       },
       "cta": {
         "heading": "Czas rozpocząć swoją podróż?",
-        "buttonText": "Dołącz Teraz"
+        "buttonText": "Dołącz teraz"
       },
       "stats": {
-        "heading": "Dołącz Do Praktyki",
+        "heading": "Dołącz do praktyki",
         "items": [
           {
             "value": "500+",
@@ -307,7 +307,7 @@
             "label": "Prowadzone zajęcia"
           },
           {
-            "value": "4.9★",
+            "value": "4,9★",
             "label": "Średnia ocena"
           }
         ]
@@ -319,7 +319,7 @@
     },
     "pilates": {
       "hero": {
-        "heading": "Odmień Swoje Ciało z Pilatesem",
+        "heading": "Odmień swoje ciało z pilatesem",
         "subheading": "Zbuduj siłę mięśni głębokich, popraw elastyczność i poruszaj się z pewnością siebie dzięki uważnemu, kontrolowanemu ruchowi.",
         "ctaText": "Przeglądaj programy"
       },
@@ -381,7 +381,7 @@
             "label": "Godziny wideo"
           },
           {
-            "value": "4.9★",
+            "value": "4,9★",
             "label": "Średnia ocena"
           }
         ]
@@ -423,11 +423,11 @@
         ]
       },
       "faq": {
-        "heading": "Często Zadawane Pytania",
+        "heading": "Często zadawane pytania",
         "items": [
           {
             "q": "Czy potrzebuję jakiegoś sprzętu?",
-            "a": "Kurs Total Body Transformation nie wymaga żadnego sprzętu — wystarczy ciężar twojego ciała. Programy HIIT i Strength zalecają hantle oraz gumę oporową, ale zawsze pokazujemy alternatywy z masą własnego ciała."
+            "a": "Kurs Total Body Transformation nie wymaga żadnego sprzętu — wystarczy ciężar twojego ciała. Programy HIIT i Strength zalecają hantle oraz taśmę oporową, ale zawsze pokazujemy alternatywy z masą własnego ciała."
           },
           {
             "q": "Dopiero zaczynam — czy to coś dla mnie?",
@@ -441,10 +441,10 @@
       },
       "cta": {
         "heading": "Czas zacząć trening?",
-        "buttonText": "Dołącz Teraz"
+        "buttonText": "Dołącz teraz"
       },
       "stats": {
-        "heading": "Wyniki, Które Się Sumują",
+        "heading": "Wyniki, które się sumują",
         "items": [
           {
             "value": "10k+",
@@ -455,7 +455,7 @@
             "label": "Sesje wideo"
           },
           {
-            "value": "4.9★",
+            "value": "4,9★",
             "label": "Średnia ocena"
           }
         ]
@@ -467,20 +467,20 @@
     },
     "faceYoga": {
       "hero": {
-        "heading": "Naturalne Piękno Dzięki Jodze Twarzy",
+        "heading": "Naturalne piękno dzięki jodze twarzy",
         "subheading": "Ujędrnij, unieś i odmłodź swoją twarz dzięki prostym codziennym ćwiczeniom — bez zastrzyków, bez produktów, wystarczy kilka minut dziennie.",
-        "ctaText": "Przeglądaj Programy"
+        "ctaText": "Przeglądaj programy"
       },
       "richText": {
-        "heading": "Kilka Minut Dziennie",
+        "heading": "Kilka minut dziennie",
         "body": "W naturalnym odmładzaniu twarzy liczy się przede wszystkim systematyczność. Te krótkie, ukierunkowane zestawy ćwiczeń wykorzystują wyłącznie twoje dłonie i własne mięśnie — na tyle proste, by wpisać się w twój poranek, i na tyle skuteczne, by zauważyć i poczuć różnicę."
       },
       "imageText": {
-        "heading": "O Mnie",
+        "heading": "O mnie",
         "body": "Mam certyfikat z jogi twarzy i od ponad 6 lat zajmuję się holistycznym dobrostanem. Spektakularne rezultaty na własnej skórze sprawiły, że poświęcam karierę nauczaniu naturalnych technik odmładzania twarzy, które każdy może stosować w domu."
       },
       "testimonials": {
-        "heading": "Co Mówią Uczestnicy",
+        "heading": "Co mówią uczestnicy",
         "items": [
           {
             "name": "Sarah W.",
@@ -497,11 +497,11 @@
         ]
       },
       "faq": {
-        "heading": "Często Zadawane Pytania",
+        "heading": "Często zadawane pytania",
         "items": [
           {
             "q": "Jak szybko zobaczę rezultaty?",
-            "a": "Większość uczestników zauważa subtelne zmiany w ciągu 2-3 tygodni codziennych ćwiczeń. Wyraźniejsze uniesienie i ujędrnienie zazwyczaj pojawia się po 6-8 tygodniach systematycznej pracy."
+            "a": "Większość uczestników zauważa subtelne zmiany w ciągu 2-3 tygodni codziennych ćwiczeń. Wyraźniejsze uniesienie i ujędrnienie zazwyczaj pojawiają się po 6-8 tygodniach systematycznej pracy."
           },
           {
             "q": "Czy potrzebuję jakiegoś sprzętu?",
@@ -515,10 +515,10 @@
       },
       "cta": {
         "heading": "Czas naturalnie odmienić swoją twarz?",
-        "buttonText": "Dołącz Teraz"
+        "buttonText": "Dołącz teraz"
       },
       "stats": {
-        "heading": "Naturalnie Promienna",
+        "heading": "Naturalnie promienna",
         "items": [
           {
             "value": "2k+",
@@ -529,7 +529,7 @@
             "label": "Codzienna rutyna"
           },
           {
-            "value": "4.9★",
+            "value": "4,9★",
             "label": "Średnia ocena"
           }
         ]
@@ -541,20 +541,20 @@
     },
     "bellyDance": {
       "hero": {
-        "heading": "Odkryj Sztukę Tańca Brzucha",
+        "heading": "Odkryj sztukę tańca brzucha",
         "subheading": "Wyraź siebie poprzez starożytną sztukę tańca brzucha — dołącz do naszej społeczności tancerzy i uwolnij swój wewnętrzny rytm.",
-        "ctaText": "Przeglądaj Programy"
+        "ctaText": "Przeglądaj programy"
       },
       "richText": {
-        "heading": "Taniec Jest dla Każdego",
+        "heading": "Taniec jest dla każdego",
         "body": "Doświadczenie nie jest wymagane — wystarczy otwarte serce i miłość do ruchu. Zaczynamy od postawy i prostej pracy bioder, a następnie przechodzimy do wyrazistych kombinacji, dzięki czemu możesz tańczyć z pewnością siebie i radością."
       },
       "imageText": {
-        "heading": "O Mnie",
+        "heading": "O mnie",
         "body": "Z pasją uczę tańca brzucha od ponad 10 lat — w stylach orientalnym, tribal fusion i klasycznym egipskim. Wierzę, że taniec jest dla każdego — doświadczenie nie jest wymagane, wystarczy otwarte serce i miłość do ruchu."
       },
       "testimonials": {
-        "heading": "Co Mówią Uczestnicy",
+        "heading": "Co mówią uczestnicy",
         "items": [
           {
             "name": "Ayşe K.",
@@ -571,7 +571,7 @@
         ]
       },
       "faq": {
-        "heading": "Najczęściej Zadawane Pytania",
+        "heading": "Często zadawane pytania",
         "items": [
           {
             "q": "Czy potrzebuję wcześniejszego doświadczenia tanecznego?",
@@ -589,10 +589,10 @@
       },
       "cta": {
         "heading": "Czas zacząć tańczyć?",
-        "buttonText": "Dołącz Teraz"
+        "buttonText": "Dołącz teraz"
       },
       "stats": {
-        "heading": "Odnajdź Swój Rytm",
+        "heading": "Odnajdź swój rytm",
         "items": [
           {
             "value": "1k+",
@@ -603,7 +603,7 @@
             "label": "Lekcje choreografii"
           },
           {
-            "value": "4.9★",
+            "value": "4,9★",
             "label": "Średnia ocena"
           }
         ]
@@ -615,20 +615,20 @@
     },
     "poleDance": {
       "hero": {
-        "heading": "Uwolnij Swoją Siłę na Rurze",
+        "heading": "Uwolnij swoją siłę na rurze",
         "subheading": "Buduj pewność siebie, siłę i artyzm dzięki pole dance — niezależnie od tego, czy dopiero zaczynasz, czy opanowujesz zaawansowane triki.",
-        "ctaText": "Przeglądaj Programy"
+        "ctaText": "Przeglądaj programy"
       },
       "richText": {
-        "heading": "Każdy Tancerz Gdzieś Zaczyna",
+        "heading": "Każdy tancerz od czegoś zaczyna",
         "body": "Doświadczenie gimnastyczne nie jest wymagane — wystarczy odwaga, by spróbować czegoś nowego. Szczegółowe progresje budują twoją siłę krok po kroku, dzięki czemu nawet przerażające figury zaczynają wydawać się bezpieczne i w zasięgu ręki."
       },
       "imageText": {
-        "heading": "O Mnie",
+        "heading": "O mnie",
         "body": "Mam certyfikat pole dance, startuję w zawodach i od ponad 8 lat uczę. Moją misją jest uczynienie pole dance dostępnym dla każdego typu sylwetki i poziomu sprawności — doświadczenie gimnastyczne nie jest wymagane, wystarczy odwaga, by spróbować czegoś nowego."
       },
       "testimonials": {
-        "heading": "Co Mówią Uczestnicy",
+        "heading": "Co mówią uczestnicy",
         "items": [
           {
             "name": "Jessica R.",
@@ -645,10 +645,10 @@
         ]
       },
       "faq": {
-        "heading": "Często Zadawane Pytania",
+        "heading": "Często zadawane pytania",
         "items": [
           {
-            "q": "Czy muszę mieć siłę, aby zacząć?",
+            "q": "Czy potrzebna jest siła, aby zacząć?",
             "a": "Wcale nie! Kurs Pole Basics został stworzony z myślą o zupełnie początkujących. Zbudujesz siłę w miarę postępów w lekcjach. Każdy od czegoś zaczyna."
           },
           {
@@ -663,10 +663,10 @@
       },
       "cta": {
         "heading": "Czas opanować rurę?",
-        "buttonText": "Dołącz Teraz"
+        "buttonText": "Dołącz teraz"
       },
       "stats": {
-        "heading": "Zbuduj Prawdziwą Siłę",
+        "heading": "Zbuduj prawdziwą siłę",
         "items": [
           {
             "value": "800+",
@@ -677,7 +677,7 @@
             "label": "Poradniki trików"
           },
           {
-            "value": "4.9★",
+            "value": "4,9★",
             "label": "Średnia ocena"
           }
         ]
@@ -689,20 +689,20 @@
     },
     "makeup": {
       "hero": {
-        "heading": "Opanuj Sztukę Makijażu",
+        "heading": "Opanuj sztukę makijażu",
         "subheading": "Od codziennego glamu po edytorialowe arcydzieła, ucz się profesjonalnych technik makijażu w zaciszu własnego domu.",
-        "ctaText": "Przeglądaj Programy"
+        "ctaText": "Przeglądaj programy"
       },
       "richText": {
-        "heading": "Od Everyday Glam po Editorial",
+        "heading": "Od codziennego glamu po makijaż edytorialowy",
         "body": "Poznaj techniki, z których korzystają profesjonaliści — nieskazitelną bazę, płynne blendowanie i trwały wygląd. Przejrzyste instrukcje krok po kroku sprawiają, że nawet zaawansowane style edytorialowe są w twoim zasięgu, niezależnie od posiadanego zestawu."
       },
       "imageText": {
-        "heading": "O Mnie",
+        "heading": "O mnie",
         "body": "Od ponad 12 lat zajmuję się makijażem ślubnym, edytorialowym i modowym. Praca za kulisami tygodni mody i ze znanymi klientami dała mi doświadczenie, którym dziś z pasją dzielę się z osobami marzącymi o karierze w makijażu na całym świecie."
       },
       "testimonials": {
-        "heading": "Co Mówią Uczestnicy",
+        "heading": "Co mówią uczestnicy",
         "items": [
           {
             "name": "Olivia H.",
@@ -714,12 +714,12 @@
           },
           {
             "name": "Hannah L.",
-            "text": "Kurs edytorialowy przeszedł moje najśmielsze oczekiwania. Nigdy nie sądziłam, że będę w stanie stworzyć tak awangardowy wygląd, ale instrukcje krok po kroku sprawiły, że stało się to niezwykle przystępne."
+            "text": "Kurs edytorialowy przerósł moje najśmielsze oczekiwania. Nigdy nie sądziłam, że będę w stanie stworzyć tak awangardowy wygląd, ale instrukcje krok po kroku sprawiły, że stało się to niezwykle przystępne."
           }
         ]
       },
       "faq": {
-        "heading": "Często Zadawane Pytania",
+        "heading": "Często zadawane pytania",
         "items": [
           {
             "q": "Czy potrzebuję profesjonalnych kosmetyków do makijażu, aby zacząć?",
@@ -737,10 +737,10 @@
       },
       "cta": {
         "heading": "Czas na metamorfozę?",
-        "buttonText": "Dołącz Teraz"
+        "buttonText": "Dołącz teraz"
       },
       "stats": {
-        "heading": "Dołącz do Studia",
+        "heading": "Dołącz do studia",
         "items": [
           {
             "value": "5k+",
@@ -751,13 +751,13 @@
             "label": "Tutoriale"
           },
           {
-            "value": "4.9★",
+            "value": "4,9★",
             "label": "Średnia ocena"
           }
         ]
       },
       "banner": {
-        "text": "Nowy kurs mistrzowski makijażu ślubnego właśnie dodany — zarezerwuj swoje miejsce.",
+        "text": "Właśnie dodano nowy kurs mistrzowski makijażu ślubnego — zarezerwuj swoje miejsce.",
         "linkText": "Przeglądaj programy"
       }
     }
@@ -797,7 +797,7 @@
             "label": "Uczestnicy"
           },
           {
-            "value": "4.9",
+            "value": "4,9",
             "label": "Średnia ocena"
           },
           {
@@ -811,7 +811,7 @@
       },
       "cta": {
         "heading": "Dołącz do społeczności",
-        "buttonText": "Rozpocznij"
+        "buttonText": "Zacznij teraz"
       }
     },
     "homeMinimal": {
@@ -826,7 +826,7 @@
     },
     "aboutFounder": {
       "richText": {
-        "heading": "O mnie",
+        "heading": "O nas",
         "body": "Przedstaw siebie i swoją misję w kilku zdaniach."
       },
       "imageText": {
@@ -848,7 +848,7 @@
     },
     "pricingPlansFaq": {
       "pricingPlans": {
-        "heading": "Plany & Cennik",
+        "heading": "Plany i cennik",
         "subheading": "Wybierz plan dopasowany do twoich celów."
       },
       "faq": {
@@ -859,7 +859,7 @@
             "a": "Tak — twój plan pozostaje aktywny do końca okresu."
           },
           {
-            "q": "Czy oferujesz zwroty?",
+            "q": "Czy oferujesz zwrot pieniędzy?",
             "a": "Skontaktuj się w ciągu 14 dni, a to rozwiążemy."
           }
         ]

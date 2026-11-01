@@ -40,7 +40,7 @@
     },
     "plans": {
       "title": "Brak planów członkostwa",
-      "text": "Utwórz plan w sekcji Płatności, a pojawi się tutaj."
+      "text": "Utwórz plan w sekcji Rozliczenia, a pojawi się tutaj."
     },
     "sessions": {
       "title": "Brak nadchodzących sesji",
@@ -108,12 +108,12 @@
   "plan": {
     "subscribe": "Subskrybuj",
     "subscribed": "Subskrybujesz",
-    "items": "{count, plural, one {# pozycja} few {# pozycje} many {# pozycji} other {# pozycji}}",
-    "itemsIncluded": "{count, plural, one {# pozycja w cenie} few {# pozycje w cenie} many {# pozycji w cenie} other {# pozycji w cenie}}",
+    "items": "{count, plural, one {# element} few {# elementy} many {# elementów} other {# elementu}}",
+    "itemsIncluded": "{count, plural, one {# element w cenie} few {# elementy w cenie} many {# elementów w cenie} other {# elementu w cenie}}",
     "seeIncluded": "Zobacz, co zawiera",
     "whatsIncluded": "Co zawiera",
     "includes": "Zawiera",
-    "about": "Informacje",
+    "about": "O nas",
     "perMonth": "/mies.",
     "perYear": "/rok",
     "perYears": "{count, plural, one {/# rok} few {/# lata} many {/# lat} other {/# roku}}",
@@ -127,7 +127,7 @@
     "subscriptionFailed": "Nie udało się wykupić subskrypcji.",
     "bestValue": "Najlepsza oferta",
     "viewIncluded": "Zobacz zawarte treści",
-    "subscribedTo": "Subskrybujesz plan {plan}!",
+    "subscribedTo": "Zasubskrybowano plan {plan}!",
     "subscribeFor": "Subskrybuj — {price}"
   },
   "table": {
@@ -196,13 +196,13 @@
     "allCourses": "Wszystkie kursy i program",
     "fullCalendar": "Pełny kalendarz treningów",
     "emptyCoursesText": "Opublikuj kurs, a pojawi się tutaj uszeregowany według pasów.",
-    "emptyEventsTitle": "Brak zaplanowanych nadchodzących sesji",
+    "emptyEventsTitle": "Brak zaplanowanych sesji",
     "emptyEventsText": "Zaplanuj sesję treningową na żywo lub egzamin na stopień, a pojawi się w harmonogramie.",
     "tier": "Poziom {number}",
     "planItems": "{count, plural, one {# kurs i sesja} few {# kursy i sesje} many {# kursów i sesji} other {# kursu i sesji}}",
     "activeMembership": "Aktywne członkostwo",
     "duesPolicy": "Zasady składek i zakres świadczeń",
-    "stepGrade": "{grade} · Etap {number}",
+    "stepGrade": "{grade} · Krok {number}",
     "belts": {
       "white": {
         "rank": "6. Kyu (biały)",
@@ -262,7 +262,7 @@
     "orderOfSubscription": "Formularz subskrypcji",
     "subscriptionTerms": "Zobacz warunki subskrypcji",
     "emptyPlansTitle": "Brak planów subskrypcji",
-    "emptyPlansText": "Utwórz plan członkostwa w sekcji Płatności, a pojawi się tutaj automatycznie.",
+    "emptyPlansText": "Utwórz plan członkostwa w sekcji Rozliczenia, a pojawi się tutaj automatycznie.",
     "preface": "Przedmowa",
     "chapter": "Rozdział {number}",
     "chapterColon": "Rozdział {number}:",
@@ -283,7 +283,7 @@
     "emptyEventsText": "Zaplanuj sesję stacjonarną lub online, a pojawi się tutaj.",
     "seeFullCalendar": "Zobacz pełny kalendarz",
     "frequentlyAsked": "Najczęściej zadawane pytania",
-    "emptyPlansTitle": "Nie ma jeszcze karnetów ani planów",
+    "emptyPlansTitle": "Nie ma jeszcze przepustek ani planów",
     "emptyPlansText": "Utwórz plan członkostwa lub plan biletowy w zakładce Rozliczenia, a pojawi się tutaj.",
     "aboutMe": "O mnie",
     "activitiesIncluded": "{count, plural, one {# aktywność w cenie} few {# aktywności w cenie} many {# aktywności w cenie} other {# aktywności w cenie}}"
@@ -374,7 +374,7 @@
     "initiated": "Wtajemniczeni",
     "sacredPrivileges": "Święte przywileje",
     "emptyPlansTitle": "Nie ma jeszcze poziomów darów",
-    "emptyPlansText": "Utwórz plan w sekcji Płatności, a pojawi się tutaj jako święty poziom.",
+    "emptyPlansText": "Utwórz plan w sekcji Rozliczenia, a pojawi się tutaj jako święty poziom.",
     "originStory": "Opowieść o początkach",
     "explorePaths": "Odkryj wszystkie ścieżki",
     "fullGatheringCalendar": "Pełny kalendarz spotkań",
@@ -392,7 +392,7 @@
     "seeTheCalendar": "Zobacz kalendarz",
     "emptyEventsText": "Zaplanuj sesję na żywo, a pojawi się tutaj automatycznie.",
     "billed": "Rozliczenie",
-    "emptyPlansText": "Utwórz plan w sekcji Płatności, a pojawi się tutaj automatycznie.",
+    "emptyPlansText": "Utwórz plan w sekcji Rozliczenia, a pojawi się tutaj automatycznie.",
     "everyMonth": "Co miesiąc",
     "everyYear": "Co roku",
     "everyYears": "Co {count, plural, one {# rok} few {# lata} many {# lat} other {# roku}}",
@@ -401,19 +401,19 @@
   "trail": {
     "basecamp": "Baza",
     "join": "Dołącz",
-    "itemsIncluded": "{count, plural, one {pozycja w pakiecie} few {pozycje w pakiecie} many {pozycji w pakiecie} other {pozycji w pakiecie}}",
+    "itemsIncluded": "{count, plural, one {element w pakiecie} few {elementy w pakiecie} many {elementów w pakiecie} other {elementu w pakiecie}}",
     "allRoutes": "Wszystkie trasy",
     "allMeetups": "Wszystkie spotkania"
   },
   "studiofloor": {
-    "directEmail": "Bezpośredni E-mail",
-    "studioLocation": "Lokalizacja Studia",
-    "sessionHours": "Godziny Sesji",
+    "directEmail": "Bezpośredni e-mail",
+    "studioLocation": "Lokalizacja studia",
+    "sessionHours": "Godziny sesji",
     "emptyCoursesText": "Opublikuj kurs, a automatycznie pojawi się na tej liście.",
     "emptyEventsText": "Zaplanuj sesję na żywo w studiu lub warsztat, a pojawi się tutaj.",
     "momentsReel": "Rolka chwil",
     "seeIncludedSessions": "Zobacz sesje w pakiecie",
-    "emptyPlansText": "Utwórz karnet w sekcji Rozliczenia, a automatycznie pojawi się tutaj.",
+    "emptyPlansText": "Utwórz przepustkę w sekcji Rozliczenia, a automatycznie pojawi się tutaj.",
     "sessionsIncluded": "{count, plural, one {# kurs/sesja w pakiecie} few {# kursy/sesje w pakiecie} many {# kursów/sesji w pakiecie} other {# kursu/sesji w pakiecie}}",
     "viewFullTimetable": "Zobacz pełny harmonogram"
   },
@@ -443,14 +443,14 @@
     "classroom": "Sala lekcyjna"
   },
   "terminal": {
-    "emptyEventsTitle": "Brak zaplanowanych nadchodzących wydarzeń",
+    "emptyEventsTitle": "Brak zaplanowanych wydarzeń",
     "emptyPlansText": "Utwórz plan w sekcji Rozliczenia, a pojawi się tutaj automatycznie.",
     "open": "otwarte"
   },
   "catalog": {
     "paid": "Płatne",
     "myCourses": "Moje kursy",
-    "searchCourses": "Szukaj kursów...",
+    "searchCourses": "Szukaj kursów…",
     "noCourses": "Nie znaleziono kursów",
     "adjustSearch": "Spróbuj zmienić wyszukiwanie lub filtry.",
     "noneYet": "Nie ma jeszcze dostępnych kursów. Zajrzyj wkrótce!"
@@ -477,7 +477,7 @@
   "eventType": {
     "liveSession": "Sesja na żywo",
     "liveStream": "Transmisja na żywo",
-    "onsiteEvent": "Wydarzenie na miejscu",
+    "onsiteEvent": "Wydarzenie stacjonarne",
     "inPersonEvent": "Wydarzenie stacjonarne"
   },
   "eventKind": {
@@ -490,7 +490,7 @@
     "checkBack": "Zajrzyj później, aby zobaczyć nowe sesje i wydarzenia.",
     "more": "+{count} więcej",
     "noEvents": "Brak zaplanowanych wydarzeń",
-    "comingUpNext": "Najbliższe wydarzenia",
+    "comingUpNext": "Następne wydarzenia",
     "today": "Dzisiaj",
     "selectedDay": "Wybrany dzień",
     "loadFailed": "Nie udało się wczytać wydarzeń z tego zakresu.",
@@ -502,7 +502,7 @@
     "upcomingEvents": "Nadchodzące wydarzenia"
   },
   "events": {
-    "noneScheduled": "Brak zaplanowanych nadchodzących wydarzeń.",
+    "noneScheduled": "Brak zaplanowanych wydarzeń.",
     "scheduleFirst": "Zaplanuj swoją pierwszą sesję na żywo →"
   },
   "eventPage": {
@@ -518,7 +518,7 @@
     "canAttendAddress": "Możesz wziąć udział w tym wydarzeniu. Adres znajdziesz w szczegółach.",
     "joinNow": "Dołącz teraz",
     "haveAccess": "Masz dostęp do tego wydarzenia.",
-    "notStarted": "Wydarzenie jeszcze się nie rozpoczęło. Wróć, gdy będzie trwać, aby dołączyć!",
+    "notStarted": "Wydarzenie jeszcze się nie rozpoczęło. Wróć, gdy się rozpocznie, aby dołączyć!",
     "subscribeForAccess": "Subskrybuj, aby uzyskać dostęp",
     "getAccess": "Uzyskaj dostęp",
     "purchaseOrSubscribeLive": "Kup dostęp lub wykup subskrypcję, aby dołączyć do tego wydarzenia na żywo.",
@@ -529,7 +529,7 @@
   },
   "page": {
     "home": "Strona główna",
-    "about": "Informacje",
+    "about": "O nas",
     "courses": "Kursy",
     "pricing": "Cennik",
     "faq": "FAQ",
@@ -569,11 +569,11 @@
   "store": {
     "title": "Sklep",
     "text": "Przeglądaj kursy, pliki do pobrania, sesje na żywo i pakiety.",
-    "searchItems": "Szukaj pozycji...",
+    "searchItems": "Szukaj elementów…",
     "subscriptionPlans": "Plany subskrypcji",
-    "noItems": "Nie znaleziono pozycji",
+    "noItems": "Nie znaleziono elementów",
     "noItemsText": "Spróbuj zmienić wyszukiwanie lub filtr, aby znaleźć to, czego szukasz.",
-    "loadFailed": "Nie udało się wczytać pozycji sklepu",
+    "loadFailed": "Nie udało się wczytać elementów sklepu",
     "addedToCart": "„{title}” dodano do koszyka",
     "subscribed": "Subskrypcja aktywna! Masz teraz dostęp do treści planu.",
     "alreadySubscribed": "Już subskrybujesz ten plan",
@@ -601,7 +601,7 @@
     "pages": "Strony",
     "follow": "Obserwuj",
     "loginToContinue": "Zaloguj się, aby kontynuować",
-    "getStarted": "Rozpocznij"
+    "getStarted": "Zacznij teraz"
   },
   "blockEmpty": {
     "video": {
@@ -670,7 +670,7 @@
     "paySecurely": "Zapłać {amount} bezpiecznie przez Stripe.",
     "opensInDashboard": "Znajdziesz to w swoim panelu, gotowe do startu.",
     "opensInPlan": "Wszystko z planu {plan} będzie dostępne na twoim koncie.",
-    "cancelAnyTime": "Anuluj w sekcji Subskrypcje na swoim koncie."
+    "cancelAnyTime": "Zrezygnuj w sekcji Subskrypcje na swoim koncie."
   },
   "announcements": {
     "loadError": "Nie udało się wczytać ogłoszeń.",
@@ -679,14 +679,14 @@
   },
   "preview": {
     "comingSoon": "Już wkrótce",
-    "paused": "Ta strona robi sobie krótką przerwę. Wróć tu wkrótce.",
-    "launchingGated": "Ta strona wkrótce wystartuje. Wpisz hasło podglądu, żeby ją zobaczyć.",
-    "launching": "Ta strona wkrótce wystartuje. Zajrzyj tu niedługo.",
+    "paused": "Ta witryna robi sobie krótką przerwę. Wróć tu wkrótce.",
+    "launchingGated": "Ta witryna wkrótce wystartuje. Wpisz hasło podglądu, żeby ją zobaczyć.",
+    "launching": "Ta witryna wkrótce wystartuje. Zajrzyj tu niedługo.",
     "field": "Hasło podglądu",
     "incorrect": "Nieprawidłowe hasło. Spróbuj ponownie.",
     "checking": "Sprawdzanie…",
-    "enter": "Wejdź na stronę",
-    "ownerLogin": "Właściciel strony? Zaloguj się, aby zobaczyć podgląd"
+    "enter": "Wejdź na witrynę",
+    "ownerLogin": "Właściciel witryny? Zaloguj się, aby zobaczyć podgląd"
   },
   "headerCta": {
     "startCourse": "Rozpocznij kurs",
@@ -714,8 +714,8 @@
     "planOpensOnUntilDate": "Otwiera się {opens}, dostępne do {closes}",
     "planNowFor": "Dostępne od razu, przez {closes}",
     "planNowUntilDate": "Dostępne od razu, do {closes}",
-    "freeAfterThenUntil": "Za darmo: zaczyna się {opens} po dołączeniu, kończy się {closes} po dołączeniu",
-    "freeFromThenUntil": "Za darmo od {opens}, kończy się {closes} po dołączeniu",
+    "freeAfterThenUntil": "Bezpłatnie: zaczyna się {opens} po dołączeniu, kończy się {closes} po dołączeniu",
+    "freeFromThenUntil": "Bezpłatnie od {opens}, kończy się {closes} po dołączeniu",
     "freeFirst": "Bezpłatnie przez {closes} od dołączenia",
     "freeBetween": "Bezpłatnie {opens} – {closes}",
     "freeUntil": "Bezpłatnie do {closes}",
@@ -735,7 +735,7 @@
     "now": "teraz"
   },
   "setupSketch": {
-    "studioName": "Twoje Studio",
+    "studioName": "Twoje studio",
     "yourName": "Twoje imię",
     "welcome": "Witaj w {brand}",
     "welcomeFallback": "Witaj w swojej nowej witrynie",

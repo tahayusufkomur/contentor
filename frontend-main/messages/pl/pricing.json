@@ -2,11 +2,11 @@
   "title": "Proste, przejrzyste ceny",
   "subtitle": "Wypróbuj plan Starter za darmo przez 14 dni. Bez ukrytych opłat, a zrezygnować możesz w każdej chwili.",
   "popular": "Popularny",
-  "cta": "Rozpocznij",
-  "ctaProcessing": "Przetwarzanie...",
+  "cta": "Zacznij teraz",
+  "ctaProcessing": "Przetwarzanie…",
   "errors": {
     "priceNotAvailable": "Ceny w twojej walucie nie są jeszcze dostępne. Skontaktuj się z pomocą techniczną.",
-    "generic": "Coś poszło nie tak podczas przechodzenia do płatności. Spróbuj ponownie."
+    "generic": "Coś poszło nie tak przy otwieraniu strony płatności. Spróbuj ponownie."
   },
   "periods": {
     "monthly": "/miesiąc"
@@ -24,7 +24,7 @@
         "live": "Sesje na żywo",
         "branding": "Własny branding",
         "campaigns": "Kampanie e-mailowe (1000/mies.)",
-        "fee": "8% opłaty transakcyjnej",
+        "fee": "8% prowizji transakcyjnej",
         "domain": "Własna domena"
       },
       "included": [
@@ -50,7 +50,7 @@
         "live": "Sesje i transmisje na żywo",
         "domain": "Własna domena",
         "campaigns": "Kampanie e-mailowe (5000/mies.)",
-        "fee": "6% opłaty transakcyjnej",
+        "fee": "6% prowizji transakcyjnej",
         "support": "Priorytetowe wsparcie",
         "branding": "Własny branding"
       },
@@ -75,18 +75,18 @@
     "campaigns": "Kampanie e-mailowe",
     "branding": "Własny branding",
     "domain": "Własna domena",
-    "fee": "Opłata transakcyjna",
+    "fee": "Prowizja transakcyjna",
     "support": "Wsparcie"
   },
   "compare": {
-    "included": "{plan}: {feature} w pakiecie",
-    "notIncluded": "{plan}: {feature} poza pakietem",
+    "included": "{plan}: {feature} wliczone w plan",
+    "notIncluded": "{plan}: {feature} niedostępne w planie",
     "dynamic": {
       "studentsUnlimited": "Nieograniczona liczba uczestników",
-      "students": "Do {count, number} uczestników",
+      "students": "Limit uczestników: {count, number}",
       "storageUnlimited": "Nieograniczone miejsce na dane",
       "storage": "{count, number} GB miejsca na dane",
-      "fee": "{pct, number}% opłaty transakcyjnej",
+      "fee": "{pct, number}% prowizji transakcyjnej",
       "campaigns": "Kampanie e-mailowe",
       "campaignsLimit": "Kampanie e-mailowe ({count, number}/mies.)"
     }
@@ -99,11 +99,11 @@
         "a": "Tak. Napisz do nas, a zmienimy twój plan i proporcjonalnie przeliczymy płatność. Możesz zrezygnować w dowolnym momencie w Studiu twórcy."
       },
       "trial": {
-        "q": "Czy jest darmowy okres próbny?",
-        "a": "Tak. Plan Starter jest bezpłatny przez 14 dni. Kartę dodajesz podczas tworzenia swojej strony, a pierwsza płatność zostanie pobrana po zakończeniu okresu próbnego, chyba że wcześniej zrezygnujesz. W okresie próbnym działa wszystko, co oferuje Starter, z wyjątkiem sprzedaży, która zostanie odblokowana, gdy zacznie się twój plan."
+        "q": "Czy jest bezpłatny okres próbny?",
+        "a": "Tak. Plan Starter jest bezpłatny przez 14 dni. Kartę dodajesz podczas tworzenia swojej witryny, a pierwsza płatność zostanie pobrana po zakończeniu okresu próbnego, chyba że wcześniej zrezygnujesz. W okresie próbnym działa wszystko, co oferuje Starter, z wyjątkiem sprzedaży, która zostanie odblokowana, gdy zacznie się twój plan."
       },
       "payments": {
-        "q": "Jakie metody płatności akceptujecie?",
+        "q": "Jakie metody płatności są akceptowane?",
         "a": "Wszystkie popularne karty kredytowe i debetowe, obsługiwane przez Stripe. Płatności od twoich uczestników trafiają bezpośrednio na twoje własne konto Stripe — nigdy nie przechowujemy twoich pieniędzy."
       },
       "limits": {
@@ -123,12 +123,12 @@
   "trialCta": "Wypróbuj za darmo",
   "meta": {
     "title": "Cennik — Contentor",
-    "description": "Wypróbuj Starter za darmo przez 14 dni. Brak ukrytych opłat i możesz zrezygnować w dowolnym momencie."
+    "description": "Wypróbuj Starter za darmo przez 14 dni. Bez ukrytych opłat, a zrezygnować możesz w każdej chwili."
   },
   "labels": {
     "questions": "Pytania"
   },
   "checkout": {
-    "asideTitle": "Wszystko, czego uczysz, w jednym miejscu"
+    "asideTitle": "Wszystko, co oferujesz, w jednym miejscu"
   }
 }

@@ -253,6 +253,7 @@ SAME_IN_ANY_LANGUAGE = {
     "Email",
     "Type",
     "Order",
+    "Post",  # a community post is "post" in Polish
 }
 
 
@@ -280,7 +281,7 @@ def test_a_comment_panels_post_column_is_a_noun_not_the_publish_button():
     from apps.adminkit.sites import studio_site
 
     admin = studio_site.get_admin("community-comments")
-    for lang, noun in (("de", "Beitrag"), ("tr", "Gönderi"), ("pl", "Wpis")):
+    for lang, noun in (("de", "Beitrag"), ("tr", "Gönderi"), ("pl", "Post")):
         with translation.override(lang):
             assert str(admin.field_labels["post"]) == noun
 

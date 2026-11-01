@@ -53,17 +53,17 @@
     "loading": "Ładowanie płatności",
     "today": "Dzisiaj",
     "everyMonthAfter": "Potem co miesiąc",
-    "renews": "Odnawia się automatycznie. Anuluj w dowolnym momencie w Rozliczeniach.",
-    "trialStarts": "{days, plural, one {Nic do zapłaty. Twój # darmowy dzień zaczyna się teraz.} few {Nic do zapłaty. Twoje # darmowe dni zaczynają się teraz.} many {Nic do zapłaty. Twoje # darmowych dni zaczyna się teraz.} other {Nic do zapłaty. Twoje # darmowych dni zaczyna się teraz.}}",
+    "renews": "Odnawia się automatycznie. Zrezygnuj w dowolnym momencie w Rozliczeniach.",
+    "trialStarts": "{days, plural, one {Nic do zapłaty. Twój # bezpłatny dzień zaczyna się teraz.} few {Nic do zapłaty. Twoje # bezpłatne dni zaczynają się teraz.} many {Nic do zapłaty. Twoje # bezpłatnych dni zaczyna się teraz.} other {Nic do zapłaty. Twoje # bezpłatnych dni zaczyna się teraz.}}",
     "untilDate": "Do {date}",
-    "tryEverything": "Wypróbuj wszystko. Anuluj w Rozliczeniach, a nic nie zapłacisz.",
+    "tryEverything": "Wypróbuj wszystko. Zrezygnuj w Rozliczeniach, a nic nie zapłacisz.",
     "startsAt": "{name} zaczyna się od {price} miesięcznie.",
     "startsAtFallback": "{name} zaczyna się od swojej ceny miesięcznej.",
     "beginsAt": "{name} rozpoczyna się od {price} miesięcznie.",
     "beginsAtFallback": "{name} rozpoczyna się od swojej ceny miesięcznej."
   },
   "meta": {
-    "ogAlt": "Contentor — twórca nagrywający zajęcia jogi w domu, ustawiona kamera i oświetlenie",
+    "ogAlt": "Contentor — twórca nagrywający zajęcia jogi w domu, z ustawioną kamerą i oświetleniem",
     "postTitle": "{title} — Contentor"
   }
 }

@@ -24,13 +24,13 @@
     "registering": "Rejestracja <name>{domain}</name> — {price} / rok.",
     "continueToPayment": "Przejdź do płatności",
     "redirecting": "Przekierowywanie do bezpiecznej płatności…",
-    "checkoutFailed": "Nie udało się rozpocząć realizacji zakupu"
+    "checkoutFailed": "Nie udało się rozpocząć płatności"
   },
   "manage": {
     "live": "Aktywna",
     "yearlyPrice": "Cena roczna",
     "renews": "Odnawia się",
-    "confirmRemove": "Usunąć tę domenę? Twoja strona powróci do swojego adresu contentor.app.",
+    "confirmRemove": "Usunąć tę domenę? Twoja witryna wróci do swojego adresu contentor.app.",
     "cancel": "Anuluj",
     "removing": "Usuwanie…",
     "remove": "Usuń",
@@ -51,15 +51,15 @@
   "status": {
     "failed": "Konfiguracja nie powiodła się.",
     "failedAt": "Konfiguracja nie powiodła się na etapie: {step}.",
-    "retry": "Ponów próbę",
+    "retry": "Spróbuj ponownie",
     "retrying": "Ponawianie próby…",
     "steps": {
       "registering": "Rejestrowanie domeny",
       "dns_zone": "Tworzenie strefy DNS",
-      "dns_records": "Kierowanie DNS na twoją stronę",
+      "dns_records": "Kierowanie DNS na twoją witrynę",
       "email_auth": "Konfigurowanie poczty e-mail",
       "ssl": "Wystawianie certyfikatu SSL",
-      "live": "Uruchamianie"
+      "live": "Publikowanie"
     }
   }
 }

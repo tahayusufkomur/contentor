@@ -67,8 +67,8 @@ describe("owner chrome on a site+owner page", () => {
       page("pl", "en", createElement(Creator, null, line(5))),
     );
     // few / many, the forms English rules cannot pick
-    expect(two).toContain("Pozostały 2 tury projektowania AI");
-    expect(five).toContain("Pozostało 5 tur projektowania AI");
+    expect(two).toContain("Pozostały 2 próby projektowania AI");
+    expect(five).toContain("Pozostało 5 prób projektowania AI");
     expect(two).toContain("styczeń");
     expect(two).toContain('lang="pl"');
   });

@@ -2,8 +2,8 @@
   "hero": {
     "pill": "<b>Twórcy-założyciele</b>: konfigurujemy wszystko z tobą, jeden na jeden",
     "title": "To ty znasz się na rzeczy. <accent>My jesteśmy całym twoim zespołem.</accent>",
-    "lead": "Contentor działa jak zespół, który stoi za tobą. Buduje twoją stronę, przyciąga uczestników, sprawia, że wracają, i dba o to, żebyś dostawał zapłatę.",
-    "cta": "Rozpocznij darmowy okres próbny",
+    "lead": "Contentor działa jak zespół, który stoi za tobą. Buduje twoją witrynę, przyciąga uczestników, sprawia, że wracają, i dba o to, żebyś dostawał zapłatę.",
+    "cta": "Rozpocznij bezpłatny okres próbny",
     "secondary": "Poznaj swój zespół",
     "trust": {
       "trial": "14 dni za darmo",
@@ -15,9 +15,9 @@
     "onIt": "w trakcie",
     "done": "gotowe",
     "roles": {
-      "designer": "Buduje twoją stronę, wygląd i logo",
+      "designer": "Buduje twoją witrynę, wygląd i logo",
       "marketer": "Pisze artykuły, wysyła kampanie",
-      "producer": "Przygotowuje twoje kursy, prowadzi sesje na żywo",
+      "producer": "Przygotowuje szkice kursów, prowadzi sesje na żywo",
       "community": "Przypomina uczestnikom przez powiadomienia push i e-mail",
       "assistant": "Odpowiada uczestnikom dniem i nocą",
       "cashier": "Proponuje ceny, wypłaca ci pieniądze przez Stripe"
@@ -26,8 +26,8 @@
   "for": {
     "title": "Stworzone dla twórców.",
     "lead": "Joga, trening siłowy, muzyka, języki, gotowanie i nie tylko. Każda dziedzina dostaje wygląd stworzony specjalnie dla niej, a ty nadajesz mu własny charakter.",
-    "galleryLabel": "Specjalizacje coachingowe i ich wygląd",
-    "renderAlt": "Podgląd strony twórcy na telefonie, wygląd {look}",
+    "galleryLabel": "Specjalizacje i ich wygląd",
+    "renderAlt": "Podgląd witryny twórcy na telefonie, wygląd {look}",
     "niches": {
       "journal": "Twórcy treści o jodze",
       "kinetic": "Twórcy treningów siłowych",
@@ -51,22 +51,22 @@
     "roles": {
       "designer": {
         "name": "Projektant",
-        "title": "Strona stworzona dla twojej dziedziny w jedno popołudnie.",
+        "title": "Witryna stworzona dla twojej dziedziny w jedno popołudnie.",
         "text": "Odpowiedz na kilka prostych pytań. Twoja strona główna, kursy, harmonogram, wygląd i logo tworzą się same, a wszystko możesz zmienić, po prostu o to prosząc.",
         "tools": "Wywiad konfiguracyjny · Wygląd dla twojej dziedziny · Studio logo · Twoje własne zdjęcia",
-        "sceneLabel": "Twórczyni odpowiada na pytania konfiguracyjne, wybiera wygląd, a jej strona tworzy się sama"
+        "sceneLabel": "Twórczyni odpowiada na pytania konfiguracyjne, wybiera wygląd, a jej witryna tworzy się sama"
       },
       "marketer": {
         "name": "Specjalista ds. marketingu",
         "title": "Nowi uczestnicy znajdują cię, gdy ty tworzysz.",
         "text": "Artykuły odpowiadające na to, czego twoi uczestnicy szukają w Google i w ChatGPT, oraz kampanie, które piszesz raz, a wysyłają się same.",
         "tools": "Artykuły na autopilocie · Strony gotowe na wyszukiwarki · Kampanie e-mailowe · Twoja własna domena",
-        "sceneLabel": "Uczestnik pyta Google, a potem ChatGPT o jogę online; oba wskazują stronę Mary"
+        "sceneLabel": "Uczestnik pyta Google, a potem ChatGPT o jogę online; oba wskazują witrynę Mary"
       },
       "producer": {
         "name": "Specjalista ds. tworzenia treści",
         "title": "Od jednego zdania do kursu, a potem na żywo.",
-        "text": "Opisz kurs, a jego konspekt powstanie sam, lekcja po lekcji. Potem nadawaj na żywo z własnej strony: uczestnicy dołączają z laptopa, tabletu lub telefonu.",
+        "text": "Opisz kurs, a jego konspekt powstanie sam, lekcja po lekcji. Potem nadawaj na żywo z własnej witryny: uczestnicy dołączają z laptopa, tabletu lub telefonu.",
         "tools": "Szkice kursów · Sesje na żywo, grupowe lub indywidualne · Wydarzenia stacjonarne · Twój kalendarz",
         "sceneLabel": "Lena, Hannah i Priya śledzą sesję na żywo Mary na laptopie, tablecie i telefonie",
         "live": "Mara nadaje na żywo",
@@ -97,16 +97,16 @@
       },
       "assistant": {
         "name": "Asystent",
-        "title": "Twoja strona odpowiada uczestnikom, gdy śpisz.",
-        "text": "Asystent na twojej stronie odpowiada na pytania i kieruje uczestników do właściwego kursu. W twoim studiu przekazuje każdą prośbę właściwemu specjaliście.",
-        "tools": "Asystent strony · Pomoc w twoim studiu · Twoja recepcja",
+        "title": "Twoja witryna odpowiada uczestnikom, gdy śpisz.",
+        "text": "Asystent na twojej witrynie odpowiada na pytania i kieruje uczestników do właściwego kursu. W twoim studiu przekazuje każdą prośbę właściwemu specjaliście.",
+        "tools": "Asystent witryny · Pomoc w twoim studiu · Twoja recepcja",
         "sceneLabel": "W nocy uczestnik prosi asystenta Mary o pomoc, kupuje zaproponowany kurs, a płatność dociera na wyciszony telefon Mary"
       },
       "cashier": {
         "name": "Strateg finansowy",
-        "title": "Ceny, które sprzedają, a pieniądze prosto do ciebie.",
+        "title": "Ceny, które sprzedają, i pieniądze prosto do ciebie.",
         "text": "Analizuje twoją sprzedaż, by zaproponować ceny, a płatności trafiają prosto na twoje konto Stripe, na twoje nazwisko. Nigdy nie przetrzymujemy twoich pieniędzy.",
-        "tools": "Porady cenowe · Członkostwa · Wypłaty Stripe · Twoje nazwisko na rachunkach",
+        "tools": "Porady cenowe · Członkostwa · Wypłaty Stripe · Twoje nazwisko na potwierdzeniach płatności",
         "sceneLabel": "Płatności od uczestników Mary wpływają na jej konto Stripe jedna po drugiej",
         "scene": {
           "today": "Dzisiaj",
@@ -134,7 +134,7 @@
     "keep": "Co miesiąc zostaje ci",
     "yearly": "{amount} rocznie",
     "gross": "Twoi uczestnicy płacą",
-    "fee": "Nasza opłata ({pct}%)",
+    "fee": "Nasza prowizja ({pct}%)",
     "planCost": "Twój plan",
     "note": "Bez opłaty Stripe za płatność kartą. To szacunek, nie obietnica.",
     "fallback": "Zobacz plany i ich opłaty",
@@ -144,7 +144,7 @@
   "founder": {
     "eyebrow": "Osoba stojąca za twoim zespołem",
     "title": "Osobiście pomogę ci wystartować.",
-    "text": "Jestem Görkem. Uczę jogi twarzy w Berlinie i prowadzę własne studio online z zajęciami na żywo, programami i członkami, więc wiem, gdzie narzędzia przeszkadzają. Dołącz jako twórca-założyciel, a dostaniesz mnie: razem z tobą, indywidualnie, skonfiguruję twoją stronę, kursy i płatności, a gdy utkniesz, możesz do mnie napisać w każdej chwili.",
+    "text": "Jestem Görkem. Uczę jogi twarzy w Berlinie i prowadzę własne studio online z zajęciami na żywo, programami i członkami, więc wiem, gdzie narzędzia przeszkadzają. Dołącz jako twórca-założyciel, a dostaniesz mnie: razem z tobą, indywidualnie, skonfiguruję twoją witrynę, kursy i płatności, a gdy utkniesz, możesz do mnie napisać w każdej chwili.",
     "signature": "Görkem Hancı, założyciel Contentor",
     "offer": {
       "title": "Twórcy-założyciele",
@@ -152,19 +152,19 @@
       "perks": {
         "concierge": {
           "title": "Konfiguracja razem z tobą, indywidualnie",
-          "text": "Rozmowa, podczas której razem budujemy twoją stronę, kursy i płatności. Ty przynosisz treści."
+          "text": "Rozmowa, podczas której razem budujemy twoją witrynę, kursy i płatności. Ty przynosisz treści."
         },
         "discount": {
-          "title": "50% zniżki przez 12 miesięcy",
+          "title": "50% rabatu przez 12 miesięcy",
           "text": "Ceny dla założycieli w planie Starter lub Pro przez cały pierwszy rok."
         },
         "migration": {
           "title": "Przeprowadzka z naszą pomocą",
-          "text": "Przechodzisz z innej platformy? Pomożemy ci przenieść kursy i uczestników, za darmo."
+          "text": "Przechodzisz z innej platformy? Pomożemy ci przenieść kursy i uczestników, bezpłatnie."
         },
         "featured": {
           "title": "Wyróżnienie na tej stronie",
-          "text": "Twoja strona pokazana tutaj jako strona twórcy-założyciela, na oczach każdego odwiedzającego."
+          "text": "Twoja witryna pokazana tutaj jako witryna twórcy-założyciela, na oczach każdego odwiedzającego."
         }
       },
       "cta": "Zajmij miejsce założyciela",
@@ -174,7 +174,7 @@
   "start": {
     "pricing": {
       "title": "Wypróbuj plan Starter za darmo przez 14 dni.",
-      "text": "Zbuduj swoją stronę, zaproś uczestników i prowadź sesje na żywo, zanim cokolwiek zapłacisz. Sprzedaż ruszy, gdy zacznie się twój plan. Zrezygnuj w dowolnym momencie przed pierwszym obciążeniem.",
+      "text": "Zbuduj swoją witrynę, zaproś uczestników i prowadź sesje na żywo, zanim cokolwiek zapłacisz. Sprzedaż ruszy, gdy zacznie się twój plan. Zrezygnuj w dowolnym momencie przed pierwszym obciążeniem.",
       "cta": "Porównaj wszystkie plany"
     },
     "faq": {
@@ -182,7 +182,7 @@
       "items": {
         "trial": {
           "q": "Jak działa bezpłatny okres próbny?",
-          "a": "Plan Starter jest bezpłatny przez 14 dni. Kartę dodajesz podczas tworzenia strony, a pierwsze obciążenie nastąpi po zakończeniu okresu próbnego, chyba że wcześniej zrezygnujesz jednym kliknięciem w Studiu twórcy. W planie Starter działa wszystko oprócz sprzedaży: płatne kursy otwierają się, gdy zacznie się twój plan, możesz też uruchomić go wcześniej, aby od razu sprzedawać."
+          "a": "Plan Starter jest bezpłatny przez 14 dni. Kartę dodajesz podczas tworzenia witryny, a pierwsze obciążenie nastąpi po zakończeniu okresu próbnego, chyba że wcześniej zrezygnujesz jednym kliknięciem w Studiu twórcy. W planie Starter działa wszystko oprócz sprzedaży: płatne kursy otwierają się, gdy zacznie się twój plan, możesz też rozpocząć go wcześniej, aby od razu sprzedawać."
         },
         "technical": {
           "q": "Czy potrzebuję umiejętności technicznych?",
@@ -190,7 +190,7 @@
         },
         "payments": {
           "q": "Jak działają płatności?",
-          "a": "Sprzedaż rusza wraz z twoim planem. Integrujemy się bezpośrednio ze Stripe: płatności trafiają prosto na twoje własne konto Stripe, pomniejszone o niewielką opłatę transakcyjną (8% w planie Starter, 6% w planie Pro), więc nigdy nie przechowujemy twoich pieniędzy. Możesz sprzedawać kursy z jednorazową płatnością lub subskrypcje cykliczne."
+          "a": "Sprzedaż rusza wraz z twoim planem. Integrujemy się bezpośrednio ze Stripe: płatności trafiają prosto na twoje własne konto Stripe, pomniejszone o niewielką prowizję transakcyjną (8% w planie Starter, 6% w planie Pro), więc nigdy nie przechowujemy twoich pieniędzy. Możesz sprzedawać kursy z jednorazową płatnością lub subskrypcje cykliczne."
         },
         "customDomain": {
           "q": "Czy mogę używać własnej domeny?",
@@ -208,8 +208,8 @@
     },
     "cta": {
       "title": "Twój zespół jest gotowy, kiedy tylko zechcesz.",
-      "text": "Twoja strona, twoi uczestnicy i twoje płatności pod opieką od pierwszego dnia.",
-      "button": "Rozpocznij darmowy okres próbny",
+      "text": "Twoja witryna, twoi uczestnicy i twoje płatności pod opieką od pierwszego dnia.",
+      "button": "Rozpocznij bezpłatny okres próbny",
       "note": "Bezpłatnie przez 14 dni. Możesz zrezygnować w każdej chwili."
     }
   },
@@ -234,8 +234,8 @@
     "humanModeNotice": "Rozmawiasz z: {name}"
   },
   "meta": {
-    "title": "Contentor — Ty znasz się na rzeczy. Jesteśmy twoim całym zespołem.",
-    "description": "Contentor działa jak stojący za tobą zespół: buduje twoją stronę, przyciąga uczestników, sprawia, że wracają, i dba o to, byś zarabiał. Wypróbuj go za darmo przez 14 dni."
+    "title": "Contentor — To ty znasz się na rzeczy. My jesteśmy całym twoim zespołem.",
+    "description": "Contentor działa jak stojący za tobą zespół: buduje twoją witrynę, przyciąga uczestników, sprawia, że wracają, i dba o to, byś zarabiał. Wypróbuj go za darmo przez 14 dni."
   },
   "blogMeta": {
     "title": "Blog — Contentor",
@@ -249,14 +249,14 @@
     "play": "Odtwórz animację",
     "pause": "Wstrzymaj animację",
     "found": {
-      "askedGoogle": "Zadane w Google",
-      "query": "why are my hips so tight after sitting",
+      "askedGoogle": "Zapytano w Google",
+      "query": "dlaczego mam sztywne biodra po siedzeniu",
       "resultUrl": "{site} › artykuły",
       "resultTitle": "Dlaczego po całym dniu przy biurku czujesz napięcie w biodrach",
-      "resultSnippet": "Siedzenie skraca przód bioder. Oto co to oznacza i dwuminutowe rozwiązanie.",
-      "askedChatGpt": "Zapytano na ChatGPT",
+      "resultSnippet": "Siedzenie skraca przód bioder. Oto, co to oznacza, oraz dwuminutowe rozwiązanie.",
+      "askedChatGpt": "Zapytano w ChatGPT",
       "question": "Gdzie znajdę jogę online dla zesztywniałych pracowników biurowych?",
-      "answer": "Wypróbuj {coach}. Prowadzi spokojne zajęcia vinyasy i yin dla osób, które cały dzień siedzą przy biurku, z zajęciami na żywo i łagodnym kursem na spięte plecy.",
+      "answer": "Sprawdź: {coach}. Prowadzi spokojne zajęcia vinyasy i yin dla osób, które cały dzień siedzą przy biurku, z zajęciami na żywo i łagodnym kursem na spięte plecy.",
       "newStudent": "Nowy uczestnik",
       "joined": "{student} dołącza do platformy {coach}"
     },
@@ -265,8 +265,8 @@
       "asleep": "{coach} śpi",
       "askAssistant": "Zapytaj asystenta {coach}",
       "question": "Boli mnie dół pleców po długich dniach przy biurku. Od czego zacząć?",
-      "reply": "Zacznij od A Kinder Back: krótkie, łagodne sesje stworzone na dni przy biurku. Pierwszą lekcję możesz zrobić dziś wieczorem.",
-      "course": "A Kinder Back",
+      "reply": "Zacznij od kursu „Przyjazne plecy”: krótkie, łagodne sesje stworzone na dni przy biurku. Pierwszą lekcję możesz zrobić dziś wieczorem.",
+      "course": "Przyjazne plecy",
       "courseMeta": "Kurs · <num>{price}</num>",
       "paid": "Opłacono",
       "buyNow": "Kup teraz",
