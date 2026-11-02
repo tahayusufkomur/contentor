@@ -247,13 +247,24 @@ def _purge_rate_limit_keys():
     test (or, under pytest-xdist, another worker) that happens to ask the
     same first-turn question or reuses a session id.
 
+    ``*about-analyze*`` is the bio read's 24-hour cache (apps.core.onboarding.about_check):
+    without purging, a re-run within a day gets the last run's reading and never asks the AI.
+
     ``*tenant:*:config`` is the admin config view's cached TenantConfig: rows are
     recreated per test, so a cached instance from an earlier test updates a pk
     that no longer exists and the PATCH silently saves nothing.
     """
     try:
         redis = get_redis_connection("default")
-        for pattern in ("ratelimit:*", "*throttle*", "*logo-ai*", "*ai-answer*", "*ai-sess*", "*tenant:*:config"):
+        for pattern in (
+            "ratelimit:*",
+            "*throttle*",
+            "*logo-ai*",
+            "*ai-answer*",
+            "*ai-sess*",
+            "*about-analyze*",
+            "*tenant:*:config",
+        ):
             for key in redis.keys(pattern):
                 redis.delete(key)
     except Exception:  # noqa: S110
