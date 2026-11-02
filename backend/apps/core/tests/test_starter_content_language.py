@@ -241,7 +241,8 @@ def test_a_membership_of_her_own_keeps_her_name_and_gets_a_translated_blurb(tr_s
     plan = _sync(tenant_ctx, "Face yoga club", ["course"])
     assert plan.name == "Face yoga club"
     blurb = translated("One monthly price for %(name)s.") % {"name": "face yoga club"}
-    assert plan.description == f"{blurb} {translated('Cancel any time.')}"
+    # A sentence opens with a capital, whichever word the language puts first ("Face yoga club için …").
+    assert plan.description == f"{blurb[:1].upper()}{blurb[1:]} {translated('Cancel any time.')}"
 
 
 def test_the_fallback_titles_and_button_label_follow_the_site_language():

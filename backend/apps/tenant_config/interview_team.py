@@ -54,21 +54,23 @@ def handoff(tenant, answers: dict, flow: dict, *, sells: bool = False) -> list[d
     if pages:
         names = {"names": brief.list_phrase(pages)}
         if look:
-            designer = (
+            designer = brief.sentence(
                 ngettext(
                     "Built your %(names)s page and your look.", "Built your %(names)s pages and your look.", len(pages)
                 )
                 % names
             )
         else:
-            designer = ngettext("Built your %(names)s page.", "Built your %(names)s pages.", len(pages)) % names
+            designer = brief.sentence(
+                ngettext("Built your %(names)s page.", "Built your %(names)s pages.", len(pages)) % names
+            )
     else:
         designer = _("Set your look.") if look else _("Looks after your site.")
 
     lines = {
         "designer": (designer, _("Ask me to change any page, any time.")),
         "content": (
-            _("Drafted %(made)s.") % {"made": brief.list_phrase(made)}
+            brief.sentence(_("Drafted %(made)s.") % {"made": brief.list_phrase(made)})
             if made
             else _("Ready when you want to make your first course or session."),
             _("Next: record the first lesson of %(course)s.") % {"course": course}
@@ -95,7 +97,7 @@ def handoff(tenant, answers: dict, flow: dict, *, sells: bool = False) -> list[d
             _("Messages from students land in your inbox."),
         ),
         "finance": (
-            _("Set up %(plans)s.") % {"plans": brief.list_phrase(plans)}
+            brief.sentence(_("Set up %(plans)s.") % {"plans": brief.list_phrase(plans)})
             if plans
             else _("Set your first prices.")
             if sells

@@ -776,6 +776,19 @@ def test_the_focus_is_stored_as_equal_or_a_main_one_with_the_others_secondary():
     assert brief.parse_focus("Mostly pottery", both) is None
 
 
+def test_a_discipline_whose_name_holds_another_one_can_lead():
+    # "Mostly face yoga" also holds "yoga": the tile still means face yoga (it used to ask again on every tap).
+    answers = _offers("Face yoga, Yoga")
+    options, _icons, _hints = brief.options_for(brief.FIELD_BY_ID["discipline_focus"], answers)
+    assert options == ("They're equal", "Mostly face yoga", "Mostly yoga")
+    assert _offers("Face yoga, Yoga", "Mostly face yoga")["discipline_focus"] == {
+        "mode": "primary",
+        "primary": "Face yoga",
+        "secondary": ["Yoga"],
+    }
+    assert _offers("Face yoga, Yoga", "Mostly yoga")["discipline_focus"]["primary"] == "Yoga"
+
+
 def test_the_main_focus_sets_the_niche_and_the_subject_the_site_is_built_on():
     assert _offers("Yoga, Nutrition")["niche"] == "yoga"  # unanswered: the first niche in the table
     nutrition = _offers("Yoga, Nutrition", "Mostly nutrition")

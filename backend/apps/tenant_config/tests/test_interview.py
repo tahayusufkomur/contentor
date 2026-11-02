@@ -1,6 +1,7 @@
 """The /setup interview turn: extraction, the code safety net, fallback,
 spoken-text correction, edit requests, and the read model."""
 
+import contextlib
 import json
 from decimal import Decimal
 from types import SimpleNamespace
@@ -959,7 +960,28 @@ def test_an_address_pick_skips_the_model_and_asks_the_next_question(client, tena
 # ── the bio and the site's name, the interview's first two screens ──────────
 
 IMPORT_URL = "/api/v1/admin/setup-flow/import/"
+STATUS_URL = IMPORT_URL + "status/"
 BIO = "Mira Voss. I teach Pottery to desk workers. Trained with the Ceramics Guild, 500 hours, in 2016."
+BIO_ACK = (
+    "Thanks. From your bio I noted what you offer and who you work with."
+    " I ticked them in the questions ahead for you to check."
+)
+
+
+@pytest.fixture()
+def read_inline(django_capture_on_commit_callbacks):
+    """The bio's background read, run as the worker would once the POST commits."""
+    from apps.core import tasks
+
+    @contextlib.contextmanager
+    def reading():
+        with (
+            mock.patch("apps.core.tasks.read_bio.delay", side_effect=tasks.read_bio) as queued,
+            django_capture_on_commit_callbacks(execute=True),
+        ):
+            yield queued
+
+    return reading
 
 
 def _bio_reply():
@@ -992,31 +1014,59 @@ def test_a_new_site_opens_on_its_bio_then_its_name():
     assert not {"bio", "site_name"} & {f.id for f in brief.missing(dict(PHOTOS))}
 
 
-def test_a_shared_bio_ticks_the_questions_ahead_and_moves_on(client, tenant_ctx, quiet):
+def test_a_shared_bio_ticks_the_questions_ahead_and_moves_on(client, tenant_ctx, quiet, read_inline):
     _set_answers(tenant_ctx, dict(UNNAMED))
     quiet.reply = _bio_reply()
-    body = client.post(IMPORT_URL, {"file": _bio_file(BIO + " (file)")}, format="multipart").json()
+    with read_inline():
+        posted = client.post(IMPORT_URL, {"file": _bio_file(BIO + " (file)")}, format="multipart")
+    assert posted.status_code == 202
+    body = client.get(STATUS_URL).json()
     state = Tenant.objects.get(pk=tenant_ctx.pk).wizard_state
     assert state["answers"]["bio"] == "shared"
-    assert body["guide"]["field"] == "site_name"
+    assert body["guide"]["field"] == "site_name" and body["state"]["interview"]["guide"]["field"] == "site_name"
     # Ticked for her to check, never settled for her.
     assert state["about_prefills"]["teaches"] == "Pottery" and "teaches" not in state["answers"]
-    assert body["guide"]["ack"] == (
-        "Thanks. From your bio I noted what you offer and who you work with."
-        " I ticked them in the questions ahead for you to check."
-    )
-    assert body["coach_text"] == interview.BIO_TURN_TEXT  # the transcript never holds the bio
+    assert body["guide"]["ack"] == BIO_ACK
+    turns = TenantConfig.objects.first().setup_flow["interview"]["turns"]
+    assert interview.BIO_TURN_TEXT in [t.get("text") for t in turns]  # the transcript never holds the bio
     assert "contentor:interview" not in [c["label"] for c in quiet.calls]  # nothing waits on an AI turn
+    # No request waits on the read: it gets the AI provider's own budget (a minute or two on a careful model).
+    assert [c["timeout_seconds"] for c in quiet.calls if c["label"] == "contentor:about-analyze"] == [None]
 
 
-def test_a_bio_with_nothing_to_read_changes_nothing(client, tenant_ctx, quiet):
+def test_a_bio_is_read_in_the_language_its_screen_was_in(client, tenant_ctx, quiet, read_inline):
+    _set_answers(tenant_ctx, dict(UNNAMED))
+    TenantConfig.objects.update(default_locale="tr")
+    quiet.reply = _bio_reply()
+    with read_inline() as queued:
+        client.post(IMPORT_URL, {"text": BIO}, format="json")
+    assert queued.call_args.args[2] == "tr"
+    ack = client.get(STATUS_URL).json()["guide"]["ack"]
+    assert ack and ack != BIO_ACK
+
+
+def test_a_bio_with_nothing_to_read_changes_nothing(client, tenant_ctx, quiet, read_inline):
     from apps.core.onboarding.about_check import AboutAnalysis
 
     _set_answers(tenant_ctx, dict(UNNAMED))
     quiet.reply = AboutAnalysis()
-    response = client.post(IMPORT_URL, {"text": "Hello there, nothing much."}, format="json")
+    with read_inline():
+        client.post(IMPORT_URL, {"text": "Hello there, nothing much."}, format="json")
+    response = client.get(STATUS_URL)
     assert response.status_code == 400 and response.json()["detail"] == interview.BIO_UNREAD
     assert _answers(tenant_ctx) == UNNAMED
+
+
+def test_the_bio_screen_waits_while_its_read_runs(client, tenant_ctx, quiet, django_capture_on_commit_callbacks):
+    _set_answers(tenant_ctx, dict(UNNAMED))
+    with mock.patch("apps.core.tasks.read_bio.delay") as queued, django_capture_on_commit_callbacks(execute=True):
+        assert client.post(IMPORT_URL, {"text": BIO}, format="json").status_code == 202
+    queued.assert_called_once()
+    assert client.get(STATUS_URL).status_code == 202
+    # A read its worker never finished (a deploy restarted it) ends like one that read nothing.
+    state = Tenant.objects.get(pk=tenant_ctx.pk).wizard_state
+    Tenant.objects.filter(pk=tenant_ctx.pk).update(wizard_state={**state, "bio_read": {"status": "reading", "at": 0}})
+    assert client.get(STATUS_URL).json()["detail"] == interview.BIO_UNREAD
 
 
 def test_the_bio_can_be_skipped(client, tenant_ctx, quiet):

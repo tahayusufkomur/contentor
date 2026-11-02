@@ -106,7 +106,7 @@ export interface SetupFlowApi {
   turn: (body: TurnRequest) => Promise<TurnResponse>;
   /** The bio screen's answer: a bio, CV or old About page, read once; what it
    * says is ticked in the questions ahead. */
-  importDoc: (doc: ShareDoc) => Promise<TurnResponse>;
+  importDoc: (doc: ShareDoc) => Promise<Pick<TurnResponse, "guide" | "state">>;
   logos: (page: number) => Promise<LookCards>;
   cover: (kind: ReviewKind, asset: string) => Promise<ReviewCard>;
   trial: (kind: ReviewKind, on: boolean) => Promise<ReviewCard>;
@@ -115,6 +115,7 @@ export interface SetupFlowApi {
 }
 
 const BASE = "/api/v1/admin/setup-flow";
+const BIO_POLL_MS = 2000;
 const post = (body: unknown) => ({
   method: "POST",
   body: JSON.stringify(body),
@@ -128,14 +129,19 @@ export const setupFlowApi: SetupFlowApi = {
   draft: (kind, prompt) =>
     clientFetch<DraftResult>(`${BASE}/draft/`, post({ kind, prompt })),
   turn: (body) => clientFetch<TurnResponse>(`${BASE}/turn/`, post(body)),
-  importDoc: ({ file, text }) => {
+  importDoc: async ({ file, text }) => {
     const form = new FormData();
     if (file) form.append("file", file);
     else form.append("text", text ?? "");
-    return clientFetch<TurnResponse>(`${BASE}/import/`, {
-      method: "POST",
-      body: form,
-    });
+    await clientFetch(`${BASE}/import/`, { method: "POST", body: form });
+    // Read in the background: a minute or two on a careful model.
+    for (;;) {
+      await new Promise((done) => setTimeout(done, BIO_POLL_MS));
+      const res = await clientFetch<
+        Pick<TurnResponse, "guide" | "state"> | { reading: true }
+      >(`${BASE}/import/status/`);
+      if (!("reading" in res)) return res;
+    }
   },
   logos: (page) => clientFetch<LookCards>(`${BASE}/logos/?page=${page}`),
   cover: (kind, asset) =>

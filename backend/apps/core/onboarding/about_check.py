@@ -164,9 +164,11 @@ def _described(result: dict) -> dict:
     return {**result, "facts": facts}
 
 
-def analyze(text: str) -> dict:
+def analyze(text: str, background: bool = False) -> dict:
     """{"facts": [{"field", "label", "value", "items", "answers"}], "summary": str}
-    for ``text``; empty on failure or when AI is disabled."""
+    for ``text``; empty on failure or when AI is disabled. In the
+    ``background`` no request waits on it, so it gets the AI provider's own
+    budget: a minute or two on a high-effort model."""
     from apps.core import ai as core_ai
     from apps.core import languages
 
@@ -194,7 +196,7 @@ def analyze(text: str) -> dict:
             model=settings.NAME_CHECK_MODEL,
             max_tokens=1200,
             label="contentor:about-analyze",
-            timeout_seconds=TIMEOUT_SECONDS,
+            timeout_seconds=None if background else TIMEOUT_SECONDS,
             effort="low",
             language=languages.creator_language(),
         )

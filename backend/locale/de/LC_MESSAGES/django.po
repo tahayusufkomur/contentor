@@ -8576,7 +8576,7 @@ msgstr "Jedes erhält gleich viel Platz auf deiner Website"
 #: apps/tenant_config/interview_brief.py
 #, python-format
 msgid "%(name)s leads; the rest support it"
-msgstr "%(name)s führt; der Rest unterstützt es"
+msgstr "Schwerpunkt auf %(name)s, der Rest kommt ergänzend dazu"
 
 #: apps/tenant_config/interview_brief.py
 msgid "Your studio"

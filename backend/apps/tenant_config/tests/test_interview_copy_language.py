@@ -238,6 +238,29 @@ def test_her_own_words_with_a_dotted_capital_keep_their_letters_in_any_language(
             assert brief.english_picks("İstanbul Yoga Studio, IŞIK", field, {}) == "İstanbul Yoga Studio, IŞIK"
 
 
+def test_a_weekly_classes_membership_reads_in_the_language_it_is_shown_in():
+    """Its plan is what students buy: the name and the sentence under it are the site's language, not English."""
+    with override("de"):
+        words = brief.tier_text(brief.membership_of({}, "Weekly face yoga classes"))
+        hers = brief.tier_text(brief.membership_of({}, "VIP circle"))
+    assert words == {
+        "label": "Wöchentliche Gesichtsyoga-Sessions",
+        "perks": "",
+        "blurb": "Ein monatlicher Preis für wöchentliche Gesichtsyoga-Sessions.",
+    }
+    assert hers == {"label": "VIP circle", "perks": "", "blurb": "Ein monatlicher Preis für VIP circle."}
+
+
+def test_the_focus_hints_name_each_discipline_in_her_language():
+    with override("tr"):
+        _options, _icons, hints = brief.options_for(
+            brief.FIELD_BY_ID["discipline_focus"], {"teaches": "Face yoga, Yoga"}
+        )
+    assert hints[1:] == ("Yüz yogası öne çıkar; diğerleri onu destekler", "Yoga öne çıkar; diğerleri onu destekler")
+    _options, _icons, hints = brief.options_for(brief.FIELD_BY_ID["discipline_focus"], {"teaches": "pottery, Yoga"})
+    assert hints[1] == "Pottery leads; the rest support it"  # hers, as she wrote it, starting the sentence
+
+
 def test_english_names_in_sentences_are_left_as_written():
     """Only our own tile names are lower-cased mid-sentence; hers and proper names keep their case."""
     assert brief.tx("Mostly Pottery") == "Mostly Pottery"

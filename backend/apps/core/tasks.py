@@ -778,6 +778,21 @@ def run_copilot(schema_name, run_id):
 
 
 @shared_task(queue="agents", ignore_result=True)
+def read_bio(schema_name, text, language):
+    """The /setup bio screen's read (interview.start_bio_read), on the agents
+    worker: she watches "Reading it…" for the minute or two it takes, so it
+    never waits behind a site build."""
+    from apps.core.models import Tenant
+    from apps.tenant_config import interview
+
+    tenant = Tenant.objects.filter(schema_name=schema_name).first()
+    if tenant is None:
+        return
+    with tenant_context(tenant), override(language):
+        interview.finish_bio_read(tenant, text)
+
+
+@shared_task(queue="agents", ignore_result=True)
 def run_focus_job(schema_name, run_id):
     """One of focus mode's jobs (apps.core.focus.jobs), on the agents worker:
     she watches the outline fill in, so none of them waits behind a site build."""

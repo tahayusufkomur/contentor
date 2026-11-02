@@ -9,7 +9,8 @@ import re
 import time
 
 from django.conf import settings
-from django.utils import timezone
+from django.db import transaction
+from django.utils import timezone, translation
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext as render_marked
 from django.utils.translation import gettext_lazy, gettext_noop
@@ -26,6 +27,9 @@ BIO_UNREAD = gettext_lazy(
     "I couldn't pick anything out of that just now. Add a little more about what you do and try again,"
     " or skip this for now."
 )
+# A bio still "reading" after this died with its worker (a deploy restarted
+# it): past the AI provider's own budget plus the turn after it.
+BIO_READ_SECONDS = 300
 # Cloudflare cuts a proxied request at ~100s: the interview call plus an
 # optional copilot edit must both fit under it. A slow hub then falls back to
 # the field's pre-written question instead of a lost request.
@@ -237,7 +241,7 @@ def guide_for(
     return {
         "ack": str(ack)[:300],
         # A review screen keeps its own words: it shows a draft, not a question.
-        "question": str(
+        "question": brief.sentence(
             field.question if field.kind in REVIEW_KINDS else question or default_question(field, answers, brand)
         )[:300],
         "options": chosen,
@@ -596,9 +600,15 @@ def _is_tapped(text: str, answering, answers, brand) -> bool:
     field = brief.FIELD_BY_ID.get(answering or "")
     if field is None or (answering not in ("teaches", "specialty") and not _code_owned(field)):
         return False
-    shown = {o.lower() for o in brief.options_for(field, answers, brand)[0]}
-    parts = [p.strip().lower() for p in text.split(",") if p.strip()]
-    return bool(parts) and all(p in shown for p in parts)
+    # An option may hold a comma ("Just me for now, more teachers later"): the longest that fits is taken first.
+    shown = sorted({o.lower() for o in brief.options_for(field, answers, brand)[0]}, key=len, reverse=True)
+    rest = text.strip().lower()
+    while rest:
+        found = next((o for o in shown if rest.startswith(o) and rest[len(o) :][:1] in ("", ",")), None)
+        if found is None:
+            return False
+        rest = rest[len(found) :].lstrip(", ")
+    return bool(text.strip())
 
 
 def _ask_ai(tenant, answers, turns, message, spoken, answering=None) -> InterviewTurn | None:
@@ -859,16 +869,65 @@ def _prefill_picks(field: brief.Field, guide: dict, items) -> list[str]:
 def share_bio(tenant, text: str) -> dict:
     """The bio screen's answer: what the text says is ticked in the questions
     ahead for her to check, and the interview moves on. BioUnreadError when
-    nothing in it could be read (nothing changes)."""
-    if not apply_initial_about(tenant, text):
+    nothing in it could be read (nothing changes). Runs in the background
+    (start_bio_read)."""
+    if not apply_initial_about(tenant, text, background=True):
         raise BioUnreadError
     return run_turn(tenant, BIO_TURN_TEXT, choice={"field": "bio", "value": brief.BIO_SHARED})
 
 
-def apply_initial_about(tenant, text: str) -> bool:
+def start_bio_read(tenant, text: str) -> None:
+    """The bio screen's answer, read in the background (tasks.read_bio): on a
+    high-effort model the read outlasts a request, which Cloudflare cuts at
+    ~100s. The screen polls bio_read_result meanwhile."""
+    from apps.core import tasks
+
+    _set_bio_read(tenant, {"status": "reading", "at": time.time()})
+    schema, language = tenant.schema_name, translation.get_language()
+    transaction.on_commit(lambda: tasks.read_bio.delay(schema, text, language))
+
+
+def finish_bio_read(tenant, text: str) -> None:
+    """tasks.read_bio, inside tenant_context and the screen's language.
+    Whatever happens the read ends: the screen never waits on one that will
+    not come."""
+    try:
+        share_bio(tenant, text)
+        read = None
+    except Exception as exc:
+        if not isinstance(exc, BioUnreadError):
+            logger.exception("bio read failed for %s", tenant.slug)
+        read = {"status": "unread"}
+    tenant.refresh_from_db(fields=["wizard_state"])
+    _set_bio_read(tenant, read)
+
+
+def bio_read_result(tenant) -> dict | None:
+    """The bio screen's answer once read ({"guide", "state"}), None while it
+    is being read. BioUnreadError when nothing in it could be read, or its
+    worker died with it (BIO_READ_SECONDS)."""
+    from . import setup_flow
+
+    read = (tenant.wizard_state or {}).get("bio_read") or {}
+    if read.get("status") == "reading" and time.time() - read.get("at", 0) < BIO_READ_SECONDS:
+        return None
+    if read:
+        raise BioUnreadError
+    state = setup_flow.state_body(tenant)
+    return {"guide": state["interview"]["guide"], "state": state}
+
+
+def _set_bio_read(tenant, read: dict | None) -> None:
+    state = {k: v for k, v in (tenant.wizard_state or {}).items() if k != "bio_read"}
+    tenant.wizard_state = {**state, "bio_read": read} if read else state
+    tenant.save(update_fields=["wizard_state"])
+
+
+def apply_initial_about(tenant, text: str, background: bool = False) -> bool:
     """Extract facts from coach's bio/CV and save them as PREFILLS for the interview.
     Does NOT settle the brief answers directly, ensuring all steps are visited in order
-    with their answers intelligently prefilled for the coach to review and confirm."""
+    with their answers intelligently prefilled for the coach to review and confirm.
+    ``background``: about_check.analyze's."""
     clean = (text or "").strip()
     if not clean:
         return False
@@ -876,7 +935,7 @@ def apply_initial_about(tenant, text: str) -> bool:
     from apps.core.onboarding import about_check
 
     try:
-        analysis = about_check.analyze(clean)
+        analysis = about_check.analyze(clean, background=background)
         facts = analysis.get("facts") or []
         if not facts:
             return False

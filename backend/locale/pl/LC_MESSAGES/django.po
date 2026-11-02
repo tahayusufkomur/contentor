@@ -6715,12 +6715,12 @@ msgstr "Oto inna okładka. Podoba ci się?"
 #: apps/tenant_config/interview.py
 #, python-format
 msgid "What else do you offer besides %(kind)s?"
-msgstr "Co jeszcze oferujesz oprócz %(kind)s?"
+msgstr "Co jeszcze oferujesz poza tym: %(kind)s?"
 
 #: apps/tenant_config/interview.py
 #, python-format
 msgid "Which kinds of %(tiles)s do you offer?"
-msgstr "Jakie rodzaje %(tiles)s oferujesz?"
+msgstr "Jakie rodzaje oferujesz – %(tiles)s?"
 
 #: apps/tenant_config/interview.py
 #, python-format
@@ -6734,8 +6734,8 @@ msgid ""
 "Your bio is about %(said)s, but your studio name says %(named)s. What do you"
 " offer?"
 msgstr ""
-"Twój biogram mówi o %(said)s, ale nazwa twojego studia wskazuje na "
-"%(named)s. Co oferujesz?"
+"Twój biogram dotyczy tematu: %(said)s, a nazwa twojego studia mówi coś "
+"innego: %(named)s. Co oferujesz?"
 
 #: apps/tenant_config/interview.py
 msgid "What do you offer? I ticked what your bio says."
@@ -6744,12 +6744,12 @@ msgstr "Co oferujesz? Zaznaczam to, o czym wspomina twój biogram."
 #: apps/tenant_config/interview.py
 #, python-format
 msgid "Do you only offer %(kind)s?"
-msgstr "Czy oferujesz tylko %(kind)s?"
+msgstr "Czy oferujesz tylko to: %(kind)s?"
 
 #: apps/tenant_config/interview.py
 #, python-format
 msgid "Which kinds of %(tile)s do you offer?"
-msgstr "Jakie rodzaje %(tile)s oferujesz?"
+msgstr "Jakie rodzaje oferujesz – %(tile)s?"
 
 #: apps/tenant_config/interview.py
 msgid "Designer"
@@ -6778,7 +6778,7 @@ msgstr "Asystent"
 #: apps/tenant_config/interview.py
 #, python-format
 msgid "your %(role)s on %(things)s"
-msgstr "twój %(role)s zajmuje się %(things)s"
+msgstr "twój %(role)s: %(things)s"
 
 #: apps/tenant_config/interview.py
 #, python-format
@@ -6793,7 +6793,7 @@ msgstr ""
 #: apps/tenant_config/interview.py
 #, python-format
 msgid "Your %(role)s is starting on %(things)s now."
-msgstr "Twój %(role)s zaczyna teraz pracę nad %(things)s."
+msgstr "Twój %(role)s właśnie zaczyna: %(things)s."
 
 #: apps/tenant_config/interview.py
 #, python-format
@@ -7368,7 +7368,7 @@ msgstr "Jedno członkostwo na wszystko."
 #: apps/tenant_config/interview_brief.py
 #, python-format
 msgid "One monthly price for %(name)s."
-msgstr "Jedna miesięczna cena za %(name)s."
+msgstr "Jedna miesięczna cena obejmuje: %(name)s."
 
 #: apps/tenant_config/interview_brief.py
 msgid "Every digital course, new courses as they land"
@@ -7722,7 +7722,7 @@ msgstr "Głównie %(name)s"
 #: apps/tenant_config/interview_brief.py
 #, python-format
 msgid "Weekly %(subject)s classes"
-msgstr "Cotygodniowe zajęcia z %(subject)s"
+msgstr "Cotygodniowe zajęcia – %(subject)s"
 
 #: apps/tenant_config/interview_brief.py
 #, python-format
@@ -8590,7 +8590,7 @@ msgstr "Wszystkie mają tyle samo miejsca na twojej witrynie"
 #: apps/tenant_config/interview_brief.py
 #, python-format
 msgid "%(name)s leads; the rest support it"
-msgstr "%(name)s jest na pierwszym planie; reszta je uzupełnia"
+msgstr "%(name)s na pierwszym planie, reszta jako uzupełnienie"
 
 #: apps/tenant_config/interview_brief.py
 msgid "Your studio"
@@ -8696,17 +8696,17 @@ msgstr "Zrezygnuj w dowolnym momencie."
 #: apps/tenant_config/interview_milestones.py
 #, python-format
 msgid "%(perks)s, for %(teaches)s."
-msgstr "%(perks)s, dla %(teaches)s."
+msgstr "%(perks)s. Tematy: %(teaches)s."
 
 #: apps/tenant_config/interview_milestones.py
 #, python-format
 msgid "Made for %(subject)s creators, and it sounds %(tones)s."
-msgstr "Stworzone dla twórców z dziedziny %(subject)s, w tonie: %(tones)s."
+msgstr "Stworzone z myślą o twórcach (%(subject)s), w tonie: %(tones)s."
 
 #: apps/tenant_config/interview_milestones.py
 #, python-format
 msgid "Made for %(subject)s creators."
-msgstr "Stworzone dla twórców z dziedziny %(subject)s."
+msgstr "Stworzone z myślą o twórcach (%(subject)s)."
 
 #: apps/tenant_config/interview_milestones.py
 #, python-format

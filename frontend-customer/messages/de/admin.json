@@ -1338,7 +1338,7 @@
       "retry": "Erneut versuchen",
       "pickFailed": "Dieses Foto konnte nicht verwendet werden. Probier ein anderes.",
       "describe": "Beschreibe das Foto",
-      "describePlaceholder": "A woman stretching on a porch at sunrise, warm light",
+      "describePlaceholder": "Eine Frau, die sich bei Sonnenaufgang auf einer Veranda dehnt, warmes Licht",
       "left": "{count, plural, one {Noch # neues Foto in diesem Monat} other {Noch # neue Fotos in diesem Monat}}",
       "used": "Du hast die neuen Fotos für diesen Monat aufgebraucht.",
       "make": "Erstellen",

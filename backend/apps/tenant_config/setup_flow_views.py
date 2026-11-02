@@ -114,8 +114,9 @@ def setup_flow_turn(request):
 @throttle_classes([SetupInterviewThrottle])
 def setup_flow_import(request):
     """The bio screen: a file (.pdf, .txt, .md) or pasted text the creator
-    shares about herself, read once; what it says is ticked in the questions
-    ahead (interview.share_bio)."""
+    shares about herself, read once in the background; what it says is ticked
+    in the questions ahead (interview.share_bio). The screen polls
+    setup_flow_import_status."""
     if (over := _setup_over()) is not None:
         return over
     data = _data(request)
@@ -124,10 +125,22 @@ def setup_flow_import(request):
         text = interview_import.extract_text(upload, str(data.get("text") or ""))
     except interview_import.ImportRejectedError as exc:
         return Response({"detail": str(exc)}, status=400)
+    interview.start_bio_read(connection.tenant, text)
+    return Response({"reading": True}, status=202)
+
+
+@api_view(["GET"])
+@permission_classes([IsCoachOrOwner])
+def setup_flow_import_status(request):
+    """The bio's read: 202 while it runs, then the screen's answer, or the 400
+    saying nothing in it could be read. Not throttled: the screen asks every
+    few seconds."""
     try:
-        body = interview.share_bio(connection.tenant, text)
+        body = interview.bio_read_result(connection.tenant)
     except interview.BioUnreadError:
         return Response({"detail": interview.BIO_UNREAD}, status=400)
+    if body is None:
+        return Response({"reading": True}, status=202)
     return Response(body)
 
 

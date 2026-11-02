@@ -367,8 +367,9 @@ def tier_text(tier: dict) -> dict:
     # The sentence of this tier's perks, found by its English words (identity); never cased after translating.
     perks = next((s for s in PERKS_SENTENCES if s.lower() == ", ".join(p.lower() for p in tier["perks"])), "")
     if tier["id"] not in TIER_BY_ID:
-        blurb = render_marked(OWN_BLURB) % {"name": _lower_first(tier["label"])}
-        return {"label": tier["label"], "perks": "", "blurb": blurb}
+        label = tx(tier["label"])  # "Weekly face yoga classes" (class_memberships) reads in the active language
+        blurb = sentence(render_marked(OWN_BLURB) % {"name": _lower_first(label)})
+        return {"label": label, "perks": "", "blurb": blurb}
     return {
         "label": render_marked(tier["label"]),
         "perks": render_marked(perks) if perks else "",
@@ -789,6 +790,16 @@ def lc(text: str) -> str:
     if (get_language() or "").startswith("tr"):
         text = text.replace("I", "ı").replace("İ", "i")
     return text.lower()
+
+
+def sentence(text: str) -> str:
+    """A sentence a person reads, with its first letter capitalised: a translation may open on a name that was
+    lower-cased for the middle of the English one ("yüz yogası dışında…"). Turkish keeps its dotted and dotless i."""
+    text = str(text)
+    first = text[:1]
+    if (get_language() or "").startswith("tr"):
+        first = {"i": "İ", "ı": "I"}.get(first, first)
+    return first.upper() + text[1:]
 
 
 def lc_shown(text: str) -> str:
@@ -1899,6 +1910,8 @@ def parse_focus(raw, answers: dict) -> dict | None:
     if re.search(r"equal|both|same|balanc", text):
         return {"mode": "equal"}
     named = [n for n in names if n.lower() in text]
+    # "Mostly face yoga" also holds "yoga": a name inside another one named is part of that one.
+    named = [n for n in named if not any(n.lower() in m.lower() for m in named if m != n)]
     if len(named) != 1:
         return None
     return {"mode": "primary", "primary": named[0], "secondary": [n for n in names if n != named[0]]}
@@ -2090,12 +2103,13 @@ def options_for(
         return tuple(k for k, _ in rows), tuple(i for _, i in rows), ()
     if field.kind == "focus":
         names = disciplines_of(answers)
+        shown = [tx(n) for n in names]  # ours in her language, hers as she wrote it
         return (
             (FOCUS_EQUAL, *(f"Mostly {_lower_first(n)}" for n in names)),
             ("layers", *(icon_of.get(_tile_of(n) or "", "sparkles") for n in names)),
             (
                 gettext("Each gets the same room on your site"),
-                *(gettext("%(name)s leads; the rest support it") % {"name": f"{n[:1].upper()}{n[1:]}"} for n in names),
+                *(gettext("%(name)s leads; the rest support it") % {"name": f"{s[:1].upper()}{s[1:]}"} for s in shown),
             ),
         )
     if field.kind == "memberships":

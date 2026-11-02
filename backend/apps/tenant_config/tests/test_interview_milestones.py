@@ -508,6 +508,26 @@ def test_membership_plans_are_created_once_per_tier_with_the_course_in_them(tena
     side_effects["build"].assert_any_call(tenant_ctx, "pricing")
 
 
+def test_membership_plans_read_in_the_sites_language(tenant_ctx, config, side_effects):
+    """What students buy: no English tile name in a plan's name or the sentence under it."""
+    from apps.billing.models import SubscriptionPlan
+
+    TenantConfig.objects.update(default_locale="de")
+    answers = {
+        **HOME,
+        "teaches": "Face yoga, Yoga",
+        "discipline_focus": {"mode": "equal"},
+        "offers": ["course", "live"],
+        "payments": ["membership"],
+        "memberships": ["digital", "Weekly face yoga classes"],
+    }
+    assert "plan:membership" in ms.fire(tenant_ctx, answers)
+    plans = {p.name: p.description for p in SubscriptionPlan.objects.all()}
+    assert set(plans) == {"Digitale Mitgliedschaft", "Wöchentliche Gesichtsyoga-Sessions"}
+    assert "Gesichtsyoga und Yoga" in plans["Digitale Mitgliedschaft"]
+    assert "face yoga" not in " ".join(plans.values()).lower()
+
+
 def test_membership_prices_are_hers_to_set(tenant_ctx, config, side_effects):
     """Audit G5: the tiers' prices were fixed; now each ticked tier takes hers."""
     import json

@@ -605,7 +605,10 @@ def sync_memberships(tenant, answers: dict) -> None:
     made = dict(((TenantConfig.objects.first().setup_flow or {}).get("drafts") or {}).get("plans") or {})
     # The plan's name and description are what a student reads: the site's language, whoever is setting it up.
     with override(site_language()):
-        teaches = str(answers.get("teaches") or "").lower() or gettext("everything I teach")
+        # Her answer holds our tiles' English names ("Face yoga, Yoga"): each reads in the site's language.
+        teaches = brief.list_phrase(
+            brief.name_shown(t.strip(), lower_own=True) for t in str(answers.get("teaches") or "").split(",")
+        ) or gettext("everything I teach")
         cancel = gettext("Cancel any time.")
         perks_for = gettext("%(perks)s, for %(teaches)s.")
         texts = {m["id"]: brief.tier_text(m) for m in picked}
@@ -784,13 +787,13 @@ def style_reason(style: dict | None, niche: str, tones: list[str], answers: dict
     made = bool({niche, *brief.also_niches(answers)} & set(style.get("niches") or []) and subject)
     tones_said = brief.list_phrase(_tone_word(t) for t in matched)
     if made and matched:
-        return gettext("Made for %(subject)s creators, and it sounds %(tones)s.") % {
-            "subject": subject,
-            "tones": tones_said,
-        }
+        return brief.sentence(
+            gettext("Made for %(subject)s creators, and it sounds %(tones)s.")
+            % {"subject": subject, "tones": tones_said}
+        )
     if made:
-        return gettext("Made for %(subject)s creators.") % {"subject": subject}
-    return gettext("It sounds %(tones)s.") % {"tones": tones_said} if matched else ""
+        return brief.sentence(gettext("Made for %(subject)s creators.") % {"subject": subject})
+    return brief.sentence(gettext("It sounds %(tones)s.") % {"tones": tones_said}) if matched else ""
 
 
 def _lower_after_commas(text: str) -> str:

@@ -6612,7 +6612,7 @@ msgstr "Neler sunuyorsun? Biyografinde yazılanları işaretledim."
 #: apps/tenant_config/interview.py
 #, python-format
 msgid "Do you only offer %(kind)s?"
-msgstr "Şunu mu sunuyorsun: %(kind)s?"
+msgstr "Yalnızca şunu mu sunuyorsun: %(kind)s?"
 
 #: apps/tenant_config/interview.py
 #, python-format

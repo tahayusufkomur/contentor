@@ -29,6 +29,8 @@
 // retry and a 20-minute budget), goes live, meets no English admin.json text on the
 // studio home, settings and courses, and then a student with an English browser walks
 // the new site as test 1 walks demo-yoga.
+//
+// SITE_LANG=de (or pl) runs the same story in that language; Turkish is the default.
 
 import { test, expect, type Locator, type Page } from "@playwright/test";
 import fs from "node:fs";
@@ -40,8 +42,6 @@ import { translated } from "../helpers/i18n";
 import { authoredLeaves, englishLeaks, leafValues, leakCandidates } from "../helpers/leaks";
 import { grantTrial, signupThroughVerify } from "../helpers/signup";
 import enAdmin from "../../frontend-customer/messages/en/admin.json";
-import trAdmin from "../../frontend-customer/messages/tr/admin.json";
-import trAuth from "../../frontend-main/messages/tr/auth.json";
 
 test.use({ locale: "en-US" });
 
@@ -63,18 +63,30 @@ const ENGLISH_DATES = [
   "Oct", "Nov", "Dec", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun",
 ];
 
+// The site's language (SITE_LANG), Turkish by default.
+const LANG = process.env.SITE_LANG ?? "tr";
+const LANGUAGE = ({ tr: "Turkish", de: "German", pl: "Polish" } as Record<string, string>)[LANG];
+
 const stamp = Date.now();
-const SCRATCH_SLUG = "e2e-tr";
+const SCRATCH_SLUG = `e2e-${LANG}`;
 const SCRATCH_HOST = `${SCRATCH_SLUG}.localhost`;
-const SCRATCH_BRAND = "E2E Turkish";
-const STUDENT_EMAIL = `e2e-tr-student-${stamp}@example.com`;
-const MAIL_EMAIL = `e2e-tr-mail-${stamp}@example.com`;
+const SCRATCH_BRAND = `E2E ${LANGUAGE}`;
+const STUDENT_EMAIL = `e2e-${LANG}-student-${stamp}@example.com`;
+const MAIL_EMAIL = `e2e-${LANG}-mail-${stamp}@example.com`;
 
 let candidates: string[] = [];
 let authored: string[] = [];
 let courseSlug = "";
 
 const json = (file: string) => JSON.parse(fs.readFileSync(file, "utf8"));
+
+// The site language's interface texts, and the words its own dates and copy share with English dates.
+const siteAdmin = json(path.join(CUSTOMER_MESSAGES, LANG, "admin.json"));
+const siteAuth = json(path.join(REPO_ROOT, "frontend-main/messages", LANG, "auth.json"));
+const DATE_WORDS_IN: Record<string, string[]> = { de: ["August", "November", "Jan", "Feb", "Apr", "Aug", "Nov"] };
+// "Sat" and "Sun" are Turkish words too ("sat" = sell, "sun" = offer): in a creator's copy they are no date.
+const WORDS_IN_COPY: Record<string, string[]> = { tr: ["Sat", "Sun"] };
+const SITE_DATES = ENGLISH_DATES.filter((d) => !(DATE_WORDS_IN[LANG] ?? []).includes(d));
 
 async function api(pathname: string, host = "demo-yoga.localhost") {
   const res = await fetch(`http://localhost${pathname}`, { headers: { "X-Tenant-Domain": host } });
@@ -134,18 +146,18 @@ for key in r.keys('*throttle_magic_link*'):
 
 test.beforeAll(async () => {
   test.setTimeout(240_000); // a first-time schema creation + several manage.py boots outrun the default 60 s
-  setSiteLanguage("demo_yoga", "tr");
+  setSiteLanguage("demo_yoga", LANG);
   ensureScratchTenant();
-  setSiteLanguage(SCRATCH_SLUG.replace("-", "_"), "tr");
+  setSiteLanguage(SCRATCH_SLUG.replace("-", "_"), LANG);
 
   const stored = await storedContent();
   courseSlug = stored.courseSlug;
   authored = stored.authored;
-  const pairs = MESSAGE_FILES.map(([root, file]) => [json(path.join(root, "en", file)), json(path.join(root, "tr", file))]);
-  // What the Turkish files write, all of it: an English value inside it is no leak signal.
-  const turkish = pairs.flatMap(([, tr]) => leafValues(tr)).join("\n");
-  const english = pairs.flatMap(([en, tr]) => leakCandidates(en, tr, turkish));
-  candidates = [...new Set([...english, ...ENGLISH_DATES])];
+  const pairs = MESSAGE_FILES.map(([root, file]) => [json(path.join(root, "en", file)), json(path.join(root, LANG, file))]);
+  // What the site language's files write, all of it: an English value inside it is no leak signal.
+  const local = pairs.flatMap(([, mine]) => leafValues(mine)).join("\n");
+  const english = pairs.flatMap(([en, mine]) => leakCandidates(en, mine, local));
+  candidates = [...new Set([...english, ...SITE_DATES])];
 });
 
 // Restore English even when a test failed or timed out.
@@ -160,7 +172,7 @@ test.afterAll(() => {
  * `shown` (a page-specific text of the Turkish messages) is there. Without it only the language and the
  * leaks are checked, and a Turkish plan picker or setup screen would pass for the studio.
  */
-async function expectTurkish(
+async function expectSiteLanguage(
   page: Page,
   pathname: string,
   base = TENANT,
@@ -169,7 +181,7 @@ async function expectTurkish(
   rightPage?: { shown?: (page: Page) => Locator },
 ) {
   await page.goto(`${base}${pathname}`);
-  await expect(page.locator("html")).toHaveAttribute("lang", "tr", { timeout: 20_000 });
+  await expect(page.locator("html")).toHaveAttribute("lang", LANG, { timeout: 20_000 });
   if (rightPage) {
     await expect(page, `${pathname} redirected`).toHaveURL(`${base}${pathname}`, { timeout: 20_000 });
     if (rightPage.shown) await expect(rightPage.shown(page).first(), `${pathname} is not the page`).toBeVisible({ timeout: 30_000 });
@@ -181,14 +193,14 @@ async function expectTurkish(
   expect(leaks, `English on ${pathname}`).toEqual([]);
 }
 
-test("a student with an English browser meets no English on a Turkish site", async ({ page }) => {
+test(`a student with an English browser meets no English on a ${LANGUAGE} site`, async ({ page }) => {
   test.setTimeout(240_000);
   expect(candidates.length, "no English candidates: message files missing?").toBeGreaterThan(50);
   expect(courseSlug, "demo-yoga needs a published course").not.toBe("");
 
   // ── 1. Public pages and the sign-in page ─────────────────────────────────
   for (const pathname of ["/", "/courses", `/courses/${courseSlug}`, "/plans", "/events", "/calendar", "/login"]) {
-    await expectTurkish(page, pathname);
+    await expectSiteLanguage(page, pathname);
   }
 
   // ── 2. Sign in (demo tenants return the link instead of emailing it) ─────
@@ -198,7 +210,7 @@ test("a student with an English browser meets no English on a Turkish site", asy
   await page.waitForURL(`${TENANT}/`, { timeout: 30_000 });
 
   // ── 3. The student dashboard ─────────────────────────────────────────────
-  await expectTurkish(page, "/dashboard");
+  await expectSiteLanguage(page, "/dashboard");
 });
 
 test("the sign-in email is in the site's language, whatever the browser says", async () => {
@@ -215,30 +227,53 @@ test("the sign-in email is in the site's language, whatever the browser says", a
   const msgid = source.match(/def sign_in[\s\S]*?subject=_\("([^"]*)%\(brand\)s"\)/)?.[1];
   expect(msgid, "sign-in subject msgid not found in transactional.py").toBeTruthy();
 
-  expect(mail.html).toMatch(/<html[^>]*\blang="tr"/);
+  expect(mail.html).toMatch(new RegExp(`<html[^>]*\\blang="${LANG}"`));
   expect(mail.subject).not.toBe(`${msgid}${SCRATCH_BRAND}`);
   expect(mail.subject).not.toContain(msgid!.trim());
 });
 
 // ── A Turkish creator, from contentor.app/tr to a live site ────────────────────────────
 
-const CREATOR_EMAIL = `e2e-tr-coach-${stamp}@contentor.test`;
-const CREATOR_NAME = "Ayşe E2E";
+const CREATOR_EMAIL = `e2e-${LANG}-coach-${stamp}@contentor.test`;
+const CREATOR_NAME = ({ tr: "Ayşe E2E", de: "Jana E2E", pl: "Zofia E2E" } as Record<string, string>)[LANG];
 // ASCII on purpose: the address the name makes is asserted below, and the slug rule is not under test here.
-const BRAND = `E2E Yoga TR ${stamp}`;
-const SITE_SLUG = `e2e-yoga-tr-${stamp}`;
+const BRAND = `E2E Yoga ${LANG.toUpperCase()} ${stamp}`;
+const SITE_SLUG = `e2e-yoga-${LANG}-${stamp}`;
 const SITE_HOST = `${SITE_SLUG}.localhost`;
 const SITE = `http://${SITE_HOST}`;
-const NEW_STUDENT_EMAIL = `e2e-tr-new-student-${stamp}@example.com`;
+const NEW_STUDENT_EMAIL = `e2e-${LANG}-new-student-${stamp}@example.com`;
 
-// What she types, in Turkish. Her own words are no interface text: they are cut out of the leak check.
-const BIO = "Masa başında çalışan insanlara çevrimiçi ve küçük gruplarla yoga öğretiyorum.";
-const OFFER = "Gün boyu masa başında oturanlar için yoga";
-const STORY = "Yıllarca masa başında çalıştıktan sonra yoganın sırt ağrımı hafiflettiğini fark ettim ve öğretmeye başladım.";
-const TRAINING = "2019'da 200 saatlik bir yoga öğretmenliği eğitimini tamamladım.";
-const ANYTHING = "Sence en uygun olan hangisiyse o";
-const PLACE = "E2E Stüdyo";
-const ADDRESS = "Atatürk Cad. 1, 34000 İstanbul";
+// What she types, in her language. Her own words are no interface text: they are cut out of the leak check.
+const TYPED: Record<string, Record<string, string>> = {
+  tr: {
+    BIO: "Masa başında çalışan insanlara çevrimiçi ve küçük gruplarla yoga öğretiyorum.",
+    OFFER: "Gün boyu masa başında oturanlar için yoga",
+    STORY: "Yıllarca masa başında çalıştıktan sonra yoganın sırt ağrımı hafiflettiğini fark ettim ve öğretmeye başladım.",
+    TRAINING: "2019'da 200 saatlik bir yoga öğretmenliği eğitimini tamamladım.",
+    ANYTHING: "Sence en uygun olan hangisiyse o",
+    PLACE: "E2E Stüdyo",
+    ADDRESS: "Atatürk Cad. 1, 34000 İstanbul",
+  },
+  de: {
+    BIO: "Ich unterrichte Yoga für Menschen, die den ganzen Tag am Schreibtisch sitzen, online und in kleinen Gruppen.",
+    OFFER: "Yoga für Menschen, die den ganzen Tag am Schreibtisch sitzen",
+    STORY: "Nach Jahren am Schreibtisch habe ich gemerkt, dass Yoga meine Rückenschmerzen lindert, und angefangen zu unterrichten.",
+    TRAINING: "2019 habe ich eine 200-stündige Yogalehrer-Ausbildung abgeschlossen.",
+    ANYTHING: "Was immer am besten passt",
+    PLACE: "E2E Studio",
+    ADDRESS: "Hauptstraße 1, 10827 Berlin",
+  },
+  pl: {
+    BIO: "Uczę jogi osoby, które cały dzień siedzą przy biurku, online i w małych grupach.",
+    OFFER: "Joga dla osób, które cały dzień siedzą przy biurku",
+    STORY: "Po latach pracy przy biurku zauważyłam, że joga łagodzi ból pleców, i zaczęłam uczyć.",
+    TRAINING: "W 2019 roku ukończyłam 200-godzinny kurs nauczycieli jogi.",
+    ANYTHING: "To, co uznasz za najlepsze",
+    PLACE: "Studio E2E",
+    ADDRESS: "ul. Marszałkowska 1, 00-001 Warszawa",
+  },
+};
+const { BIO, OFFER, STORY, TRAINING, ANYTHING, PLACE, ADDRESS } = TYPED[LANG];
 const HANDLE = "e2estudyo";
 
 // A leak is an English admin.json value; these are English by nature, or hers, and are cut out of the page text.
@@ -249,8 +284,8 @@ const STUDIO_ALLOWED = [
   BIO, OFFER, STORY, TRAINING, ANYTHING, PLACE, ADDRESS, // answers she typed
 ];
 
-// "Sat" and "Sun" are Turkish words too ("sat" = sell, "sun" = offer): on creator pages and in her copy they are no date.
-const STUDIO_DATES = ENGLISH_DATES.filter((d) => d !== "Sat" && d !== "Sun");
+// On creator pages and in her copy, words her language shares with English dates are no date.
+const STUDIO_DATES = SITE_DATES.filter((d) => !(WORDS_IN_COPY[LANG] ?? []).includes(d));
 
 const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const anyOf = (...texts: string[]) => new RegExp(texts.map(escape).join("|"));
@@ -262,7 +297,7 @@ function sweepOldRuns() {
     "-c",
     "from django.db import connection\n" +
       "from apps.core.models import Tenant\n" +
-      "tenants = list(Tenant.objects.filter(slug__startswith='e2e-yoga-tr-') | Tenant.objects.filter(owner_email__startswith='e2e-tr-coach-', owner_email__endswith='@contentor.test'))\n" +
+      `tenants = list(Tenant.objects.filter(slug__startswith='e2e-yoga-${LANG}-') | Tenant.objects.filter(owner_email__startswith='e2e-${LANG}-coach-', owner_email__endswith='@contentor.test'))\n` +
       "ids = [t.id for t in tenants]\n" +
       "with connection.cursor() as c:\n" +
       "    c.execute('DELETE FROM core_platformsubscription WHERE tenant_id = ANY(%s)', [ids])\n" +
@@ -274,30 +309,30 @@ function sweepOldRuns() {
 test.describe("creator", () => {
   test.describe.configure({ retries: 0 });
 
-  test("a Turkish creator goes from contentor.app/tr to live", async ({ page, browser }) => {
+  test(`a ${LANGUAGE} creator goes from contentor.app/${LANG} to live`, async ({ page, browser }) => {
     test.setTimeout(1_200_000);
     sweepOldRuns();
 
-    // The words of the interview are the Turkish messages' own, so no English option text is read.
-    const sf = trAdmin.setupFlow;
+    // The words of the interview are the site language's messages' own, so no English option text is read.
+    const sf = siteAdmin.setupFlow;
     const q = sf.question;
 
     // ── 1. Sign up at /tr/signup: the site's language starts as the page's ──────────
     const mail = await signupThroughVerify(page, CREATOR_EMAIL, {
-      path: "/tr/signup",
-      texts: trAuth.signup,
+      path: `/${LANG}/signup`,
+      texts: siteAuth.signup,
       name: CREATOR_NAME,
     });
-    expect(mail.subject, "the verify email's subject").toBe(translated("Verify your email to create your site"));
-    await expect(page.locator("html")).toHaveAttribute("lang", "tr");
+    expect(mail.subject, "the verify email's subject").toBe(translated("Verify your email to create your site", LANG));
+    await expect(page.locator("html")).toHaveAttribute("lang", LANG);
     // No site before the card: the verify page offers the trial first, in Turkish.
-    await expect(page.getByRole("button", { name: trAuth.signup.verify.card.cta })).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByRole("button", { name: siteAuth.signup.verify.card.cta })).toBeVisible({ timeout: 20_000 });
     grantTrial(CREATOR_EMAIL, stamp, CREATOR_NAME);
     await page.reload();
 
     // ── 2. /setup, in her language, at the temporary address ───────────────────────
     await page.waitForURL(/new-site-[0-9a-f]+\.localhost\/setup/, { timeout: 120_000 });
-    await expect(page.locator("html")).toHaveAttribute("lang", "tr", { timeout: 30_000 });
+    await expect(page.locator("html")).toHaveAttribute("lang", LANG, { timeout: 30_000 });
     const guideAtStart = page.getByRole("region", { name: sf.panel.aria });
 
     // Her bio, read once (it ticks the questions ahead), or skipped.
@@ -307,7 +342,8 @@ test.describe("creator", () => {
     await guideAtStart.getByRole("button", { name: sf.opening.continue, exact: true }).click();
     const nameBox = guideAtStart.getByLabel(sf.opening.nameLabel);
     const unread = guideAtStart.getByRole("alert");
-    await expect(nameBox.or(unread)).toBeVisible({ timeout: 60_000 });
+    // Read in the background: a minute or two on a careful model.
+    await expect(nameBox.or(unread)).toBeVisible({ timeout: 240_000 });
     if (await unread.isVisible()) await guideAtStart.getByRole("button", { name: sf.opening.skip }).click();
 
     // Her site's name makes its address.
@@ -320,11 +356,11 @@ test.describe("creator", () => {
     const keepName = guideAtStart.getByText(sf.opening.pickOrKeep);
     // The first question is "What do you offer?" (or "...I ticked what your bio says."): its Turkish is a
     // substring of both, read from the backend's own catalog.
-    const offer = page.getByText(translated("What do you offer?")).first();
+    const offer = page.getByText(translated("What do you offer?", LANG)).first();
     await expect(keepName.or(offer)).toBeVisible({ timeout: 60_000 });
     if (await keepName.isVisible()) await guideAtStart.getByRole("button", { name: sf.opening.continue, exact: true }).click();
     await page.waitForURL(new RegExp(`${SITE_SLUG}\\.localhost/setup`), { timeout: 60_000 });
-    await expect(page.locator("html")).toHaveAttribute("lang", "tr");
+    await expect(page.locator("html")).toHaveAttribute("lang", LANG);
 
     // ── 3. The interview, in Turkish ───────────────────────────────────────────────
     await expect(offer).toBeVisible({ timeout: 30_000 });
@@ -356,7 +392,10 @@ test.describe("creator", () => {
     const place = guide.getByPlaceholder(q.placePlaceholder);
     // A drafted course or class to approve, or the line saying its draft failed.
     const looksGood = guide.getByRole("button", { name: q.looksGood, exact: true });
-    const draftFailed = guide.getByText(/taslağını oluşturamadım/);
+    // Each kind's "couldn't draft" sentence (an ICU select), its first clause.
+    const draftFailed = guide.getByText(
+      anyOf(...[...(sf.draft.failed as string).matchAll(/\{([^{}]*)\}/g)].map((m) => m[1].split(/[.!]/)[0])),
+    );
     const goLive = guide.getByRole("button", { name: sf.goLive.goLive, exact: true });
     // Before going live each built page is looked over and approved, one by one.
     const pageOk = guide.getByRole("button", { name: sf.panel.approve });
@@ -447,18 +486,18 @@ test.describe("creator", () => {
     await goLive.click();
     await expect(page.getByRole("button", { name: sf.launch.toAdmin })).toBeVisible({ timeout: 60_000 });
     // The hand-off card says what the assistant did, in her language (the backend's own words).
-    await expect(page.getByText(translated("Ran your setup."))).toBeVisible();
+    await expect(page.getByText(translated("Ran your setup.", LANG))).toBeVisible();
 
     // ── 5. The studio: no English admin.json text on the home, settings and courses ──
     const stored = await storedContent(SITE_HOST);
-    const trTexts = [
-      leafValues(trAdmin),
-      leafValues(json(path.join(CUSTOMER_MESSAGES, "tr", "common.json"))),
-      leafValues(json(path.join(SHARED_MESSAGES, "tr", "studio.json"))),
+    const siteTexts = [
+      leafValues(siteAdmin),
+      leafValues(json(path.join(CUSTOMER_MESSAGES, LANG, "common.json"))),
+      leafValues(json(path.join(SHARED_MESSAGES, LANG, "studio.json"))),
     ]
       .flat()
       .join("\n");
-    const studioWords = [...new Set([...leakCandidates(enAdmin, trAdmin, trTexts), ...STUDIO_DATES])];
+    const studioWords = [...new Set([...leakCandidates(enAdmin, siteAdmin, siteTexts), ...STUDIO_DATES])];
     expect(studioWords.length, "no English admin candidates: message files missing?").toBeGreaterThan(500);
     // The studio's course list also holds drafts: with her session the same endpoint returns them, and the
     // titles the AI wrote are hers (the public read above has only the published ones).
@@ -467,12 +506,12 @@ test.describe("creator", () => {
     const courseTexts = authoredLeaves(await adminCourses.json());
     const studioOwn = [...stored.authored, ...courseTexts, ...STUDIO_ALLOWED];
     const studioPages: [string, (page: Page) => Locator][] = [
-      ["/admin", (p) => p.getByText(trAdmin.welcome.overview)], // the greeting of a live site (setup is over)
-      ["/admin/settings", (p) => p.getByRole("heading", { level: 1, name: trAdmin.nav.items.settings, exact: true })],
-      ["/admin/courses", (p) => p.getByRole("heading", { level: 1, name: trAdmin.nav.items.courses, exact: true })],
+      ["/admin", (p) => p.getByText(siteAdmin.welcome.overview)], // the greeting of a live site (setup is over)
+      ["/admin/settings", (p) => p.getByRole("heading", { level: 1, name: siteAdmin.nav.items.settings, exact: true })],
+      ["/admin/courses", (p) => p.getByRole("heading", { level: 1, name: siteAdmin.nav.items.courses, exact: true })],
     ];
     for (const [pathname, shown] of studioPages) {
-      await expectTurkish(page, pathname, SITE, studioWords, studioOwn, { shown });
+      await expectSiteLanguage(page, pathname, SITE, studioWords, studioOwn, { shown });
     }
 
     // ── 6. Test 1's student path, on this site: a student with an English browser ──
@@ -482,9 +521,9 @@ test.describe("creator", () => {
       const publicPaths = ["/", "/courses", "/plans", "/events", "/calendar", "/login"];
       if (stored.courseSlug) publicPaths.splice(2, 0, `/courses/${stored.courseSlug}`);
       const siteOwn = [...stored.authored, ...courseTexts, ...STUDIO_ALLOWED];
-      // Her Turkish copy may hold "sat" or "sun" as words: no date there either.
-      const siteWords = candidates.filter((w) => w !== "Sat" && w !== "Sun");
-      for (const pathname of publicPaths) await expectTurkish(student, pathname, SITE, siteWords, siteOwn, {});
+      // Her copy may hold words her language shares with English dates (Turkish "sat", "sun"): no date there either.
+      const siteWords = candidates.filter((w) => !(WORDS_IN_COPY[LANG] ?? []).includes(w));
+      for (const pathname of publicPaths) await expectSiteLanguage(student, pathname, SITE, siteWords, siteOwn, {});
 
       // A real tenant emails the sign-in link (demo tenants return it instead).
       await student.goto(`${SITE}/login`);
@@ -495,7 +534,7 @@ test.describe("creator", () => {
       await student.goto(link!.replace(/&amp;/g, "&"));
       await student.waitForURL((url) => !url.pathname.startsWith("/callback"), { timeout: 30_000 });
       // The address must hold (a new student with no access could be sent elsewhere) before the leak check.
-      await expectTurkish(student, "/dashboard", SITE, siteWords, siteOwn, {});
+      await expectSiteLanguage(student, "/dashboard", SITE, siteWords, siteOwn, {});
     } finally {
       await studentContext.close();
     }

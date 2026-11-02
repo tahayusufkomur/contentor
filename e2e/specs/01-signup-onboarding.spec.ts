@@ -49,7 +49,8 @@ test("signup lands in /setup and the interview ends in a published site", async 
   await guideAtStart.getByRole("button", { name: "Continue", exact: true }).click();
   const nameQuestion = guideAtStart.getByRole("heading", { name: /What's your site called/ });
   const unread = guideAtStart.getByRole("alert");
-  await expect(nameQuestion.or(unread)).toBeVisible({ timeout: 60_000 });
+  // Read in the background: a minute or two on a careful model.
+  await expect(nameQuestion.or(unread)).toBeVisible({ timeout: 240_000 });
   if (await unread.isVisible()) await guideAtStart.getByRole("button", { name: "Skip for now" }).click();
 
   // The second: her site's name, which makes its address, and says her own domain can come later.
